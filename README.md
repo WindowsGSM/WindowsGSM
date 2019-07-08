@@ -1,7 +1,7 @@
 # WindowsGSM
 A Game Server Manager works on Windows Platform
 
-![Screenshot](https://windowsgsm.battlefieldduck.com/screenshot/WindowsGSM.png)
+![Screenshot](https://windowsgsm.battlefieldduck.com/screenshot/WindowsGSM_border.jpg)
 
 ## Features
 * 📥 One Click Installation
