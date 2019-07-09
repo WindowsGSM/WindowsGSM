@@ -1,0 +1,44 @@
+﻿<Window x:Class="WindowsGSM.Import"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WindowsGSM"
+        mc:Ignorable="d"
+        Title="WindowsGSM - Import" Height="250" Width="535" ResizeMode="CanMinimize">
+    <Grid>
+        <Grid Height="10" Background="Green" VerticalAlignment="Top"/>
+
+        <Label x:Name="label_game" Content="Game Server:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,24,0,0"/>
+        <ComboBox x:Name="comboBox" Margin="95,24,20,0" VerticalAlignment="Top">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{Binding Image}" Width="16" Height="16"/>
+                        <TextBlock Text=" "/>
+                        <TextBlock Text="{Binding Name}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+        <Label x:Name="label_gamewarn" Content="" HorizontalAlignment="Left" Margin="95,43,0,0" VerticalAlignment="Top"/>
+
+        <Label x:Name="label_name" Content="Server Name:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,72,0,0"/>
+        <TextBox x:Name="textbox_name" Height="23" Margin="95,72,20,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top"/>
+        <Label x:Name="label_namewarn" Content="" HorizontalAlignment="Left" Margin="96,90,0,0" VerticalAlignment="Top"/>
+
+        <Label x:Name="label_ServerDir" Content="Server Dir:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="26,121,0,0"/>
+        <TextBox x:Name="textbox_ServerDir" Height="23" Margin="95,121,114,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top"/>
+        <Button x:Name="button_Browse" Content="Browse" Margin="415,121,20,0" VerticalAlignment="Top" Height="26" Click="Button_Browse_Click"/>
+        <Label x:Name="label_ServerDirWarn" Content="" HorizontalAlignment="Left" Margin="96,142,0,0" VerticalAlignment="Top"/>
+
+        <Label x:Name="label_progress" Content="Status:" Margin="45,165,0,0" HorizontalAlignment="Left" Width="45" Height="26" VerticalAlignment="Top"/>
+        <Grid Margin="96,168,153,0" Height="23" VerticalAlignment="Top">
+            <ProgressBar x:Name="progressbar_progress" Value="0"/>
+            <TextBlock x:Name="textblock_progress" Text="" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Grid>
+
+        <Button x:Name="button_Import" Content="Import" Margin="381,167,20,0" Click="Button_Import_Click" Height="23" VerticalAlignment="Top"/>
+        <Label x:Name="label_namewarn_Copy" Content="" HorizontalAlignment="Left" Margin="96,142,0,0" VerticalAlignment="Top"/>
+    </Grid>
+</Window>
