@@ -1,4 +1,6 @@
 # WindowsGSM
+[![Build status](https://ci.appveyor.com/api/projects/status/ttaomnayo3gidf2g?svg=true)](https://ci.appveyor.com/project/BattlefieldDuck/windowsgsm)
+
 A Game Server Manager works on Windows Platform
 
 ![Screenshot](https://windowsgsm.battlefieldduck.com/screenshot/WindowsGSM_border.jpg)
