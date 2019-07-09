@@ -959,12 +959,14 @@ namespace WindowsGSM
                 return false;
             }
 
-            return splitValues.All(r => byte.TryParse(r, out byte tempForParsing));
+            byte tempForParsing;
+            return splitValues.All(r => byte.TryParse(r, out tempForParsing));
         }
 
         private bool IsValidPort(string port)
         {
-            if (!Int32.TryParse(port, out int portnum))
+            int portnum;
+            if (!Int32.TryParse(port, out portnum))
             {
                 return false;
             }
