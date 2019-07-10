@@ -11,3 +11,6 @@ A Game Server Manager works on Windows Platform
 * ⚠️ Server Crash Detection
 * 📲 Discord Alert
 * 💌 Allows Import game servers to WindowsGSM
+
+## Installation
+Please view the wiki page [Installation](https://github.com/BattlefieldDuck/WindowsGSM/wiki/Installation)
