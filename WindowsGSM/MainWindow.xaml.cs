@@ -63,7 +63,7 @@ namespace WindowsGSM
         private static readonly bool[] g_bUpdateOnStart = new bool[MAX_SERVER + 1];
 
         private static readonly bool[] g_bDiscordAlert = new bool[MAX_SERVER + 1];
-        private static readonly string[] g_DiscordWebhook = new string[MAX_SERVER + 1];
+        private string[] g_DiscordWebhook = new string[MAX_SERVER + 1];
 
         public MainWindow()
         {

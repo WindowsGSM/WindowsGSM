@@ -51,38 +51,39 @@ namespace WindowsGSM.Functions.Discord
 
             string time = DateTime.UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss.mssZ");
 
+            string wgsmPath = "https://github.com/BattlefieldDuck/WindowsGSM/blob/master/WindowsGSM/Images/windowsgsm.png?raw=true";
             string json = @"
             {
-                'username': 'WindowsGSM',
-                'avatar_url': 'https://github.com/BattlefieldDuck/WindowsGSM/blob/master/WindowsGSM/Images/windowsgsm.png?raw=true',
-                'embeds': [
+                ""username"": ""WindowsGSM"",
+                ""avatar_url"": ""https://github.com/BattlefieldDuck/WindowsGSM/blob/master/WindowsGSM/Images/windowsgsm.png?raw=true"",
+                ""embeds"": [
                 {
-                    'title': 'Status (ID: " + serverid + @")',
-                    'type': 'rich',
-                    'description': '" + status + @"',
-                    'color': " + color + @",
-                    'fields': [
+                    ""title"": ""Status (ID: " + serverid + @")"",
+                    ""type"": ""rich"",
+                    ""description"": """ + status + @""",
+                    ""color"": " + color + @",
+                    ""fields"": [
                     {
-                        'name': 'Game Server',
-                        'value': '" + servergame + @"'
+                        ""name"": ""Game Server"",
+                        ""value"": """ + servergame + @"""
                     },
                     {
-                        'name': 'Server IP:Port',
-                        'value': '" + serverip + ":"+ serverport + @"'
+                        ""name"": ""Server IP:Port"",
+                        ""value"": """ + serverip + ":"+ serverport + @"""
                     }],
-                    'author': {
-                        'name': '" + servername + @"',
-                        'icon_url': '" + gameicon + @"'
+                    ""author"": {
+                        ""name"": """ + servername + @""",
+                        ""icon_url"": """ + gameicon + @"""
                     },
-                    'footer': {
-                        'text': 'WindowsGSM - Alert',
-                        'icon_url': 'https://github.com/BattlefieldDuck/WindowsGSM/blob/master/WindowsGSM/Images/windowsgsm.png?raw=true'
+                    ""footer"": {
+                        ""text"": ""WindowsGSM - Alert"",
+                        ""icon_url"": ""https://github.com/BattlefieldDuck/WindowsGSM/blob/master/WindowsGSM/Images/windowsgsm.png?raw=true""
                     },
-                    'timestamp': '" + time + @"'
+                    ""timestamp"": """ + time + @"""
                 }]
             }";
 
-            var content = new StringContent(json.Replace("'", "\""), Encoding.UTF8, "application/json");
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             using (var httpClient = new HttpClient())
             {
