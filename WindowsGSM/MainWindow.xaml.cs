@@ -423,12 +423,18 @@ namespace WindowsGSM
         private void Actions_ToggleConsole_Click(object sender, RoutedEventArgs e)
         {
             Table row = (Table)ServerGrid.SelectedItem;
-            if (row == null) return;
+            if (row == null)
+            {
+                return;
+            }
 
             string serverid = row.ID.ToString();
 
             Process p = g_Process[Int32.Parse(serverid)];
-            if (p == null) return;
+            if (p == null)
+            {
+                return;
+            }
 
             IntPtr hWnd = p.MainWindowHandle;
             ShowWindow(hWnd, (ShowWindow(hWnd, WindowShowStyle.Hide)) ? (WindowShowStyle.Hide) : (WindowShowStyle.ShowNormal));
@@ -497,7 +503,7 @@ namespace WindowsGSM
                 return;
             }
 
-            await GameServer_RestoreBackup(server);
+            await GameServer_RestoreBackup(server).ConfigureAwait(false);
         }
 
         private async void GameServer_Start(Table server)
@@ -508,8 +514,15 @@ namespace WindowsGSM
             }
 
             string error = "";
-            if (!IsValidIPAddress(server.IP)) error += " IP address is not valid.";
-            if (!IsValidPort(server.Port)) error += " Port number is not valid.";
+            if (!IsValidIPAddress(server.IP))
+            {
+                error += " IP address is not valid.";
+            }
+
+            if (!IsValidPort(server.Port))
+            {
+                error += " Port number is not valid.";
+            }
 
             if (error != "")
             {
@@ -530,7 +543,7 @@ namespace WindowsGSM
 
             if (g_bUpdateOnStart[Int32.Parse(server.ID)])
             {
-                await GameServer_Update(server);
+                await GameServer_Update(server).ConfigureAwait(false);
             }
 
             //Begin Start
@@ -546,7 +559,10 @@ namespace WindowsGSM
                         tf2server.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, "", "");
                         p = tf2server.Start();
 
-                        if (p == null) Log(server.ID, "Server: Fail to start [ERROR] " + tf2server.Error);
+                        if (p == null)
+                        {
+                            Log(server.ID, "Server: Fail to start [ERROR] " + tf2server.Error);
+                        }
 
                         break;
                     }
@@ -614,7 +630,7 @@ namespace WindowsGSM
                         break;
                     }
                 case ("Minecraft Server"): break;
-                default: p = null; break;
+                default: stopped = true; break;
             }
 
             //Force shut down server
@@ -624,9 +640,12 @@ namespace WindowsGSM
             }
             else
             {
-                if (!p.HasExited)
+                if (p != null)
                 {
-                    p.Kill();
+                    if (!p.HasExited)
+                    {
+                        p.Kill();
+                    }
                 }
 
                 Log(server.ID, "Server: Stopped [NOTICE] Server fail to stop peacefully");
@@ -670,7 +689,10 @@ namespace WindowsGSM
                         tf2server.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, "", "");
                         p = await tf2server.Restart(p);
 
-                        if (p == null) Log(server.ID, "Server: Fail to restart [ERROR] " + tf2server.Error);
+                        if (p == null)
+                        {
+                            Log(server.ID, "Server: Fail to restart [ERROR] " + tf2server.Error);
+                        }
 
                         break;
                     }
@@ -691,7 +713,7 @@ namespace WindowsGSM
 
             g_Process[Int32.Parse(server.ID)] = p;
 
-            await Task.Run(() => p.WaitForInputIdle());
+            await Task.Run(() => p.WaitForInputIdle()).ConfigureAwait(false);
             ShowWindow(p.MainWindowHandle, WindowShowStyle.Hide);
 
             g_iServerStatus[Int32.Parse(server.ID)] = (int)ServerStatus.Started;
@@ -727,7 +749,10 @@ namespace WindowsGSM
                         GameServer.TF2 tf2server = new GameServer.TF2(server.ID);
                         updated = await tf2server.Update();
 
-                        if (!updated) Log(server.ID, "Server: Fail to update [ERROR] " + tf2server.Error);
+                        if (!updated)
+                        {
+                            Log(server.ID, "Server: Fail to update [ERROR] " + tf2server.Error);
+                        }
 
                         break;
                     }
@@ -737,7 +762,10 @@ namespace WindowsGSM
 
             Activate();
 
-            if (updated) Log(server.ID, "Action: Updated");
+            if (updated)
+            {
+                Log(server.ID, "Action: Updated");
+            }
 
             g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
             SetServerStatus(server, "Stopped");
@@ -761,7 +789,10 @@ namespace WindowsGSM
             string zipPath = WGSM_PATH + @"\backups\" + server.ID;
             string zipFile = zipPath + @"\backup-id-" + server.ID + ".zip";
 
-            if (!Directory.Exists(zipPath)) Directory.CreateDirectory(zipPath);
+            if (!Directory.Exists(zipPath))
+            {
+                Directory.CreateDirectory(zipPath);
+            }
 
             if (File.Exists(zipFile))
             {
@@ -816,7 +847,7 @@ namespace WindowsGSM
             {
                 try
                 {
-                    await Task.Run(() => Directory.Delete(extractPath, true));
+                    await Task.Run(() => Directory.Delete(extractPath, true)).ConfigureAwait(false);
                 }
                 catch
                 {
@@ -854,12 +885,11 @@ namespace WindowsGSM
             }
 
             string serverPath = WGSM_PATH + @"\servers\" + server.ID;
-
             if (Directory.Exists(serverPath))
             {
                 try
                 {
-                    await Task.Run(() => Directory.Delete(serverPath, true));
+                    await Task.Run(() => Directory.Delete(serverPath, true)).ConfigureAwait(false);
                 }
                 catch
                 {
@@ -878,7 +908,7 @@ namespace WindowsGSM
 
         private async void StartServerCrashDetector(Table server)
         {
-            if (await IsServerCrashed(server.ID))
+            if (await IsServerCrashed(server.ID).ConfigureAwait(false))
             {
                 g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
                 Log(server.ID, "Server: Crashed [WARNING] Server crashed");
