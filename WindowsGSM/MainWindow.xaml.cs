@@ -48,9 +48,10 @@ namespace WindowsGSM
             Restoring = 11
         }
 
+        public static readonly string VERSION = "v1.0.1";
         public static readonly int MAX_SERVER = 100;
-        public static readonly string WGSM_PATH = @"D:\WindowsGSMtest2";
-        //public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
+        //public static readonly string WGSM_PATH = @"D:\WindowsGSMtest2";
+        public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
 
         private Install InstallWindow;
         private Import ImportWindow;
@@ -63,11 +64,13 @@ namespace WindowsGSM
         private static readonly bool[] g_bUpdateOnStart = new bool[MAX_SERVER + 1];
 
         private static readonly bool[] g_bDiscordAlert = new bool[MAX_SERVER + 1];
-        private string[] g_DiscordWebhook = new string[MAX_SERVER + 1];
+        private static readonly string[] g_DiscordWebhook = new string[MAX_SERVER + 1];
 
         public MainWindow()
         {
             InitializeComponent();
+
+            Title = "WindowsGSM - " + VERSION;
 
             //Set All server status to stopped
             for (int i = 0; i < MAX_SERVER; i++)
