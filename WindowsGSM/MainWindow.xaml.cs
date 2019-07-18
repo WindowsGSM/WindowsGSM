@@ -459,7 +459,7 @@ namespace WindowsGSM
                 return;
             }
 
-            await GameServer_Update(server);
+            await GameServer_Update(server).ConfigureAwait(false);
         }
 
         private async void Actions_Backup_Click(object sender, RoutedEventArgs e)
@@ -582,7 +582,7 @@ namespace WindowsGSM
 
             g_Process[Int32.Parse(server.ID)] = p;
 
-            await Task.Run(() => p.WaitForInputIdle());
+            await Task.Run(() => p.WaitForInputIdle()).ConfigureAwait(false);
             ShowWindow(p.MainWindowHandle, WindowShowStyle.Hide);
 
             g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Started;
@@ -640,12 +640,9 @@ namespace WindowsGSM
             }
             else
             {
-                if (p != null)
+                if (!p.HasExited)
                 {
-                    if (!p.HasExited)
-                    {
-                        p.Kill();
-                    }
+                    p.Kill();
                 }
 
                 Log(server.ID, "Server: Stopped [NOTICE] Server fail to stop peacefully");
