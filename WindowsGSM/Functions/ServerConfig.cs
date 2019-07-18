@@ -12,6 +12,7 @@ namespace WindowsGSM.Functions
         public string ServerMap;
         public string ServerMaxPlayer;
         public string ServerGSLT;
+        public string ServerParam;
         public bool AutoRestart;
         public bool UpdateOnStart;
         public bool DiscordAlert;
@@ -80,6 +81,10 @@ namespace WindowsGSM.Functions
                     {
                         ServerGSLT = line.Replace("servergslt=\"", "").Replace("\"", "");
                     }
+                    else if (line.Contains("serverparam=\""))
+                    {
+                        ServerParam = line.Replace("serverparam=\"", "").Replace("\"", "");
+                    }
                     else if (line.Contains("autorestart=\""))
                     {
                         string Bool = line.Replace("autorestart=\"", "").Replace("\"", "");
@@ -103,7 +108,7 @@ namespace WindowsGSM.Functions
             }
         }
 
-        public bool CreateWindowsGSMConfig(string servergame, string servername, string serverip, string serverport, string servermap, string servermaxplayer, string servergslt)
+        public bool CreateWindowsGSMConfig(string servergame, string servername, string serverip, string serverport, string servermap, string servermaxplayer, string servergslt, string serverparam)
         {
             string configpath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\configs\WindowsGSM.cfg";
             if (!File.Exists(configpath))
@@ -119,6 +124,7 @@ namespace WindowsGSM.Functions
                     textwriter.WriteLine("servermap=\"" + servermap + "\"");
                     textwriter.WriteLine("servermaxplayer=\"" + servermaxplayer + "\"");
                     textwriter.WriteLine("servergslt=\"" + servergslt + "\"");
+                    textwriter.WriteLine("serverparam=\"" + serverparam + "\"");
                     textwriter.WriteLine("");
                     textwriter.WriteLine("autorestart=\"1\"");
                     textwriter.WriteLine("updateonstart=\"0\"");
@@ -134,6 +140,7 @@ namespace WindowsGSM.Functions
                 ServerMap = servermap;
                 ServerMaxPlayer = servermaxplayer;
                 ServerGSLT = servergslt;
+                ServerParam = serverparam;
                 AutoRestart = true;
                 UpdateOnStart = false;
                 DiscordAlert = false;

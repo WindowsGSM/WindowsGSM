@@ -22,7 +22,6 @@ namespace WindowsGSM.Functions.Discord
             }
 
             string color;
-
             switch (serverstatus)
             {
                 case "Started": color = "65280"; break; //Green
@@ -33,7 +32,6 @@ namespace WindowsGSM.Functions.Discord
             }
 
             string status = serverstatus;
-
             switch (serverstatus)
             {
                 case "Started": status += " :ok:"; break;
@@ -43,12 +41,12 @@ namespace WindowsGSM.Functions.Discord
                 default: break;
             }
 
-            string gameicon;
-
+            string gameicon = @"https://github.com/BattlefieldDuck/WindowsGSM/blob/master/WindowsGSM/Images/";
             switch (servergame)
             {
-                case "Team Fortress 2 Dedicated Server": gameicon = @"https://windowsgsm.battlefieldduck.com/images/tf2.png"; break;
-                default: gameicon = @"https://www.battlefieldduck.com/assets/images/windowsgsm.png"; break;
+                case "Garry's Mod Dedicated Server": gameicon += @"games/gmod.png?raw=true"; break;
+                case "Team Fortress 2 Dedicated Server": gameicon += @"games/tf2.png?raw=true"; break;
+                default: gameicon += @"windowsgsm.png?raw=true"; break;
             }
 
             string time = DateTime.UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss.mssZ");
@@ -56,7 +54,7 @@ namespace WindowsGSM.Functions.Discord
             string json = @"
             {
                 'username': 'WindowsGSM',
-                'avatar_url': 'https://www.battlefieldduck.com/assets/images/windowsgsm.png',
+                'avatar_url': 'https://github.com/BattlefieldDuck/WindowsGSM/blob/master/WindowsGSM/Images/windowsgsm.png?raw=true',
                 'embeds': [
                 {
                     'title': 'Status (ID: " + serverid + @")',
@@ -78,7 +76,7 @@ namespace WindowsGSM.Functions.Discord
                     },
                     'footer': {
                         'text': 'WindowsGSM - Alert',
-                        'icon_url': 'https://www.battlefieldduck.com/assets/images/windowsgsm.png'
+                        'icon_url': 'https://github.com/BattlefieldDuck/WindowsGSM/blob/master/WindowsGSM/Images/windowsgsm.png?raw=true'
                     },
                     'timestamp': '" + time + @"'
                 }]

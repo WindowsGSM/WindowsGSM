@@ -370,7 +370,7 @@ namespace WindowsGSM
                 return;
             }
 
-            await GameServer_Delete(server).ConfigureAwait(false);
+            await GameServer_Delete(server);
         }
 
         private async void Button_DiscordWebhookTest_Click(object sender, RoutedEventArgs e)
@@ -489,7 +489,7 @@ namespace WindowsGSM
                 return;
             }
 
-            await GameServer_Update(server).ConfigureAwait(false);
+            await GameServer_Update(server);
         }
 
         private async void Actions_Backup_Click(object sender, RoutedEventArgs e)
@@ -511,7 +511,7 @@ namespace WindowsGSM
                 return;
             }
 
-            await GameServer_Backup(server).ConfigureAwait(false);
+            await GameServer_Backup(server);
         }
 
         private async void Actions_RestoreBackup_Click(object sender, RoutedEventArgs e)
@@ -533,7 +533,7 @@ namespace WindowsGSM
                 return;
             }
 
-            await GameServer_RestoreBackup(server).ConfigureAwait(false);
+            await GameServer_RestoreBackup(server);
         }
 
         private async void GameServer_Start(Table server)
@@ -573,7 +573,7 @@ namespace WindowsGSM
 
             if (g_bUpdateOnStart[Int32.Parse(server.ID)])
             {
-                await GameServer_Update(server).ConfigureAwait(false);
+                await GameServer_Update(server);
             }
 
             //Begin Start
@@ -583,6 +583,19 @@ namespace WindowsGSM
 
             switch (server.Game)
             {
+                case ("Garry's Mod Dedicated Server"):
+                    {
+                        GameServer.GMOD gmodserver = new GameServer.GMOD(server.ID);
+                        gmodserver.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, "", "");
+                        p = gmodserver.Start();
+
+                        if (p == null)
+                        {
+                            Log(server.ID, "Server: Fail to start [ERROR] " + gmodserver.Error);
+                        }
+
+                        break;
+                    }
                 case ("Team Fortress 2 Dedicated Server"):
                     {
                         GameServer.TF2 tf2server = new GameServer.TF2(server.ID);
@@ -659,6 +672,13 @@ namespace WindowsGSM
             bool stopped = false;
             switch (server.Game)
             {
+                case ("Garry's Mod Dedicated Server"):
+                    {
+                        GameServer.GMOD gmodserver = new GameServer.GMOD(server.ID);
+                        stopped = await gmodserver.Stop(p);
+
+                        break;
+                    }
                 case ("Team Fortress 2 Dedicated Server"):
                     {
                         GameServer.TF2 tf2server = new GameServer.TF2(server.ID);
@@ -717,6 +737,19 @@ namespace WindowsGSM
 
             switch (server.Game)
             {
+                case ("Garry's Mod Dedicated Server"):
+                    {
+                        GameServer.GMOD gmodserver = new GameServer.GMOD(server.ID);
+                        gmodserver.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, "", "");
+                        p = await gmodserver.Restart(p);
+
+                        if (p == null)
+                        {
+                            Log(server.ID, "Server: Fail to restart [ERROR] " + gmodserver.Error);
+                        }
+
+                        break;
+                    }
                 case ("Team Fortress 2 Dedicated Server"):
                     {
                         GameServer.TF2 tf2server = new GameServer.TF2(server.ID);
@@ -785,6 +818,18 @@ namespace WindowsGSM
             bool updated = false;
             switch (server.Game)
             {
+                case ("Garry's Mod Dedicated Server"):
+                    {
+                        GameServer.GMOD gmodserver = new GameServer.GMOD(server.ID);
+                        updated = await gmodserver.Update();
+
+                        if (!updated)
+                        {
+                            Log(server.ID, "Server: Fail to update [ERROR] " + gmodserver.Error);
+                        }
+
+                        break;
+                    }
                 case ("Team Fortress 2 Dedicated Server"):
                     {
                         GameServer.TF2 tf2server = new GameServer.TF2(server.ID);
@@ -930,7 +975,7 @@ namespace WindowsGSM
             {
                 try
                 {
-                    await Task.Run(() => Directory.Delete(serverPath, true)).ConfigureAwait(false);
+                    await Task.Run(() => Directory.Delete(serverPath, true));
                 }
                 catch
                 {
@@ -949,7 +994,7 @@ namespace WindowsGSM
 
         private async void StartServerCrashDetector(Table server)
         {
-            if (await IsServerCrashed(server.ID).ConfigureAwait(false))
+            if (await IsServerCrashed(server.ID))
             {
                 g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
                 Log(server.ID, "Server: Crashed [WARNING] Server crashed");
@@ -981,7 +1026,7 @@ namespace WindowsGSM
                     return true;
                 }
                
-                await Task.Delay(1000).ConfigureAwait(false);
+                await Task.Delay(1000);
             }
 
             return false;

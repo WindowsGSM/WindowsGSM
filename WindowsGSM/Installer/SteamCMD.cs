@@ -50,7 +50,7 @@ namespace WindowsGSM.Installer
                     break;
                 }
 
-                await Task.Delay(1000).ConfigureAwait(false);
+                await Task.Delay(1000);
             }
 
             return isDownloaded;

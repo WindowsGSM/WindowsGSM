@@ -79,6 +79,7 @@ namespace WindowsGSM
             switch (servergame)
             {
                 case ("Counter-Strike: Global Offensive Dedicated Server"):
+                case ("Garry's Mod Dedicated Server"):
                 case ("Team Fortress 2 Dedicated Server"):
                     {
                         string srcdsPath = textbox_ServerDir.Text + @"\srcds.exe";
@@ -159,11 +160,19 @@ namespace WindowsGSM
                 switch (servergame)
                 {
                     case ("Counter-Strike: Global Offensive Dedicated Server"): break;
+                    case ("Garry's Mod Dedicated Server"):
+                        {
+                            GameServer.GMOD server = new GameServer.GMOD(serverConfig.ServerID);
+                            serverConfig.CreateServerDirectory();
+                            serverConfig.CreateWindowsGSMConfig(servergame, servername, GetIPAddress(), GetAvailablePort(server.port), server.defaultmap, server.maxplayers, "", server.additional);
+
+                            break;
+                        }
                     case ("Team Fortress 2 Dedicated Server"):
                         {
-                            GameServer.TF2 tf2server = new GameServer.TF2(serverConfig.ServerID);
+                            GameServer.TF2 server = new GameServer.TF2(serverConfig.ServerID);
                             serverConfig.CreateServerDirectory();
-                            serverConfig.CreateWindowsGSMConfig(servergame, servername, GetIPAddress(), GetAvailablePort(tf2server.port), tf2server.defaultmap, tf2server.maxplayers, "");
+                            serverConfig.CreateWindowsGSMConfig(servergame, servername, GetIPAddress(), GetAvailablePort(server.port), server.defaultmap, server.maxplayers, "", server.additional);
 
                             break;
                         }

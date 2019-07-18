@@ -93,18 +93,34 @@ namespace WindowsGSM
             switch (servergame)
             {
                 case ("Counter-Strike: Global Offensive Dedicated Server"): break;
-                case ("Team Fortress 2 Dedicated Server"):
+                case ("Garry's Mod Dedicated Server"):
                     {
-                        GameServer.TF2 tf2server = new GameServer.TF2(serverConfig.ServerID);
-                        pInstaller = await tf2server.Install();
-                        IsInstallSuccess = await tf2server.IsInstallSuccess();
+                        GameServer.GMOD server = new GameServer.GMOD(serverConfig.ServerID);
+                        pInstaller = await server.Install();
+                        IsInstallSuccess = await server.IsInstallSuccess();
 
                         if (IsInstallSuccess)
                         {
                             serverConfig.CreateServerDirectory();
-                            serverConfig.CreateWindowsGSMConfig(servergame, servername, GetIPAddress(), GetAvailablePort(tf2server.port), tf2server.defaultmap, tf2server.maxplayers, "");
+                            serverConfig.CreateWindowsGSMConfig(servergame, servername, GetIPAddress(), GetAvailablePort(server.port), server.defaultmap, server.maxplayers, "", server.additional);
 
-                            tf2server.CreateServerCFG(servername, GetRCONPassword());
+                            server.CreateServerCFG(servername, GetRCONPassword());
+                        }
+
+                        break;
+                    }
+                case ("Team Fortress 2 Dedicated Server"):
+                    {
+                        GameServer.TF2 server = new GameServer.TF2(serverConfig.ServerID);
+                        pInstaller = await server.Install();
+                        IsInstallSuccess = await server.IsInstallSuccess();
+
+                        if (IsInstallSuccess)
+                        {
+                            serverConfig.CreateServerDirectory();
+                            serverConfig.CreateWindowsGSMConfig(servergame, servername, GetIPAddress(), GetAvailablePort(server.port), server.defaultmap, server.maxplayers, "", server.additional);
+
+                            server.CreateServerCFG(servername, GetRCONPassword());
                         }
 
                         break;

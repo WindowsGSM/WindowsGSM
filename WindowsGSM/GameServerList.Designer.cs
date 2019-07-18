@@ -61,11 +61,20 @@ namespace WindowsGSM {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Team Fortress 2 Dedicated Server.
+        ///   Looks up a localized string similar to Garry&apos;s Mod Dedicated Server.
         /// </summary>
         internal static string _1 {
             get {
                 return ResourceManager.GetString("1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Team Fortress 2 Dedicated Server.
+        /// </summary>
+        internal static string _2 {
+            get {
+                return ResourceManager.GetString("2", resourceCulture);
             }
         }
     }

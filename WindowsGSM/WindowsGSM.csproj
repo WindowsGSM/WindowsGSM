@@ -150,6 +150,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Functions\Discord\Webhook.cs" />
+    <Compile Include="GameServer\GMOD.cs" />
     <Compile Include="Import.xaml.cs">
       <DependentUpon>Import.xaml</DependentUpon>
     </Compile>
@@ -258,6 +259,9 @@
     <EmbeddedResource Include="..\packages\ControlzEx.3.0.2.4\lib\net462\ControlzEx.dll">
       <Link>ReferencesEx\ControlzEx.dll</Link>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\games\gmod.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace WindowsGSM.GameServer
 {
-    class TF2
+    class GMOD
     {
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -18,20 +18,20 @@ namespace WindowsGSM.GameServer
         public string Error;
 
         public string port = "27015";
-        public string defaultmap = "cp_badlands";
-        public string maxplayers = "24";
-        public string additional = "-strictportbind";
+        public string defaultmap = "gm_construct";
+        public string maxplayers = "16";
+        public string additional = "-strictportbind -tickrate 66 +gamemode sandbox +host_workshop_collection";
 
         private Process pSteamCMD;
 
-        public TF2(string serverid)
+        public GMOD(string serverid)
         {
             ServerID = serverid;
         }
 
         public void CreateServerCFG(string hostname, string rcon_password)
         {
-            string serverConfigPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles\tf\cfg\server.cfg";
+            string serverConfigPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles\garrysmod\cfg\server.cfg";
             
             File.Create(serverConfigPath).Dispose();
 
@@ -40,20 +40,17 @@ namespace WindowsGSM.GameServer
                 textwriter.WriteLine("hostname \"" + hostname + "\"");
                 textwriter.WriteLine("rcon_password \"" + rcon_password + "\"");
                 textwriter.WriteLine("sv_password \"\"");
-                textwriter.WriteLine("sv_region \"255\"");
-                textwriter.WriteLine("sv_lan \"0\"");
                 textwriter.WriteLine("net_maxfilesize \"64\"");
                 textwriter.WriteLine("sv_downloadurl \"\"");
+                textwriter.WriteLine("sv_loadingurl \"\"");
                 textwriter.WriteLine("exec banned_user.cfg");
                 textwriter.WriteLine("exec banned_ip.cfg");
-                textwriter.WriteLine("writeid");
-                textwriter.WriteLine("writeip");
             }
         }
 
         public void SetParameter(string ip, string port, string map, string maxplayers, string gslt, string additional)
         {
-            Param = "-console -game tf -ip " + ip + " -port " + port + " +map " + map + " -maxplayers " + maxplayers + " +sv_setsteamaccount " + gslt + " " + additional;
+            Param = "-console -game garrysmod -ip " + ip + " -port " + port + " +map " + map + " -maxplayers " + maxplayers + " +sv_setsteamaccount " + gslt + " " + additional;
         }
 
         public Process Start()
@@ -127,7 +124,7 @@ namespace WindowsGSM.GameServer
             string serverFilesPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles";
 
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(null, null, serverFilesPath, "232250", true);
+            steamCMD.SetParameter(null, null, serverFilesPath, "4020", true);
 
             bool downloaded = await steamCMD.Download();
             if (!downloaded)
@@ -164,7 +161,7 @@ namespace WindowsGSM.GameServer
             string serverFilesPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles";
 
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(null, null, serverFilesPath, "232250", false);
+            steamCMD.SetParameter(null, null, serverFilesPath, "4020", false);
 
             bool downloaded = await steamCMD.Download();
             if (!downloaded)
