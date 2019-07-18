@@ -12,9 +12,9 @@ namespace WindowsGSM.Functions
         public string ServerMap;
         public string ServerMaxPlayer;
         public string ServerGSLT;
-        public bool AutoRestart = false;
-        public bool UpdateOnStart = false;
-        public bool DiscordAlert = false;
+        public bool AutoRestart;
+        public bool UpdateOnStart;
+        public bool DiscordAlert;
         public string DiscordWebhook;
 
         public ServerConfig(string serverid)
@@ -147,11 +147,22 @@ namespace WindowsGSM.Functions
 
         public void CreateServerDirectory()
         {
-            string serverid_dir = MainWindow.WGSM_PATH + @"\servers\" + ServerID.ToString();
+            string serverid_dir = MainWindow.WGSM_PATH + @"\servers\" + ServerID;
 
-            if (!Directory.Exists(serverid_dir)) Directory.CreateDirectory(serverid_dir);
-            if (!Directory.Exists(serverid_dir + @"\configs")) Directory.CreateDirectory(serverid_dir + @"\configs");
-            if (!Directory.Exists(serverid_dir + @"\serverfiles")) Directory.CreateDirectory(serverid_dir + @"\serverfiles");
+            if (!Directory.Exists(serverid_dir))
+            {
+                Directory.CreateDirectory(serverid_dir);
+            }
+
+            if (!Directory.Exists(serverid_dir + @"\configs"))
+            {
+                Directory.CreateDirectory(serverid_dir + @"\configs");
+            }
+
+            if (!Directory.Exists(serverid_dir + @"\serverfiles"))
+            {
+                Directory.CreateDirectory(serverid_dir + @"\serverfiles");
+            }
         }
 
         public bool DeleteServerDirectory()

@@ -107,7 +107,10 @@ namespace WindowsGSM.GameServer
         {
             if (!await Stop(p))
             {
-                if (!p.HasExited) p.Kill();
+                if (!p.HasExited)
+                {
+                    p.Kill();
+                }
             }
 
             return Start(serverid);

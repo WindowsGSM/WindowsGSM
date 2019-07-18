@@ -48,12 +48,12 @@ namespace WindowsGSM
             Restoring = 11
         }
 
-        public const int MAX_SERVER = 100;
+        public static readonly int MAX_SERVER = 100;
         //public const string WGSM_PATH = @"D:\WindowsGSMtest2";
         public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
 
-        private Install InstallWindow = null;
-        private Import ImportWindow = null;
+        private Install InstallWindow;
+        private Import ImportWindow;
 
         private static readonly ServerStatus[] g_iServerStatus = new ServerStatus[MAX_SERVER + 1];
 
@@ -129,9 +129,10 @@ namespace WindowsGSM
                     case ServerStatus.Backuping: status = "Backuping"; break;
                     case ServerStatus.Restored: status = "Restored"; break;
                     case ServerStatus.Restoring: status = "Restoring"; break;
+                    default: status = "Stopped"; break;
                 }
 
-                Table row = new Table()
+                Table row = new Table
                 {
                     ID = i.ToString(),
                     Game = serverConfig.ServerGame,
@@ -323,7 +324,10 @@ namespace WindowsGSM
             Table row = (Table)ServerGrid.SelectedItem;
             if (row == null) return;
 
-            if (!g_bDiscordAlert[Int32.Parse(row.ID)]) return;
+            if (!g_bDiscordAlert[Int32.Parse(row.ID)])
+            {
+                return;
+            }
 
             Functions.Discord.Webhook webhook = new Functions.Discord.Webhook(g_DiscordWebhook[Int32.Parse(row.ID)]);
             await webhook.Send(row.ID, row.Game, "Webhook Test Alert", row.Name, row.IP, row.Port);
@@ -959,14 +963,12 @@ namespace WindowsGSM
                 return false;
             }
 
-            byte tempForParsing;
-            return splitValues.All(r => byte.TryParse(r, out tempForParsing));
+            return splitValues.All(r => byte.TryParse(r, out byte tempForParsing));
         }
 
         private bool IsValidPort(string port)
         {
-            int portnum;
-            if (!Int32.TryParse(port, out portnum))
+            if (!Int32.TryParse(port, out int portnum))
             {
                 return false;
             }

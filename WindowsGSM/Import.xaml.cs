@@ -17,7 +17,7 @@ namespace WindowsGSM
         //Get ServerID for this import
         private readonly Functions.ServerConfig serverConfig = new Functions.ServerConfig(null);
 
-        private Process pImporter = null;
+        private Process pImporter;
 
         public Import()
         {
@@ -40,7 +40,10 @@ namespace WindowsGSM
             while (servergame != null)
             {
                 servergame = GameServerList.ResourceManager.GetString((++i).ToString());
-                if (servergame == null) break;
+                if (servergame == null)
+                {
+                    break;
+                }
 
                 var row = new Images.Row { Image = Images.ServerIcon.ResourceManager.GetString(servergame), Name = servergame };
                 comboBox.Items.Add(row);
@@ -51,7 +54,10 @@ namespace WindowsGSM
         {
             if (pImporter != null)
             {
-                if (!pImporter.HasExited) pImporter.Kill();
+                if (!pImporter.HasExited)
+                {
+                    pImporter.Kill();
+                }
 
                 pImporter = null;
             }
@@ -76,7 +82,10 @@ namespace WindowsGSM
             label_gamewarn.Content = (selectedgame == null) ? "Please select a game server" : "";
             label_namewarn.Content = (string.IsNullOrWhiteSpace(textbox_name.Text)) ? "Server name cannot be null" : "";
             label_ServerDirWarn.Content = (!Directory.Exists(textbox_ServerDir.Text)) ? "Server Dir is invalid" : "";
-            if (string.IsNullOrWhiteSpace(textbox_name.Text) || selectedgame == null || !Directory.Exists(textbox_ServerDir.Text)) return;
+            if (string.IsNullOrWhiteSpace(textbox_name.Text) || selectedgame == null || !Directory.Exists(textbox_ServerDir.Text))
+            {
+                return;
+            }
 
             string servername = textbox_name.Text;
             string servergame = selectedgame.Name;
@@ -150,9 +159,11 @@ namespace WindowsGSM
             }
 
             if (pImporter.HasExited)
-            if (pImporter.ExitCode == 0)
             {
-                isImportSuccess = true;
+                if (pImporter.ExitCode == 0)
+                {
+                    isImportSuccess = true;
+                }
             }
 
             if (isImportSuccess)
@@ -213,7 +224,7 @@ namespace WindowsGSM
             }
         }
 
-        private string GetIPAddress()
+        private static string GetIPAddress()
         {
             using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
             {
@@ -223,7 +234,7 @@ namespace WindowsGSM
             }
         }
 
-        private string GetAvailablePort(string defaultport)
+        private static string GetAvailablePort(string defaultport)
         {
             MainWindow WindowsGSM = (MainWindow)System.Windows.Application.Current.MainWindow;
 

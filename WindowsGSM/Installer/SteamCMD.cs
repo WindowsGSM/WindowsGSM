@@ -30,7 +30,11 @@ namespace WindowsGSM.Installer
             }
 
             Param += " +force_install_dir \"" + install_dir + "\" +app_update " + app_id;
-            if (validate) Param += " validate";
+
+            if (validate)
+            {
+                Param += " validate";
+            }
 
             Param += " +quit";
         }
@@ -38,7 +42,10 @@ namespace WindowsGSM.Installer
         public async Task<bool> Download()
         {
             string installpath = MainWindow.WGSM_PATH + @"\installer\steamcmd";
-            if (!Directory.Exists(installpath)) Directory.CreateDirectory(installpath);
+            if (!Directory.Exists(installpath))
+            {
+                Directory.CreateDirectory(installpath);
+            }
 
             string exepath = installpath + @"\steamcmd.exe";
 

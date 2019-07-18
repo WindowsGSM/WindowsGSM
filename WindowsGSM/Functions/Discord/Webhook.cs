@@ -7,14 +7,14 @@ namespace WindowsGSM.Functions.Discord
 {
     class Webhook 
     {
-        private string WebhookUrl;
+        private readonly string WebhookUrl;
 
         public Webhook(string webhookurl)
         {
             WebhookUrl = webhookurl;
         }
 
-        public async Task<bool> Send(string serverid, string servergame, string status, string servername, string serverip, string serverport)
+        public async Task<bool> Send(string serverid, string servergame, string serverstatus, string servername, string serverip, string serverport)
         {
             if (string.IsNullOrWhiteSpace(WebhookUrl))
             {
@@ -23,7 +23,7 @@ namespace WindowsGSM.Functions.Discord
 
             string color;
 
-            switch (status)
+            switch (serverstatus)
             {
                 case "Started": color = "65280"; break; //Green
                 case "Stopped": color = "16755200"; break; //Orange
@@ -32,7 +32,9 @@ namespace WindowsGSM.Functions.Discord
                 default: color = "16777215"; break;
             }
 
-            switch (status)
+            string status = serverstatus;
+
+            switch (serverstatus)
             {
                 case "Started": status += " :ok:"; break;
                 case "Stopped": status += " :octagonal_sign:"; break;
@@ -90,7 +92,6 @@ namespace WindowsGSM.Functions.Discord
 
                 if (httpResponse.Content != null)
                 {
-                    //var responseContent = await httpResponse.Content.ReadAsStringAsync();
                     return true;
                 }
 

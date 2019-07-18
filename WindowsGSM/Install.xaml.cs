@@ -16,7 +16,7 @@ namespace WindowsGSM
         private readonly Functions.ServerConfig serverConfig = new Functions.ServerConfig(null);
 
         //Store Installer Process, such as steamcmd.exe
-        private Process pInstaller = null;
+        private Process pInstaller;
 
         public Install()
         {
@@ -39,7 +39,10 @@ namespace WindowsGSM
             while (servergame != null)
             {
                 servergame = GameServerList.ResourceManager.GetString((++i).ToString());
-                if (servergame == null) break;
+                if (servergame == null)
+                {
+                    break;
+                }
 
                 var row = new Images.Row { Image = Images.ServerIcon.ResourceManager.GetString(servergame), Name = servergame };
                 comboBox.Items.Add(row);
@@ -50,7 +53,10 @@ namespace WindowsGSM
         {
             if (pInstaller != null)
             {
-                if (!pInstaller.HasExited) pInstaller.Kill();
+                if (!pInstaller.HasExited)
+                {
+                    pInstaller.Kill();
+                }
 
                 pInstaller = null;
             }
@@ -68,7 +74,10 @@ namespace WindowsGSM
             label_gamewarn.Content = (selectedgame == null) ? "Please select a game server" : "";
             label_namewarn.Content = (string.IsNullOrWhiteSpace(textbox_name.Text)) ? "Server name cannot be null" : "";
 
-            if (string.IsNullOrWhiteSpace(textbox_name.Text) || selectedgame == null) return;
+            if (string.IsNullOrWhiteSpace(textbox_name.Text) || selectedgame == null)
+            {
+                return;
+            }
 
             string installPath = MainWindow.WGSM_PATH + @"\servers\" + serverConfig.ServerID + @"\serverfiles";
             if (Directory.Exists(installPath))
@@ -149,7 +158,7 @@ namespace WindowsGSM
             }
         }
 
-        private string GetIPAddress()
+        private static string GetIPAddress()
         {
             using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
             {
@@ -159,7 +168,7 @@ namespace WindowsGSM
             }
         }
 
-        private string GetAvailablePort(string defaultport)
+        private static string GetAvailablePort(string defaultport)
         {
             MainWindow WindowsGSM = (MainWindow)System.Windows.Application.Current.MainWindow;
 
@@ -191,7 +200,7 @@ namespace WindowsGSM
             return port.ToString();
         }
 
-        private string GetRCONPassword()
+        private static string GetRCONPassword()
         {
             string allowedChars = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ0123456789!@$?_-";
             char[] chars = new char[12];
