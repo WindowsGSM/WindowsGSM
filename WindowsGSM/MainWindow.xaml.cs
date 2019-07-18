@@ -273,6 +273,21 @@ namespace WindowsGSM
             {
                 InstallWindow = new Install();
                 InstallWindow.Closed += new EventHandler(InstallWindow_Closed);
+
+                //Add games to ComboBox
+                int i = 0;
+                string servergame = "";
+                while (servergame != null)
+                {
+                    servergame = GameServerList.ResourceManager.GetString((++i).ToString());
+                    if (servergame == null)
+                    {
+                        break;
+                    }
+
+                    var row = new Images.Row { Image = Images.ServerIcon.ResourceManager.GetString(servergame), Name = servergame };
+                    InstallWindow.comboBox.Items.Add(row);
+                }
             }
             else
             {
@@ -300,6 +315,21 @@ namespace WindowsGSM
             {
                 ImportWindow = new Import();
                 ImportWindow.Closed += new EventHandler(ImportWindow_Closed);
+
+                //Add games to ComboBox
+                int i = 0;
+                string servergame = "";
+                while (servergame != null)
+                {
+                    servergame = GameServerList.ResourceManager.GetString((++i).ToString());
+                    if (servergame == null)
+                    {
+                        break;
+                    }
+
+                    var row = new Images.Row { Image = Images.ServerIcon.ResourceManager.GetString(servergame), Name = servergame };
+                    ImportWindow.comboBox.Items.Add(row);
+                }
             }
             else
             {
@@ -582,7 +612,14 @@ namespace WindowsGSM
 
             g_Process[Int32.Parse(server.ID)] = p;
 
-            await Task.Run(() => p.WaitForInputIdle()).ConfigureAwait(false);
+            await Task.Run(() => p.WaitForInputIdle());
+
+            //An error may occur on ShowWindow if not adding this 
+            if (p.HasExited)
+            {
+                return;
+            }
+
             ShowWindow(p.MainWindowHandle, WindowShowStyle.Hide);
 
             g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Started;
@@ -710,7 +747,14 @@ namespace WindowsGSM
 
             g_Process[Int32.Parse(server.ID)] = p;
 
-            await Task.Run(() => p.WaitForInputIdle()).ConfigureAwait(false);
+            await Task.Run(() => p.WaitForInputIdle());
+
+            //An error may occur on ShowWindow if not adding this 
+            if (p.HasExited)
+            {
+                return;
+            }
+
             ShowWindow(p.MainWindowHandle, WindowShowStyle.Hide);
 
             g_iServerStatus[Int32.Parse(server.ID)] = (int)ServerStatus.Started;
@@ -844,7 +888,7 @@ namespace WindowsGSM
             {
                 try
                 {
-                    await Task.Run(() => Directory.Delete(extractPath, true)).ConfigureAwait(false);
+                    await Task.Run(() => Directory.Delete(extractPath, true));
                 }
                 catch
                 {
@@ -996,7 +1040,6 @@ namespace WindowsGSM
             }
 
             string log_file = WGSM_PATH + "/logs/L" + DateTime.Now.ToString("yyyyMMdd") + ".log";
-
             if (!File.Exists(log_file))
             {
                 File.Create(log_file).Dispose();

@@ -32,21 +32,6 @@ namespace WindowsGSM
             }
 
             Title = "WindowsGSM - Install (ID: " + serverConfig.ServerID + ")";
-
-            //Add games to ComboBox
-            int i = 0;
-            string servergame = "";
-            while (servergame != null)
-            {
-                servergame = GameServerList.ResourceManager.GetString((++i).ToString());
-                if (servergame == null)
-                {
-                    break;
-                }
-
-                var row = new Images.Row { Image = Images.ServerIcon.ResourceManager.GetString(servergame), Name = servergame };
-                comboBox.Items.Add(row);
-            }
         }
 
         private async void Button_install_Click(object sender, RoutedEventArgs e)
@@ -131,16 +116,18 @@ namespace WindowsGSM
             {
                 MainWindow WindowsGSM = (MainWindow)System.Windows.Application.Current.MainWindow;
 
-                Table row = new Table();
-                row.ID = serverConfig.ServerID;
-                row.Game = serverConfig.ServerGame;
-                row.Icon = Images.ServerIcon.ResourceManager.GetString(servergame);
-                row.Status = "Stopped";
-                row.Name = serverConfig.ServerName;
-                row.IP = serverConfig.ServerIP;
-                row.Port = serverConfig.ServerPort;
-                row.Defaultmap = serverConfig.ServerMap;
-                row.Maxplayers = serverConfig.ServerMaxPlayer;
+                Table row = new Table
+                {
+                    ID = serverConfig.ServerID,
+                    Game = serverConfig.ServerGame,
+                    Icon = Images.ServerIcon.ResourceManager.GetString(servergame),
+                    Status = "Stopped",
+                    Name = serverConfig.ServerName,
+                    IP = serverConfig.ServerIP,
+                    Port = serverConfig.ServerPort,
+                    Defaultmap = serverConfig.ServerMap,
+                    Maxplayers = serverConfig.ServerMaxPlayer
+                };
                 WindowsGSM.ServerGrid.Items.Add(row);
 
                 WindowsGSM.Log(serverConfig.ServerID, "Install: Success");
