@@ -38,19 +38,19 @@ namespace WindowsGSM
             Starting = 1,
             Stopped = 2,
             Stopping = 3,
-            Restarted = 4, //
+            Restarted = 4,
             Restarting = 5,
-            Updated = 6, //
+            Updated = 6,
             Updating = 7,
-            Backuped = 8, //
+            Backuped = 8,
             Backuping = 9,
-            Restored = 10, //
+            Restored = 10,
             Restoring = 11
         }
 
         public static readonly int MAX_SERVER = 100;
-        //public const string WGSM_PATH = @"D:\WindowsGSMtest2";
-        public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
+        public static readonly string WGSM_PATH = @"D:\WindowsGSMtest2";
+        //public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
 
         private Install InstallWindow;
         private Import ImportWindow;
@@ -114,7 +114,7 @@ namespace WindowsGSM
                     continue;
                 }
 
-                string status = "";
+                string status;
                 switch (g_iServerStatus[i])
                 {
                     case ServerStatus.Started: status = "Started"; break;
@@ -129,7 +129,7 @@ namespace WindowsGSM
                     case ServerStatus.Backuping: status = "Backuping"; break;
                     case ServerStatus.Restored: status = "Restored"; break;
                     case ServerStatus.Restoring: status = "Restoring"; break;
-                    default: status = "Stopped"; break;
+                    default: status = ""; break;
                 }
 
                 Table row = new Table
@@ -166,10 +166,31 @@ namespace WindowsGSM
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            bool hasServerRunning = false;
+            for (int i = 0; i <= MAX_SERVER; i++)
+            {
+                if (g_Process[i] != null)
+                {
+                    if (!g_Process[i].HasExited)
+                    {
+                        hasServerRunning = true;
+
+                        break;
+                    }
+                }
+            }
+
+            if (!hasServerRunning)
+            {
+                return;
+            }
+
             MessageBoxResult result = System.Windows.MessageBox.Show("Are you sure to quit?\n(All game servers will be stopped)", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result != MessageBoxResult.Yes)
             {
                 e.Cancel = true;
+
+                return;
             }
 
             for (int i = 0; i <= MAX_SERVER; i++)
@@ -303,7 +324,10 @@ namespace WindowsGSM
         private async void Delete_Click(object sender, RoutedEventArgs e)
         {
             Table server = (Table)ServerGrid.SelectedItem;
-            if (server == null) return;
+            if (server == null)
+            {
+                return;
+            }
 
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped)
             {
@@ -316,13 +340,16 @@ namespace WindowsGSM
                 return;
             }
 
-            await GameServer_Delete(server);
+            await GameServer_Delete(server).ConfigureAwait(false);
         }
 
         private async void Button_DiscordWebhookTest_Click(object sender, RoutedEventArgs e)
         {
             Table row = (Table)ServerGrid.SelectedItem;
-            if (row == null) return;
+            if (row == null)
+            {
+                return;
+            }
 
             if (!g_bDiscordAlert[Int32.Parse(row.ID)])
             {
@@ -344,7 +371,10 @@ namespace WindowsGSM
             }
 
             Table server = (Table)ServerGrid.SelectedItem;
-            if (server == null) return;
+            if (server == null)
+            {
+                return;
+            }
 
             SendCommand(server, command);
         }
@@ -360,7 +390,10 @@ namespace WindowsGSM
         private void Actions_Start_Click(object sender, RoutedEventArgs e)
         {
             Table server = (Table)ServerGrid.SelectedItem;
-            if (server == null) return;
+            if (server == null)
+            {
+                return;
+            }
 
             GameServer_Start(server);
         }
@@ -368,7 +401,10 @@ namespace WindowsGSM
         private void Actions_Stop_Click(object sender, RoutedEventArgs e)
         {
             Table server = (Table)ServerGrid.SelectedItem;
-            if (server == null) return;
+            if (server == null)
+            {
+                return;
+            }
 
             GameServer_Stop(server);
         }
@@ -376,7 +412,10 @@ namespace WindowsGSM
         private void Actions_Restart_Click(object sender, RoutedEventArgs e)
         {
             Table server = (Table)ServerGrid.SelectedItem;
-            if (server == null) return;
+            if (server == null)
+            {
+                return;
+            }
 
             GameServer_Restart(server);
         }
@@ -398,7 +437,10 @@ namespace WindowsGSM
         private async void Actions_Update_Click(object sender, RoutedEventArgs e)
         {
             Table server = (Table)ServerGrid.SelectedItem;
-            if (server == null) return;
+            if (server == null)
+            {
+                return;
+            }
 
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped)
             {
@@ -417,7 +459,10 @@ namespace WindowsGSM
         private async void Actions_Backup_Click(object sender, RoutedEventArgs e)
         {
             Table server = (Table)ServerGrid.SelectedItem;
-            if (server == null) return;
+            if (server == null)
+            {
+                return;
+            }
 
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped)
             {
@@ -430,13 +475,16 @@ namespace WindowsGSM
                 return;
             }
 
-            await GameServer_Backup(server);
+            await GameServer_Backup(server).ConfigureAwait(false);
         }
 
         private async void Actions_RestoreBackup_Click(object sender, RoutedEventArgs e)
         {
             Table server = (Table)ServerGrid.SelectedItem;
-            if (server == null) return;
+            if (server == null)
+            {
+                return;
+            }
 
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped)
             {
@@ -475,7 +523,10 @@ namespace WindowsGSM
             }
 
             Process p = g_Process[Int32.Parse(server.ID)];
-            if (p != null) return;
+            if (p != null)
+            {
+                return;
+            }
 
             if (g_bUpdateOnStart[Int32.Parse(server.ID)])
             {
@@ -491,9 +542,9 @@ namespace WindowsGSM
             {
                 case ("Team Fortress 2 Dedicated Server"):
                     {
-                        GameServer.TF2 tf2server = new GameServer.TF2();
+                        GameServer.TF2 tf2server = new GameServer.TF2(server.ID);
                         tf2server.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, "", "");
-                        p = tf2server.Start(server.ID);
+                        p = tf2server.Start();
 
                         if (p == null) Log(server.ID, "Server: Fail to start [ERROR] " + tf2server.Error);
 
@@ -539,7 +590,10 @@ namespace WindowsGSM
             }
 
             Process p = g_Process[Int32.Parse(server.ID)];
-            if (p == null) return;
+            if (p == null)
+            {
+                return;
+            }
 
             //Begin stop
             g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopping;
@@ -554,7 +608,7 @@ namespace WindowsGSM
             {
                 case ("Team Fortress 2 Dedicated Server"):
                     {
-                        GameServer.TF2 tf2server = new GameServer.TF2();
+                        GameServer.TF2 tf2server = new GameServer.TF2(server.ID);
                         stopped = await tf2server.Stop(p);
 
                         break;
@@ -570,7 +624,11 @@ namespace WindowsGSM
             }
             else
             {
-                if (!p.HasExited) p.Kill();
+                if (!p.HasExited)
+                {
+                    p.Kill();
+                }
+
                 Log(server.ID, "Server: Stopped [NOTICE] Server fail to stop peacefully");
             }
 
@@ -592,7 +650,10 @@ namespace WindowsGSM
             }
 
             Process p = g_Process[Int32.Parse(server.ID)];
-            if (p == null) return;
+            if (p == null)
+            {
+                return;
+            }
 
             g_Process[Int32.Parse(server.ID)] = null;
 
@@ -605,9 +666,9 @@ namespace WindowsGSM
             {
                 case ("Team Fortress 2 Dedicated Server"):
                     {
-                        GameServer.TF2 tf2server = new GameServer.TF2();
+                        GameServer.TF2 tf2server = new GameServer.TF2(server.ID);
                         tf2server.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, "", "");
-                        p = await tf2server.Restart(p, server.ID);
+                        p = await tf2server.Restart(p);
 
                         if (p == null) Log(server.ID, "Server: Fail to restart [ERROR] " + tf2server.Error);
 
@@ -663,8 +724,8 @@ namespace WindowsGSM
             {
                 case ("Team Fortress 2 Dedicated Server"):
                     {
-                        GameServer.TF2 tf2server = new GameServer.TF2();
-                        updated = await tf2server.Update(server.ID);
+                        GameServer.TF2 tf2server = new GameServer.TF2(server.ID);
+                        updated = await tf2server.Update();
 
                         if (!updated) Log(server.ID, "Server: Fail to update [ERROR] " + tf2server.Error);
 
@@ -849,7 +910,7 @@ namespace WindowsGSM
                     return true;
                 }
                
-                await Task.Delay(1000);
+                await Task.Delay(1000).ConfigureAwait(false);
             }
 
             return false;
@@ -894,12 +955,14 @@ namespace WindowsGSM
                 }
             }
 
-            if (row == null) return;
+            if (row == null)
+            {
+                return;
+            }
 
             string log = DateTime.Now.ToString("MM/dd/yyyy - HH:mm:ss") + ": [" + row.Name + "]" + "(ID: " + serverid + ") - " + logtext + Environment.NewLine;
 
             string logPath = WGSM_PATH + "/logs/";
-
             if (!Directory.Exists(logPath))
             {
                 Directory.CreateDirectory(logPath);
@@ -950,7 +1013,7 @@ namespace WindowsGSM
             SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
         }
 
-        private bool IsValidIPAddress(string ip)
+        private static bool IsValidIPAddress(string ip)
         {
             if (String.IsNullOrWhiteSpace(ip))
             {
@@ -966,7 +1029,7 @@ namespace WindowsGSM
             return splitValues.All(r => byte.TryParse(r, out byte tempForParsing));
         }
 
-        private bool IsValidPort(string port)
+        private static bool IsValidPort(string port)
         {
             if (!Int32.TryParse(port, out int portnum))
             {
@@ -979,10 +1042,12 @@ namespace WindowsGSM
         private void Browse_ServerBackups_Click(object sender, RoutedEventArgs e)
         {
             Table row = (Table)ServerGrid.SelectedItem;
-            if (row == null) return;
+            if (row == null)
+            {
+                return;
+            }
 
             string path = WGSM_PATH + @"\backups\" + row.ID;
-
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
@@ -994,10 +1059,12 @@ namespace WindowsGSM
         private void Browse_ServerConfigs_Click(object sender, RoutedEventArgs e)
         {
             Table row = (Table)ServerGrid.SelectedItem;
-            if (row == null) return;
+            if (row == null)
+            {
+                return;
+            }
 
             string path = WGSM_PATH + @"\servers\" + row.ID + @"\configs";
-
             if (Directory.Exists(path))
             {
                 Process.Start(path);
@@ -1007,10 +1074,12 @@ namespace WindowsGSM
         private void Browse_ServerFiles_Click(object sender, RoutedEventArgs e)
         {
             Table row = (Table)ServerGrid.SelectedItem;
-            if (row == null) return;
+            if (row == null)
+            {
+                return;
+            }
 
             string path = WGSM_PATH + @"\servers\" + row.ID + @"\serverfiles";
-
             if (Directory.Exists(path))
             {
                 Process.Start(path);

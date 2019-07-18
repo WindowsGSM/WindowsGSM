@@ -173,7 +173,7 @@ namespace WindowsGSM
                     case ("Counter-Strike: Global Offensive Dedicated Server"): break;
                     case ("Team Fortress 2 Dedicated Server"):
                         {
-                            GameServer.TF2 tf2server = new GameServer.TF2();
+                            GameServer.TF2 tf2server = new GameServer.TF2(serverConfig.ServerID);
                             serverConfig.CreateServerDirectory();
                             serverConfig.CreateWindowsGSMConfig(servergame, servername, GetIPAddress(), GetAvailablePort(tf2server.port), tf2server.defaultmap, tf2server.maxplayers, "");
 

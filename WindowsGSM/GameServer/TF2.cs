@@ -12,26 +12,35 @@ namespace WindowsGSM.GameServer
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
 
-        private string Param { get; set; }
+        private readonly string ServerID;
+
+        private string Param;
         public string Error;
 
         public string port = "27015";
         public string defaultmap = "cp_badlands";
         public string maxplayers = "25";
 
-        public bool CreateServerCFG(string serverid, string hostname, string rcon_password)
-        {
-            string servercfg = MainWindow.WGSM_PATH + @"\servers\" + serverid + @"\serverfiles\tf\cfg\server.cfg";
+        private Process pSteamCMD;
 
-            if (File.Exists(servercfg))
+        public TF2(string serverid)
+        {
+            ServerID = serverid;
+        }
+
+        public bool CreateServerCFG(string hostname, string rcon_password)
+        {
+            string serverConfigPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles\tf\cfg\server.cfg";
+
+            if (File.Exists(serverConfigPath))
             {
                 Error = "server.cfg already exist";
                 return false;
             }
 
-            File.Create(servercfg).Dispose();
+            File.Create(serverConfigPath).Dispose();
 
-            using (TextWriter textwriter = new StreamWriter(servercfg))
+            using (TextWriter textwriter = new StreamWriter(serverConfigPath))
             {
                 textwriter.WriteLine("hostname \"" + hostname + "\"");
                 textwriter.WriteLine("rcon_password \"" + rcon_password + "\"");
@@ -54,13 +63,13 @@ namespace WindowsGSM.GameServer
             Param = "-console -game tf -ip " + ip + " -port " + port + " +map " + map + " -maxplayers " + maxplayers + " +sv_setsteamaccount " + gslt + " " + additional;
         }
 
-        public Process Start(string serverid)
+        public Process Start()
         {
-            string srcds_path = MainWindow.WGSM_PATH + @"\servers\" + serverid + @"\serverfiles\srcds.exe";
+            string srcdsPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles\srcds.exe";
 
-            if (!File.Exists(srcds_path))
+            if (!File.Exists(srcdsPath))
             {
-                Error = "srcds.exe not found (" + srcds_path + ")";
+                Error = "srcds.exe not found (" + srcdsPath + ")";
                 return null;
             }
 
@@ -71,7 +80,7 @@ namespace WindowsGSM.GameServer
             }
 
             Process p = new Process();
-            p.StartInfo.FileName = srcds_path;
+            p.StartInfo.FileName = srcdsPath;
             p.StartInfo.Arguments = Param;
             p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
             p.Start();
@@ -88,24 +97,28 @@ namespace WindowsGSM.GameServer
 
             bool stopped = false;
             int attempt = 0;
-            while (p != null && attempt < 10)
+            while (attempt < 10)
             {
-                if (p.HasExited)
+                if (p != null)
                 {
-                    stopped = true;
-                    break;
+                    if (p.HasExited)
+                    {
+                        stopped = true;
+                        break;
+                    }
                 }
 
                 attempt++;
-                await Task.Delay(1000);
+
+                await Task.Delay(1000).ConfigureAwait(false);
             }
 
             return stopped;
         }
 
-        public async Task<Process> Restart(Process p, string serverid)
+        public async Task<Process> Restart(Process p)
         {
-            if (!await Stop(p))
+            if (!await Stop(p).ConfigureAwait(false))
             {
                 if (!p.HasExited)
                 {
@@ -113,17 +126,15 @@ namespace WindowsGSM.GameServer
                 }
             }
 
-            return Start(serverid);
+            return Start();
         }
 
-        private Process pSteamCMD;
-
-        public async Task<Process> Install(string serverid)
+        public async Task<Process> Install()
         {
-            string serverfiles_path = MainWindow.WGSM_PATH + @"\servers\" + serverid + @"\serverfiles";
+            string serverFilesPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles";
 
-            Installer.SteamCMD steamCMD = new Installer.SteamCMD(serverid);
-            steamCMD.SetParameter(null, null, serverfiles_path, "232250", true);
+            Installer.SteamCMD steamCMD = new Installer.SteamCMD();
+            steamCMD.SetParameter(null, null, serverFilesPath, "232250", true);
 
             bool downloaded = await steamCMD.Download();
             if (!downloaded)
@@ -142,7 +153,7 @@ namespace WindowsGSM.GameServer
             return pSteamCMD;
         }
 
-        public async Task<bool> IsInstallSuccess(string serverid)
+        public async Task<bool> IsInstallSuccess()
         {
             if (pSteamCMD == null)
             {
@@ -151,16 +162,16 @@ namespace WindowsGSM.GameServer
 
             await Task.Run(() => pSteamCMD.WaitForExit());
 
-            string srcdspath = MainWindow.WGSM_PATH + @"\servers\" + serverid + @"\serverfiles\srcds.exe";
+            string srcdspath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles\srcds.exe";
             return File.Exists(srcdspath);
         }
 
-        public async Task<bool> Update(string serverid)
+        public async Task<bool> Update()
         {
-            string serverfiles_path = MainWindow.WGSM_PATH + @"\servers\" + serverid + @"\serverfiles";
+            string serverFilesPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles";
 
-            Installer.SteamCMD steamCMD = new Installer.SteamCMD(serverid);
-            steamCMD.SetParameter(null, null, serverfiles_path, "232250", false);
+            Installer.SteamCMD steamCMD = new Installer.SteamCMD();
+            steamCMD.SetParameter(null, null, serverFilesPath, "232250", false);
 
             bool downloaded = await steamCMD.Download();
             if (!downloaded)
@@ -176,9 +187,10 @@ namespace WindowsGSM.GameServer
                 return false;
             }
 
-            await Task.Run(() => pSteamCMD.WaitForExit());
+            await Task.Run(() => pSteamCMD.WaitForExit()).ConfigureAwait(false);
 
-            return steamCMD.IsSrcdsExist();
+            string srcdspath = serverFilesPath + @"\srcds.exe";
+            return File.Exists(srcdspath);
         }
     }
 }
