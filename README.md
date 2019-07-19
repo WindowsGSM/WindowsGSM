@@ -17,5 +17,11 @@ A Game Server Manager works on Windows Platform
 * 📲 Discord Alert
 * 💌 Allows Import game servers to WindowsGSM
 
+## Supported Game Servers
+|               |   Game Server   |
+| ------------- | --------------- |
+|![logo](https://github.com/BattlefieldDuck/WindowsGSM/blob/master/WindowsGSM/Images/games/gmod.png?raw=true)|Garry's Mod Dedicated Server
+|![logo](https://github.com/BattlefieldDuck/WindowsGSM/blob/master/WindowsGSM/Images/games/tf2.png?raw=true)|Team Fortress 2 Dedicated Server
+
 ## Installation
 Please view the wiki page [Installation](https://github.com/BattlefieldDuck/WindowsGSM/wiki/Installation)
