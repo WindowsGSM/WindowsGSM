@@ -44,6 +44,7 @@ namespace WindowsGSM.Functions.Discord
             string gameicon = @"https://github.com/BattlefieldDuck/WindowsGSM/blob/master/WindowsGSM/Images/";
             switch (servergame)
             {
+                case "Counter-Strike: Global Offensive Dedicated Server": gameicon += @"games/csgo.png?raw=true"; break;
                 case "Garry's Mod Dedicated Server": gameicon += @"games/gmod.png?raw=true"; break;
                 case "Team Fortress 2 Dedicated Server": gameicon += @"games/tf2.png?raw=true"; break;
                 default: gameicon += @"windowsgsm.png?raw=true"; break;
@@ -55,7 +56,7 @@ namespace WindowsGSM.Functions.Discord
             string json = @"
             {
                 ""username"": ""WindowsGSM"",
-                ""avatar_url"": ""https://github.com/BattlefieldDuck/WindowsGSM/blob/master/WindowsGSM/Images/windowsgsm.png?raw=true"",
+                ""avatar_url"": """ + wgsmPath  + @""",
                 ""embeds"": [
                 {
                     ""title"": ""Status (ID: " + serverid + @")"",
@@ -77,7 +78,7 @@ namespace WindowsGSM.Functions.Discord
                     },
                     ""footer"": {
                         ""text"": ""WindowsGSM - Alert"",
-                        ""icon_url"": ""https://github.com/BattlefieldDuck/WindowsGSM/blob/master/WindowsGSM/Images/windowsgsm.png?raw=true""
+                        ""icon_url"": """ + wgsmPath + @"""
                     },
                     ""timestamp"": """ + time + @"""
                 }]
@@ -87,11 +88,18 @@ namespace WindowsGSM.Functions.Discord
 
             using (var httpClient = new HttpClient())
             {
-                var httpResponse = await httpClient.PostAsync(WebhookUrl, content);
-
-                if (httpResponse.Content != null)
+                try
                 {
-                    return true;
+                    var httpResponse = await httpClient.PostAsync(WebhookUrl, content);
+
+                    if (httpResponse.Content != null)
+                    {
+                        return true;
+                    }
+                }
+                catch
+                {
+
                 }
 
                 return false;

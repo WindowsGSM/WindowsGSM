@@ -20,7 +20,7 @@ namespace WindowsGSM.GameServer
         public string port = "27015";
         public string defaultmap = "cp_badlands";
         public string maxplayers = "24";
-        public string additional = "-strictportbind";
+        public string additional = "";
 
         private Process pSteamCMD;
 

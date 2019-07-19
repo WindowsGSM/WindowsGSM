@@ -92,7 +92,22 @@ namespace WindowsGSM
             bool IsInstallSuccess = false;
             switch (servergame)
             {
-                case ("Counter-Strike: Global Offensive Dedicated Server"): break;
+                case ("Counter-Strike: Global Offensive Dedicated Server"):
+                    {
+                        GameServer.CSGO server = new GameServer.CSGO(serverConfig.ServerID);
+                        pInstaller = await server.Install();
+                        IsInstallSuccess = await server.IsInstallSuccess();
+
+                        if (IsInstallSuccess)
+                        {
+                            serverConfig.CreateServerDirectory();
+                            serverConfig.CreateWindowsGSMConfig(servergame, servername, GetIPAddress(), GetAvailablePort(server.port), server.defaultmap, server.maxplayers, "", server.additional);
+
+                            server.CreateServerCFG(servername, GetRCONPassword());
+                        }
+
+                        break;
+                    }
                 case ("Garry's Mod Dedicated Server"):
                     {
                         GameServer.GMOD server = new GameServer.GMOD(serverConfig.ServerID);

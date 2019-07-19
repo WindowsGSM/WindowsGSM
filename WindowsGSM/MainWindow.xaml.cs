@@ -48,10 +48,10 @@ namespace WindowsGSM
             Restoring = 11
         }
 
-        public static readonly string VERSION = "v1.0.1";
+        public static readonly string WGSM_VERSION = "v1.0.2";
         public static readonly int MAX_SERVER = 100;
-        //public static readonly string WGSM_PATH = @"D:\WindowsGSMtest2";
-        public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
+        //public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
+        public static readonly string WGSM_PATH = @"D:\WindowsGSMtest2";
 
         private Install InstallWindow;
         private Import ImportWindow;
@@ -59,6 +59,9 @@ namespace WindowsGSM
         private static readonly ServerStatus[] g_iServerStatus = new ServerStatus[MAX_SERVER + 1];
 
         private static readonly Process[] g_Process = new Process[MAX_SERVER + 1];
+
+        private static readonly string[] g_SteamGSLT = new string[MAX_SERVER + 1];
+        private static readonly string[] g_AdditionalParam = new string[MAX_SERVER + 1];
 
         private static readonly bool[] g_bAutoRestart = new bool[MAX_SERVER + 1];
         private static readonly bool[] g_bUpdateOnStart = new bool[MAX_SERVER + 1];
@@ -70,7 +73,7 @@ namespace WindowsGSM
         {
             InitializeComponent();
 
-            Title = "WindowsGSM - " + VERSION;
+            Title = "WindowsGSM - " + WGSM_VERSION;
 
             //Set All server status to stopped
             for (int i = 0; i < MAX_SERVER; i++)
@@ -154,10 +157,12 @@ namespace WindowsGSM
                 {
                     if (selectedrow.ID == row.ID)
                     {
-                        ServerGrid.SelectedItem = ServerGrid.Items[i-1];
+                        ServerGrid.SelectedItem = row;
                     }
                 }
 
+                g_SteamGSLT[i] = serverConfig.ServerGSLT;
+                g_AdditionalParam[i] = serverConfig.ServerParam;
                 g_bAutoRestart[i] = serverConfig.AutoRestart;
                 g_bUpdateOnStart[i] = serverConfig.UpdateOnStart;
                 g_bDiscordAlert[i] = serverConfig.DiscordAlert;
@@ -253,7 +258,7 @@ namespace WindowsGSM
                     button_servercommand.IsEnabled = false;
                 }
 
-                button_Status.Content = row.Status;
+                button_Status.Content = row.Status.ToUpper();
                 button_Status.Background = (g_iServerStatus[Int32.Parse(row.ID)] == ServerStatus.Started) ? Brushes.LimeGreen : Brushes.Orange;
                 textBox_ServerGame.Text = row.Game;
 
@@ -586,28 +591,41 @@ namespace WindowsGSM
 
             switch (server.Game)
             {
-                case ("Garry's Mod Dedicated Server"):
+                case ("Counter-Strike: Global Offensive Dedicated Server"):
                     {
-                        GameServer.GMOD gmodserver = new GameServer.GMOD(server.ID);
-                        gmodserver.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, "", "");
-                        p = gmodserver.Start();
+                        GameServer.CSGO gameServer = new GameServer.CSGO(server.ID);
+                        gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, g_SteamGSLT[Int32.Parse(server.ID)], g_AdditionalParam[Int32.Parse(server.ID)]);
+                        p = gameServer.Start();
 
                         if (p == null)
                         {
-                            Log(server.ID, "Server: Fail to start [ERROR] " + gmodserver.Error);
+                            Log(server.ID, "Server: Fail to start [ERROR] " + gameServer.Error);
+                        }
+
+                        break;
+                    }
+                case ("Garry's Mod Dedicated Server"):
+                    {
+                        GameServer.GMOD gameServer = new GameServer.GMOD(server.ID);
+                        gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, g_SteamGSLT[Int32.Parse(server.ID)], g_AdditionalParam[Int32.Parse(server.ID)]);
+                        p = gameServer.Start();
+
+                        if (p == null)
+                        {
+                            Log(server.ID, "Server: Fail to start [ERROR] " + gameServer.Error);
                         }
 
                         break;
                     }
                 case ("Team Fortress 2 Dedicated Server"):
                     {
-                        GameServer.TF2 tf2server = new GameServer.TF2(server.ID);
-                        tf2server.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, "", "");
-                        p = tf2server.Start();
+                        GameServer.TF2 gameServer = new GameServer.TF2(server.ID);
+                        gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, g_SteamGSLT[Int32.Parse(server.ID)], g_AdditionalParam[Int32.Parse(server.ID)]);
+                        p = gameServer.Start();
 
                         if (p == null)
                         {
-                            Log(server.ID, "Server: Fail to start [ERROR] " + tf2server.Error);
+                            Log(server.ID, "Server: Fail to start [ERROR] " + gameServer.Error);
                         }
 
                         break;
@@ -675,17 +693,24 @@ namespace WindowsGSM
             bool stopped = false;
             switch (server.Game)
             {
+                case ("Counter-Strike: Global Offensive Dedicated Server"):
+                    {
+                        GameServer.CSGO gameServer = new GameServer.CSGO(server.ID);
+                        stopped = await gameServer.Stop(p);
+
+                        break;
+                    }
                 case ("Garry's Mod Dedicated Server"):
                     {
-                        GameServer.GMOD gmodserver = new GameServer.GMOD(server.ID);
-                        stopped = await gmodserver.Stop(p);
+                        GameServer.GMOD gameServer = new GameServer.GMOD(server.ID);
+                        stopped = await gameServer.Stop(p);
 
                         break;
                     }
                 case ("Team Fortress 2 Dedicated Server"):
                     {
-                        GameServer.TF2 tf2server = new GameServer.TF2(server.ID);
-                        stopped = await tf2server.Stop(p);
+                        GameServer.TF2 gameServer = new GameServer.TF2(server.ID);
+                        stopped = await gameServer.Stop(p);
 
                         break;
                     }
@@ -740,28 +765,41 @@ namespace WindowsGSM
 
             switch (server.Game)
             {
-                case ("Garry's Mod Dedicated Server"):
+                case ("Counter-Strike: Global Offensive Dedicated Server"):
                     {
-                        GameServer.GMOD gmodserver = new GameServer.GMOD(server.ID);
-                        gmodserver.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, "", "");
-                        p = await gmodserver.Restart(p);
+                        GameServer.CSGO gameServer = new GameServer.CSGO(server.ID);
+                        gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, g_SteamGSLT[Int32.Parse(server.ID)], g_AdditionalParam[Int32.Parse(server.ID)]);
+                        p = await gameServer.Restart(p);
 
                         if (p == null)
                         {
-                            Log(server.ID, "Server: Fail to restart [ERROR] " + gmodserver.Error);
+                            Log(server.ID, "Server: Fail to restart [ERROR] " + gameServer.Error);
+                        }
+
+                        break;
+                    }
+                case ("Garry's Mod Dedicated Server"):
+                    {
+                        GameServer.GMOD gameServer = new GameServer.GMOD(server.ID);
+                        gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, g_SteamGSLT[Int32.Parse(server.ID)], g_AdditionalParam[Int32.Parse(server.ID)]);
+                        p = await gameServer.Restart(p);
+
+                        if (p == null)
+                        {
+                            Log(server.ID, "Server: Fail to restart [ERROR] " + gameServer.Error);
                         }
 
                         break;
                     }
                 case ("Team Fortress 2 Dedicated Server"):
                     {
-                        GameServer.TF2 tf2server = new GameServer.TF2(server.ID);
-                        tf2server.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, "", "");
-                        p = await tf2server.Restart(p);
+                        GameServer.TF2 gameServer = new GameServer.TF2(server.ID);
+                        gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, g_SteamGSLT[Int32.Parse(server.ID)], g_AdditionalParam[Int32.Parse(server.ID)]);
+                        p = await gameServer.Restart(p);
 
                         if (p == null)
                         {
-                            Log(server.ID, "Server: Fail to restart [ERROR] " + tf2server.Error);
+                            Log(server.ID, "Server: Fail to restart [ERROR] " + gameServer.Error);
                         }
 
                         break;
@@ -821,26 +859,38 @@ namespace WindowsGSM
             bool updated = false;
             switch (server.Game)
             {
-                case ("Garry's Mod Dedicated Server"):
+                case ("Counter-Strike: Global Offensive Dedicated Server"):
                     {
-                        GameServer.GMOD gmodserver = new GameServer.GMOD(server.ID);
-                        updated = await gmodserver.Update();
+                        GameServer.CSGO gameServer = new GameServer.CSGO(server.ID);
+                        updated = await gameServer.Update();
 
                         if (!updated)
                         {
-                            Log(server.ID, "Server: Fail to update [ERROR] " + gmodserver.Error);
+                            Log(server.ID, "Server: Fail to update [ERROR] " + gameServer.Error);
+                        }
+
+                        break;
+                    }
+                case ("Garry's Mod Dedicated Server"):
+                    {
+                        GameServer.GMOD gameServer = new GameServer.GMOD(server.ID);
+                        updated = await gameServer.Update();
+
+                        if (!updated)
+                        {
+                            Log(server.ID, "Server: Fail to update [ERROR] " + gameServer.Error);
                         }
 
                         break;
                     }
                 case ("Team Fortress 2 Dedicated Server"):
                     {
-                        GameServer.TF2 tf2server = new GameServer.TF2(server.ID);
-                        updated = await tf2server.Update();
+                        GameServer.TF2 gameServer = new GameServer.TF2(server.ID);
+                        updated = await gameServer.Update();
 
                         if (!updated)
                         {
-                            Log(server.ID, "Server: Fail to update [ERROR] " + tf2server.Error);
+                            Log(server.ID, "Server: Fail to update [ERROR] " + gameServer.Error);
                         }
 
                         break;
@@ -963,12 +1013,6 @@ namespace WindowsGSM
         private async Task<bool> GameServer_Delete(Table server)
         {
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped)
-            {
-                return false;
-            }
-
-            MessageBoxResult result = System.Windows.MessageBox.Show("Do you want to delete this server?\n(There is no comeback)", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (result != MessageBoxResult.Yes)
             {
                 return false;
             }
