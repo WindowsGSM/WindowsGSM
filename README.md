@@ -1,10 +1,10 @@
 # WindowsGSM
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/02a105dad6a34de6a15ff1f7fd7ee423)](https://app.codacy.com/app/BattlefieldDuck/WindowsGSM?utm_source=github.com&utm_medium=referral&utm_content=BattlefieldDuck/WindowsGSM&utm_campaign=Badge_Grade_Dashboard)
+[![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/BattlefieldDuck/WindowsGSM/)
 [![Build status](https://ci.appveyor.com/api/projects/status/ttaomnayo3gidf2g?svg=true)](https://ci.appveyor.com/project/BattlefieldDuck/windowsgsm)
-[![GitHub issues](https://img.shields.io/github/issues/BattlefieldDuck/WindowsGSM.svg)](https://github.com/BattlefieldDuck/WindowsGSM/issues)
-[![GitHub forks](https://img.shields.io/github/forks/BattlefieldDuck/WindowsGSM.svg)](https://github.com/BattlefieldDuck/WindowsGSM/network)
-[![GitHub stars](https://img.shields.io/github/stars/BattlefieldDuck/WindowsGSM.svg)](https://github.com/BattlefieldDuck/WindowsGSM/stargazers)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/02a105dad6a34de6a15ff1f7fd7ee423)](https://app.codacy.com/app/BattlefieldDuck/WindowsGSM?utm_source=github.com&utm_medium=referral&utm_content=BattlefieldDuck/WindowsGSM&utm_campaign=Badge_Grade_Dashboard)
 [![GitHub license](https://img.shields.io/github/license/BattlefieldDuck/WindowsGSM.svg)](https://github.com/BattlefieldDuck/WindowsGSM/blob/master/LICENSE)
+[![GitHub release](https://img.shields.io/github/release/BattlefieldDuck/WindowsGSM.svg)](https://github.com/BattlefieldDuck/WindowsGSM/releases/)
+[![Github all releases](https://img.shields.io/github/downloads/BattlefieldDuck/WindowsGSM/total.svg)](https://github.com/BattlefieldDuck/WindowsGSM/releases/)
 
 A Game Server Manager works on Windows Platform
 
@@ -16,6 +16,12 @@ A Game Server Manager works on Windows Platform
 * ⚠️ Server Crash Detection
 * 📲 Discord Alert
 * 💌 Allows Import game servers to WindowsGSM
+
+## Supported Game Servers
+|               |   Game Server   |
+| ------------- | --------------- |
+| ![logo](https://github.com/BattlefieldDuck/WindowsGSM/blob/master/WindowsGSM/Images/games/gmod.png?raw=true) | Garry's Mod Dedicated Server |
+| ![logo](https://github.com/BattlefieldDuck/WindowsGSM/blob/master/WindowsGSM/Images/games/tf2.png?raw=true) | Team Fortress 2 Dedicated Server |
 
 ## Installation
 Please view the wiki page [Installation](https://github.com/BattlefieldDuck/WindowsGSM/wiki/Installation)
