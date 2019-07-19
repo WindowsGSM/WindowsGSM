@@ -169,6 +169,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ServerIcon.resx</DependentUpon>
     </Compile>
+    <Compile Include="GameServer\CSGO.cs" />
     <Compile Include="GameServer\TF2.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ServerTable.cs" />
