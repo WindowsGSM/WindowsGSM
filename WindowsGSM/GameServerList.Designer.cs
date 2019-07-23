@@ -86,5 +86,14 @@ namespace WindowsGSM {
                 return ResourceManager.GetString("3", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Minecraft Pocket Edition Server | PocketMine-MP.
+        /// </summary>
+        internal static string _4 {
+            get {
+                return ResourceManager.GetString("4", resourceCulture);
+            }
+        }
     }
 }

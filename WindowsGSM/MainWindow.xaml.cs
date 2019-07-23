@@ -48,10 +48,10 @@ namespace WindowsGSM
             Restoring = 11
         }
 
-        public static readonly string WGSM_VERSION = "v1.0.2";
+        public static readonly string WGSM_VERSION = "v1.0.3";
         public static readonly int MAX_SERVER = 100;
-        //public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
-        public static readonly string WGSM_PATH = @"D:\WindowsGSMtest2";
+        public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
+        //public static readonly string WGSM_PATH = @"D:\WindowsGSMtest2";
 
         private Install InstallWindow;
         private Import ImportWindow;
@@ -73,7 +73,7 @@ namespace WindowsGSM
         {
             InitializeComponent();
 
-            Title = "WindowsGSM - " + WGSM_VERSION;
+            Title = "WindowsGSM " + WGSM_VERSION;
 
             //Set All server status to stopped
             for (int i = 0; i < MAX_SERVER; i++)
@@ -94,7 +94,7 @@ namespace WindowsGSM
             LoadServerTable();
         }
 
-        private void LoadServerTable()
+        public void LoadServerTable()
         {
             Table selectedrow = (Table)ServerGrid.SelectedItem;
 
@@ -210,7 +210,15 @@ namespace WindowsGSM
 
                 if (!g_Process[i].HasExited)
                 {
-                    g_Process[i].Kill();
+                    SetForegroundWindow(g_Process[i].MainWindowHandle);
+                    SendKeys.SendWait("stop");
+                    SendKeys.SendWait("{ENTER}");
+                    SendKeys.SendWait("{ENTER}");
+
+                    if (!g_Process[i].HasExited)
+                    {
+                        g_Process[i].Kill();
+                    }
                 }
             }
         }
@@ -383,7 +391,7 @@ namespace WindowsGSM
 
         private async void Button_DiscordWebhookTest_Click(object sender, RoutedEventArgs e)
         {
-            Table row = (Table)ServerGrid.SelectedItem;
+           Table row = (Table)ServerGrid.SelectedItem;
             if (row == null)
             {
                 return;
@@ -589,68 +597,40 @@ namespace WindowsGSM
             Log(server.ID, "Action: Start");
             SetServerStatus(server, "Starting");
 
-            switch (server.Game)
-            {
-                case ("Counter-Strike: Global Offensive Dedicated Server"):
-                    {
-                        GameServer.CSGO gameServer = new GameServer.CSGO(server.ID);
-                        gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, g_SteamGSLT[Int32.Parse(server.ID)], g_AdditionalParam[Int32.Parse(server.ID)]);
-                        p = gameServer.Start();
-
-                        if (p == null)
-                        {
-                            Log(server.ID, "Server: Fail to start [ERROR] " + gameServer.Error);
-                        }
-
-                        break;
-                    }
-                case ("Garry's Mod Dedicated Server"):
-                    {
-                        GameServer.GMOD gameServer = new GameServer.GMOD(server.ID);
-                        gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, g_SteamGSLT[Int32.Parse(server.ID)], g_AdditionalParam[Int32.Parse(server.ID)]);
-                        p = gameServer.Start();
-
-                        if (p == null)
-                        {
-                            Log(server.ID, "Server: Fail to start [ERROR] " + gameServer.Error);
-                        }
-
-                        break;
-                    }
-                case ("Team Fortress 2 Dedicated Server"):
-                    {
-                        GameServer.TF2 gameServer = new GameServer.TF2(server.ID);
-                        gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, g_SteamGSLT[Int32.Parse(server.ID)], g_AdditionalParam[Int32.Parse(server.ID)]);
-                        p = gameServer.Start();
-
-                        if (p == null)
-                        {
-                            Log(server.ID, "Server: Fail to start [ERROR] " + gameServer.Error);
-                        }
-
-                        break;
-                    }
-                case ("Minecraft Server"): break;
-                default: p = null; break;
-            }
-
+            GameServerAction gameServerAction = new GameServerAction(server, g_SteamGSLT[Int32.Parse(server.ID)], g_AdditionalParam[Int32.Parse(server.ID)]);
+            p = gameServerAction.Start();
+            
             Activate();
 
             //Fail to start
             if (p == null)
             {
                 g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
+                Log(server.ID, "Server: Fail to start [ERROR] " + gameServerAction.Error);
                 SetServerStatus(server, "Stopped");
                 return;
             }
 
             g_Process[Int32.Parse(server.ID)] = p;
 
-            await Task.Run(() => p.WaitForInputIdle());
+            if (p.MainWindowHandle != IntPtr.Zero)
+            {
+                await Task.Run(() => p.WaitForInputIdle());
+            }
+            else
+            {
+                await Task.Delay(1000);
+            }
 
             //An error may occur on ShowWindow if not adding this 
             if (p.HasExited)
             {
+                g_Process[Int32.Parse(server.ID)] = null;
+
+                g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
+                Log(server.ID, "Server: Fail to start [ERROR] " + gameServerAction.Error);
+                SetServerStatus(server, "Stopped");
+
                 return;
             }
 
@@ -689,47 +669,13 @@ namespace WindowsGSM
 
             g_Process[Int32.Parse(server.ID)] = null;
 
-            //Shut down server peacefully
-            bool stopped = false;
-            switch (server.Game)
-            {
-                case ("Counter-Strike: Global Offensive Dedicated Server"):
-                    {
-                        GameServer.CSGO gameServer = new GameServer.CSGO(server.ID);
-                        stopped = await gameServer.Stop(p);
-
-                        break;
-                    }
-                case ("Garry's Mod Dedicated Server"):
-                    {
-                        GameServer.GMOD gameServer = new GameServer.GMOD(server.ID);
-                        stopped = await gameServer.Stop(p);
-
-                        break;
-                    }
-                case ("Team Fortress 2 Dedicated Server"):
-                    {
-                        GameServer.TF2 gameServer = new GameServer.TF2(server.ID);
-                        stopped = await gameServer.Stop(p);
-
-                        break;
-                    }
-                case ("Minecraft Server"): break;
-                default: stopped = true; break;
-            }
-
-            //Force shut down server
-            if (stopped)
+            GameServerAction gameServerAction = new GameServerAction(server);
+            if (await gameServerAction.Stop(p))
             {
                 Log(server.ID, "Server: Stopped");
             }
             else
             {
-                if (!p.HasExited)
-                {
-                    p.Kill();
-                }
-
                 Log(server.ID, "Server: Stopped [NOTICE] Server fail to stop peacefully");
             }
 
@@ -763,50 +709,8 @@ namespace WindowsGSM
             Log(server.ID, "Action: Restart");
             SetServerStatus(server, "Restarting");
 
-            switch (server.Game)
-            {
-                case ("Counter-Strike: Global Offensive Dedicated Server"):
-                    {
-                        GameServer.CSGO gameServer = new GameServer.CSGO(server.ID);
-                        gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, g_SteamGSLT[Int32.Parse(server.ID)], g_AdditionalParam[Int32.Parse(server.ID)]);
-                        p = await gameServer.Restart(p);
-
-                        if (p == null)
-                        {
-                            Log(server.ID, "Server: Fail to restart [ERROR] " + gameServer.Error);
-                        }
-
-                        break;
-                    }
-                case ("Garry's Mod Dedicated Server"):
-                    {
-                        GameServer.GMOD gameServer = new GameServer.GMOD(server.ID);
-                        gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, g_SteamGSLT[Int32.Parse(server.ID)], g_AdditionalParam[Int32.Parse(server.ID)]);
-                        p = await gameServer.Restart(p);
-
-                        if (p == null)
-                        {
-                            Log(server.ID, "Server: Fail to restart [ERROR] " + gameServer.Error);
-                        }
-
-                        break;
-                    }
-                case ("Team Fortress 2 Dedicated Server"):
-                    {
-                        GameServer.TF2 gameServer = new GameServer.TF2(server.ID);
-                        gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, g_SteamGSLT[Int32.Parse(server.ID)], g_AdditionalParam[Int32.Parse(server.ID)]);
-                        p = await gameServer.Restart(p);
-
-                        if (p == null)
-                        {
-                            Log(server.ID, "Server: Fail to restart [ERROR] " + gameServer.Error);
-                        }
-
-                        break;
-                    }
-                case ("Minecraft Server"): break;
-                default: p = null; break;
-            }
+            GameServerAction gameServerAction = new GameServerAction(server, g_SteamGSLT[Int32.Parse(server.ID)], g_AdditionalParam[Int32.Parse(server.ID)]);
+            p = await gameServerAction.Restart(p);
 
             Activate();
 
@@ -814,6 +718,7 @@ namespace WindowsGSM
             if (p == null)
             {
                 g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
+                Log(server.ID, "Server: Fail to restart [ERROR] " + gameServerAction.Error);
                 SetServerStatus(server, "Stopped");
 
                 return;
@@ -821,11 +726,24 @@ namespace WindowsGSM
 
             g_Process[Int32.Parse(server.ID)] = p;
 
-            await Task.Run(() => p.WaitForInputIdle());
+            if (p.MainWindowHandle != IntPtr.Zero)
+            {
+                await Task.Run(() => p.WaitForInputIdle());
+            }
+            else
+            {
+                await Task.Delay(1000);
+            }
 
             //An error may occur on ShowWindow if not adding this 
             if (p.HasExited)
             {
+                g_Process[Int32.Parse(server.ID)] = null;
+
+                g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
+                Log(server.ID, "Server: Fail to restart [ERROR] " + gameServerAction.Error);
+                SetServerStatus(server, "Stopped");
+
                 return;
             }
 
@@ -856,54 +774,18 @@ namespace WindowsGSM
             Log(server.ID, "Action: Update");
             SetServerStatus(server, "Updating");
 
-            bool updated = false;
-            switch (server.Game)
-            {
-                case ("Counter-Strike: Global Offensive Dedicated Server"):
-                    {
-                        GameServer.CSGO gameServer = new GameServer.CSGO(server.ID);
-                        updated = await gameServer.Update();
-
-                        if (!updated)
-                        {
-                            Log(server.ID, "Server: Fail to update [ERROR] " + gameServer.Error);
-                        }
-
-                        break;
-                    }
-                case ("Garry's Mod Dedicated Server"):
-                    {
-                        GameServer.GMOD gameServer = new GameServer.GMOD(server.ID);
-                        updated = await gameServer.Update();
-
-                        if (!updated)
-                        {
-                            Log(server.ID, "Server: Fail to update [ERROR] " + gameServer.Error);
-                        }
-
-                        break;
-                    }
-                case ("Team Fortress 2 Dedicated Server"):
-                    {
-                        GameServer.TF2 gameServer = new GameServer.TF2(server.ID);
-                        updated = await gameServer.Update();
-
-                        if (!updated)
-                        {
-                            Log(server.ID, "Server: Fail to update [ERROR] " + gameServer.Error);
-                        }
-
-                        break;
-                    }
-                case ("Minecraft Server"): break;
-                default: updated = false; break;
-            }
+            GameServerAction gameServerAction = new GameServerAction(server);
+            bool updated = await gameServerAction.Update();
 
             Activate();
 
             if (updated)
             {
-                Log(server.ID, "Action: Updated");
+                Log(server.ID, "Server: Updated");
+            }
+            else
+            {
+                Log(server.ID, "Server: Fail to update [ERROR] " + gameServerAction.Error);
             }
 
             g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
@@ -935,7 +817,17 @@ namespace WindowsGSM
 
             if (File.Exists(zipFile))
             {
-                File.Delete(zipFile);
+                await Task.Run(() =>
+                {
+                    try
+                    {
+                        File.Delete(zipFile);
+                    }
+                    catch
+                    {
+
+                    }
+                });
 
                 if (File.Exists(zipFile))
                 {
@@ -984,11 +876,19 @@ namespace WindowsGSM
 
             if (Directory.Exists(extractPath))
             {
-                try
+                await Task.Run(() =>
                 {
-                    await Task.Run(() => Directory.Delete(extractPath, true));
-                }
-                catch
+                    try
+                    {
+                        Directory.Delete(extractPath, true);
+                    }
+                    catch
+                    {
+
+                    }
+                });
+
+                if (Directory.Exists(extractPath))
                 {
                     Log(server.ID, "Server: Fail to restore backup [ERROR] Extract path is not accessible");
 
@@ -1020,11 +920,19 @@ namespace WindowsGSM
             string serverPath = WGSM_PATH + @"\servers\" + server.ID;
             if (Directory.Exists(serverPath))
             {
-                try
+                await Task.Run(() =>
                 {
-                    await Task.Run(() => Directory.Delete(serverPath, true));
-                }
-                catch
+                    try
+                    {
+                        Directory.Delete(serverPath, true);
+                    }
+                    catch
+                    {
+
+                    }
+                });
+
+                if (Directory.Exists(serverPath))
                 {
                     Log(server.ID, "Server: Fail to delete server [ERROR] Directory is not accessible");
 
@@ -1246,6 +1154,11 @@ namespace WindowsGSM
             {
                 Process.Start(path);
             }
+        }
+
+        private void Button_Github_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("https://github.com/BattlefieldDuck/WindowsGSM");
         }
     }
 }

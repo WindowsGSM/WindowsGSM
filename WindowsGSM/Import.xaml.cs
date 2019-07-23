@@ -16,6 +16,7 @@ namespace WindowsGSM
     {
         //Get ServerID for this import
         private readonly Functions.ServerConfig serverConfig = new Functions.ServerConfig(null);
+        private readonly GameServerAction gameServerAction;
 
         private Process pImporter;
 
@@ -33,6 +34,8 @@ namespace WindowsGSM
             }
 
             Title = "WindowsGSM - Import (ID: " + serverConfig.ServerID + ")";
+
+            gameServerAction = new GameServerAction(serverConfig);
         }
 
         private async void Button_Import_Click(object sender, RoutedEventArgs e)
@@ -75,34 +78,29 @@ namespace WindowsGSM
             string servername = textbox_name.Text;
             string servergame = selectedgame.Name;
 
-            //Check is the path contain game server files
-            switch (servergame)
+            if (!gameServerAction.CanImport(servergame, textbox_ServerDir.Text))
             {
-                case ("Counter-Strike: Global Offensive Dedicated Server"):
-                case ("Garry's Mod Dedicated Server"):
-                case ("Team Fortress 2 Dedicated Server"):
-                    {
-                        string srcdsPath = textbox_ServerDir.Text + @"\srcds.exe";
-                        if (!File.Exists(srcdsPath))
-                        {
-                            label_ServerDirWarn.Content = "Invalid Path! Fail to find srcds.exe";
+                label_ServerDirWarn.Content = gameServerAction.Error;
 
-                            return;
-                        }
-
-                        break;
-                    }
-                case ("Minecraft Server"): break;
+                return;
             }
 
             string installPath = MainWindow.WGSM_PATH + @"\servers\" + serverConfig.ServerID + @"\serverfiles";
             if (Directory.Exists(installPath))
             {
-                try
+                await Task.Run(() =>
                 {
-                    Directory.Delete(installPath, true);
-                }
-                catch
+                    try
+                    {
+                        Directory.Delete(installPath, true);
+                    }
+                    catch
+                    {
+
+                    }
+                });
+
+                if (Directory.Exists(installPath))
                 {
                     System.Windows.Forms.MessageBox.Show(installPath + " is not accessible!", "ERROR", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                     return;
@@ -157,34 +155,7 @@ namespace WindowsGSM
 
             if (isImportSuccess)
             {
-                switch (servergame)
-                {
-                    case ("Counter-Strike: Global Offensive Dedicated Server"):
-                        {
-                            GameServer.CSGO server = new GameServer.CSGO(serverConfig.ServerID);
-                            serverConfig.CreateServerDirectory();
-                            serverConfig.CreateWindowsGSMConfig(servergame, servername, GetIPAddress(), GetAvailablePort(server.port), server.defaultmap, server.maxplayers, "", server.additional);
-
-                            break;
-                        }
-                    case ("Garry's Mod Dedicated Server"):
-                        {
-                            GameServer.GMOD server = new GameServer.GMOD(serverConfig.ServerID);
-                            serverConfig.CreateServerDirectory();
-                            serverConfig.CreateWindowsGSMConfig(servergame, servername, GetIPAddress(), GetAvailablePort(server.port), server.defaultmap, server.maxplayers, "", server.additional);
-
-                            break;
-                        }
-                    case ("Team Fortress 2 Dedicated Server"):
-                        {
-                            GameServer.TF2 server = new GameServer.TF2(serverConfig.ServerID);
-                            serverConfig.CreateServerDirectory();
-                            serverConfig.CreateWindowsGSMConfig(servergame, servername, GetIPAddress(), GetAvailablePort(server.port), server.defaultmap, server.maxplayers, "", server.additional);
-
-                            break;
-                        }
-                    case ("Minecraft Server"): break;
-                }
+                gameServerAction.CreateServerConfigs(servergame, servername, false);
 
                 MainWindow WindowsGSM = (MainWindow)System.Windows.Application.Current.MainWindow;
 
@@ -201,7 +172,7 @@ namespace WindowsGSM
                     Maxplayers = serverConfig.ServerMaxPlayer
                 };
                 WindowsGSM.ServerGrid.Items.Add(row);
-
+                WindowsGSM.LoadServerTable();
                 WindowsGSM.Log(serverConfig.ServerID, "Import: Success");
 
                 Close();
@@ -228,48 +199,6 @@ namespace WindowsGSM
             {
                 textbox_ServerDir.Text = folderBrowserDialog.SelectedPath;
             }
-        }
-
-        private static string GetIPAddress()
-        {
-            using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
-            {
-                socket.Connect("8.8.8.8", 65530);
-                IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
-                return endPoint.Address.ToString();
-            }
-        }
-
-        private static string GetAvailablePort(string defaultport)
-        {
-            MainWindow WindowsGSM = (MainWindow)System.Windows.Application.Current.MainWindow;
-
-            int[] portlist = new int[WindowsGSM.ServerGrid.Items.Count];
-
-            for (int i = 0; i < WindowsGSM.ServerGrid.Items.Count; i++)
-            {
-                Table row = WindowsGSM.ServerGrid.Items[i] as Table;
-                portlist[i] = Int32.Parse((string.IsNullOrWhiteSpace(row.Port)) ? "0" : row.Port);
-            }
-
-            Array.Sort(portlist);
-
-            int port = Int32.Parse(defaultport);
-            for (int i = 0; i < WindowsGSM.ServerGrid.Items.Count; i++)
-            {
-                if (port == portlist[i])
-                {
-                    port++;
-                }
-
-                //SourceTV port 27020
-                if (port == 27020)
-                {
-                    port++;
-                }
-            }
-
-            return port.ToString();
         }
     }
 }

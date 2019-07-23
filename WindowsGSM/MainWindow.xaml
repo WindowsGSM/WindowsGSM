@@ -6,7 +6,16 @@
         xmlns:local="clr-namespace:WindowsGSM"
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         mc:Ignorable="d"
-        Title="WindowsGSM" Height="540" Width="960" Icon="Images\windowsgsm.ico" ResizeMode="CanResizeWithGrip" MinHeight="540" MinWidth="960" Closing="Window_Closing">
+        Title="WindowsGSM" 
+        Height="540" 
+        Width="960" 
+        Icon="Images\windowsgsm.ico" ResizeMode="CanResizeWithGrip" MinHeight="540" MinWidth="960" Closing="Window_Closing" GlowBrush="{DynamicResource AccentColorBrush}" WindowStartupLocation="CenterScreen">
+
+    <Controls:MetroWindow.RightWindowCommands>
+        <Controls:WindowCommands>
+            <Button x:Name="button_Github" Content="Github" Click="Button_Github_Click"/>
+        </Controls:WindowCommands>
+    </Controls:MetroWindow.RightWindowCommands>
 
     <DockPanel Name="dp">
         <Menu x:Name="menu" Height="30" DockPanel.Dock="Top">

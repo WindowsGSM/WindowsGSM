@@ -104,7 +104,7 @@
     </Reference>
     <Reference Include="MahApps.Metro, Version=1.6.5.1, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MahApps.Metro.1.6.5\lib\net47\MahApps.Metro.dll</HintPath>
-      <Private>False</Private>
+      <Private>True</Private>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
@@ -150,7 +150,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Functions\Discord\Webhook.cs" />
+    <Compile Include="GameServerAction.cs" />
     <Compile Include="GameServer\GMOD.cs" />
+    <Compile Include="GameServer\MCPE.cs" />
     <Compile Include="Import.xaml.cs">
       <DependentUpon>Import.xaml</DependentUpon>
     </Compile>
@@ -263,6 +265,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\games\gmod.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\games\mcpe.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

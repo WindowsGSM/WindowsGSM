@@ -126,4 +126,7 @@
   <data name="3" xml:space="preserve">
     <value>Team Fortress 2 Dedicated Server</value>
   </data>
+  <data name="4" xml:space="preserve">
+    <value>Minecraft Pocket Edition Server | PocketMine-MP</value>
+  </data>
 </root>

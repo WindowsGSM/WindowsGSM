@@ -79,6 +79,15 @@ namespace WindowsGSM.Images {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to /WindowsGSM;component/Images/games/mcpe.png.
+        /// </summary>
+        public static string Minecraft_Pocket_Edition_Server___PocketMine_MP {
+            get {
+                return ResourceManager.GetString("Minecraft Pocket Edition Server | PocketMine-MP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to /WindowsGSM;component/Images/games/tf2.png.
         /// </summary>
         public static string Team_Fortress_2_Dedicated_Server {

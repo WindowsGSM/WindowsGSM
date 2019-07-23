@@ -22,8 +22,6 @@ namespace WindowsGSM.GameServer
         public string maxplayers = "24";
         public string additional = "-tickrate 66 +gamemode sandbox +host_workshop_collection";
 
-        private Process pSteamCMD;
-
         public GMOD(string serverid)
         {
             ServerID = serverid;
@@ -106,19 +104,6 @@ namespace WindowsGSM.GameServer
             return stopped;
         }
 
-        public async Task<Process> Restart(Process p)
-        {
-            if (!await Stop(p))
-            {
-                if (!p.HasExited)
-                {
-                    p.Kill();
-                }
-            }
-
-            return Start();
-        }
-
         public async Task<Process> Install()
         {
             string serverFilesPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles";
@@ -126,14 +111,13 @@ namespace WindowsGSM.GameServer
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
             steamCMD.SetParameter(null, null, serverFilesPath, "4020", true);
 
-            bool downloaded = await steamCMD.Download();
-            if (!downloaded)
+            if (!await steamCMD.Download())
             {
                 Error = steamCMD.GetError();
                 return null;
             }
 
-            pSteamCMD = steamCMD.Run();
+            Process pSteamCMD = steamCMD.Run();
             if (pSteamCMD == null)
             {
                 Error = steamCMD.GetError();
@@ -143,19 +127,6 @@ namespace WindowsGSM.GameServer
             return pSteamCMD;
         }
 
-        public async Task<bool> IsInstallSuccess()
-        {
-            if (pSteamCMD == null)
-            {
-                return false;
-            }
-
-            await Task.Run(() => pSteamCMD.WaitForExit());
-
-            string srcdspath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles\srcds.exe";
-            return File.Exists(srcdspath);
-        }
-
         public async Task<bool> Update()
         {
             string serverFilesPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles";
@@ -163,14 +134,13 @@ namespace WindowsGSM.GameServer
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
             steamCMD.SetParameter(null, null, serverFilesPath, "4020", false);
 
-            bool downloaded = await steamCMD.Download();
-            if (!downloaded)
+            if (!await steamCMD.Download())
             {
                 Error = steamCMD.GetError();
                 return false;
             }
 
-            pSteamCMD = steamCMD.Run();
+            Process pSteamCMD = steamCMD.Run();
             if (pSteamCMD == null)
             {
                 Error = steamCMD.GetError();
@@ -179,8 +149,8 @@ namespace WindowsGSM.GameServer
 
             await Task.Run(() => pSteamCMD.WaitForExit());
 
-            string srcdspath = serverFilesPath + @"\srcds.exe";
-            return File.Exists(srcdspath);
+            Error = "Exit code: " + pSteamCMD.ExitCode.ToString();
+            return false;
         }
     }
 }
