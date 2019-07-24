@@ -10,6 +10,8 @@ using System.IO.Compression;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using Microsoft.Win32;
+using MahApps.Metro;
 using MahApps.Metro.Controls;
 
 namespace WindowsGSM
@@ -48,7 +50,7 @@ namespace WindowsGSM
             Restoring = 11
         }
 
-        public static readonly string WGSM_VERSION = "v1.0.3";
+        public static readonly string WGSM_VERSION = "v1.0.4";
         public static readonly int MAX_SERVER = 100;
         public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
         //public static readonly string WGSM_PATH = @"D:\WindowsGSMtest2";
@@ -74,6 +76,30 @@ namespace WindowsGSM
             InitializeComponent();
 
             Title = "WindowsGSM " + WGSM_VERSION;
+
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM");
+            if (key == null)
+            {
+                key = Registry.CurrentUser.CreateSubKey(@"SOFTWARE\WindowsGSM");
+                key.SetValue("HardWareAcceleration", "True");
+                key.SetValue("UIAnimation", "True");
+                key.SetValue("DarkTheme", "False");
+
+                MahAppSwitch_HardWareAcceleration.IsChecked = true;
+                MahAppSwitch_UIAnimation.IsChecked = true;
+                MahAppSwitch_DarkTheme.IsChecked = false;
+            }
+            else
+            {
+                MahAppSwitch_HardWareAcceleration.IsChecked = ((key.GetValue("HardWareAcceleration") ?? false).ToString() == "True") ? true : false;
+                MahAppSwitch_UIAnimation.IsChecked = ((key.GetValue("UIAnimation") ?? false).ToString() == "True") ? true : false;
+                MahAppSwitch_DarkTheme.IsChecked = ((key.GetValue("DarkTheme") ?? false).ToString() == "True") ? true : false;
+            }
+            key.Close();
+
+            RenderOptions.ProcessRenderMode = (MahAppSwitch_HardWareAcceleration.IsChecked ?? false) ? System.Windows.Interop.RenderMode.SoftwareOnly : System.Windows.Interop.RenderMode.Default;
+            WindowTransitionsEnabled = MahAppSwitch_UIAnimation.IsChecked ?? false;
+            ThemeManager.ChangeAppTheme(App.Current, (MahAppSwitch_DarkTheme.IsChecked ?? false) ? "BaseDark" : "BaseLight");
 
             //Set All server status to stopped
             for (int i = 0; i < MAX_SERVER; i++)
@@ -1159,6 +1185,50 @@ namespace WindowsGSM
         private void Button_Github_Click(object sender, RoutedEventArgs e)
         {
             Process.Start("https://github.com/BattlefieldDuck/WindowsGSM");
+        }
+
+        private void Button_Settings_Click(object sender, RoutedEventArgs e)
+        {
+            this.RightWindowCommandsOverlayBehavior = WindowCommandsOverlayBehavior.HiddenTitleBar;
+            this.WindowButtonCommandsOverlayBehavior = WindowCommandsOverlayBehavior.HiddenTitleBar;
+
+            MahAppFlyout.IsOpen = !MahAppFlyout.IsOpen;
+        }
+
+        private void HardWareAcceleration_IsCheckedChanged(object sender, EventArgs e)
+        {
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
+            if (key != null)
+            {
+                key.SetValue("HardWareAcceleration", (MahAppSwitch_HardWareAcceleration.IsChecked ?? false).ToString());
+                key.Close();
+            }
+
+            RenderOptions.ProcessRenderMode = (MahAppSwitch_HardWareAcceleration.IsChecked ?? false) ? System.Windows.Interop.RenderMode.SoftwareOnly : System.Windows.Interop.RenderMode.Default;
+        }
+
+        private void UIAnimation_IsCheckedChanged(object sender, EventArgs e)
+        {
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
+            if (key != null)
+            {
+                key.SetValue("UIAnimation", (MahAppSwitch_UIAnimation.IsChecked ?? false).ToString());
+                key.Close();
+            }
+
+            WindowTransitionsEnabled = MahAppSwitch_UIAnimation.IsChecked ?? false;
+        }
+
+        private void DarkTheme_IsCheckedChanged(object sender, EventArgs e)
+        {
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
+            if (key != null)
+            {
+                key.SetValue("DarkTheme", (MahAppSwitch_DarkTheme.IsChecked ?? false).ToString());
+                key.Close();
+            }
+
+            ThemeManager.ChangeAppTheme(App.Current, (MahAppSwitch_DarkTheme.IsChecked ?? false) ? "BaseDark" : "BaseLight");
         }
     }
 }

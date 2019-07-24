@@ -9,13 +9,32 @@
         Title="WindowsGSM" 
         Height="540" 
         Width="960" 
-        Icon="Images\windowsgsm.ico" ResizeMode="CanResizeWithGrip" MinHeight="540" MinWidth="960" Closing="Window_Closing" GlowBrush="{DynamicResource AccentColorBrush}" WindowStartupLocation="CenterScreen">
+        Icon="Images\windowsgsm.ico"
+        ResizeMode="CanResizeWithGrip"
+        MinHeight="540"
+        MinWidth="960"
+        Closing="Window_Closing"
+        GlowBrush="{DynamicResource AccentColorBrush}"
+        WindowStartupLocation="CenterScreen">
 
     <Controls:MetroWindow.RightWindowCommands>
         <Controls:WindowCommands>
             <Button x:Name="button_Github" Content="Github" Click="Button_Github_Click"/>
+            <Button x:Name="button_Settings" Content="Settings" Click="Button_Settings_Click"/>
         </Controls:WindowCommands>
     </Controls:MetroWindow.RightWindowCommands>
+
+    <Controls:MetroWindow.Flyouts>
+        <Controls:FlyoutsControl>
+            <Controls:Flyout x:Name="MahAppFlyout" Header="Settings" Position="Right" Width="250" Theme="Accent">
+                <StackPanel>
+                    <Controls:ToggleSwitch x:Name="MahAppSwitch_HardWareAcceleration" Header="Hardware Acceleration" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="HardWareAcceleration_IsCheckedChanged"/>
+                    <Controls:ToggleSwitch x:Name="MahAppSwitch_UIAnimation" Header="UI Animation" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="UIAnimation_IsCheckedChanged"/>
+                    <Controls:ToggleSwitch x:Name="MahAppSwitch_DarkTheme" Header="Dark Theme" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="DarkTheme_IsCheckedChanged"/>
+                </StackPanel>
+            </Controls:Flyout>
+        </Controls:FlyoutsControl>
+    </Controls:MetroWindow.Flyouts>
 
     <DockPanel Name="dp">
         <Menu x:Name="menu" Height="30" DockPanel.Dock="Top">

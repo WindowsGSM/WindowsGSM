@@ -47,6 +47,7 @@ namespace WindowsGSM.Functions.Discord
                 case "Counter-Strike: Global Offensive Dedicated Server": gameicon += @"games/csgo.png?raw=true"; break;
                 case "Garry's Mod Dedicated Server": gameicon += @"games/gmod.png?raw=true"; break;
                 case "Team Fortress 2 Dedicated Server": gameicon += @"games/tf2.png?raw=true"; break;
+                case "Minecraft Pocket Edition Server | PocketMine-MP": gameicon += @"games/mcpe.png?raw=true"; break;
                 default: gameicon += @"windowsgsm.png?raw=true"; break;
             }
 
