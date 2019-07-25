@@ -6,15 +6,16 @@
 [![GitHub release](https://img.shields.io/github/release/BattlefieldDuck/WindowsGSM.svg)](https://github.com/BattlefieldDuck/WindowsGSM/releases/)
 [![Github all releases](https://img.shields.io/github/downloads/BattlefieldDuck/WindowsGSM/total.svg)](https://github.com/BattlefieldDuck/WindowsGSM/releases/)
 
-![Screenshot](https://windowsgsm.battlefieldduck.com/screenshot/WindowsGSM_border.png)
+![Screenshot](https://windowsgsm.battlefieldduck.com/screenshot/2019-07-26.png)
 
 ## 🎮 Supported Game Servers
 |               |   Game Server   |
 | ------------- | --------------- |
-| ![logo](WindowsGSM/Images/games/csgo.png?raw=true) | Counter-Strike: Global Offensive Dedicated Server       |
-| ![logo](WindowsGSM/Images/games/gmod.png?raw=true) | Garry's Mod Dedicated Server                            |
-| ![logo](WindowsGSM/Images/games/tf2.png?raw=true)  | Team Fortress 2 Dedicated Server                        |
-| ![logo](WindowsGSM/Images/games/mcpe.png?raw=true)  | Minecraft Pocket Edition Server (PocketMine-MP)         |
+| ![logo](WindowsGSM/Images/games/csgo.png?raw=true) | Counter-Strike: Global Offensive Dedicated Server |
+| ![logo](WindowsGSM/Images/games/gmod.png?raw=true) | Garry's Mod Dedicated Server                      |
+| ![logo](WindowsGSM/Images/games/rust.png?raw=true) | Rust Dedicated Server                             |
+| ![logo](WindowsGSM/Images/games/tf2.png?raw=true)  | Team Fortress 2 Dedicated Server                  |
+| ![logo](WindowsGSM/Images/games/mcpe.png?raw=true) | Minecraft Pocket Edition Server (PocketMine-MP)   |
 
 ## ⭐ Features
 * 📥 One Click Installation
