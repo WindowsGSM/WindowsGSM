@@ -88,6 +88,15 @@ namespace WindowsGSM.Images {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to /WindowsGSM;component/Images/games/rust.png.
+        /// </summary>
+        public static string Rust_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Rust Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to /WindowsGSM;component/Images/games/tf2.png.
         /// </summary>
         public static string Team_Fortress_2_Dedicated_Server {

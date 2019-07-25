@@ -9,11 +9,12 @@ namespace WindowsGSM
 {
     class GameServerAction
     {
-        private readonly Table server;
+        private readonly GameServerTable server;
         private readonly string gslt = "";
         private readonly string additionalParam = "";
         private readonly Functions.ServerConfig serverConfig;
         public string Error;
+        public string Notice;
 
         //Install, Import
         public GameServerAction(Functions.ServerConfig serverConfig)
@@ -22,13 +23,13 @@ namespace WindowsGSM
         }
 
         //Stop, Update
-        public GameServerAction(Table server)
+        public GameServerAction(GameServerTable server)
         {
             this.server = server;
         }
 
         //Start, Restart
-        public GameServerAction(Table server, string gslt, string additionalParam)
+        public GameServerAction(GameServerTable server, string gslt, string additionalParam)
         {
             this.server = server;
             this.gslt = gslt;
@@ -47,6 +48,7 @@ namespace WindowsGSM
                         gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, gslt, additionalParam);
                         process = gameServer.Start();
                         Error = gameServer.Error;
+                        Notice = gameServer.Notice;
                         break;
                     }
                 case ("Garry's Mod Dedicated Server"):
@@ -55,6 +57,7 @@ namespace WindowsGSM
                         gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, gslt, additionalParam);
                         process = gameServer.Start();
                         Error = gameServer.Error;
+                        Notice = gameServer.Notice;
                         break;
                     }
                 case ("Team Fortress 2 Dedicated Server"):
@@ -63,6 +66,7 @@ namespace WindowsGSM
                         gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, gslt, additionalParam);
                         process = gameServer.Start();
                         Error = gameServer.Error;
+                        Notice = gameServer.Notice;
                         break;
                     }
                 case ("Minecraft Pocket Edition Server | PocketMine-MP"):
@@ -70,11 +74,21 @@ namespace WindowsGSM
                         GameServer.MCPE gameServer = new GameServer.MCPE(server.ID);
                         process = gameServer.Start();
                         Error = gameServer.Error;
+                        Notice = gameServer.Notice;
+                        break;
+                    }
+                case ("Rust Dedicated Server"):
+                    {
+                        GameServer.RUST gameServer = new GameServer.RUST(server.ID);
+                        gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers);
+                        process = gameServer.Start();
+                        Error = gameServer.Error;
+                        Notice = gameServer.Notice;
                         break;
                     }
                 default: break;
             }
-            
+
             return process;
         }
 
@@ -108,6 +122,13 @@ namespace WindowsGSM
                 case ("Minecraft Pocket Edition Server | PocketMine-MP"):
                     {
                         GameServer.MCPE gameServer = new GameServer.MCPE(server.ID);
+                        stopped = await gameServer.Stop(process);
+
+                        break;
+                    }
+                case ("Rust Dedicated Server"):
+                    {
+                        GameServer.RUST gameServer = new GameServer.RUST(server.ID);
                         stopped = await gameServer.Stop(process);
 
                         break;
@@ -162,6 +183,11 @@ namespace WindowsGSM
 
                         return null;
                     }
+                case ("Rust Dedicated Server"):
+                    {
+                        GameServer.RUST gameServer = new GameServer.RUST(serverConfig.ServerID);
+                        return await gameServer.Install();
+                    }
                 default: break;
             }
 
@@ -206,6 +232,18 @@ namespace WindowsGSM
 
                         return false;
                     }
+                case ("Rust Dedicated Server"):
+                    {
+                        string rustPath = MainWindow.WGSM_PATH + @"\servers\" + serverConfig.ServerID + @"\serverfiles\RustDedicated.exe";
+                        if (File.Exists(rustPath))
+                        {
+                            CreateServerConfigs(serverGame, serverName, true);
+
+                            return true;
+                        }
+
+                        return false;
+                    }
             }
 
             return false;
@@ -241,6 +279,13 @@ namespace WindowsGSM
                 case ("Minecraft Pocket Edition Server | PocketMine-MP"):
                     {
                         GameServer.MCPE gameServer = new GameServer.MCPE(server.ID);
+                        updated = await gameServer.Update();
+                        Error = gameServer.Error;
+                        break;
+                    }
+                case ("Rust Dedicated Server"):
+                    {
+                        GameServer.RUST gameServer = new GameServer.RUST(server.ID);
                         updated = await gameServer.Update();
                         Error = gameServer.Error;
                         break;
@@ -309,6 +354,21 @@ namespace WindowsGSM
 
                         break;
                     }
+                case ("Rust Dedicated Server"):
+                    {
+                        GameServer.RUST gameServer = new GameServer.RUST(serverConfig.ServerID);
+                        serverConfig.CreateServerDirectory();
+
+                        string port = GetAvailablePort(gameServer.port);
+                        serverConfig.CreateWindowsGSMConfig(serverGame, serverName, GetIPAddress(), port, gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
+
+                        if (isInstall)
+                        {
+                            gameServer.CreateServerCFG(serverName, GetRCONPassword(), port);
+                        }
+
+                        break;
+                    }
             }
         }
 
@@ -360,6 +420,19 @@ namespace WindowsGSM
                             return false;
                         }
                     }
+                case ("Rust Dedicated Server"):
+                    {
+                        string rustPath = serverDir + @"\RustDedicated.exe";
+                        if (File.Exists(rustPath))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            Error = "Invalid Path! Fail to find RustDedicated.exe";
+                            return false;
+                        }
+                    }
                 default: break;
             }
 
@@ -384,7 +457,7 @@ namespace WindowsGSM
 
             for (int i = 0; i < WindowsGSM.ServerGrid.Items.Count; i++)
             {
-                Table row = WindowsGSM.ServerGrid.Items[i] as Table;
+                GameServerTable row = WindowsGSM.ServerGrid.Items[i] as GameServerTable;
                 portlist[i] = Int32.Parse((string.IsNullOrWhiteSpace(row.Port)) ? "0" : row.Port);
             }
 

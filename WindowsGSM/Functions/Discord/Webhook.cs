@@ -48,6 +48,7 @@ namespace WindowsGSM.Functions.Discord
                 case "Garry's Mod Dedicated Server": gameicon += @"games/gmod.png?raw=true"; break;
                 case "Team Fortress 2 Dedicated Server": gameicon += @"games/tf2.png?raw=true"; break;
                 case "Minecraft Pocket Edition Server | PocketMine-MP": gameicon += @"games/mcpe.png?raw=true"; break;
+                case "Rust Dedicated Server": gameicon += @"games/rust.png?raw=true"; break;
                 default: gameicon += @"windowsgsm.png?raw=true"; break;
             }
 

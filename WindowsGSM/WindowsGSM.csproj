@@ -151,8 +151,10 @@
     </Compile>
     <Compile Include="Functions\Discord\Webhook.cs" />
     <Compile Include="GameServerAction.cs" />
+    <Compile Include="GameServerCrashDetection.cs" />
     <Compile Include="GameServer\GMOD.cs" />
     <Compile Include="GameServer\MCPE.cs" />
+    <Compile Include="GameServer\RUST.cs" />
     <Compile Include="Import.xaml.cs">
       <DependentUpon>Import.xaml</DependentUpon>
     </Compile>
@@ -174,7 +176,7 @@
     <Compile Include="GameServer\CSGO.cs" />
     <Compile Include="GameServer\TF2.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="ServerTable.cs" />
+    <Compile Include="GameServerTable.cs" />
     <Compile Include="Installer\SteamCMD.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -268,6 +270,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\games\mcpe.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\games\rust.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

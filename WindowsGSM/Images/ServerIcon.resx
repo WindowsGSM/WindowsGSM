@@ -126,6 +126,9 @@
   <data name="Minecraft Pocket Edition Server | PocketMine-MP" xml:space="preserve">
     <value>/WindowsGSM;component/Images/games/mcpe.png</value>
   </data>
+  <data name="Rust Dedicated Server" xml:space="preserve">
+    <value>/WindowsGSM;component/Images/games/rust.png</value>
+  </data>
   <data name="Team Fortress 2 Dedicated Server" xml:space="preserve">
     <value>/WindowsGSM;component/Images/games/tf2.png</value>
   </data>

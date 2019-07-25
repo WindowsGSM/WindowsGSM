@@ -79,7 +79,7 @@ namespace WindowsGSM {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Team Fortress 2 Dedicated Server.
+        ///   Looks up a localized string similar to Minecraft Pocket Edition Server | PocketMine-MP.
         /// </summary>
         internal static string _3 {
             get {
@@ -88,11 +88,20 @@ namespace WindowsGSM {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Minecraft Pocket Edition Server | PocketMine-MP.
+        ///   Looks up a localized string similar to Rust Dedicated Server.
         /// </summary>
         internal static string _4 {
             get {
                 return ResourceManager.GetString("4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Team Fortress 2 Dedicated Server.
+        /// </summary>
+        internal static string _5 {
+            get {
+                return ResourceManager.GetString("5", resourceCulture);
             }
         }
     }

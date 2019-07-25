@@ -5,9 +5,10 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
+
 namespace WindowsGSM.GameServer
 {
-    class TF2
+    class RUST
     {
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -18,51 +19,66 @@ namespace WindowsGSM.GameServer
         public string Error;
         public string Notice;
 
-        public string port = "27015";
-        public string defaultmap = "cp_badlands";
-        public string maxplayers = "24";
+        public string port = "28015";
+        public string defaultmap = "Procedural Map";
+        public string maxplayers = "50";
         public string additional = "";
 
-        public TF2(string serverid)
+        public RUST(string serverid)
         {
             ServerID = serverid;
         }
 
-        public void CreateServerCFG(string hostname, string rcon_password)
+        public void CreateServerCFG(string hostname, string rcon_password, string port)
         {
-            string serverConfigPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles\tf\cfg\server.cfg";
-            
+            string serverConfigPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles\server.cfg";
+
             File.Create(serverConfigPath).Dispose();
 
             using (TextWriter textwriter = new StreamWriter(serverConfigPath))
             {
-                textwriter.WriteLine("hostname \"" + hostname + "\"");
-                textwriter.WriteLine("rcon_password \"" + rcon_password + "\"");
-                textwriter.WriteLine("sv_password \"\"");
-                textwriter.WriteLine("sv_region \"255\"");
-                textwriter.WriteLine("sv_lan \"0\"");
-                textwriter.WriteLine("net_maxfilesize \"64\"");
-                textwriter.WriteLine("sv_downloadurl \"\"");
-                textwriter.WriteLine("exec banned_user.cfg");
-                textwriter.WriteLine("exec banned_ip.cfg");
-                textwriter.WriteLine("writeid");
-                textwriter.WriteLine("writeip");
+                textwriter.WriteLine("+rcon.ip 0.0.0.0");
+                textwriter.WriteLine("+rcon.port \"" + port + "\"");
+                textwriter.WriteLine("+rcon.password \"" + rcon_password + "\"");
+                textwriter.WriteLine("+rcon.web 1");
+                textwriter.WriteLine("+server.tickrate 10");
+                textwriter.WriteLine("+server.hostname \"" + hostname + "\"");
+                textwriter.WriteLine("+server.description \"Rust Dedicated Server - Manage by WindowsGSM\\n\\nEdit \"");
+                textwriter.WriteLine("+server.url \"https://github.com/BattlefieldDuck/WindowsGSM\"");
+                textwriter.WriteLine("+server.headerimage \"\"");
+                textwriter.WriteLine("+server.identity \"server1\"");
+                textwriter.WriteLine("+server.seed 689777");
+                textwriter.WriteLine("+server.maxplayers 50");
+                textwriter.WriteLine("+server.worldsize 3000");
+                textwriter.WriteLine("+server.saveinterval 600");
+                textwriter.WriteLine("-logfile \"server.log\"");
             }
         }
 
-        public void SetParameter(string ip, string port, string map, string maxplayers, string gslt, string additional)
+        public void SetParameter(string ip, string port, string map, string maxplayers)
         {
-            Param = "-console -game tf -ip " + ip + " -port " + port + " +map " + map + " -maxplayers " + maxplayers + " +sv_setsteamaccount " + gslt + " " + additional;
+            Param = "-batchmode +server.ip " + ip + " +server.port " + port + " +server.level \"" + map + "\" +server.maxplayers " + maxplayers + " ";
+
+            string serverConfigPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles\server.cfg";
+            if (File.Exists(serverConfigPath))
+            {
+                foreach (string line in File.ReadLines(serverConfigPath))
+                {
+                    Param += line + " ";
+                }
+            }
+
+            Param.TrimEnd();
         }
 
         public Process Start()
         {
             string workingDir = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles";
-            string srcdsPath = workingDir + @"\srcds.exe";
+            string rustPath = workingDir + @"\RustDedicated.exe";
 
-            if (!File.Exists(srcdsPath))
+            if (!File.Exists(rustPath))
             {
-                Error = "srcds.exe not found (" + srcdsPath + ")";
+                Error = "RustDedicated.exe not found (" + rustPath + ")";
                 return null;
             }
 
@@ -72,7 +88,7 @@ namespace WindowsGSM.GameServer
                 return null;
             }
 
-            string serverConfigPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles\tf\cfg\server.cfg";
+            string serverConfigPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles\server.cfg";
 
             if (!File.Exists(serverConfigPath))
             {
@@ -81,7 +97,7 @@ namespace WindowsGSM.GameServer
 
             Process p = new Process();
             p.StartInfo.WorkingDirectory = workingDir;
-            p.StartInfo.FileName = srcdsPath;
+            p.StartInfo.FileName = rustPath;
             p.StartInfo.Arguments = Param;
             p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
             p.Start();
@@ -122,7 +138,7 @@ namespace WindowsGSM.GameServer
             string serverFilesPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles";
 
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(null, null, serverFilesPath, "232250", true);
+            steamCMD.SetParameter(null, null, serverFilesPath, "258550", true);
 
             if (!await steamCMD.Download())
             {
@@ -145,7 +161,7 @@ namespace WindowsGSM.GameServer
             string serverFilesPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles";
 
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(null, null, serverFilesPath, "232250", false);
+            steamCMD.SetParameter(null, null, serverFilesPath, "258550", false);
 
             if (!await steamCMD.Download())
             {

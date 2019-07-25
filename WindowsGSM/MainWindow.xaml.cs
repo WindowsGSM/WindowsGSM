@@ -50,7 +50,7 @@ namespace WindowsGSM
             Restoring = 11
         }
 
-        public static readonly string WGSM_VERSION = "v1.0.4";
+        public static readonly string WGSM_VERSION = "v1.1.0";
         public static readonly int MAX_SERVER = 100;
         public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
         //public static readonly string WGSM_PATH = @"D:\WindowsGSMtest2";
@@ -122,7 +122,7 @@ namespace WindowsGSM
 
         public void LoadServerTable()
         {
-            Table selectedrow = (Table)ServerGrid.SelectedItem;
+            GameServerTable selectedrow = (GameServerTable)ServerGrid.SelectedItem;
 
             int num_row = ServerGrid.Items.Count;
             for (int i = 0; i < num_row; i++)
@@ -164,7 +164,7 @@ namespace WindowsGSM
                     default: status = ""; break;
                 }
 
-                Table row = new Table
+                GameServerTable row = new GameServerTable
                 {
                     ID = i.ToString(),
                     Game = serverConfig.ServerGame,
@@ -251,7 +251,7 @@ namespace WindowsGSM
 
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Table row = (Table)ServerGrid.SelectedItem;
+            GameServerTable row = (GameServerTable)ServerGrid.SelectedItem;
 
             if (row != null)
             {
@@ -395,7 +395,7 @@ namespace WindowsGSM
 
         private async void Delete_Click(object sender, RoutedEventArgs e)
         {
-            Table server = (Table)ServerGrid.SelectedItem;
+            GameServerTable server = (GameServerTable)ServerGrid.SelectedItem;
             if (server == null)
             {
                 return;
@@ -417,7 +417,7 @@ namespace WindowsGSM
 
         private async void Button_DiscordWebhookTest_Click(object sender, RoutedEventArgs e)
         {
-           Table row = (Table)ServerGrid.SelectedItem;
+           GameServerTable row = (GameServerTable)ServerGrid.SelectedItem;
             if (row == null)
             {
                 return;
@@ -442,7 +442,7 @@ namespace WindowsGSM
                 return;
             }
 
-            Table server = (Table)ServerGrid.SelectedItem;
+            GameServerTable server = (GameServerTable)ServerGrid.SelectedItem;
             if (server == null)
             {
                 return;
@@ -461,7 +461,7 @@ namespace WindowsGSM
 
         private void Actions_Start_Click(object sender, RoutedEventArgs e)
         {
-            Table server = (Table)ServerGrid.SelectedItem;
+            GameServerTable server = (GameServerTable)ServerGrid.SelectedItem;
             if (server == null)
             {
                 return;
@@ -472,7 +472,7 @@ namespace WindowsGSM
 
         private void Actions_Stop_Click(object sender, RoutedEventArgs e)
         {
-            Table server = (Table)ServerGrid.SelectedItem;
+            GameServerTable server = (GameServerTable)ServerGrid.SelectedItem;
             if (server == null)
             {
                 return;
@@ -483,7 +483,7 @@ namespace WindowsGSM
 
         private void Actions_Restart_Click(object sender, RoutedEventArgs e)
         {
-            Table server = (Table)ServerGrid.SelectedItem;
+            GameServerTable server = (GameServerTable)ServerGrid.SelectedItem;
             if (server == null)
             {
                 return;
@@ -494,7 +494,7 @@ namespace WindowsGSM
 
         private void Actions_ToggleConsole_Click(object sender, RoutedEventArgs e)
         {
-            Table row = (Table)ServerGrid.SelectedItem;
+            GameServerTable row = (GameServerTable)ServerGrid.SelectedItem;
             if (row == null)
             {
                 return;
@@ -514,7 +514,7 @@ namespace WindowsGSM
 
         private async void Actions_Update_Click(object sender, RoutedEventArgs e)
         {
-            Table server = (Table)ServerGrid.SelectedItem;
+            GameServerTable server = (GameServerTable)ServerGrid.SelectedItem;
             if (server == null)
             {
                 return;
@@ -536,7 +536,7 @@ namespace WindowsGSM
 
         private async void Actions_Backup_Click(object sender, RoutedEventArgs e)
         {
-            Table server = (Table)ServerGrid.SelectedItem;
+            GameServerTable server = (GameServerTable)ServerGrid.SelectedItem;
             if (server == null)
             {
                 return;
@@ -558,7 +558,7 @@ namespace WindowsGSM
 
         private async void Actions_RestoreBackup_Click(object sender, RoutedEventArgs e)
         {
-            Table server = (Table)ServerGrid.SelectedItem;
+            GameServerTable server = (GameServerTable)ServerGrid.SelectedItem;
             if (server == null)
             {
                 return;
@@ -578,7 +578,7 @@ namespace WindowsGSM
             await GameServer_RestoreBackup(server);
         }
 
-        private async void GameServer_Start(Table server)
+        private async void GameServer_Start(GameServerTable server)
         {
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped)
             {
@@ -598,7 +598,8 @@ namespace WindowsGSM
 
             if (error != "")
             {
-                Log(server.ID, "Server: Fail to start [ERROR]" + error);
+                Log(server.ID, "Server: Fail to start");
+                Log(server.ID, "[ERROR]" + error);
                 return;
             }
 
@@ -632,21 +633,40 @@ namespace WindowsGSM
             if (p == null)
             {
                 g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
-                Log(server.ID, "Server: Fail to start [ERROR] " + gameServerAction.Error);
+                Log(server.ID, "Server: Fail to start");
+                Log(server.ID, "[ERROR] " + gameServerAction.Error);
                 SetServerStatus(server, "Stopped");
                 return;
             }
 
             g_Process[Int32.Parse(server.ID)] = p;
 
-            if (p.MainWindowHandle != IntPtr.Zero)
+            await Task.Run(() =>
             {
-                await Task.Run(() => p.WaitForInputIdle());
-            }
-            else
-            {
-                await Task.Delay(1000);
-            }
+                try
+                {
+                    p.WaitForInputIdle();
+                }
+                catch
+                {
+                    //Wait until Window pop out
+                    int count = 0;
+                    while (p.MainWindowHandle == IntPtr.Zero && count < 100)
+                    {
+                        p.Refresh();
+
+                        count++;
+                        Task.Delay(100);
+                    }
+
+                    ShowWindow(p.MainWindowHandle, WindowShowStyle.Hide);
+                }
+
+                if (server.Game == "Rust Dedicated Server")
+                {
+                    while (!p.HasExited && !ShowWindow(p.MainWindowHandle, WindowShowStyle.Hide)) { }
+                }
+            });
 
             //An error may occur on ShowWindow if not adding this 
             if (p.HasExited)
@@ -654,7 +674,8 @@ namespace WindowsGSM
                 g_Process[Int32.Parse(server.ID)] = null;
 
                 g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
-                Log(server.ID, "Server: Fail to start [ERROR] " + gameServerAction.Error);
+                Log(server.ID, "Server: Fail to start");
+                Log(server.ID, "[ERROR] Exit Code: " + p.ExitCode.ToString());
                 SetServerStatus(server, "Stopped");
 
                 return;
@@ -664,6 +685,10 @@ namespace WindowsGSM
 
             g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Started;
             Log(server.ID, "Server: Started");
+            if (!string.IsNullOrWhiteSpace(gameServerAction.Notice))
+            {
+                Log(server.ID, "[Notice] " + gameServerAction.Notice);
+            }
             SetServerStatus(server, "Started");
 
             if (g_bDiscordAlert[Int32.Parse(server.ID)])
@@ -675,7 +700,7 @@ namespace WindowsGSM
             StartServerCrashDetector(server);
         }
 
-        private async void GameServer_Stop(Table server)
+        private async void GameServer_Stop(GameServerTable server)
         {
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Started)
             {
@@ -696,15 +721,12 @@ namespace WindowsGSM
             g_Process[Int32.Parse(server.ID)] = null;
 
             GameServerAction gameServerAction = new GameServerAction(server);
-            if (await gameServerAction.Stop(p))
+            bool stopGracefully = await gameServerAction.Stop(p);
+            Log(server.ID, "Server: Stopped");
+            if (!stopGracefully)
             {
-                Log(server.ID, "Server: Stopped");
+                Log(server.ID, "[NOTICE] Server fail to stop gracefully");
             }
-            else
-            {
-                Log(server.ID, "Server: Stopped [NOTICE] Server fail to stop peacefully");
-            }
-
             g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
             SetServerStatus(server, "Stopped");
 
@@ -715,7 +737,7 @@ namespace WindowsGSM
             }
         }
 
-        private async void GameServer_Restart(Table server)
+        private async void GameServer_Restart(GameServerTable server)
         {
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Started)
             {
@@ -744,7 +766,8 @@ namespace WindowsGSM
             if (p == null)
             {
                 g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
-                Log(server.ID, "Server: Fail to restart [ERROR] " + gameServerAction.Error);
+                Log(server.ID, "Server: Fail to restart");
+                Log(server.ID, "[ERROR] " + gameServerAction.Error);
                 SetServerStatus(server, "Stopped");
 
                 return;
@@ -752,14 +775,32 @@ namespace WindowsGSM
 
             g_Process[Int32.Parse(server.ID)] = p;
 
-            if (p.MainWindowHandle != IntPtr.Zero)
+            await Task.Run(() =>
             {
-                await Task.Run(() => p.WaitForInputIdle());
-            }
-            else
-            {
-                await Task.Delay(1000);
-            }
+                try
+                {
+                    p.WaitForInputIdle();
+                }
+                catch
+                {
+                    //Wait until Window pop out
+                    int count = 0;
+                    while (p.MainWindowHandle == IntPtr.Zero && count < 100)
+                    {
+                        p.Refresh();
+
+                        count++;
+                        Task.Delay(100);
+                    }
+
+                    ShowWindow(p.MainWindowHandle, WindowShowStyle.Hide);
+                }
+
+                if (server.Game == "Rust Dedicated Server")
+                {
+                    while (!p.HasExited && !ShowWindow(p.MainWindowHandle, WindowShowStyle.Hide)) { }
+                }
+            });
 
             //An error may occur on ShowWindow if not adding this 
             if (p.HasExited)
@@ -767,7 +808,8 @@ namespace WindowsGSM
                 g_Process[Int32.Parse(server.ID)] = null;
 
                 g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
-                Log(server.ID, "Server: Fail to restart [ERROR] " + gameServerAction.Error);
+                Log(server.ID, "Server: Fail to start");
+                Log(server.ID, "[ERROR] Exit Code: " + p.ExitCode.ToString());
                 SetServerStatus(server, "Stopped");
 
                 return;
@@ -777,6 +819,10 @@ namespace WindowsGSM
 
             g_iServerStatus[Int32.Parse(server.ID)] = (int)ServerStatus.Started;
             Log(server.ID, "Server: Restarted");
+            if (!string.IsNullOrWhiteSpace(gameServerAction.Notice))
+            {
+                Log(server.ID, "[Notice] " + gameServerAction.Notice);
+            }
             SetServerStatus(server, "Started");
 
             if (g_bDiscordAlert[Int32.Parse(server.ID)])
@@ -788,7 +834,7 @@ namespace WindowsGSM
             StartServerCrashDetector(server);
         }
 
-        private async Task<bool> GameServer_Update(Table server)
+        private async Task<bool> GameServer_Update(GameServerTable server)
         {
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped)
             {
@@ -811,7 +857,8 @@ namespace WindowsGSM
             }
             else
             {
-                Log(server.ID, "Server: Fail to update [ERROR] " + gameServerAction.Error);
+                Log(server.ID, "Server: Fail to update");
+                Log(server.ID, "[ERROR] " + gameServerAction.Error);
             }
 
             g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
@@ -820,7 +867,7 @@ namespace WindowsGSM
             return true;
         }
 
-        private async Task<bool> GameServer_Backup(Table server)
+        private async Task<bool> GameServer_Backup(GameServerTable server)
         {
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped)
             {
@@ -858,7 +905,8 @@ namespace WindowsGSM
                 if (File.Exists(zipFile))
                 {
                     g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
-                    Log(server.ID, "Server: Fail to backup [ERROR] Fail to delete old backup");
+                    Log(server.ID, "Server: Fail to backup");
+                    Log(server.ID, "[ERROR] Fail to delete old backup");
                     SetServerStatus(server, "Stopped");
 
                     return false;
@@ -870,7 +918,8 @@ namespace WindowsGSM
             if (!File.Exists(zipFile))
             {
                 g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
-                Log(server.ID, "Server: Fail to backup [ERROR] Cannot create zipfile");
+                Log(server.ID, "Server: Fail to backup");
+                Log(server.ID, "[ERROR] Cannot create zipfile");
                 SetServerStatus(server, "Stopped");
 
                 return false;
@@ -883,7 +932,7 @@ namespace WindowsGSM
             return true;
         }
 
-        private async Task<bool> GameServer_RestoreBackup(Table server)
+        private async Task<bool> GameServer_RestoreBackup(GameServerTable server)
         {
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped)
             {
@@ -895,7 +944,8 @@ namespace WindowsGSM
 
             if (!File.Exists(zipFile))
             {
-                Log(server.ID, "Server: Fail to restore backup [ERROR] Backup not found");
+                Log(server.ID, "Server: Fail to restore backup");
+                Log(server.ID, "[ERROR] Backup not found");
 
                 return false;
             }
@@ -916,7 +966,8 @@ namespace WindowsGSM
 
                 if (Directory.Exists(extractPath))
                 {
-                    Log(server.ID, "Server: Fail to restore backup [ERROR] Extract path is not accessible");
+                    Log(server.ID, "Server: Fail to restore backup");
+                    Log(server.ID, "[ERROR] Extract path is not accessible");
 
                     return false;
                 }
@@ -936,7 +987,7 @@ namespace WindowsGSM
             return true;
         }
 
-        private async Task<bool> GameServer_Delete(Table server)
+        private async Task<bool> GameServer_Delete(GameServerTable server)
         {
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped)
             {
@@ -960,7 +1011,8 @@ namespace WindowsGSM
 
                 if (Directory.Exists(serverPath))
                 {
-                    Log(server.ID, "Server: Fail to delete server [ERROR] Directory is not accessible");
+                    Log(server.ID, "Server: Fail to delete server");
+                    Log(server.ID, "[ERROR] Directory is not accessible");
 
                     return false;
                 }
@@ -973,13 +1025,18 @@ namespace WindowsGSM
             return true;
         }
 
-        private async void StartServerCrashDetector(Table server)
+        private async void StartServerCrashDetector(GameServerTable server)
         {
-            if (await IsServerCrashed(server.ID))
+            GameServerCrashDetection detector = new GameServerCrashDetection();
+
+            if (await detector.IsServerCrashed(g_Process[Int32.Parse(server.ID)], server.Game))
             {
                 g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
-                Log(server.ID, "Server: Crashed [WARNING] Server crashed");
+                Log(server.ID, "Server: Crashed");
+                //Log(server.ID, "[WARNING] Exit Code: " + g_Process[Int32.Parse(server.ID)].ExitCode.ToString());
                 SetServerStatus(server, "Stopped");
+
+                g_Process[Int32.Parse(server.ID)] = null;
 
                 if (g_bDiscordAlert[Int32.Parse(server.ID)])
                 {
@@ -992,34 +1049,30 @@ namespace WindowsGSM
                     GameServer_Start(server);
                 }
             }
-        }
-
-        private async Task<bool> IsServerCrashed(string serverid)
-        {
-            int id = Int32.Parse(serverid);
-
-            while (g_Process[id] != null)
+            else if (g_iServerStatus[Int32.Parse(server.ID)] == ServerStatus.Started && g_Process[Int32.Parse(server.ID)].HasExited)
             {
-                if (g_Process[id].HasExited)
+                g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
+                Log(server.ID, "Server: Stopped");
+                Log(server.ID, "[Notice] Server stopped externally");
+                SetServerStatus(server, "Stopped");
+
+                g_Process[Int32.Parse(server.ID)] = null;
+
+                if (g_bDiscordAlert[Int32.Parse(server.ID)])
                 {
-                    g_Process[id] = null;
-
-                    return true;
+                    Functions.Discord.Webhook webhook = new Functions.Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)]);
+                    await webhook.Send(server.ID, server.Game, "Stopped", server.Name, server.IP, server.Port);
                 }
-               
-                await Task.Delay(1000);
             }
-
-            return false;
         }
 
-        private void SetServerStatus(Table server, string status)
+        private void SetServerStatus(GameServerTable server, string status)
         {
             server.Status = status;
 
             for (int i = 0; i < ServerGrid.Items.Count; i++)
             {
-                Table temp = ServerGrid.Items[i] as Table;
+                GameServerTable temp = ServerGrid.Items[i] as GameServerTable;
                 if (server.ID == temp.ID)
                 {
                     if (ServerGrid.SelectedItem == ServerGrid.Items[i])
@@ -1041,11 +1094,11 @@ namespace WindowsGSM
 
         public void Log(string serverid, string logtext)
         {
-            Table row = null;
+            GameServerTable row = null;
 
             for (int i = 0; i < ServerGrid.Items.Count; i++)
             {
-                row = ServerGrid.Items[i] as Table;
+                row = ServerGrid.Items[i] as GameServerTable;
                 if (row.ID == serverid)
                 {
                     break;
@@ -1082,24 +1135,12 @@ namespace WindowsGSM
             console.Text = "";
         }
 
-        private void SendCommand(Table server, string command)
+        private void SendCommand(GameServerTable server, string command)
         {
             Process p = g_Process[Int32.Parse(server.ID)];
 
             if (p == null)
             {
-                return;
-            }
-
-            if (command.Trim() == "quit")
-            {
-                GameServer_Stop(server);
-                return;
-            }
-
-            if (command.Trim() == "_restart")
-            {
-                GameServer_Restart(server);
                 return;
             }
 
@@ -1137,7 +1178,7 @@ namespace WindowsGSM
 
         private void Browse_ServerBackups_Click(object sender, RoutedEventArgs e)
         {
-            Table row = (Table)ServerGrid.SelectedItem;
+            GameServerTable row = (GameServerTable)ServerGrid.SelectedItem;
             if (row == null)
             {
                 return;
@@ -1154,7 +1195,7 @@ namespace WindowsGSM
 
         private void Browse_ServerConfigs_Click(object sender, RoutedEventArgs e)
         {
-            Table row = (Table)ServerGrid.SelectedItem;
+            GameServerTable row = (GameServerTable)ServerGrid.SelectedItem;
             if (row == null)
             {
                 return;
@@ -1169,7 +1210,7 @@ namespace WindowsGSM
 
         private void Browse_ServerFiles_Click(object sender, RoutedEventArgs e)
         {
-            Table row = (Table)ServerGrid.SelectedItem;
+            GameServerTable row = (GameServerTable)ServerGrid.SelectedItem;
             if (row == null)
             {
                 return;

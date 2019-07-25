@@ -16,6 +16,7 @@ namespace WindowsGSM.GameServer
 
         private string Param;
         public string Error;
+        public string Notice;
 
         public string port = "27015";
         public string defaultmap = "de_dust2";
@@ -55,7 +56,8 @@ namespace WindowsGSM.GameServer
 
         public Process Start()
         {
-            string srcdsPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles\srcds.exe";
+            string workingDir = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles";
+            string srcdsPath = workingDir + @"\srcds.exe";
 
             if (!File.Exists(srcdsPath))
             {
@@ -69,7 +71,15 @@ namespace WindowsGSM.GameServer
                 return null;
             }
 
+            string serverConfigPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles\csgo\cfg\server.cfg";
+
+            if (!File.Exists(serverConfigPath))
+            {
+                Notice = "server.cfg not found (" + serverConfigPath + ")";
+            }
+
             Process p = new Process();
+            p.StartInfo.WorkingDirectory = workingDir;
             p.StartInfo.FileName = srcdsPath;
             p.StartInfo.Arguments = Param;
             p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
@@ -150,6 +160,11 @@ namespace WindowsGSM.GameServer
             }
 
             await Task.Run(() => pSteamCMD.WaitForExit());
+
+            if (pSteamCMD.ExitCode == 0)
+            {
+                return true;
+            }
 
             Error = "Exit code: " + pSteamCMD.ExitCode.ToString();
             return false;

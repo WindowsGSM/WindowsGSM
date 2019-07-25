@@ -17,6 +17,7 @@ namespace WindowsGSM.GameServer
         private readonly string ServerID;
 
         public string Error;
+        public string Notice;
 
         public string port = "19132";
         public string defaultmap = "world";
@@ -66,16 +67,32 @@ namespace WindowsGSM.GameServer
 
         public Process Start()
         {
-            string startPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles\start.cmd";
-
-            if (!File.Exists(startPath))
+            string workingDir = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles";
+            string phpPath = workingDir + @"\bin\php\php.exe";
+            if (!File.Exists(phpPath))
             {
-                Error = "start.exe not found (" + startPath + ")";
+                Error = "php.exe not found (" + phpPath + ")";
+                return null;
+            }
+
+            string PMMPPath = workingDir + @"\PocketMine-MP.phar";
+            if (!File.Exists(PMMPPath))
+            {
+                Error = "PocketMine-MP.phar not found (" + PMMPPath + ")";
+                return null;
+            }
+
+            string serverConfigPath = workingDir + @"\server.properties";
+            if (!File.Exists(serverConfigPath))
+            {
+                Error = "server.properties not found (" + serverConfigPath + ")";
                 return null;
             }
 
             Process p = new Process();
-            p.StartInfo.FileName = startPath;
+            p.StartInfo.WorkingDirectory = workingDir;
+            p.StartInfo.FileName = phpPath;
+            p.StartInfo.Arguments = @"-c bin\php PocketMine-MP.phar";
             p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
             p.Start();
 
@@ -165,32 +182,6 @@ namespace WindowsGSM.GameServer
             while (!isDownloaded)
             {
                 if (File.Exists(PMMPPath))
-                {
-                    isDownloaded = true;
-                    break;
-                }
-
-                await Task.Delay(1000);
-            }
-
-            //Download start.cmd
-            installer = "https://github.com/pmmp/PocketMine-MP/blob/master/start.cmd?raw=true";
-            string startPath = serverFilesPath + @"\start.cmd";
-            try
-            {
-                WebClient webClient = new WebClient();
-                webClient.DownloadFileAsync(new Uri(installer), startPath);
-            }
-            catch
-            {
-                Error = "Fail to download start.cmd";
-                return false;
-            }
-
-            isDownloaded = false;
-            while (!isDownloaded)
-            {
-                if (File.Exists(startPath))
                 {
                     isDownloaded = true;
                     break;
