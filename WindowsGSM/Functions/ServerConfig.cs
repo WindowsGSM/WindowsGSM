@@ -48,61 +48,31 @@ namespace WindowsGSM.Functions
             ServerID = serverid;
 
             //Get values from configpath
-            string configpath = MainWindow.WGSM_PATH + @"\servers\" + serverid + @"\configs\WindowsGSM.cfg";
+            string configpath = Functions.Path.GetConfigs(serverid, "WindowsGSM.cfg");
             if (File.Exists(configpath))
             {
                 foreach (string line in File.ReadLines(configpath))
                 {
-                    if (line.Contains("servergame=\""))
+                    string[] keyvalue = line.Split('=');
+                    if (keyvalue.Length == 2)
                     {
-                        ServerGame = line.Replace("servergame=\"", "").Replace("\"", "");
-                    }
-                    else if(line.Contains("servername=\""))
-                    {
-                        ServerName = line.Replace("servername=\"", "").Replace("\"", "");
-                    }
-                    else if (line.Contains("serverip=\""))
-                    {
-                        ServerIP = line.Replace("serverip=\"", "").Replace("\"", "");
-                    }
-                    else if (line.Contains("serverport=\""))
-                    {
-                        ServerPort = line.Replace("serverport=\"", "").Replace("\"", "");
-                    }
-                    else if (line.Contains("servermap=\""))
-                    {
-                        ServerMap = line.Replace("servermap=\"", "").Replace("\"", "");
-                    }
-                    else if (line.Contains("servermaxplayer=\""))
-                    {
-                        ServerMaxPlayer = line.Replace("servermaxplayer=\"", "").Replace("\"", "");
-                    }
-                    else if (line.Contains("servergslt=\""))
-                    {
-                        ServerGSLT = line.Replace("servergslt=\"", "").Replace("\"", "");
-                    }
-                    else if (line.Contains("serverparam=\""))
-                    {
-                        ServerParam = line.Replace("serverparam=\"", "").Replace("\"", "");
-                    }
-                    else if (line.Contains("autorestart=\""))
-                    {
-                        string Bool = line.Replace("autorestart=\"", "").Replace("\"", "");
-                        AutoRestart = (Bool == "1") ? true : false;
-                    }
-                    else if (line.Contains("updateonstart=\""))
-                    {
-                        string Bool = line.Replace("updateonstart=\"", "").Replace("\"", "");
-                        UpdateOnStart = (Bool == "1") ? true : false;
-                    }
-                    else if (line.Contains("discordalert=\""))
-                    {
-                        string Bool = line.Replace("discordalert=\"", "").Replace("\"", "");
-                        DiscordAlert = (Bool == "1") ? true : false;
-                    }
-                    else if (line.Contains("discordwebhook=\""))
-                    {
-                        DiscordWebhook = line.Replace("discordwebhook=\"", "").Replace("\"", "");
+                        keyvalue[1] = keyvalue[1].Trim('\"');
+
+                        switch (keyvalue[0])
+                        {
+                            case "servergame": ServerGame = keyvalue[1]; break;
+                            case "servername": ServerName = keyvalue[1]; break;
+                            case "serverip": ServerIP = keyvalue[1]; break;
+                            case "serverport": ServerPort = keyvalue[1]; break;
+                            case "servermap": ServerMap = keyvalue[1]; break;
+                            case "servermaxplayer": ServerMaxPlayer = keyvalue[1]; break;
+                            case "servergslt": ServerGSLT = keyvalue[1]; break;
+                            case "serverparam": ServerParam = keyvalue[1]; break;
+                            case "autorestart": AutoRestart = (keyvalue[1] == "1") ? true : false; break;
+                            case "updateonstart": UpdateOnStart = (keyvalue[1] == "1") ? true : false; break;
+                            case "discordalert": DiscordAlert = (keyvalue[1] == "1") ? true : false; break;
+                            case "discordwebhook": DiscordWebhook = keyvalue[1]; break;
+                        }
                     }
                 }
             }
@@ -110,7 +80,7 @@ namespace WindowsGSM.Functions
 
         public bool CreateWindowsGSMConfig(string servergame, string servername, string serverip, string serverport, string servermap, string servermaxplayer, string servergslt, string serverparam)
         {
-            string configpath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\configs\WindowsGSM.cfg";
+            string configpath = Functions.Path.GetConfigs(ServerID, "WindowsGSM.cfg");
             if (!File.Exists(configpath))
             {
                 File.Create(configpath).Dispose();
@@ -154,8 +124,7 @@ namespace WindowsGSM.Functions
 
         public void CreateServerDirectory()
         {
-            string serverid_dir = MainWindow.WGSM_PATH + @"\servers\" + ServerID;
-
+            string serverid_dir = Functions.Path.Get(ServerID);
             if (!Directory.Exists(serverid_dir))
             {
                 Directory.CreateDirectory(serverid_dir);
@@ -174,7 +143,7 @@ namespace WindowsGSM.Functions
 
         public bool DeleteServerDirectory()
         {
-            string serverid_dir = MainWindow.WGSM_PATH + @"\servers\" + ServerID;
+            string serverid_dir = Functions.Path.Get(ServerID);
             if (Directory.Exists(serverid_dir) && ServerID != null && ServerID != "")
             {
                 try
@@ -194,7 +163,7 @@ namespace WindowsGSM.Functions
 
         public bool IsWindowsGSMConfigExist()
         {
-            string configpath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\configs\WindowsGSM.cfg";
+            string configpath = Functions.Path.GetConfigs(ServerID, "WindowsGSM.cfg");
             return File.Exists(configpath);
         }
     }

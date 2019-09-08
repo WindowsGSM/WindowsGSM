@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Diagnostics;
 
 namespace WindowsGSM
@@ -15,11 +11,8 @@ namespace WindowsGSM
             switch (serverGame)
             {
                 case ("Counter-Strike: Global Offensive Dedicated Server"):
-                    exitCode = 0; break;
                 case ("Garry's Mod Dedicated Server"):
-                    exitCode = 0; break;
                 case ("Team Fortress 2 Dedicated Server"):
-                    exitCode = 0; break;
                 case ("Minecraft Pocket Edition Server | PocketMine-MP"):
                     exitCode = 0; break;
                 case ("Rust Dedicated Server"):

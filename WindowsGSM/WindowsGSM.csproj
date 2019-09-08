@@ -149,6 +149,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Functions\Path.cs" />
     <Compile Include="Functions\Discord\Webhook.cs" />
     <Compile Include="GameServerAction.cs" />
     <Compile Include="GameServerCrashDetection.cs" />
@@ -274,5 +275,6 @@
   <ItemGroup>
     <Resource Include="Images\games\rust.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

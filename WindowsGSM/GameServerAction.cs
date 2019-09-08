@@ -46,44 +46,39 @@ namespace WindowsGSM
                     {
                         GameServer.CSGO gameServer = new GameServer.CSGO(server.ID);
                         gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, gslt, additionalParam);
-                        process = gameServer.Start();
-                        Error = gameServer.Error;
-                        Notice = gameServer.Notice;
+                        (process, Error, Notice) = gameServer.Start();
+
                         break;
                     }
                 case ("Garry's Mod Dedicated Server"):
                     {
                         GameServer.GMOD gameServer = new GameServer.GMOD(server.ID);
                         gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, gslt, additionalParam);
-                        process = gameServer.Start();
-                        Error = gameServer.Error;
-                        Notice = gameServer.Notice;
+                        (process, Error, Notice) = gameServer.Start();
+
                         break;
                     }
                 case ("Team Fortress 2 Dedicated Server"):
                     {
                         GameServer.TF2 gameServer = new GameServer.TF2(server.ID);
                         gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, gslt, additionalParam);
-                        process = gameServer.Start();
-                        Error = gameServer.Error;
-                        Notice = gameServer.Notice;
+                        (process, Error, Notice) = gameServer.Start();
+
                         break;
                     }
                 case ("Minecraft Pocket Edition Server | PocketMine-MP"):
                     {
                         GameServer.MCPE gameServer = new GameServer.MCPE(server.ID);
-                        process = gameServer.Start();
-                        Error = gameServer.Error;
-                        Notice = gameServer.Notice;
+                        (process, Error, Notice) = gameServer.Start();
+
                         break;
                     }
                 case ("Rust Dedicated Server"):
                     {
                         GameServer.RUST gameServer = new GameServer.RUST(server.ID);
                         gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers);
-                        process = gameServer.Start();
-                        Error = gameServer.Error;
-                        Notice = gameServer.Notice;
+                        (process, Error, Notice) = gameServer.Start();
+
                         break;
                     }
                 default: break;
@@ -94,42 +89,40 @@ namespace WindowsGSM
 
         public async Task<bool> Stop(Process process)
         {
-            bool stopped = false;
-
             switch (server.Game)
             {
                 case ("Counter-Strike: Global Offensive Dedicated Server"):
                     {
                         GameServer.CSGO gameServer = new GameServer.CSGO(server.ID);
-                        stopped = await gameServer.Stop(process);
+                        await gameServer.Stop(process);
 
                         break;
                     }
                 case ("Garry's Mod Dedicated Server"):
                     {
                         GameServer.GMOD gameServer = new GameServer.GMOD(server.ID);
-                        stopped = await gameServer.Stop(process);
+                        await gameServer.Stop(process);
 
                         break;
                     }
                 case ("Team Fortress 2 Dedicated Server"):
                     {
                         GameServer.TF2 gameServer = new GameServer.TF2(server.ID);
-                        stopped = await gameServer.Stop(process);
+                        await gameServer.Stop(process);
 
                         break;
                     }
                 case ("Minecraft Pocket Edition Server | PocketMine-MP"):
                     {
                         GameServer.MCPE gameServer = new GameServer.MCPE(server.ID);
-                        stopped = await gameServer.Stop(process);
+                        await gameServer.Stop(process);
 
                         break;
                     }
                 case ("Rust Dedicated Server"):
                     {
                         GameServer.RUST gameServer = new GameServer.RUST(server.ID);
-                        stopped = await gameServer.Stop(process);
+                        await gameServer.Stop(process);
 
                         break;
                     }
@@ -141,22 +134,17 @@ namespace WindowsGSM
                 process.Kill();
             }
 
-            return stopped;
+            return true;
         }
 
         public async Task<Process> Restart(Process process)
         {
-            if (!await Stop(process))
-            {
-                if (!process.HasExited)
-                {
-                    process.Kill();
-                }
-            }
+            await Stop(process);
 
             return Start();
         }
 
+        //Return installer process. Example: SteamCMD
         public async Task<Process> Install(string serverGame)
         {
             switch (serverGame)
@@ -207,7 +195,7 @@ namespace WindowsGSM
                 case ("Garry's Mod Dedicated Server"):
                 case ("Team Fortress 2 Dedicated Server"):
                     {
-                        string srcdsPath = MainWindow.WGSM_PATH + @"\servers\" + serverConfig.ServerID + @"\serverfiles\srcds.exe";
+                        string srcdsPath = Functions.Path.GetServerFiles(serverConfig.ServerID, "srcds.exe");
                         if (File.Exists(srcdsPath))
                         {
                             CreateServerConfigs(serverGame, serverName, true);
@@ -219,11 +207,9 @@ namespace WindowsGSM
                     }
                 case ("Minecraft Pocket Edition Server | PocketMine-MP"):
                     {
-                        string PHPPath = MainWindow.WGSM_PATH + @"\servers\" + serverConfig.ServerID + @"\serverfiles\bin\php\php.exe";
-                        string PMMPPath = MainWindow.WGSM_PATH + @"\servers\" + serverConfig.ServerID + @"\serverfiles\PocketMine-MP.phar";
-                        string startPath = MainWindow.WGSM_PATH + @"\servers\" + serverConfig.ServerID + @"\serverfiles\start.cmd";
-
-                        if (File.Exists(PHPPath) && File.Exists(PMMPPath) && File.Exists(startPath))
+                        string PHPPath = Functions.Path.GetServerFiles(serverConfig.ServerID, @"bin\php\php.exe");
+                        string PMMPPath = Functions.Path.GetServerFiles(serverConfig.ServerID, "PocketMine-MP.phar");
+                        if (File.Exists(PHPPath) && File.Exists(PMMPPath))
                         {
                             CreateServerConfigs(serverGame, serverName, true);
 
@@ -234,7 +220,7 @@ namespace WindowsGSM
                     }
                 case ("Rust Dedicated Server"):
                     {
-                        string rustPath = MainWindow.WGSM_PATH + @"\servers\" + serverConfig.ServerID + @"\serverfiles\RustDedicated.exe";
+                        string rustPath = Functions.Path.GetServerFiles(serverConfig.ServerID, "RustDedicated.exe");
                         if (File.Exists(rustPath))
                         {
                             CreateServerConfigs(serverGame, serverName, true);
@@ -381,7 +367,7 @@ namespace WindowsGSM
                 case ("Garry's Mod Dedicated Server"):
                 case ("Team Fortress 2 Dedicated Server"):
                     {
-                        string srcdsPath = serverDir + @"\srcds.exe";
+                        string srcdsPath = Path.Combine(serverDir, "srcds.exe");
                         if (File.Exists(srcdsPath))
                         {
                             return true;
@@ -394,9 +380,9 @@ namespace WindowsGSM
                     }
                 case ("Minecraft Pocket Edition Server | PocketMine-MP"):
                     {
-                        string PHPPath = serverDir + @"\bin\php\php.exe";
-                        string PMMPPath = serverDir + @"\PocketMine-MP.phar";
-                        string startPath = serverDir + @"\start.cmd";
+                        string PHPPath = Path.Combine(serverDir, @"bin\php\php.exe");
+                        string PMMPPath = Path.Combine(serverDir, "PocketMine-MP.phar");
+                        string startPath = Path.Combine(serverDir, "start.cmd");
 
                         if (File.Exists(PHPPath) && File.Exists(PMMPPath) && File.Exists(startPath))
                         {
@@ -422,7 +408,7 @@ namespace WindowsGSM
                     }
                 case ("Rust Dedicated Server"):
                     {
-                        string rustPath = serverDir + @"\RustDedicated.exe";
+                        string rustPath = Path.Combine(serverDir, "RustDedicated.exe");
                         if (File.Exists(rustPath))
                         {
                             return true;

@@ -17,7 +17,6 @@ namespace WindowsGSM.GameServer
         private readonly string ServerID;
 
         public string Error;
-        public string Notice;
 
         public string port = "19132";
         public string defaultmap = "world";
@@ -31,7 +30,7 @@ namespace WindowsGSM.GameServer
 
         public void CreateServerCFG(string serverName, string serverPort, string rcon_password)
         {
-            string serverConfigPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles\server.properties";
+            string serverConfigPath = Functions.Path.GetServerFiles(ServerID) + @"\server.properties";
 
             File.Create(serverConfigPath).Dispose();
 
@@ -65,28 +64,26 @@ namespace WindowsGSM.GameServer
             }
         }
 
-        public Process Start()
+        public (Process Process, string Error, string Notice) Start()
         {
-            string workingDir = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles";
+            string workingDir = Functions.Path.GetServerFiles(ServerID);
+
             string phpPath = workingDir + @"\bin\php\php.exe";
             if (!File.Exists(phpPath))
             {
-                Error = "php.exe not found (" + phpPath + ")";
-                return null;
+                return (null, "php.exe not found (" + phpPath + ")", "");
             }
 
             string PMMPPath = workingDir + @"\PocketMine-MP.phar";
             if (!File.Exists(PMMPPath))
             {
-                Error = "PocketMine-MP.phar not found (" + PMMPPath + ")";
-                return null;
+                return (null, "PocketMine-MP.phar not found (" + PMMPPath + ")", "");
             }
 
             string serverConfigPath = workingDir + @"\server.properties";
             if (!File.Exists(serverConfigPath))
             {
-                Error = "server.properties not found (" + serverConfigPath + ")";
-                return null;
+                return (null, "server.properties not found (" + serverConfigPath + ")", "");
             }
 
             Process p = new Process();
@@ -96,7 +93,7 @@ namespace WindowsGSM.GameServer
             p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
             p.Start();
 
-            return p;
+            return (p, "", "");
         }
 
         public async Task<bool> Stop(Process p)
@@ -106,9 +103,10 @@ namespace WindowsGSM.GameServer
             SendKeys.SendWait("{ENTER}");
             SendKeys.SendWait("{ENTER}");
 
-            bool stopped = false;
+            SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
+
             int attempt = 0;
-            while (attempt < 10)
+            while (attempt++ < 10)
             {
                 if (p != null)
                 {
@@ -117,28 +115,25 @@ namespace WindowsGSM.GameServer
 
                     if (p.HasExited)
                     {
-                        stopped = true;
-                        break;
+                        return true;
                     }
                 }
 
-                attempt++;
-
-                await Task.Delay(100);
+                await Task.Delay(1000);
             }
 
-            SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
-
-            return stopped;
+            return false;
         }
 
         public async Task<bool> Install()
         {
-            string serverFilesPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles";
+            string serverFilesPath = Functions.Path.GetServerFiles(ServerID);
 
             //Download PHP-7.2-Windows-x64
-            string installer = "https://jenkins.pmmp.io/job/PHP-7.2-Aggregate/lastSuccessfulBuild/artifact/PHP-7.2-Windows-x64.zip";
-            string PHPzipPath = serverFilesPath + @"\PHP-7.2-Windows-x64.zip";
+            string filename = "PHP-7.3-Windows-x64.zip";
+            string installer = "https://jenkins.pmmp.io/job/PHP-7.3-Aggregate/lastSuccessfulBuild/artifact/PHP-7.3-Windows-x64.zip";
+
+            string PHPzipPath = Path.Combine(serverFilesPath, filename);
             try
             {
                 WebClient webClient = new WebClient();
@@ -147,7 +142,7 @@ namespace WindowsGSM.GameServer
             }
             catch
             {
-                Error = "Fail to download PHP-7.2";
+                Error = "Fail to download " + filename;
                 return false;
             }
 
@@ -196,7 +191,7 @@ namespace WindowsGSM.GameServer
         private async void ExtractPHP(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
         {
             string installPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles";
-            string zipPath = installPath + @"\PHP-7.2-Windows-x64.zip";
+            string zipPath = installPath + @"\PHP-7.3-Windows-x64.zip";
 
             if (File.Exists(zipPath))
             {
