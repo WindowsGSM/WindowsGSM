@@ -3,7 +3,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Http;
 
-namespace WindowsGSM.Functions.Discord
+namespace WindowsGSM.Discord
 {
     class Webhook 
     {

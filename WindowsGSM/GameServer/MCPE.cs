@@ -18,6 +18,8 @@ namespace WindowsGSM.GameServer
 
         public string Error;
 
+        public const string FullName = "Minecraft Pocket Edition Server | PocketMine-MP";
+
         public string port = "19132";
         public string defaultmap = "world";
         public string maxplayers = "20";
@@ -84,6 +86,12 @@ namespace WindowsGSM.GameServer
             if (!File.Exists(serverConfigPath))
             {
                 return (null, "server.properties not found (" + serverConfigPath + ")", "");
+            }
+
+            WindowsFirewall firewall = new WindowsFirewall("php.exe", phpPath);
+            if (!firewall.IsRuleExist())
+            {
+                firewall.AddRule();
             }
 
             Process p = new Process();

@@ -17,6 +17,8 @@ namespace WindowsGSM.GameServer
         private string Param;
         public string Error;
 
+        public const string FullName = "Counter-Strike: Global Offensive Dedicated Server";
+
         public string port = "27015";
         public string defaultmap = "de_dust2";
         public string maxplayers = "24";
@@ -72,6 +74,12 @@ namespace WindowsGSM.GameServer
             if (!File.Exists(serverConfigPath))
             {
                 return (null, "", "server.cfg not found (" + serverConfigPath + ")");
+            }
+
+            WindowsFirewall firewall = new WindowsFirewall("srcds.exe", srcdsPath);
+            if (!firewall.IsRuleExist())
+            {
+                firewall.AddRule();
             }
 
             Process p = new Process();

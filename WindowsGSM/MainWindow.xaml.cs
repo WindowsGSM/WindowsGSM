@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.IO;
+using System.Net;
 using System.IO.Compression;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -13,6 +14,7 @@ using System.Windows.Forms;
 using Microsoft.Win32;
 using MahApps.Metro;
 using MahApps.Metro.Controls;
+using Newtonsoft.Json.Linq;
 
 namespace WindowsGSM
 {
@@ -50,7 +52,7 @@ namespace WindowsGSM
             Restoring = 11
         }
 
-        public static readonly string WGSM_VERSION = "v1.1.1";
+        public static readonly string WGSM_VERSION = "v1.2.0";
         public static readonly int MAX_SERVER = 100;
         public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
         //public static readonly string WGSM_PATH = @"D:\WindowsGSMtest2";
@@ -400,17 +402,20 @@ namespace WindowsGSM
             MessageBoxResult result = System.Windows.MessageBox.Show("Do you want to delete this server?\n(There is no comeback)", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result != MessageBoxResult.Yes) { return; }
 
+            WindowsFirewall firewall = new WindowsFirewall(null, Functions.Path.Get(server.ID));
+            firewall.RemoveRuleEx();
+
             await GameServer_Delete(server);
         }
 
         private async void Button_DiscordWebhookTest_Click(object sender, RoutedEventArgs e)
         {
-           GameServerTable row = (GameServerTable)ServerGrid.SelectedItem;
+            GameServerTable row = (GameServerTable)ServerGrid.SelectedItem;
             if (row == null) { return; }
 
             if (!g_bDiscordAlert[Int32.Parse(row.ID)]) { return; }
 
-            Functions.Discord.Webhook webhook = new Functions.Discord.Webhook(g_DiscordWebhook[Int32.Parse(row.ID)]);
+            Discord.Webhook webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(row.ID)]);
             await webhook.Send(row.ID, row.Game, "Webhook Test Alert", row.Name, row.IP, row.Port);
         }
 
@@ -550,8 +555,8 @@ namespace WindowsGSM
             Log(server.ID, "Action: Start");
             SetServerStatus(server, "Starting");
 
-            GameServerAction gameServerAction = new GameServerAction(server, g_SteamGSLT[Int32.Parse(server.ID)], g_AdditionalParam[Int32.Parse(server.ID)]);
-            p = gameServerAction.Start();
+            GameServer.Action.Start gameServerAction = new GameServer.Action.Start(server, g_SteamGSLT[Int32.Parse(server.ID)], g_AdditionalParam[Int32.Parse(server.ID)]);
+            p = gameServerAction.Run();
             
             Activate();
 
@@ -620,7 +625,7 @@ namespace WindowsGSM
 
             if (g_bDiscordAlert[Int32.Parse(server.ID)])
             {
-                Functions.Discord.Webhook webhook = new Functions.Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)]);
+                Discord.Webhook webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)]);
                 await webhook.Send(server.ID, server.Game, "Started", server.Name, server.IP, server.Port);
             }
 
@@ -641,8 +646,8 @@ namespace WindowsGSM
 
             g_Process[Int32.Parse(server.ID)] = null;
 
-            GameServerAction gameServerAction = new GameServerAction(server);
-            bool stopGracefully = await gameServerAction.Stop(p);
+            GameServer.Action.Stop gameServerAction = new GameServer.Action.Stop(server);
+            bool stopGracefully = await gameServerAction.Run(p);
             Log(server.ID, "Server: Stopped");
             if (!stopGracefully)
             {
@@ -653,7 +658,7 @@ namespace WindowsGSM
 
             if (g_bDiscordAlert[Int32.Parse(server.ID)])
             {
-                Functions.Discord.Webhook webhook = new Functions.Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)]);
+                Discord.Webhook webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)]);
                 await webhook.Send(server.ID, server.Game, "Stopped", server.Name, server.IP, server.Port);
             }
         }
@@ -672,8 +677,8 @@ namespace WindowsGSM
             Log(server.ID, "Action: Restart");
             SetServerStatus(server, "Restarting");
 
-            GameServerAction gameServerAction = new GameServerAction(server, g_SteamGSLT[Int32.Parse(server.ID)], g_AdditionalParam[Int32.Parse(server.ID)]);
-            p = await gameServerAction.Restart(p);
+            GameServer.Action.Restart gameServerAction = new GameServer.Action.Restart(server, g_SteamGSLT[Int32.Parse(server.ID)], g_AdditionalParam[Int32.Parse(server.ID)]);
+            p = await gameServerAction.Run(p);
 
             Activate();
 
@@ -742,7 +747,7 @@ namespace WindowsGSM
 
             if (g_bDiscordAlert[Int32.Parse(server.ID)])
             {
-                Functions.Discord.Webhook webhook = new Functions.Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)]);
+                Discord.Webhook webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)]);
                 await webhook.Send(server.ID, server.Game, "Restarted", server.Name, server.IP, server.Port);
             }
 
@@ -761,8 +766,8 @@ namespace WindowsGSM
             Log(server.ID, "Action: Update");
             SetServerStatus(server, "Updating");
 
-            GameServerAction gameServerAction = new GameServerAction(server);
-            bool updated = await gameServerAction.Update();
+            GameServer.Action.Update gameServerAction = new GameServer.Action.Update(server);
+            bool updated = await gameServerAction.Run();
 
             Activate();
 
@@ -955,7 +960,7 @@ namespace WindowsGSM
 
                 if (g_bDiscordAlert[Int32.Parse(server.ID)])
                 {
-                    Functions.Discord.Webhook webhook = new Functions.Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)]);
+                    Discord.Webhook webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)]);
                     await webhook.Send(server.ID, server.Game, "Crashed", server.Name, server.IP, server.Port);
                 }
 
@@ -975,7 +980,7 @@ namespace WindowsGSM
 
                 if (g_bDiscordAlert[Int32.Parse(server.ID)])
                 {
-                    Functions.Discord.Webhook webhook = new Functions.Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)]);
+                    Discord.Webhook webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)]);
                     await webhook.Send(server.ID, server.Game, "Stopped", server.Name, server.IP, server.Port);
                 }
             }
@@ -1169,6 +1174,143 @@ namespace WindowsGSM
             }
 
             ThemeManager.ChangeAppTheme(App.Current, (MahAppSwitch_DarkTheme.IsChecked ?? false) ? "BaseDark" : "BaseLight");
+        }
+
+        private void Help_OnlineDocumentation_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("https://github.com/BattlefieldDuck/WindowsGSM/wiki");
+        }
+
+        private void Help_ReportIssue_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("https://github.com/BattlefieldDuck/WindowsGSM/issues");
+        }
+
+        private void Help_CheckForUpdate_Click(object sender, RoutedEventArgs e)
+        {
+            string messageText = "Your WindowsGSM is up to date.";
+
+            string latestVersion = GetLatestVersion();
+            if (latestVersion != WGSM_VERSION)
+            {
+                messageText = "A new version of WindowsGSM is available, would you like to browse the release page?";
+
+                MessageBoxResult result = System.Windows.MessageBox.Show("Current version: " + WGSM_VERSION + "\nLatest version: " + latestVersion + "\n\n" + messageText, "Check for Update", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result == MessageBoxResult.Yes)
+                {
+                    Process.Start("https://github.com/BattlefieldDuck/WindowsGSM/releases");
+                }
+            }
+            else
+            {
+                System.Windows.MessageBox.Show("Current version: " + WGSM_VERSION + "\nLatest version: " + latestVersion + "\n\n" + messageText, "Check for Update", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private string GetLatestVersion()
+        {
+            HttpWebRequest webRequest = System.Net.WebRequest.Create("https://api.github.com/repos/BattlefieldDuck/WindowsGSM/releases/latest") as HttpWebRequest;
+            if (webRequest != null)
+            {
+                webRequest.Method = "GET";
+                webRequest.UserAgent = "Anything";
+                webRequest.ServicePoint.Expect100Continue = false;
+
+                try
+                {
+                    using (StreamReader responseReader = new StreamReader(webRequest.GetResponse().GetResponseStream()))
+                    {
+                        string json = responseReader.ReadToEnd();
+                        string version = JObject.Parse(json)["tag_name"].ToString();
+
+                        return version;
+                    }
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+
+            return null;
+        }
+
+        private void Tools_GlobalServerListCheck_Click(object sender, RoutedEventArgs e)
+        {
+            GameServerTable row = (GameServerTable)ServerGrid.SelectedItem;
+            if (row == null) { return; }
+
+            if (row.Game != GameServer.CSGO.FullName && row.Game != GameServer.GMOD.FullName && row.Game != GameServer.TF2.FullName && row.Game != GameServer.RUST.FullName)
+            {
+                Log(row.ID, "This feature is not applicable on " + row.Game);
+                return;
+            }
+
+            string publicIP = GetPublicIP();
+            if (publicIP == null)
+            {
+                Log(row.ID, "Fail to check. Reason: Fail to get the public ip.");
+                return;
+            }
+
+            string port = row.Port;
+
+            string messageText = "Server Name: " + row.Name + "\nPublic IP: " + publicIP + "\nServer Port: " + port;
+            
+            if (IsServerOnSteamServerList(publicIP, port))
+            {
+                System.Windows.MessageBox.Show(messageText + "\n\nResult: Online\n\nYour server is on the global server list!", "Global Server List Check", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                System.Windows.MessageBox.Show(messageText + "\n\nResult: Offline\n\nYour server is not on the global server list.", "Global Server List Check", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private string GetPublicIP()
+        {
+            try
+            {
+                using (WebClient webClient = new WebClient())
+                {
+                    return webClient.DownloadString("https://ipinfo.io/ip").Replace("\n", "");
+                }
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private bool IsServerOnSteamServerList(string publicIP, string port)
+        {
+            HttpWebRequest webRequest = System.Net.WebRequest.Create("http://api.steampowered.com/ISteamApps/GetServersAtAddress/v0001?addr=" + publicIP + "&format=json") as HttpWebRequest;
+            if (webRequest != null)
+            {
+                webRequest.Method = "GET";
+                webRequest.UserAgent = "Anything";
+                webRequest.ServicePoint.Expect100Continue = false;
+
+                try
+                {
+                    using (StreamReader responseReader = new StreamReader(webRequest.GetResponse().GetResponseStream()))
+                    {
+                        string json = responseReader.ReadToEnd();
+                        string matchString = "\"addr\":\"" + publicIP + ":" + port + "\"";
+
+                        if (json.Contains(matchString))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+
+            return false;
         }
     }
 }

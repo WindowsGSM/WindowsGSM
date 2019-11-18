@@ -61,6 +61,14 @@
                 <MenuItem Header="Server Configs" Click="Browse_ServerConfigs_Click"/>
                 <MenuItem Header="Server Files" Click="Browse_ServerFiles_Click"/>
             </MenuItem>
+            <MenuItem Header="Tools" Height="30">
+                <MenuItem Header="Global Server List Check" Click="Tools_GlobalServerListCheck_Click"/>
+            </MenuItem>
+            <MenuItem Header="Help" Height="30">
+                <MenuItem Header="Online Documentation" Click="Help_OnlineDocumentation_Click"/>
+                <MenuItem Header="Report an issue" Click="Help_ReportIssue_Click"/>
+                <MenuItem Header="Check for updates" Click="Help_CheckForUpdate_Click"/>
+            </MenuItem>
         </Menu>
         <Grid Height="1" Background="Black" DockPanel.Dock="Top"/>
         <Grid Height="35" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="0,0,0,0">
@@ -130,7 +138,6 @@
                     <Label x:Name="label_discordalert" Content="Discord Alert:" HorizontalAlignment="Left" Margin="19,149,0,0" VerticalAlignment="Top"/>
                     <Button x:Name="button_discordalert" Content="" HorizontalAlignment="Left" Margin="105,150,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
                     <Button x:Name="button_discordtest" Content="Send Test Alert" HorizontalAlignment="Left" Margin="155,150,0,0" VerticalAlignment="Top" Width="112" Height="25" Click="Button_DiscordWebhookTest_Click" IsEnabled="False"/>
-
                 </Grid>
 
                 <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch">

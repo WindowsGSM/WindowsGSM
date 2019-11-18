@@ -16,7 +16,7 @@ namespace WindowsGSM
     {
         //Get ServerID for this import
         private readonly Functions.ServerConfig serverConfig = new Functions.ServerConfig(null);
-        private readonly GameServerAction gameServerAction;
+        private readonly GameServer.Action.Import gameServerAction;
 
         private Process pImporter;
 
@@ -35,7 +35,7 @@ namespace WindowsGSM
 
             Title = "WindowsGSM - Import (ID: " + serverConfig.ServerID + ")";
 
-            gameServerAction = new GameServerAction(serverConfig);
+            gameServerAction = new GameServer.Action.Import(serverConfig);
         }
 
         private async void Button_Import_Click(object sender, RoutedEventArgs e)
@@ -155,7 +155,7 @@ namespace WindowsGSM
 
             if (isImportSuccess)
             {
-                gameServerAction.CreateServerConfigs(servergame, servername, false);
+                gameServerAction.CreateServerConfigs(servergame, servername);
 
                 MainWindow WindowsGSM = (MainWindow)System.Windows.Application.Current.MainWindow;
 

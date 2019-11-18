@@ -11,7 +11,7 @@ namespace WindowsGSM
     {
         //Get ServerID for this install
         private readonly Functions.ServerConfig serverConfig = new Functions.ServerConfig(null);
-        private readonly GameServerAction gameServerAction;
+        private readonly GameServer.Action.Install gameServerAction;
 
         //Store Installer Process, such as steamcmd.exe
         private Process pInstaller;
@@ -31,7 +31,7 @@ namespace WindowsGSM
 
             Title = "WindowsGSM - Install (ID: " + serverConfig.ServerID + ")";
 
-            gameServerAction = new GameServerAction(serverConfig);
+            gameServerAction = new GameServer.Action.Install(serverConfig);
         }
 
         private async void Button_install_Click(object sender, RoutedEventArgs e)
@@ -99,8 +99,8 @@ namespace WindowsGSM
 
             serverConfig.CreateServerDirectory();
 
-            pInstaller = await gameServerAction.Install(servergame);
-            bool IsSuccess = await gameServerAction.IsInstallSuccess(pInstaller, servergame, servername);
+            pInstaller = await gameServerAction.Run(servergame);
+            bool IsSuccess = await gameServerAction.IsSuccess(pInstaller, servergame, servername);
 
             if (IsSuccess)
             {

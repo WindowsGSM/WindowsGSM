@@ -100,6 +100,12 @@ namespace WindowsGSM.Installer
                 return null;
             }
 
+            WindowsFirewall firewall = new WindowsFirewall("steamcmd.exe", exePath);
+            if (!firewall.IsRuleExist())
+            {
+                firewall.AddRule();
+            }
+
             Process p = new Process();
             p.StartInfo.FileName = exePath;
             p.StartInfo.Arguments = Param;

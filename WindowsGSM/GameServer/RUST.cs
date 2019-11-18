@@ -17,6 +17,8 @@ namespace WindowsGSM.GameServer
         private string Param;
         public string Error;
 
+        public const string FullName = "Rust Dedicated Server";
+
         public string port = "28015";
         public string defaultmap = "Procedural Map";
         public string maxplayers = "50";
@@ -88,6 +90,12 @@ namespace WindowsGSM.GameServer
             if (!File.Exists(serverConfigPath))
             {
                 return (null, "", "server.cfg not found (" + serverConfigPath + ")");
+            }
+
+            WindowsFirewall firewall = new WindowsFirewall("srcds.exe", rustPath);
+            if (!firewall.IsRuleExist())
+            {
+                firewall.AddRule();
             }
 
             Process p = new Process();
