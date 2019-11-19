@@ -69,7 +69,7 @@ namespace WindowsGSM.Installer
             }
         }
 
-        public void SetParameter(string steamuser, string steampass, string install_dir, string app_id, bool validate)
+        public void SetParameter(string steamuser, string steampass, string install_dir, string set_config, string app_id, bool validate)
         {
             if (steamuser == null && steampass == null)
             {
@@ -80,11 +80,16 @@ namespace WindowsGSM.Installer
                 Param = "+login " + steamuser + " " + steampass;
             }
 
-            Param += " +force_install_dir \"" + install_dir + "\" +app_update " + app_id;
+            Param += " +force_install_dir \"" + install_dir + "\"";
 
-            if (validate)
+            Param += (String.IsNullOrWhiteSpace(set_config) ? "" : " " + set_config) + " +app_update " + app_id + (validate ? " validate" : "");
+            if (app_id == "90")
             {
-                Param += " validate";
+                //Install 4 more times if hlds.exe
+                for (int i = 0; i < 4; i++)
+                {
+                    Param += " +app_update " + app_id + (validate ? " validate" : "");
+                }
             }
 
             Param += " +quit";

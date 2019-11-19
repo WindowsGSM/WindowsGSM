@@ -114,7 +114,7 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(ServerID), "4020", true);
+            steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(ServerID), "", "4020", true);
 
             if (!await steamCMD.Download())
             {
@@ -135,7 +135,7 @@ namespace WindowsGSM.GameServer
         public async Task<bool> Update()
         {
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(ServerID), "4020", false);
+            steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(ServerID), "", "4020", false);
 
             if (!await steamCMD.Download())
             {

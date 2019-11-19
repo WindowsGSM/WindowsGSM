@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Drawing;
 using System.Windows.Media;
 using System.IO;
 using System.Net;
@@ -52,10 +53,12 @@ namespace WindowsGSM
             Restoring = 11
         }
 
-        public static readonly string WGSM_VERSION = "v1.2.0";
+        public static readonly string WGSM_VERSION = "v1.3.0";
         public static readonly int MAX_SERVER = 100;
         public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
         //public static readonly string WGSM_PATH = @"D:\WindowsGSMtest2";
+
+        NotifyIcon notifyIcon;
 
         private Install InstallWindow;
         private Import ImportWindow;
@@ -102,6 +105,21 @@ namespace WindowsGSM
             RenderOptions.ProcessRenderMode = (MahAppSwitch_HardWareAcceleration.IsChecked ?? false) ? System.Windows.Interop.RenderMode.SoftwareOnly : System.Windows.Interop.RenderMode.Default;
             WindowTransitionsEnabled = MahAppSwitch_UIAnimation.IsChecked ?? false;
             ThemeManager.ChangeAppTheme(App.Current, (MahAppSwitch_DarkTheme.IsChecked ?? false) ? "BaseDark" : "BaseLight");
+
+            notifyIcon = new NotifyIcon();
+            notifyIcon.BalloonTipTitle = "WindowsGSM";
+            notifyIcon.BalloonTipText = "WindowsGSM is running in the background";
+            notifyIcon.Text = "WindowsGSM";
+            notifyIcon.BalloonTipIcon = ToolTipIcon.Info;
+
+            Stream iconStream = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/WindowsGSM.ico")).Stream;
+            if (iconStream != null)
+            {
+                notifyIcon.Icon = new System.Drawing.Icon(iconStream);
+            }
+
+            notifyIcon.BalloonTipClicked += OnBalloonTipClick;
+            notifyIcon.MouseClick += NotifyIcon_MouseClick;
 
             //Set All server status to stopped
             for (int i = 0; i < MAX_SERVER; i++)
@@ -179,7 +197,7 @@ namespace WindowsGSM
                     Maxplayers = serverConfig.ServerMaxPlayer
                 };
 
-                ServerGrid.Items.Add(row);  
+                ServerGrid.Items.Add(row);
 
                 if (selectedrow != null)
                 {
@@ -292,17 +310,17 @@ namespace WindowsGSM
                 }
 
                 button_Status.Content = row.Status.ToUpper();
-                button_Status.Background = (g_iServerStatus[Int32.Parse(row.ID)] == ServerStatus.Started) ? Brushes.LimeGreen : Brushes.Orange;
+                button_Status.Background = (g_iServerStatus[Int32.Parse(row.ID)] == ServerStatus.Started) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Orange;
                 textBox_ServerGame.Text = row.Game;
 
                 button_autorestart.Content = (g_bAutoRestart[Int32.Parse(row.ID)]) ? "TRUE" : "FALSE";
-                button_autorestart.Background = (g_bAutoRestart[Int32.Parse(row.ID)]) ? Brushes.LimeGreen : Brushes.Red;
+                button_autorestart.Background = (g_bAutoRestart[Int32.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
 
                 button_updateonstart.Content = (g_bUpdateOnStart[Int32.Parse(row.ID)]) ? "TRUE" : "FALSE";
-                button_updateonstart.Background = (g_bUpdateOnStart[Int32.Parse(row.ID)]) ? Brushes.LimeGreen : Brushes.Red;
+                button_updateonstart.Background = (g_bUpdateOnStart[Int32.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
 
                 button_discordalert.Content = (g_bDiscordAlert[Int32.Parse(row.ID)]) ? "TRUE" : "FALSE";
-                button_discordalert.Background = (g_bDiscordAlert[Int32.Parse(row.ID)]) ? Brushes.LimeGreen : Brushes.Red;
+                button_discordalert.Background = (g_bDiscordAlert[Int32.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
 
                 button_discordtest.IsEnabled = (g_bDiscordAlert[Int32.Parse(row.ID)]) ? true : false;
             }
@@ -557,7 +575,7 @@ namespace WindowsGSM
 
             GameServer.Action.Start gameServerAction = new GameServer.Action.Start(server, g_SteamGSLT[Int32.Parse(server.ID)], g_AdditionalParam[Int32.Parse(server.ID)]);
             p = gameServerAction.Run();
-            
+
             Activate();
 
             //Fail to start
@@ -1240,7 +1258,7 @@ namespace WindowsGSM
             GameServerTable row = (GameServerTable)ServerGrid.SelectedItem;
             if (row == null) { return; }
 
-            if (row.Game != GameServer.CSGO.FullName && row.Game != GameServer.GMOD.FullName && row.Game != GameServer.TF2.FullName && row.Game != GameServer.RUST.FullName)
+            if (row.Game == GameServer.MCPE.FullName)
             {
                 Log(row.ID, "This feature is not applicable on " + row.Game);
                 return;
@@ -1256,7 +1274,7 @@ namespace WindowsGSM
             string port = row.Port;
 
             string messageText = "Server Name: " + row.Name + "\nPublic IP: " + publicIP + "\nServer Port: " + port;
-            
+
             if (IsServerOnSteamServerList(publicIP, port))
             {
                 System.Windows.MessageBox.Show(messageText + "\n\nResult: Online\n\nYour server is on the global server list!", "Global Server List Check", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -1311,6 +1329,31 @@ namespace WindowsGSM
             }
 
             return false;
+        }
+
+        private void Window_StateChanged(object sender, EventArgs e)
+        {
+        }
+
+        private void OnBalloonTipClick(object sender, EventArgs e)
+        {
+        }
+
+        private void NotifyIcon_MouseClick(Object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            notifyIcon.Visible = false;
+
+            WindowState = WindowState.Normal;
+            Show();
+        }
+
+        private void Button_Hide_Click(object sender, RoutedEventArgs e)
+        {
+            Hide();
+            notifyIcon.Visible = true;
+            notifyIcon.ShowBalloonTip(0);
+            notifyIcon.Visible = false;
+            notifyIcon.Visible = true;
         }
     }
 }

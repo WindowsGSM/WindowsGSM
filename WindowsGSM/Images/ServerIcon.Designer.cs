@@ -61,6 +61,24 @@ namespace WindowsGSM.Images {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to /WindowsGSM;component/Images/games/cs.png.
+        /// </summary>
+        public static string Counter_Strike__1_6_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Counter-Strike: 1.6 Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /WindowsGSM;component/Images/games/cscz.png.
+        /// </summary>
+        public static string Counter_Strike__Condition_Zero_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Counter-Strike: Condition Zero Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to /WindowsGSM;component/Images/games/csgo.png.
         /// </summary>
         public static string Counter_Strike__Global_Offensive_Dedicated_Server {

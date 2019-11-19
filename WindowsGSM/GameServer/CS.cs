@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace WindowsGSM.GameServer
 {
-    class TF2
+    class CS
     {
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -17,22 +17,22 @@ namespace WindowsGSM.GameServer
         private string Param;
         public string Error;
 
-        public const string FullName = "Team Fortress 2 Dedicated Server";
+        public const string FullName = "Counter-Strike: 1.6 Dedicated Server";
 
         public string port = "27015";
-        public string defaultmap = "cp_badlands";
+        public string defaultmap = "de_dust2";
         public string maxplayers = "24";
         public string additional = "";
 
-        public TF2(string serverid)
+        public CS(string serverid)
         {
             ServerID = serverid;
         }
 
         public void CreateServerCFG(string hostname, string rcon_password)
         {
-            string serverConfigPath = Functions.Path.GetServerFiles(ServerID) + @"\tf\cfg\server.cfg";
-            
+            string serverConfigPath = Functions.Path.GetServerFiles(ServerID) + @"\cstrike\server.cfg";
+
             File.Create(serverConfigPath).Dispose();
 
             using (TextWriter textwriter = new StreamWriter(serverConfigPath))
@@ -40,30 +40,34 @@ namespace WindowsGSM.GameServer
                 textwriter.WriteLine("hostname \"" + hostname + "\"");
                 textwriter.WriteLine("rcon_password \"" + rcon_password + "\"");
                 textwriter.WriteLine("sv_password \"\"");
-                textwriter.WriteLine("sv_region \"255\"");
-                textwriter.WriteLine("sv_lan \"0\"");
-                textwriter.WriteLine("net_maxfilesize \"64\"");
-                textwriter.WriteLine("sv_downloadurl \"\"");
-                textwriter.WriteLine("exec banned_user.cfg");
-                textwriter.WriteLine("exec banned_ip.cfg");
-                textwriter.WriteLine("writeid");
-                textwriter.WriteLine("writeip");
+                textwriter.WriteLine("sv_aim \"0\"");
+                textwriter.WriteLine("pausable  \"0\"");
+                textwriter.WriteLine("sv_maxspeed \"320\"");
+            }
+
+            string txtPath = Functions.Path.GetServerFiles(ServerID) + @"\steam_appid.txt";
+
+            File.Create(txtPath).Dispose();
+
+            using (TextWriter textwriter = new StreamWriter(txtPath))
+            {
+                textwriter.WriteLine("10");
             }
         }
 
         public void SetParameter(string ip, string port, string map, string maxplayers, string gslt, string additional)
         {
-            Param = "-console -game tf -ip " + ip + " -port " + port + " +map " + map + " -maxplayers " + maxplayers + " +sv_setsteamaccount " + gslt + " " + additional;
+            Param = "-console -game cstrike -ip " + ip + " -port " + port + " +map " + map + " -maxplayers " + maxplayers + " +sv_setsteamaccount " + gslt + " " + additional;
         }
 
         public (Process Process, string Error, string Notice) Start()
         {
             string workingDir = Functions.Path.GetServerFiles(ServerID);
-            string srcdsPath = workingDir + @"\srcds.exe";
+            string hldsPath = workingDir + @"\hlds.exe";
 
-            if (!File.Exists(srcdsPath))
+            if (!File.Exists(hldsPath))
             {
-                return (null, "srcds.exe not found (" + srcdsPath + ")", "");
+                return (null, "hlds.exe not found (" + hldsPath + ")", "");
             }
 
             if (string.IsNullOrWhiteSpace(Param))
@@ -71,13 +75,13 @@ namespace WindowsGSM.GameServer
                 return (null, "Start Parameter not set", "");
             }
 
-            string serverConfigPath = workingDir + @"\tf\cfg\server.cfg";
+            string serverConfigPath = workingDir + @"\cstrike\server.cfg";
             if (!File.Exists(serverConfigPath))
             {
                 return (null, "", "server.cfg not found (" + serverConfigPath + ")");
             }
 
-            WindowsFirewall firewall = new WindowsFirewall("srcds.exe", srcdsPath);
+            WindowsFirewall firewall = new WindowsFirewall("hlds.exe", hldsPath);
             if (!firewall.IsRuleExist())
             {
                 firewall.AddRule();
@@ -85,7 +89,7 @@ namespace WindowsGSM.GameServer
 
             Process p = new Process();
             p.StartInfo.WorkingDirectory = workingDir;
-            p.StartInfo.FileName = srcdsPath;
+            p.StartInfo.FileName = hldsPath;
             p.StartInfo.Arguments = Param;
             p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
             p.Start();
@@ -117,7 +121,7 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(ServerID), "", "232250", true);
+            steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(ServerID), "", "90", true);
 
             if (!await steamCMD.Download())
             {
@@ -138,7 +142,7 @@ namespace WindowsGSM.GameServer
         public async Task<bool> Update()
         {
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(ServerID), "", "232250", false);
+            steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(ServerID), "", "90", false);
 
             if (!await steamCMD.Download())
             {

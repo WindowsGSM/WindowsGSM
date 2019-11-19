@@ -10,12 +10,14 @@ namespace WindowsGSM
             int exitCode;
             switch (serverGame)
             {
-                case ("Counter-Strike: Global Offensive Dedicated Server"):
-                case ("Garry's Mod Dedicated Server"):
-                case ("Team Fortress 2 Dedicated Server"):
-                case ("Minecraft Pocket Edition Server | PocketMine-MP"):
+                case (GameServer.CSGO.FullName):
+                case (GameServer.GMOD.FullName):
+                case (GameServer.TF2.FullName):
+                case (GameServer.MCPE.FullName):
+                case (GameServer.CS.FullName):
+                case (GameServer.CSCZ.FullName):
                     exitCode = 0; break;
-                case ("Rust Dedicated Server"):
+                case (GameServer.RUST.FullName):
                     exitCode = -1; break;
                 default: return false;
             }

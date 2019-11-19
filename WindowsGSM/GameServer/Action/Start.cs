@@ -62,6 +62,22 @@ namespace WindowsGSM.GameServer.Action
 
                         break;
                     }
+                case (GameServer.CS.FullName):
+                    {
+                        GameServer.CS gameServer = new GameServer.CS(server.ID);
+                        gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, gslt, additionalParam);
+                        (process, Error, Notice) = gameServer.Start();
+
+                        break;
+                    }
+                case (GameServer.CSCZ.FullName):
+                    {
+                        GameServer.CSCZ gameServer = new GameServer.CSCZ(server.ID);
+                        gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, gslt, additionalParam);
+                        (process, Error, Notice) = gameServer.Start();
+
+                        break;
+                    }
                 default: break;
             }
 

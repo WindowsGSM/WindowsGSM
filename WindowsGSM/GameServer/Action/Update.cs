@@ -54,6 +54,20 @@ namespace WindowsGSM.GameServer.Action
                         Error = gameServer.Error;
                         break;
                     }
+                case (GameServer.CS.FullName):
+                    {
+                        GameServer.CS gameServer = new GameServer.CS(server.ID);
+                        updated = await gameServer.Update();
+                        Error = gameServer.Error;
+                        break;
+                    }
+                case (GameServer.CSCZ.FullName):
+                    {
+                        GameServer.CSCZ gameServer = new GameServer.CSCZ(server.ID);
+                        updated = await gameServer.Update();
+                        Error = gameServer.Error;
+                        break;
+                    }
                 default: break;
             }
 

@@ -61,7 +61,7 @@ namespace WindowsGSM {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Counter-Strike: Global Offensive Dedicated Server.
+        ///   Looks up a localized string similar to Counter-Strike: 1.6 Dedicated Server.
         /// </summary>
         internal static string _1 {
             get {
@@ -70,7 +70,7 @@ namespace WindowsGSM {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Garry&apos;s Mod Dedicated Server.
+        ///   Looks up a localized string similar to Counter-Strike: Condition Zero Dedicated Server.
         /// </summary>
         internal static string _2 {
             get {
@@ -79,7 +79,7 @@ namespace WindowsGSM {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Minecraft Pocket Edition Server | PocketMine-MP.
+        ///   Looks up a localized string similar to Counter-Strike: Global Offensive Dedicated Server.
         /// </summary>
         internal static string _3 {
             get {
@@ -88,7 +88,7 @@ namespace WindowsGSM {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Rust Dedicated Server.
+        ///   Looks up a localized string similar to Garry&apos;s Mod Dedicated Server.
         /// </summary>
         internal static string _4 {
             get {
@@ -97,11 +97,29 @@ namespace WindowsGSM {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Team Fortress 2 Dedicated Server.
+        ///   Looks up a localized string similar to Minecraft Pocket Edition Server | PocketMine-MP.
         /// </summary>
         internal static string _5 {
             get {
                 return ResourceManager.GetString("5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rust Dedicated Server.
+        /// </summary>
+        internal static string _6 {
+            get {
+                return ResourceManager.GetString("6", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Team Fortress 2 Dedicated Server.
+        /// </summary>
+        internal static string _7 {
+            get {
+                return ResourceManager.GetString("7", resourceCulture);
             }
         }
     }

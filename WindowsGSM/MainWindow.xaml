@@ -15,12 +15,13 @@
         MinWidth="960"
         Closing="Window_Closing"
         GlowBrush="{DynamicResource AccentColorBrush}"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen" StateChanged="Window_StateChanged">
 
     <Controls:MetroWindow.RightWindowCommands>
         <Controls:WindowCommands>
             <Button x:Name="button_Github" Content="Github" Click="Button_Github_Click"/>
             <Button x:Name="button_Settings" Content="Settings" Click="Button_Settings_Click"/>
+            <Button x:Name="button_Hide" Content="Hide" Click="Button_Hide_Click"/>
         </Controls:WindowCommands>
     </Controls:MetroWindow.RightWindowCommands>
 

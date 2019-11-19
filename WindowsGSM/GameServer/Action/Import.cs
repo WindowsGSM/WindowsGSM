@@ -72,9 +72,9 @@ namespace WindowsGSM.GameServer.Action
             //Check is the path contain game server files
             switch (serverGame)
             {
-                case ("Counter-Strike: Global Offensive Dedicated Server"):
-                case ("Garry's Mod Dedicated Server"):
-                case ("Team Fortress 2 Dedicated Server"):
+                case (GameServer.CSGO.FullName):
+                case (GameServer.GMOD.FullName):
+                case (GameServer.TF2.FullName):
                     {
                         string srcdsPath = Path.Combine(serverDir, "srcds.exe");
                         if (File.Exists(srcdsPath))
@@ -87,7 +87,7 @@ namespace WindowsGSM.GameServer.Action
                             return false;
                         }
                     }
-                case ("Minecraft Pocket Edition Server | PocketMine-MP"):
+                case (GameServer.MCPE.FullName):
                     {
                         string PHPPath = Path.Combine(serverDir, @"bin\php\php.exe");
                         string PMMPPath = Path.Combine(serverDir, "PocketMine-MP.phar");
@@ -110,7 +110,7 @@ namespace WindowsGSM.GameServer.Action
                             return false;
                         }
                     }
-                case ("Rust Dedicated Server"):
+                case (GameServer.RUST.FullName):
                     {
                         string rustPath = Path.Combine(serverDir, "RustDedicated.exe");
                         if (File.Exists(rustPath))
@@ -120,6 +120,20 @@ namespace WindowsGSM.GameServer.Action
                         else
                         {
                             Error = "Invalid Path! Fail to find RustDedicated.exe";
+                            return false;
+                        }
+                    }
+                case (GameServer.CS.FullName):
+                case (GameServer.CSCZ.FullName):
+                    {
+                        string hldsPath = Path.Combine(serverDir, "hlds.exe");
+                        if (File.Exists(hldsPath))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            Error = "Invalid Path! Fail to find hlds.exe";
                             return false;
                         }
                     }

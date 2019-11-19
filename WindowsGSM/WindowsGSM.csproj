@@ -116,6 +116,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -146,6 +147,8 @@
     <Compile Include="GameServer\Action\Start.cs" />
     <Compile Include="GameServer\Action\Stop.cs" />
     <Compile Include="GameServer\Action\Update.cs" />
+    <Compile Include="GameServer\CS.cs" />
+    <Compile Include="GameServer\CSCZ.cs" />
     <Compile Include="WindowsFirewall.cs" />
     <Page Include="Import.xaml">
       <SubType>Designer</SubType>
@@ -304,6 +307,12 @@
     <EmbeddedResource Include="..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll">
       <Link>ReferencesEx\Newtonsoft.Json.dll</Link>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\games\cs.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\games\cscz.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

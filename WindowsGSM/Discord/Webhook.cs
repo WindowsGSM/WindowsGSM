@@ -24,32 +24,50 @@ namespace WindowsGSM.Discord
             string color;
             switch (serverstatus)
             {
-                case "Started": color = "65280"; break; //Green
-                case "Stopped": color = "16755200"; break; //Orange
-                case "Restarted": color = "65535"; break; //Cyan
-                case "Crashed": color = "16711680"; break; //Red
-                default: color = "16777215"; break;
+                case "Started":
+                    color = "65280"; break; //Green
+                case "Stopped":
+                    color = "16755200"; break; //Orange
+                case "Restarted":
+                    color = "65535"; break; //Cyan
+                case "Crashed":
+                    color = "16711680"; break; //Red
+                default:
+                    color = "16777215"; break;
             }
 
             string status = serverstatus;
             switch (serverstatus)
             {
-                case "Started": status += " :ok:"; break;
-                case "Stopped": status += " :octagonal_sign:"; break;
-                case "Restarted": status += " :arrows_counterclockwise:"; break;
-                case "Crashed": status += " :warning:"; break;
-                default: break;
+                case "Started":
+                    status += " :ok:"; break;
+                case "Stopped":
+                    status += " :octagonal_sign:"; break;
+                case "Restarted":
+                    status += " :arrows_counterclockwise:"; break;
+                case "Crashed":
+                    status += " :warning:"; break;
             }
 
             string gameicon = @"https://github.com/BattlefieldDuck/WindowsGSM/blob/master/WindowsGSM/Images/";
             switch (servergame)
             {
-                case "Counter-Strike: Global Offensive Dedicated Server": gameicon += @"games/csgo.png?raw=true"; break;
-                case "Garry's Mod Dedicated Server": gameicon += @"games/gmod.png?raw=true"; break;
-                case "Team Fortress 2 Dedicated Server": gameicon += @"games/tf2.png?raw=true"; break;
-                case "Minecraft Pocket Edition Server | PocketMine-MP": gameicon += @"games/mcpe.png?raw=true"; break;
-                case "Rust Dedicated Server": gameicon += @"games/rust.png?raw=true"; break;
-                default: gameicon += @"windowsgsm.png?raw=true"; break;
+                case (GameServer.CSGO.FullName):
+                    gameicon += @"games/csgo.png?raw=true"; break;
+                case (GameServer.GMOD.FullName):
+                    gameicon += @"games/gmod.png?raw=true"; break;
+                case (GameServer.TF2.FullName):
+                    gameicon += @"games/tf2.png?raw=true"; break;
+                case (GameServer.MCPE.FullName):
+                    gameicon += @"games/mcpe.png?raw=true"; break;
+                case (GameServer.RUST.FullName):
+                    gameicon += @"games/rust.png?raw=true"; break;
+                case (GameServer.CS.FullName):
+                    gameicon += @"games/cs.png?raw=true"; break;
+                case (GameServer.CSCZ.FullName):
+                    gameicon += @"games/cscz.png?raw=true"; break;
+                default:
+                    gameicon += @"windowsgsm.png?raw=true"; break;
             }
 
             string time = DateTime.UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss.mssZ");
@@ -101,7 +119,7 @@ namespace WindowsGSM.Discord
                 }
                 catch
                 {
-
+                    return false;
                 }
 
                 return false;

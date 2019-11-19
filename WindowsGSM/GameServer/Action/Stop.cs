@@ -53,6 +53,20 @@ namespace WindowsGSM.GameServer.Action
 
                         break;
                     }
+                case (GameServer.CS.FullName):
+                    {
+                        GameServer.CS gameServer = new GameServer.CS(server.ID);
+                        await gameServer.Stop(process);
+
+                        break;
+                    }
+                case (GameServer.CSCZ.FullName):
+                    {
+                        GameServer.CSCZ gameServer = new GameServer.CSCZ(server.ID);
+                        await gameServer.Stop(process);
+
+                        break;
+                    }
                 default: return true;
             }
 
