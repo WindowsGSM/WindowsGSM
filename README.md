@@ -32,7 +32,7 @@
 Please view the wiki page [Installation](https://github.com/BattlefieldDuck/WindowsGSM/wiki/Installation)
 
 ## Authors
-* **BattlefieldDuck** - *Initial work* - [BattlefieldDuck](https://github.com/BattlefieldDuck)
+* **TatLead** - *Initial work* - [BattlefieldDuck](https://github.com/BattlefieldDuck)
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/BattlefieldDuck/WindowsGSM/blob/master/LICENSE) file for details
