@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace WindowsGSM.GameServer
 {
-    class CSCZ
+    class L4D2
     {
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -17,21 +17,21 @@ namespace WindowsGSM.GameServer
         private string Param;
         public string Error;
 
-        public const string FullName = "Counter-Strike: Condition Zero Dedicated Server";
+        public const string FullName = "Left 4 Dead 2 Dedicated Server";
 
         public string port = "27015";
-        public string defaultmap = "de_dust2";
-        public string maxplayers = "24";
+        public string defaultmap = "c1m1_hotel";
+        public string maxplayers = "18";
         public string additional = "";
 
-        public CSCZ(string serverid)
+        public L4D2(string serverid)
         {
             ServerID = serverid;
         }
 
         public void CreateServerCFG(string hostname, string rcon_password)
         {
-            string serverConfigPath = Functions.Path.GetServerFiles(ServerID) + @"\czero\server.cfg";
+            string serverConfigPath = Functions.Path.GetServerFiles(ServerID) + @"\left4dead2\cfg\server.cfg";
 
             File.Create(serverConfigPath).Dispose();
 
@@ -40,21 +40,13 @@ namespace WindowsGSM.GameServer
                 textwriter.WriteLine("hostname \"" + hostname + "\"");
                 textwriter.WriteLine("rcon_password \"" + rcon_password + "\"");
                 textwriter.WriteLine("sv_password \"\"");
-            }
-
-            string txtPath = Functions.Path.GetServerFiles(ServerID) + @"\steam_appid.txt";
-
-            File.Create(txtPath).Dispose();
-
-            using (TextWriter textwriter = new StreamWriter(txtPath))
-            {
-                textwriter.WriteLine("80");
+                textwriter.WriteLine("sv_lan \"0\"");
             }
         }
 
         public void SetParameter(string ip, string port, string map, string maxplayers, string gslt, string additional)
         {
-            Param = "-console -game czero";
+            Param = "-console -game left4dead2";
             Param += String.Format("{0}", String.IsNullOrEmpty(ip) ? "" : $" -ip {ip}");
             Param += String.Format("{0}", String.IsNullOrEmpty(port) ? "" : $" -port {port}");
             Param += String.Format("{0}", String.IsNullOrEmpty(map) ? "" : $" +map {map}");
@@ -66,11 +58,11 @@ namespace WindowsGSM.GameServer
         public (Process Process, string Error, string Notice) Start()
         {
             string workingDir = Functions.Path.GetServerFiles(ServerID);
-            string hldsPath = workingDir + @"\hlds.exe";
+            string srcdsPath = workingDir + @"\srcds.exe";
 
-            if (!File.Exists(hldsPath))
+            if (!File.Exists(srcdsPath))
             {
-                return (null, "hlds.exe not found (" + hldsPath + ")", "");
+                return (null, "srcds.exe not found (" + srcdsPath + ")", "");
             }
 
             if (string.IsNullOrWhiteSpace(Param))
@@ -78,13 +70,13 @@ namespace WindowsGSM.GameServer
                 return (null, "Start Parameter not set", "");
             }
 
-            string serverConfigPath = workingDir + @"\czero\server.cfg";
+            string serverConfigPath = workingDir + @"\left4dead2\cfg\server.cfg";
             if (!File.Exists(serverConfigPath))
             {
                 return (null, "", "server.cfg not found (" + serverConfigPath + ")");
             }
 
-            WindowsFirewall firewall = new WindowsFirewall("hlds.exe", hldsPath);
+            WindowsFirewall firewall = new WindowsFirewall("srcds.exe", srcdsPath);
             if (!firewall.IsRuleExist())
             {
                 firewall.AddRule();
@@ -92,7 +84,7 @@ namespace WindowsGSM.GameServer
 
             Process p = new Process();
             p.StartInfo.WorkingDirectory = workingDir;
-            p.StartInfo.FileName = hldsPath;
+            p.StartInfo.FileName = srcdsPath;
             p.StartInfo.Arguments = Param;
             p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
             p.Start();
@@ -124,7 +116,7 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(ServerID), "+app_set_config 90 mod czero", "90", true);
+            steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(ServerID), "", "222860", true);
 
             if (!await steamCMD.Download())
             {
@@ -145,7 +137,7 @@ namespace WindowsGSM.GameServer
         public async Task<bool> Update()
         {
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(ServerID), "+app_set_config 90 mod czero", "90", false);
+            steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(ServerID), "", "222860", false);
 
             if (!await steamCMD.Download())
             {

@@ -30,6 +30,7 @@ namespace WindowsGSM
             }
 
             Title = "WindowsGSM - Install (ID: " + serverConfig.ServerID + ")";
+            textbox_name.Text = "WindowsGSM - Server #" + serverConfig.ServerID;
 
             gameServerAction = new GameServer.Action.Install(serverConfig);
         }
@@ -106,11 +107,11 @@ namespace WindowsGSM
             {
                 MainWindow WindowsGSM = (MainWindow)System.Windows.Application.Current.MainWindow;
 
-                GameServerTable row = new GameServerTable
+                Function.ServerTable row = new Function.ServerTable
                 {
                     ID = serverConfig.ServerID,
                     Game = serverConfig.ServerGame,
-                    Icon = Images.ServerIcon.ResourceManager.GetString(servergame),
+                    Icon = GameServer.Data.Icon.ResourceManager.GetString(servergame),
                     Status = "Stopped",
                     Name = serverConfig.ServerName,
                     IP = serverConfig.ServerIP,

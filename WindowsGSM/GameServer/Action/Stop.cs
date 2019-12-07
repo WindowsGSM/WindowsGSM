@@ -5,11 +5,11 @@ namespace WindowsGSM.GameServer.Action
 {
     class Stop
     {
-        private readonly GameServerTable server;
+        private readonly Function.ServerTable server;
         public string Error = "";
         public string Notice = "";
 
-        public Stop(GameServerTable server)
+        public Stop(Function.ServerTable server)
         {
             this.server = server;
         }
@@ -63,6 +63,20 @@ namespace WindowsGSM.GameServer.Action
                 case (GameServer.CSCZ.FullName):
                     {
                         GameServer.CSCZ gameServer = new GameServer.CSCZ(server.ID);
+                        await gameServer.Stop(process);
+
+                        break;
+                    }
+                case (GameServer.HL2DM.FullName):
+                    {
+                        GameServer.HL2DM gameServer = new GameServer.HL2DM(server.ID);
+                        await gameServer.Stop(process);
+
+                        break;
+                    }
+                case (GameServer.L4D2.FullName):
+                    {
+                        GameServer.L4D2 gameServer = new GameServer.L4D2(server.ID);
                         await gameServer.Stop(process);
 
                         break;

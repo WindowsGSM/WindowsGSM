@@ -1,6 +1,6 @@
-﻿namespace WindowsGSM
+﻿namespace WindowsGSM.Function
 {
-    class GameServerTable
+    class ServerTable
     {
         public string ID { get; set; }
         public string Game { get; set; }

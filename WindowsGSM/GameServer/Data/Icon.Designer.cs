@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WindowsGSM.Images {
+namespace WindowsGSM.GameServer.Data {
     using System;
     
     
@@ -22,14 +22,14 @@ namespace WindowsGSM.Images {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class ServerIcon {
+    public class Icon {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal ServerIcon() {
+        internal Icon() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace WindowsGSM.Images {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("WindowsGSM.Images.ServerIcon", typeof(ServerIcon).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("WindowsGSM.GameServer.Data.Icon", typeof(Icon).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -93,6 +93,24 @@ namespace WindowsGSM.Images {
         public static string Garry_s_Mod_Dedicated_Server {
             get {
                 return ResourceManager.GetString("Garry\'s Mod Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /WindowsGSM;component/Images/games/hl2dm.png.
+        /// </summary>
+        public static string Half_Life_2__Deathmatch_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Half-Life 2: Deathmatch Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /WindowsGSM;component/Images/games/l4d2.png.
+        /// </summary>
+        public static string Left_4_Dead_2_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Left 4 Dead 2 Dedicated Server", resourceCulture);
             }
         }
         

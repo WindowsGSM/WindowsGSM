@@ -149,6 +149,8 @@
     <Compile Include="GameServer\Action\Update.cs" />
     <Compile Include="GameServer\CS.cs" />
     <Compile Include="GameServer\CSCZ.cs" />
+    <Compile Include="GameServer\HL2DM.cs" />
+    <Compile Include="GameServer\L4D2.cs" />
     <Compile Include="WindowsFirewall.cs" />
     <Page Include="Import.xaml">
       <SubType>Designer</SubType>
@@ -166,9 +168,9 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Functions\Path.cs" />
+    <Compile Include="Function\Path.cs" />
     <Compile Include="Discord\Webhook.cs" />
-    <Compile Include="GameServerCrashDetection.cs" />
+    <Compile Include="GameServer\Check\CrashDetection.cs" />
     <Compile Include="GameServer\GMOD.cs" />
     <Compile Include="GameServer\MCPE.cs" />
     <Compile Include="GameServer\RUST.cs" />
@@ -178,22 +180,22 @@
     <Compile Include="Install.xaml.cs">
       <DependentUpon>Install.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Functions\ServerConfig.cs" />
-    <Compile Include="GameServerList.Designer.cs">
+    <Compile Include="Function\ServerConfig.cs" />
+    <Compile Include="GameServer\Data\List.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>GameServerList.resx</DependentUpon>
+      <DependentUpon>List.resx</DependentUpon>
     </Compile>
     <Compile Include="Images\Row.cs" />
-    <Compile Include="Images\ServerIcon.Designer.cs">
+    <Compile Include="GameServer\Data\Icon.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>ServerIcon.resx</DependentUpon>
+      <DependentUpon>Icon.resx</DependentUpon>
     </Compile>
     <Compile Include="GameServer\CSGO.cs" />
     <Compile Include="GameServer\TF2.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="GameServerTable.cs" />
+    <Compile Include="Function\ServerTable.cs" />
     <Compile Include="Installer\SteamCMD.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -214,13 +216,13 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <EmbeddedResource Include="GameServerList.resx">
+    <EmbeddedResource Include="GameServer\Data\List.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>GameServerList.Designer.cs</LastGenOutput>
+      <LastGenOutput>List.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="Images\ServerIcon.resx">
+    <EmbeddedResource Include="GameServer\Data\Icon.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>ServerIcon.Designer.cs</LastGenOutput>
+      <LastGenOutput>Icon.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -313,6 +315,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\games\cscz.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\games\hl2dm.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\games\l4d2.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

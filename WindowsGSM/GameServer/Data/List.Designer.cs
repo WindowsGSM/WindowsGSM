@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WindowsGSM {
+namespace WindowsGSM.GameServer.Data {
     using System;
     
     
@@ -22,14 +22,14 @@ namespace WindowsGSM {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class GameServerList {
+    internal class List {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal GameServerList() {
+        internal List() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace WindowsGSM {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("WindowsGSM.GameServerList", typeof(GameServerList).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("WindowsGSM.GameServer.Data.List", typeof(List).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -97,7 +97,7 @@ namespace WindowsGSM {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Minecraft Pocket Edition Server | PocketMine-MP.
+        ///   Looks up a localized string similar to Half-Life 2: Deathmatch Dedicated Server.
         /// </summary>
         internal static string _5 {
             get {
@@ -106,7 +106,7 @@ namespace WindowsGSM {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Rust Dedicated Server.
+        ///   Looks up a localized string similar to Left 4 Dead 2 Dedicated Server.
         /// </summary>
         internal static string _6 {
             get {
@@ -115,11 +115,29 @@ namespace WindowsGSM {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Team Fortress 2 Dedicated Server.
+        ///   Looks up a localized string similar to Minecraft Pocket Edition Server | PocketMine-MP.
         /// </summary>
         internal static string _7 {
             get {
                 return ResourceManager.GetString("7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rust Dedicated Server.
+        /// </summary>
+        internal static string _8 {
+            get {
+                return ResourceManager.GetString("8", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Team Fortress 2 Dedicated Server.
+        /// </summary>
+        internal static string _9 {
+            get {
+                return ResourceManager.GetString("9", resourceCulture);
             }
         }
     }

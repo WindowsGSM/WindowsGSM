@@ -4,11 +4,11 @@ namespace WindowsGSM.GameServer.Action
 {
     class Update
     {
-        private readonly GameServerTable server;
+        private readonly Function.ServerTable server;
         public string Error = "";
         public string Notice = "";
 
-        public Update(GameServerTable server)
+        public Update(Function.ServerTable server)
         {
             this.server = server;
         }
@@ -64,6 +64,20 @@ namespace WindowsGSM.GameServer.Action
                 case (GameServer.CSCZ.FullName):
                     {
                         GameServer.CSCZ gameServer = new GameServer.CSCZ(server.ID);
+                        updated = await gameServer.Update();
+                        Error = gameServer.Error;
+                        break;
+                    }
+                case (GameServer.HL2DM.FullName):
+                    {
+                        GameServer.HL2DM gameServer = new GameServer.HL2DM(server.ID);
+                        updated = await gameServer.Update();
+                        Error = gameServer.Error;
+                        break;
+                    }
+                case (GameServer.L4D2.FullName):
+                    {
+                        GameServer.L4D2 gameServer = new GameServer.L4D2(server.ID);
                         updated = await gameServer.Update();
                         Error = gameServer.Error;
                         break;

@@ -129,6 +129,12 @@
   <data name="Garry's Mod Dedicated Server" xml:space="preserve">
     <value>/WindowsGSM;component/Images/games/gmod.png</value>
   </data>
+  <data name="Half-Life 2: Deathmatch Dedicated Server" xml:space="preserve">
+    <value>/WindowsGSM;component/Images/games/hl2dm.png</value>
+  </data>
+  <data name="Left 4 Dead 2 Dedicated Server" xml:space="preserve">
+    <value>/WindowsGSM;component/Images/games/l4d2.png</value>
+  </data>
   <data name="Minecraft Pocket Edition Server | PocketMine-MP" xml:space="preserve">
     <value>/WindowsGSM;component/Images/games/mcpe.png</value>
   </data>

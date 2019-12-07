@@ -130,12 +130,18 @@
     <value>Garry's Mod Dedicated Server</value>
   </data>
   <data name="5" xml:space="preserve">
-    <value>Minecraft Pocket Edition Server | PocketMine-MP</value>
+    <value>Half-Life 2: Deathmatch Dedicated Server</value>
   </data>
   <data name="6" xml:space="preserve">
-    <value>Rust Dedicated Server</value>
+    <value>Left 4 Dead 2 Dedicated Server</value>
   </data>
   <data name="7" xml:space="preserve">
+    <value>Minecraft Pocket Edition Server | PocketMine-MP</value>
+  </data>
+  <data name="8" xml:space="preserve">
+    <value>Rust Dedicated Server</value>
+  </data>
+  <data name="9" xml:space="preserve">
     <value>Team Fortress 2 Dedicated Server</value>
   </data>
 </root>

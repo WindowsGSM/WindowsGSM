@@ -66,6 +66,10 @@ namespace WindowsGSM.Discord
                     gameicon += @"games/cs.png?raw=true"; break;
                 case (GameServer.CSCZ.FullName):
                     gameicon += @"games/cscz.png?raw=true"; break;
+                case (GameServer.HL2DM.FullName):
+                    gameicon += @"games/hl2dm.png?raw=true"; break;
+                case (GameServer.L4D2.FullName):
+                    gameicon += @"games/l4d2.png?raw=true"; break;
                 default:
                     gameicon += @"windowsgsm.png?raw=true"; break;
             }

@@ -5,13 +5,13 @@ namespace WindowsGSM.GameServer.Action
 {
     class Restart
     {
-        private readonly GameServerTable server;
+        private readonly Function.ServerTable server;
         private readonly string gslt = "";
         private readonly string additionalParam = "";
         public string Error = "";
         public string Notice = "";
 
-        public Restart(GameServerTable server, string gslt, string additionalParam)
+        public Restart(Function.ServerTable server, string gslt, string additionalParam)
         {
             this.server = server;
             this.gslt = gslt;

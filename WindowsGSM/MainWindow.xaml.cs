@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Drawing;
 using System.Windows.Media;
 using System.IO;
 using System.Net;
@@ -53,7 +52,7 @@ namespace WindowsGSM
             Restoring = 11
         }
 
-        public static readonly string WGSM_VERSION = "v1.3.0";
+        public static readonly string WGSM_VERSION = "v1.4.0";
         public static readonly int MAX_SERVER = 100;
         public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
         //public static readonly string WGSM_PATH = @"D:\WindowsGSMtest2";
@@ -142,7 +141,7 @@ namespace WindowsGSM
 
         public void LoadServerTable()
         {
-            GameServerTable selectedrow = (GameServerTable)ServerGrid.SelectedItem;
+            Function.ServerTable selectedrow = (Function.ServerTable)ServerGrid.SelectedItem;
 
             int num_row = ServerGrid.Items.Count;
             for (int i = 0; i < num_row; i++)
@@ -184,11 +183,11 @@ namespace WindowsGSM
                     default: status = ""; break;
                 }
 
-                GameServerTable row = new GameServerTable
+                Function.ServerTable row = new Function.ServerTable
                 {
                     ID = i.ToString(),
                     Game = serverConfig.ServerGame,
-                    Icon = Images.ServerIcon.ResourceManager.GetString(serverConfig.ServerGame),
+                    Icon = GameServer.Data.Icon.ResourceManager.GetString(serverConfig.ServerGame),
                     Status = status,
                     Name = serverConfig.ServerName,
                     IP = serverConfig.ServerIP,
@@ -268,7 +267,7 @@ namespace WindowsGSM
 
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            GameServerTable row = (GameServerTable)ServerGrid.SelectedItem;
+            Function.ServerTable row = (Function.ServerTable)ServerGrid.SelectedItem;
 
             if (row != null)
             {
@@ -338,13 +337,13 @@ namespace WindowsGSM
                 string servergame = "";
                 while (servergame != null)
                 {
-                    servergame = GameServerList.ResourceManager.GetString((++i).ToString());
+                    servergame = GameServer.Data.List.ResourceManager.GetString((++i).ToString());
                     if (servergame == null)
                     {
                         break;
                     }
 
-                    var row = new Images.Row { Image = Images.ServerIcon.ResourceManager.GetString(servergame), Name = servergame };
+                    var row = new Images.Row { Image = GameServer.Data.Icon.ResourceManager.GetString(servergame), Name = servergame };
                     InstallWindow.comboBox.Items.Add(row);
                 }
             }
@@ -380,13 +379,13 @@ namespace WindowsGSM
                 string servergame = "";
                 while (servergame != null)
                 {
-                    servergame = GameServerList.ResourceManager.GetString((++i).ToString());
+                    servergame = GameServer.Data.List.ResourceManager.GetString((++i).ToString());
                     if (servergame == null)
                     {
                         break;
                     }
 
-                    var row = new Images.Row { Image = Images.ServerIcon.ResourceManager.GetString(servergame), Name = servergame };
+                    var row = new Images.Row { Image = GameServer.Data.Icon.ResourceManager.GetString(servergame), Name = servergame };
                     ImportWindow.comboBox.Items.Add(row);
                 }
             }
@@ -412,7 +411,7 @@ namespace WindowsGSM
 
         private async void Delete_Click(object sender, RoutedEventArgs e)
         {
-            GameServerTable server = (GameServerTable)ServerGrid.SelectedItem;
+            Function.ServerTable server = (Function.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped) { return; }
@@ -428,7 +427,7 @@ namespace WindowsGSM
 
         private async void Button_DiscordWebhookTest_Click(object sender, RoutedEventArgs e)
         {
-            GameServerTable row = (GameServerTable)ServerGrid.SelectedItem;
+            Function.ServerTable row = (Function.ServerTable)ServerGrid.SelectedItem;
             if (row == null) { return; }
 
             if (!g_bDiscordAlert[Int32.Parse(row.ID)]) { return; }
@@ -444,7 +443,7 @@ namespace WindowsGSM
 
             if (string.IsNullOrWhiteSpace(command)) { return; }
 
-            GameServerTable server = (GameServerTable)ServerGrid.SelectedItem;
+            Function.ServerTable server = (Function.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
             SendCommand(server, command);
@@ -460,7 +459,7 @@ namespace WindowsGSM
 
         private void Actions_Start_Click(object sender, RoutedEventArgs e)
         {
-            GameServerTable server = (GameServerTable)ServerGrid.SelectedItem;
+            Function.ServerTable server = (Function.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
             GameServer_Start(server);
@@ -468,7 +467,7 @@ namespace WindowsGSM
 
         private void Actions_Stop_Click(object sender, RoutedEventArgs e)
         {
-            GameServerTable server = (GameServerTable)ServerGrid.SelectedItem;
+            Function.ServerTable server = (Function.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
             GameServer_Stop(server);
@@ -476,7 +475,7 @@ namespace WindowsGSM
 
         private void Actions_Restart_Click(object sender, RoutedEventArgs e)
         {
-            GameServerTable server = (GameServerTable)ServerGrid.SelectedItem;
+            Function.ServerTable server = (Function.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
             GameServer_Restart(server);
@@ -484,7 +483,7 @@ namespace WindowsGSM
 
         private void Actions_ToggleConsole_Click(object sender, RoutedEventArgs e)
         {
-            GameServerTable row = (GameServerTable)ServerGrid.SelectedItem;
+            Function.ServerTable row = (Function.ServerTable)ServerGrid.SelectedItem;
             if (row == null) { return; }
 
             string serverid = row.ID.ToString();
@@ -498,7 +497,7 @@ namespace WindowsGSM
 
         private async void Actions_Update_Click(object sender, RoutedEventArgs e)
         {
-            GameServerTable server = (GameServerTable)ServerGrid.SelectedItem;
+            Function.ServerTable server = (Function.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped) { return; }
@@ -511,7 +510,7 @@ namespace WindowsGSM
 
         private async void Actions_Backup_Click(object sender, RoutedEventArgs e)
         {
-            GameServerTable server = (GameServerTable)ServerGrid.SelectedItem;
+            Function.ServerTable server = (Function.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped) { return; }
@@ -524,7 +523,7 @@ namespace WindowsGSM
 
         private async void Actions_RestoreBackup_Click(object sender, RoutedEventArgs e)
         {
-            GameServerTable server = (GameServerTable)ServerGrid.SelectedItem;
+            Function.ServerTable server = (Function.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped) { return; }
@@ -535,7 +534,7 @@ namespace WindowsGSM
             await GameServer_RestoreBackup(server);
         }
 
-        private async void GameServer_Start(GameServerTable server)
+        private async void GameServer_Start(Function.ServerTable server)
         {
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped) { return; }
 
@@ -650,7 +649,7 @@ namespace WindowsGSM
             StartServerCrashDetector(server);
         }
 
-        private async void GameServer_Stop(GameServerTable server)
+        private async void GameServer_Stop(Function.ServerTable server)
         {
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Started) { return; }
 
@@ -681,7 +680,7 @@ namespace WindowsGSM
             }
         }
 
-        private async void GameServer_Restart(GameServerTable server)
+        private async void GameServer_Restart(Function.ServerTable server)
         {
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Started) { return; }
 
@@ -772,7 +771,7 @@ namespace WindowsGSM
             StartServerCrashDetector(server);
         }
 
-        private async Task<bool> GameServer_Update(GameServerTable server)
+        private async Task<bool> GameServer_Update(Function.ServerTable server)
         {
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped)
             {
@@ -805,7 +804,7 @@ namespace WindowsGSM
             return true;
         }
 
-        private async Task<bool> GameServer_Backup(GameServerTable server)
+        private async Task<bool> GameServer_Backup(Function.ServerTable server)
         {
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped)
             {
@@ -870,7 +869,7 @@ namespace WindowsGSM
             return true;
         }
 
-        private async Task<bool> GameServer_RestoreBackup(GameServerTable server)
+        private async Task<bool> GameServer_RestoreBackup(Function.ServerTable server)
         {
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped)
             {
@@ -925,7 +924,7 @@ namespace WindowsGSM
             return true;
         }
 
-        private async Task<bool> GameServer_Delete(GameServerTable server)
+        private async Task<bool> GameServer_Delete(Function.ServerTable server)
         {
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped)
             {
@@ -963,9 +962,9 @@ namespace WindowsGSM
             return true;
         }
 
-        private async void StartServerCrashDetector(GameServerTable server)
+        private async void StartServerCrashDetector(Function.ServerTable server)
         {
-            GameServerCrashDetection detector = new GameServerCrashDetection();
+            GameServer.Check.CrashDetection detector = new GameServer.Check.CrashDetection();
 
             if (await detector.IsServerCrashed(g_Process[Int32.Parse(server.ID)], server.Game))
             {
@@ -1004,13 +1003,13 @@ namespace WindowsGSM
             }
         }
 
-        private void SetServerStatus(GameServerTable server, string status)
+        private void SetServerStatus(Function.ServerTable server, string status)
         {
             server.Status = status;
 
             for (int i = 0; i < ServerGrid.Items.Count; i++)
             {
-                GameServerTable temp = ServerGrid.Items[i] as GameServerTable;
+                Function.ServerTable temp = ServerGrid.Items[i] as Function.ServerTable;
                 if (server.ID == temp.ID)
                 {
                     if (ServerGrid.SelectedItem == ServerGrid.Items[i])
@@ -1032,11 +1031,11 @@ namespace WindowsGSM
 
         public void Log(string serverid, string logtext)
         {
-            GameServerTable row = null;
+            Function.ServerTable row = null;
 
             for (int i = 0; i < ServerGrid.Items.Count; i++)
             {
-                row = ServerGrid.Items[i] as GameServerTable;
+                row = ServerGrid.Items[i] as Function.ServerTable;
                 if (row.ID == serverid)
                 {
                     break;
@@ -1070,7 +1069,7 @@ namespace WindowsGSM
             console.Text = "";
         }
 
-        private void SendCommand(GameServerTable server, string command)
+        private void SendCommand(Function.ServerTable server, string command)
         {
             Process p = g_Process[Int32.Parse(server.ID)];
             if (p == null) { return; }
@@ -1109,7 +1108,7 @@ namespace WindowsGSM
 
         private void Browse_ServerBackups_Click(object sender, RoutedEventArgs e)
         {
-            GameServerTable row = (GameServerTable)ServerGrid.SelectedItem;
+            Function.ServerTable row = (Function.ServerTable)ServerGrid.SelectedItem;
             if (row == null) { return; }
 
             string path = WGSM_PATH + @"\backups\" + row.ID;
@@ -1123,7 +1122,7 @@ namespace WindowsGSM
 
         private void Browse_ServerConfigs_Click(object sender, RoutedEventArgs e)
         {
-            GameServerTable row = (GameServerTable)ServerGrid.SelectedItem;
+            Function.ServerTable row = (Function.ServerTable)ServerGrid.SelectedItem;
             if (row == null) { return; }
 
             string path = WGSM_PATH + @"\servers\" + row.ID + @"\configs";
@@ -1135,7 +1134,7 @@ namespace WindowsGSM
 
         private void Browse_ServerFiles_Click(object sender, RoutedEventArgs e)
         {
-            GameServerTable row = (GameServerTable)ServerGrid.SelectedItem;
+            Function.ServerTable row = (Function.ServerTable)ServerGrid.SelectedItem;
             if (row == null) { return; }
 
             string path = WGSM_PATH + @"\servers\" + row.ID + @"\serverfiles";
@@ -1255,7 +1254,7 @@ namespace WindowsGSM
 
         private void Tools_GlobalServerListCheck_Click(object sender, RoutedEventArgs e)
         {
-            GameServerTable row = (GameServerTable)ServerGrid.SelectedItem;
+            Function.ServerTable row = (Function.ServerTable)ServerGrid.SelectedItem;
             if (row == null) { return; }
 
             if (row.Game == GameServer.MCPE.FullName)

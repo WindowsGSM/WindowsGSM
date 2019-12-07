@@ -59,6 +59,16 @@ namespace WindowsGSM.GameServer.Action
                         GameServer.CSCZ gameServer = new GameServer.CSCZ(serverConfig.ServerID);
                         return await gameServer.Install();
                     }
+                case (GameServer.HL2DM.FullName):
+                    {
+                        GameServer.HL2DM gameServer = new GameServer.HL2DM(serverConfig.ServerID);
+                        return await gameServer.Install();
+                    }
+                case (GameServer.L4D2.FullName):
+                    {
+                        GameServer.L4D2 gameServer = new GameServer.L4D2(serverConfig.ServerID);
+                        return await gameServer.Install();
+                    }
                 default: break;
             }
 
@@ -77,11 +87,13 @@ namespace WindowsGSM.GameServer.Action
                 case (GameServer.CSGO.FullName):
                 case (GameServer.GMOD.FullName):
                 case (GameServer.TF2.FullName):
+                case (GameServer.HL2DM.FullName):
+                case (GameServer.L4D2.FullName):
                     {
                         string srcdsPath = Functions.Path.GetServerFiles(serverConfig.ServerID, "srcds.exe");
                         if (File.Exists(srcdsPath))
                         {
-                            CreateServerConfigs(serverGame, serverName, true);
+                            CreateServerConfigs(serverGame, serverName);
 
                             return true;
                         }
@@ -94,7 +106,7 @@ namespace WindowsGSM.GameServer.Action
                         string PMMPPath = Functions.Path.GetServerFiles(serverConfig.ServerID, "PocketMine-MP.phar");
                         if (File.Exists(PHPPath) && File.Exists(PMMPPath))
                         {
-                            CreateServerConfigs(serverGame, serverName, true);
+                            CreateServerConfigs(serverGame, serverName);
 
                             return true;
                         }
@@ -106,7 +118,7 @@ namespace WindowsGSM.GameServer.Action
                         string rustPath = Functions.Path.GetServerFiles(serverConfig.ServerID, "RustDedicated.exe");
                         if (File.Exists(rustPath))
                         {
-                            CreateServerConfigs(serverGame, serverName, true);
+                            CreateServerConfigs(serverGame, serverName);
 
                             return true;
                         }
@@ -124,7 +136,7 @@ namespace WindowsGSM.GameServer.Action
                                 return false;
                             }
 
-                            CreateServerConfigs(serverGame, serverName, true);
+                            CreateServerConfigs(serverGame, serverName);
 
                             return true;
                         }
@@ -142,7 +154,7 @@ namespace WindowsGSM.GameServer.Action
                                 return false;
                             }
 
-                            CreateServerConfigs(serverGame, serverName, true);
+                            CreateServerConfigs(serverGame, serverName);
 
                             return true;
                         }
@@ -154,7 +166,7 @@ namespace WindowsGSM.GameServer.Action
             return false;
         }
 
-        public void CreateServerConfigs(string serverGame, string serverName, bool isInstall)
+        public void CreateServerConfigs(string serverGame, string serverName)
         {
             switch (serverGame)
             {
@@ -211,9 +223,7 @@ namespace WindowsGSM.GameServer.Action
                     {
                         GameServer.CS gameServer = new GameServer.CS(serverConfig.ServerID);
                         serverConfig.CreateServerDirectory();
-
-                        string port = GetAvailablePort(gameServer.port);
-                        serverConfig.CreateWindowsGSMConfig(serverGame, serverName, GetIPAddress(), port, gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
+                        serverConfig.CreateWindowsGSMConfig(serverGame, serverName, GetIPAddress(), GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
                         gameServer.CreateServerCFG(serverName, GetRCONPassword());
 
                         break;
@@ -222,9 +232,25 @@ namespace WindowsGSM.GameServer.Action
                     {
                         GameServer.CSCZ gameServer = new GameServer.CSCZ(serverConfig.ServerID);
                         serverConfig.CreateServerDirectory();
+                        serverConfig.CreateWindowsGSMConfig(serverGame, serverName, GetIPAddress(), GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
+                        gameServer.CreateServerCFG(serverName, GetRCONPassword());
 
-                        string port = GetAvailablePort(gameServer.port);
-                        serverConfig.CreateWindowsGSMConfig(serverGame, serverName, GetIPAddress(), port, gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
+                        break;
+                    }
+                case (GameServer.HL2DM.FullName):
+                    {
+                        GameServer.HL2DM gameServer = new GameServer.HL2DM(serverConfig.ServerID);
+                        serverConfig.CreateServerDirectory();
+                        serverConfig.CreateWindowsGSMConfig(serverGame, serverName, GetIPAddress(), GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
+                        gameServer.CreateServerCFG(serverName, GetRCONPassword());
+
+                        break;
+                    }
+                case (GameServer.L4D2.FullName):
+                    {
+                        GameServer.L4D2 gameServer = new GameServer.L4D2(serverConfig.ServerID);
+                        serverConfig.CreateServerDirectory();
+                        serverConfig.CreateWindowsGSMConfig(serverGame, serverName, GetIPAddress(), GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
                         gameServer.CreateServerCFG(serverName, GetRCONPassword());
 
                         break;
@@ -250,7 +276,7 @@ namespace WindowsGSM.GameServer.Action
 
             for (int i = 0; i < WindowsGSM.ServerGrid.Items.Count; i++)
             {
-                GameServerTable row = WindowsGSM.ServerGrid.Items[i] as GameServerTable;
+                Function.ServerTable row = WindowsGSM.ServerGrid.Items[i] as Function.ServerTable;
                 portlist[i] = Int32.Parse(string.IsNullOrWhiteSpace(row.Port) ? "0" : row.Port);
             }
 

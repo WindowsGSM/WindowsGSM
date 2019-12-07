@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
 using System.Diagnostics;
 
-namespace WindowsGSM
+namespace WindowsGSM.GameServer.Check
 {
-    class GameServerCrashDetection
+    class CrashDetection
     {
         public async Task<bool> IsServerCrashed(Process process, string serverGame)
         {
@@ -16,6 +16,8 @@ namespace WindowsGSM
                 case (GameServer.MCPE.FullName):
                 case (GameServer.CS.FullName):
                 case (GameServer.CSCZ.FullName):
+                case (GameServer.HL2DM.FullName):
+                case (GameServer.L4D2.FullName):
                     exitCode = 0; break;
                 case (GameServer.RUST.FullName):
                     exitCode = -1; break;

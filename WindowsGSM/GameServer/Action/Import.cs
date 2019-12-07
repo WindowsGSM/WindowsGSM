@@ -48,9 +48,7 @@ namespace WindowsGSM.GameServer.Action
                     {
                         GameServer.MCPE gameServer = new GameServer.MCPE(serverConfig.ServerID);
                         serverConfig.CreateServerDirectory();
-
-                        string port = GetAvailablePort(gameServer.port);
-                        serverConfig.CreateWindowsGSMConfig(serverGame, serverName, GetIPAddress(), port, gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
+                        serverConfig.CreateWindowsGSMConfig(serverGame, serverName, GetIPAddress(), GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
 
                         break;
                     }
@@ -58,9 +56,39 @@ namespace WindowsGSM.GameServer.Action
                     {
                         GameServer.RUST gameServer = new GameServer.RUST(serverConfig.ServerID);
                         serverConfig.CreateServerDirectory();
+                        serverConfig.CreateWindowsGSMConfig(serverGame, serverName, GetIPAddress(), GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
 
-                        string port = GetAvailablePort(gameServer.port);
-                        serverConfig.CreateWindowsGSMConfig(serverGame, serverName, GetIPAddress(), port, gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
+                        break;
+                    }
+                case (GameServer.CS.FullName):
+                    {
+                        GameServer.CS gameServer = new GameServer.CS(serverConfig.ServerID);
+                        serverConfig.CreateServerDirectory();
+                        serverConfig.CreateWindowsGSMConfig(serverGame, serverName, GetIPAddress(), GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
+
+                        break;
+                    }
+                case (GameServer.CSCZ.FullName):
+                    {
+                        GameServer.CSCZ gameServer = new GameServer.CSCZ(serverConfig.ServerID);
+                        serverConfig.CreateServerDirectory();
+                        serverConfig.CreateWindowsGSMConfig(serverGame, serverName, GetIPAddress(), GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
+
+                        break;
+                    }
+                case (GameServer.HL2DM.FullName):
+                    {
+                        GameServer.HL2DM gameServer = new GameServer.HL2DM(serverConfig.ServerID);
+                        serverConfig.CreateServerDirectory();
+                        serverConfig.CreateWindowsGSMConfig(serverGame, serverName, GetIPAddress(), GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
+
+                        break;
+                    }
+                case (GameServer.L4D2.FullName):
+                    {
+                        GameServer.L4D2 gameServer = new GameServer.L4D2(serverConfig.ServerID);
+                        serverConfig.CreateServerDirectory();
+                        serverConfig.CreateWindowsGSMConfig(serverGame, serverName, GetIPAddress(), GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
 
                         break;
                     }
@@ -75,6 +103,8 @@ namespace WindowsGSM.GameServer.Action
                 case (GameServer.CSGO.FullName):
                 case (GameServer.GMOD.FullName):
                 case (GameServer.TF2.FullName):
+                case (GameServer.HL2DM.FullName):
+                case (GameServer.L4D2.FullName):
                     {
                         string srcdsPath = Path.Combine(serverDir, "srcds.exe");
                         if (File.Exists(srcdsPath))
@@ -161,7 +191,7 @@ namespace WindowsGSM.GameServer.Action
 
             for (int i = 0; i < WindowsGSM.ServerGrid.Items.Count; i++)
             {
-                GameServerTable row = WindowsGSM.ServerGrid.Items[i] as GameServerTable;
+                Function.ServerTable row = WindowsGSM.ServerGrid.Items[i] as Function.ServerTable;
                 portlist[i] = Int32.Parse(string.IsNullOrWhiteSpace(row.Port) ? "0" : row.Port);
             }
 

@@ -57,7 +57,13 @@ namespace WindowsGSM.GameServer
 
         public void SetParameter(string ip, string port, string map, string maxplayers, string gslt, string additional)
         {
-            Param = "-console -game cstrike -ip " + ip + " -port " + port + " +map " + map + " -maxplayers " + maxplayers + " +sv_setsteamaccount " + gslt + " " + additional;
+            Param = "-console -game cstrike";
+            Param += String.Format("{0}", String.IsNullOrEmpty(ip) ? "" : $" -ip {ip}");
+            Param += String.Format("{0}", String.IsNullOrEmpty(port) ? "" : $" -port {port}");
+            Param += String.Format("{0}", String.IsNullOrEmpty(map) ? "" : $" +map {map}");
+            Param += String.Format("{0}", String.IsNullOrEmpty(maxplayers) ? "" : $" -maxplayers {maxplayers}");
+            Param += String.Format("{0}", String.IsNullOrEmpty(gslt) ? "" : $" +sv_setsteamaccount {gslt}");
+            Param += String.Format("{0}", String.IsNullOrEmpty(additional) ? "" : $" {additional}");
         }
 
         public (Process Process, string Error, string Notice) Start()
