@@ -78,7 +78,7 @@ namespace WindowsGSM.GameServer
 
             if (!File.Exists(rustPath))
             {
-                return (null, "srcds.exe not found (" + rustPath + ")", "");
+                return (null, "RustDedicated.exe not found (" + rustPath + ")", "");
             }
 
             if (string.IsNullOrWhiteSpace(Param))
@@ -92,7 +92,7 @@ namespace WindowsGSM.GameServer
                 return (null, "", "server.cfg not found (" + serverConfigPath + ")");
             }
 
-            WindowsFirewall firewall = new WindowsFirewall("srcds.exe", rustPath);
+            WindowsFirewall firewall = new WindowsFirewall("RustDedicated.exe", rustPath);
             if (!firewall.IsRuleExist())
             {
                 firewall.AddRule();

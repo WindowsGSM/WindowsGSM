@@ -52,7 +52,7 @@ namespace WindowsGSM
             Restoring = 11
         }
 
-        public static readonly string WGSM_VERSION = "v1.4.0";
+        public static readonly string WGSM_VERSION = "v1.4.1";
         public static readonly int MAX_SERVER = 100;
         public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
         //public static readonly string WGSM_PATH = @"D:\WindowsGSMtest2";
@@ -964,42 +964,34 @@ namespace WindowsGSM
 
         private async void StartServerCrashDetector(Function.ServerTable server)
         {
-            GameServer.Check.CrashDetection detector = new GameServer.Check.CrashDetection();
+            Process p = g_Process[Int32.Parse(server.ID)];
 
-            if (await detector.IsServerCrashed(g_Process[Int32.Parse(server.ID)], server.Game))
+            while (g_iServerStatus[Int32.Parse(server.ID)] == ServerStatus.Started)
             {
-                g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
-                Log(server.ID, "Server: Crashed");
-                //Log(server.ID, "[WARNING] Exit Code: " + g_Process[Int32.Parse(server.ID)].ExitCode.ToString());
-                SetServerStatus(server, "Stopped");
-
-                g_Process[Int32.Parse(server.ID)] = null;
-
-                if (g_bDiscordAlert[Int32.Parse(server.ID)])
+                if (p != null && p.HasExited)
                 {
-                    Discord.Webhook webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)]);
-                    await webhook.Send(server.ID, server.Game, "Crashed", server.Name, server.IP, server.Port);
+                    g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
+                    Log(server.ID, "Server: Crashed");
+                    //Log(server.ID, "[WARNING] Exit Code: " + g_Process[Int32.Parse(server.ID)].ExitCode.ToString());
+                    SetServerStatus(server, "Stopped");
+
+                    g_Process[Int32.Parse(server.ID)] = null;
+
+                    if (g_bDiscordAlert[Int32.Parse(server.ID)])
+                    {
+                        Discord.Webhook webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)]);
+                        await webhook.Send(server.ID, server.Game, "Crashed", server.Name, server.IP, server.Port);
+                    }
+
+                    if (g_bAutoRestart[Int32.Parse(server.ID)])
+                    {
+                        GameServer_Start(server);
+                    }
+
+                    break;
                 }
 
-                if (g_bAutoRestart[Int32.Parse(server.ID)])
-                {
-                    GameServer_Start(server);
-                }
-            }
-            else if (g_iServerStatus[Int32.Parse(server.ID)] == ServerStatus.Started && g_Process[Int32.Parse(server.ID)].HasExited)
-            {
-                g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
-                Log(server.ID, "Server: Stopped");
-                Log(server.ID, "[Notice] Server stopped externally");
-                SetServerStatus(server, "Stopped");
-
-                g_Process[Int32.Parse(server.ID)] = null;
-
-                if (g_bDiscordAlert[Int32.Parse(server.ID)])
-                {
-                    Discord.Webhook webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)]);
-                    await webhook.Send(server.ID, server.Game, "Stopped", server.Name, server.IP, server.Port);
-                }
+                await Task.Delay(1000);
             }
         }
 

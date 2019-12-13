@@ -170,7 +170,6 @@
     </Compile>
     <Compile Include="Function\Path.cs" />
     <Compile Include="Discord\Webhook.cs" />
-    <Compile Include="GameServer\Check\CrashDetection.cs" />
     <Compile Include="GameServer\GMOD.cs" />
     <Compile Include="GameServer\MCPE.cs" />
     <Compile Include="GameServer\RUST.cs" />

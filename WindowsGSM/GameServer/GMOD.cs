@@ -53,10 +53,10 @@ namespace WindowsGSM.GameServer
             Param = "-console -game garrysmod";
             Param += String.Format("{0}", String.IsNullOrEmpty(ip) ? "" : $" -ip {ip}");
             Param += String.Format("{0}", String.IsNullOrEmpty(port) ? "" : $" -port {port}");
-            Param += String.Format("{0}", String.IsNullOrEmpty(map) ? "" : $" +map {map}");
             Param += String.Format("{0}", String.IsNullOrEmpty(maxplayers) ? "" : $" -maxplayers {maxplayers}");
             Param += String.Format("{0}", String.IsNullOrEmpty(gslt) ? "" : $" +sv_setsteamaccount {gslt}");
             Param += String.Format("{0}", String.IsNullOrEmpty(additional) ? "" : $" {additional}");
+            Param += String.Format("{0}", String.IsNullOrEmpty(map) ? "" : $" +map {map}");
         }
 
         public (Process Process, string Error, string Notice) Start()
