@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using NetFwTypeLib;
 
 namespace WindowsGSM
@@ -14,19 +15,22 @@ namespace WindowsGSM
             Path = path;
         }
 
-        public bool IsRuleExist()
+        public async Task<bool> IsRuleExist()
         {
-            INetFwMgr netFwMgr = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
-
-            foreach (INetFwAuthorizedApplication app in netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications)
+            return await Task.Run(() =>
             {
-                if (app.ProcessImageFileName.ToLower() == Path.ToLower())
-                {
-                    return true;
-                }
-            }
+                INetFwMgr netFwMgr = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
 
-            return false;
+                foreach (INetFwAuthorizedApplication app in netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications)
+                {
+                    if (app.ProcessImageFileName.ToLower() == Path.ToLower())
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            });
         }
 
         public void AddRule()
@@ -48,18 +52,21 @@ namespace WindowsGSM
         }
 
         //Remove the firewall rule by similar path
-        public void RemoveRuleEx()
+        public async Task RemoveRuleEx()
         {
-            INetFwMgr netFwMgr = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
-
-            foreach (INetFwAuthorizedApplication app in netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications)
+            await Task.Run(() =>
             {
-                string filename = app.ProcessImageFileName.ToLower();
-                if (filename.Contains(Path.ToLower()))
+                INetFwMgr netFwMgr = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
+
+                foreach (INetFwAuthorizedApplication app in netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications)
                 {
-                    netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications.Remove(app.ProcessImageFileName);
+                    string filename = app.ProcessImageFileName.ToLower();
+                    if (filename.Contains(Path.ToLower()))
+                    {
+                        netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications.Remove(app.ProcessImageFileName);
+                    }
                 }
-            }
+            });
         }
     }
 }

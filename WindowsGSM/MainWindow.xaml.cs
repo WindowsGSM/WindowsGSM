@@ -573,7 +573,7 @@ namespace WindowsGSM
             SetServerStatus(server, "Starting");
 
             GameServer.Action.Start gameServerAction = new GameServer.Action.Start(server, g_SteamGSLT[Int32.Parse(server.ID)], g_AdditionalParam[Int32.Parse(server.ID)]);
-            p = gameServerAction.Run();
+            p = await gameServerAction.Run();
 
             Activate();
 
@@ -945,6 +945,8 @@ namespace WindowsGSM
 
                     }
                 });
+
+                await Task.Delay(100);
 
                 if (Directory.Exists(serverPath))
                 {

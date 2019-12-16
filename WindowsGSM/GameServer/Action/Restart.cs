@@ -24,7 +24,7 @@ namespace WindowsGSM.GameServer.Action
             await actionStop.Run(process);
 
             Start actionStart = new Start(server, gslt, additionalParam);
-            return actionStart.Run();
+            return await actionStart.Run();
         }
     }
 }

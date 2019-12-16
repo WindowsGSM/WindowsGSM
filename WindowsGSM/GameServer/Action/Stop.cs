@@ -20,65 +20,47 @@ namespace WindowsGSM.GameServer.Action
             {
                 case (GameServer.CSGO.FullName):
                     {
-                        GameServer.CSGO gameServer = new GameServer.CSGO(server.ID);
-                        await gameServer.Stop(process);
-
+                        await GameServer.CSGO.Stop(process);
                         break;
                     }
                 case (GameServer.GMOD.FullName):
                     {
-                        GameServer.GMOD gameServer = new GameServer.GMOD(server.ID);
-                        await gameServer.Stop(process);
-
+                        await GameServer.GMOD.Stop(process);
                         break;
                     }
                 case (GameServer.TF2.FullName):
                     {
-                        GameServer.TF2 gameServer = new GameServer.TF2(server.ID);
-                        await gameServer.Stop(process);
-
+                        await GameServer.TF2.Stop(process);
                         break;
                     }
                 case (GameServer.MCPE.FullName):
                     {
-                        GameServer.MCPE gameServer = new GameServer.MCPE(server.ID);
-                        await gameServer.Stop(process);
-
+                        await GameServer.MCPE.Stop(process);
                         break;
                     }
                 case (GameServer.RUST.FullName):
                     {
-                        GameServer.RUST gameServer = new GameServer.RUST(server.ID);
-                        await gameServer.Stop(process);
-
+                        await GameServer.RUST.Stop(process);
                         break;
                     }
                 case (GameServer.CS.FullName):
                     {
-                        GameServer.CS gameServer = new GameServer.CS(server.ID);
-                        await gameServer.Stop(process);
-
+                        await GameServer.CS.Stop(process);
                         break;
                     }
                 case (GameServer.CSCZ.FullName):
                     {
-                        GameServer.CSCZ gameServer = new GameServer.CSCZ(server.ID);
-                        await gameServer.Stop(process);
-
+                        await GameServer.CSCZ.Stop(process);
                         break;
                     }
                 case (GameServer.HL2DM.FullName):
                     {
-                        GameServer.HL2DM gameServer = new GameServer.HL2DM(server.ID);
-                        await gameServer.Stop(process);
-
+                        await GameServer.HL2DM.Stop(process);
                         break;
                     }
                 case (GameServer.L4D2.FullName):
                     {
-                        GameServer.L4D2 gameServer = new GameServer.L4D2(server.ID);
-                        await gameServer.Stop(process);
-
+                        await GameServer.L4D2.Stop(process);
                         break;
                     }
                 default: return true;

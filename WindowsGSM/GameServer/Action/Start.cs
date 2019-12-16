@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace WindowsGSM.GameServer.Action
 {
@@ -17,7 +18,7 @@ namespace WindowsGSM.GameServer.Action
             this.additionalParam = additionalParam;
         }
 
-        public Process Run()
+        public async Task<Process> Run()
         {
             Process process = null;
 
@@ -27,7 +28,9 @@ namespace WindowsGSM.GameServer.Action
                     {
                         GameServer.CSGO gameServer = new GameServer.CSGO(server.ID);
                         gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, gslt, additionalParam);
-                        (process, Error, Notice) = gameServer.Start();
+                        process = await gameServer.Start();
+                        Error = gameServer.Error;
+                        Notice = gameServer.Notice;
 
                         break;
                     }
@@ -35,7 +38,9 @@ namespace WindowsGSM.GameServer.Action
                     {
                         GameServer.GMOD gameServer = new GameServer.GMOD(server.ID);
                         gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, gslt, additionalParam);
-                        (process, Error, Notice) = gameServer.Start();
+                        process = await gameServer.Start();
+                        Error = gameServer.Error;
+                        Notice = gameServer.Notice;
 
                         break;
                     }
@@ -43,14 +48,17 @@ namespace WindowsGSM.GameServer.Action
                     {
                         GameServer.TF2 gameServer = new GameServer.TF2(server.ID);
                         gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, gslt, additionalParam);
-                        (process, Error, Notice) = gameServer.Start();
+                        process = await gameServer.Start();
+                        Error = gameServer.Error;
+                        Notice = gameServer.Notice;
 
                         break;
                     }
                 case (GameServer.MCPE.FullName):
                     {
                         GameServer.MCPE gameServer = new GameServer.MCPE(server.ID);
-                        (process, Error, Notice) = gameServer.Start();
+                        process = await gameServer.Start();
+                        Error = gameServer.Error;
 
                         break;
                     }
@@ -58,7 +66,9 @@ namespace WindowsGSM.GameServer.Action
                     {
                         GameServer.RUST gameServer = new GameServer.RUST(server.ID);
                         gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers);
-                        (process, Error, Notice) = gameServer.Start();
+                        process = await gameServer.Start();
+                        Error = gameServer.Error;
+                        Notice = gameServer.Notice;
 
                         break;
                     }
@@ -66,7 +76,9 @@ namespace WindowsGSM.GameServer.Action
                     {
                         GameServer.CS gameServer = new GameServer.CS(server.ID);
                         gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, gslt, additionalParam);
-                        (process, Error, Notice) = gameServer.Start();
+                        process = await gameServer.Start();
+                        Error = gameServer.Error;
+                        Notice = gameServer.Notice;
 
                         break;
                     }
@@ -74,7 +86,9 @@ namespace WindowsGSM.GameServer.Action
                     {
                         GameServer.CSCZ gameServer = new GameServer.CSCZ(server.ID);
                         gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, gslt, additionalParam);
-                        (process, Error, Notice) = gameServer.Start();
+                        process = await gameServer.Start();
+                        Error = gameServer.Error;
+                        Notice = gameServer.Notice;
 
                         break;
                     }
@@ -82,7 +96,9 @@ namespace WindowsGSM.GameServer.Action
                     {
                         GameServer.HL2DM gameServer = new GameServer.HL2DM(server.ID);
                         gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, gslt, additionalParam);
-                        (process, Error, Notice) = gameServer.Start();
+                        process = await gameServer.Start();
+                        Error = gameServer.Error;
+                        Notice = gameServer.Notice;
 
                         break;
                     }
@@ -90,7 +106,9 @@ namespace WindowsGSM.GameServer.Action
                     {
                         GameServer.L4D2 gameServer = new GameServer.L4D2(server.ID);
                         gameServer.SetParameter(server.IP, server.Port, server.Defaultmap, server.Maxplayers, gslt, additionalParam);
-                        (process, Error, Notice) = gameServer.Start();
+                        process = await gameServer.Start();
+                        Error = gameServer.Error;
+                        Notice = gameServer.Notice;
 
                         break;
                     }

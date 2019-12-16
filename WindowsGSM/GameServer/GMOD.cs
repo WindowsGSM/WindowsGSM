@@ -2,20 +2,16 @@
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Windows.Forms;
 
 namespace WindowsGSM.GameServer
 {
     class GMOD
     {
-        [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
+        private readonly string _serverId;
 
-        private readonly string ServerID;
-
-        private string Param;
+        private string _param;
         public string Error;
+        public string Notice;
 
         public const string FullName = "Garry's Mod Dedicated Server";
 
@@ -26,19 +22,19 @@ namespace WindowsGSM.GameServer
 
         public GMOD(string serverid)
         {
-            ServerID = serverid;
+            _serverId = serverid;
         }
 
         public void CreateServerCFG(string hostname, string rcon_password)
         {
-            string serverConfigPath = Functions.Path.GetServerFiles(ServerID) + @"\garrysmod\cfg\server.cfg";
-            
-            File.Create(serverConfigPath).Dispose();
+            string configPath = Functions.Path.GetServerFiles(_serverId, @"garrysmod\cfg\server.cfg");
 
-            using (TextWriter textwriter = new StreamWriter(serverConfigPath))
+            File.Create(configPath).Dispose();
+
+            using (TextWriter textwriter = new StreamWriter(configPath))
             {
-                textwriter.WriteLine("hostname \"" + hostname + "\"");
-                textwriter.WriteLine("rcon_password \"" + rcon_password + "\"");
+                textwriter.WriteLine($"hostname \"{hostname}\"");
+                textwriter.WriteLine($"rcon_password \"{rcon_password}\"");
                 textwriter.WriteLine("sv_password \"\"");
                 textwriter.WriteLine("net_maxfilesize \"64\"");
                 textwriter.WriteLine("sv_downloadurl \"\"");
@@ -50,121 +46,51 @@ namespace WindowsGSM.GameServer
 
         public void SetParameter(string ip, string port, string map, string maxplayers, string gslt, string additional)
         {
-            Param = "-console -game garrysmod";
-            Param += String.Format("{0}", String.IsNullOrEmpty(ip) ? "" : $" -ip {ip}");
-            Param += String.Format("{0}", String.IsNullOrEmpty(port) ? "" : $" -port {port}");
-            Param += String.Format("{0}", String.IsNullOrEmpty(maxplayers) ? "" : $" -maxplayers {maxplayers}");
-            Param += String.Format("{0}", String.IsNullOrEmpty(gslt) ? "" : $" +sv_setsteamaccount {gslt}");
-            Param += String.Format("{0}", String.IsNullOrEmpty(additional) ? "" : $" {additional}");
-            Param += String.Format("{0}", String.IsNullOrEmpty(map) ? "" : $" +map {map}");
+            _param = "-console -game garrysmod";
+            _param += String.Format("{0}", String.IsNullOrEmpty(ip) ? "" : $" -ip {ip}");
+            _param += String.Format("{0}", String.IsNullOrEmpty(port) ? "" : $" -port {port}");
+            _param += String.Format("{0}", String.IsNullOrEmpty(maxplayers) ? "" : $" -maxplayers {maxplayers}");
+            _param += String.Format("{0}", String.IsNullOrEmpty(gslt) ? "" : $" +sv_setsteamaccount {gslt}");
+            _param += String.Format("{0}", String.IsNullOrEmpty(additional) ? "" : $" {additional}");
+            _param += String.Format("{0}", String.IsNullOrEmpty(map) ? "" : $" +map {map}");
         }
 
-        public (Process Process, string Error, string Notice) Start()
+        public async Task<Process> Start()
         {
-            string workingDir = Functions.Path.GetServerFiles(ServerID);
-            string srcdsPath = workingDir + @"\srcds.exe";
-
-            if (!File.Exists(srcdsPath))
+            string configPath = Functions.Path.GetServerFiles(_serverId, @"garrysmod\cfg\server.cfg");
+            if (!File.Exists(configPath))
             {
-                return (null, "srcds.exe not found (" + srcdsPath + ")", "");
+                Notice = $"server.cfg not found ({configPath})";
             }
 
-            if (string.IsNullOrWhiteSpace(Param))
-            {
-                return (null, "Start Parameter not set", "");
-            }
+            Steam.SRCDS srcds = new Steam.SRCDS(_serverId);
+            Process p = await srcds.Start(_param);
+            Error = srcds.Error;
 
-            string serverConfigPath = workingDir + @"\garrysmod\cfg\server.cfg";
-            if (!File.Exists(serverConfigPath))
-            {
-                return (null, "", "server.cfg not found (" + serverConfigPath + ")");
-            }
-
-            WindowsFirewall firewall = new WindowsFirewall("srcds.exe", srcdsPath);
-            if (!firewall.IsRuleExist())
-            {
-                firewall.AddRule();
-            }
-
-            Process p = new Process();
-            p.StartInfo.WorkingDirectory = workingDir;
-            p.StartInfo.FileName = srcdsPath;
-            p.StartInfo.Arguments = Param;
-            p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
-            p.Start();
-
-            return (p, "", "");
+            return p;
         }
 
-        public async Task<bool> Stop(Process p)
+        public static async Task<bool> Stop(Process p)
         {
-            SetForegroundWindow(p.MainWindowHandle);
-            SendKeys.SendWait("quit");
-            SendKeys.SendWait("{ENTER}");
-            SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
-
-            int attempt = 0;
-            while (attempt++ < 10)
-            {
-                if (p != null && p.HasExited)
-                {
-                    return true;
-                }
-
-                await Task.Delay(1000);
-            }
-
-            return false;
+            return await Steam.SRCDS.Stop(p);
         }
 
         public async Task<Process> Install()
         {
-            Installer.SteamCMD steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(ServerID), "", "4020", true);
+            Steam.SRCDS srcds = new Steam.SRCDS(_serverId);
+            Process p = await srcds.Install("4020");
+            Error = srcds.Error;
 
-            if (!await steamCMD.Download())
-            {
-                Error = steamCMD.GetError();
-                return null;
-            }
-
-            Process process = steamCMD.Run();
-            if (process == null)
-            {
-                Error = steamCMD.GetError();
-                return null;
-            }
-
-            return process;
+            return p;
         }
 
         public async Task<bool> Update()
         {
-            Installer.SteamCMD steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(ServerID), "", "4020", false);
+            Steam.SRCDS srcds = new Steam.SRCDS(_serverId);
+            bool success = await srcds.Update("4020");
+            Error = srcds.Error;
 
-            if (!await steamCMD.Download())
-            {
-                Error = steamCMD.GetError();
-                return false;
-            }
-
-            Process pSteamCMD = steamCMD.Run();
-            if (pSteamCMD == null)
-            {
-                Error = steamCMD.GetError();
-                return false;
-            }
-
-            await Task.Run(() => pSteamCMD.WaitForExit());
-
-            if (pSteamCMD.ExitCode != 0)
-            {
-                Error = "Exit code: " + pSteamCMD.ExitCode.ToString();
-                return false;
-            }
-
-            return true;
+            return success;
         }
     }
 }

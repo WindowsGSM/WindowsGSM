@@ -14,7 +14,7 @@ namespace WindowsGSM.GameServer
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
 
-        private readonly string ServerID;
+        private readonly string _serverId;
 
         public string Error;
 
@@ -27,12 +27,12 @@ namespace WindowsGSM.GameServer
 
         public MCPE(string serverid)
         {
-            ServerID = serverid;
+            _serverId = serverid;
         }
 
         public void CreateServerCFG(string serverName, string serverPort, string rcon_password)
         {
-            string serverConfigPath = Functions.Path.GetServerFiles(ServerID) + @"\server.properties";
+            string serverConfigPath = Functions.Path.GetServerFiles(_serverId) + @"\server.properties";
 
             File.Create(serverConfigPath).Dispose();
 
@@ -66,30 +66,33 @@ namespace WindowsGSM.GameServer
             }
         }
 
-        public (Process Process, string Error, string Notice) Start()
+        public async Task<Process> Start()
         {
-            string workingDir = Functions.Path.GetServerFiles(ServerID);
+            string workingDir = Functions.Path.GetServerFiles(_serverId);
 
             string phpPath = workingDir + @"\bin\php\php.exe";
             if (!File.Exists(phpPath))
             {
-                return (null, "php.exe not found (" + phpPath + ")", "");
+                Error = $"php.exe not found ({phpPath})";
+                return null;
             }
 
             string PMMPPath = workingDir + @"\PocketMine-MP.phar";
             if (!File.Exists(PMMPPath))
             {
-                return (null, "PocketMine-MP.phar not found (" + PMMPPath + ")", "");
+                Error = $"PocketMine-MP.phar not found ({PMMPPath})";
+                return null;
             }
 
             string serverConfigPath = workingDir + @"\server.properties";
             if (!File.Exists(serverConfigPath))
             {
-                return (null, "server.properties not found (" + serverConfigPath + ")", "");
+                Error = $"server.properties not found ({serverConfigPath})";
+                return null;
             }
 
             WindowsFirewall firewall = new WindowsFirewall("php.exe", phpPath);
-            if (!firewall.IsRuleExist())
+            if (!await firewall.IsRuleExist())
             {
                 firewall.AddRule();
             }
@@ -101,30 +104,22 @@ namespace WindowsGSM.GameServer
             p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
             p.Start();
 
-            return (p, "", "");
+            return p;
         }
 
-        public async Task<bool> Stop(Process p)
+        public static async Task<bool> Stop(Process p)
         {
             SetForegroundWindow(p.MainWindowHandle);
             SendKeys.SendWait("stop");
             SendKeys.SendWait("{ENTER}");
             SendKeys.SendWait("{ENTER}");
-
             SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
 
-            int attempt = 0;
-            while (attempt++ < 10)
+            for (int i = 0; i < 10; i++)
             {
-                if (p != null)
+                if (p != null && p.HasExited)
                 {
-                    SetForegroundWindow(p.MainWindowHandle);
-                    SendKeys.SendWait("{ENTER}");
-
-                    if (p.HasExited)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
 
                 await Task.Delay(1000);
@@ -135,7 +130,7 @@ namespace WindowsGSM.GameServer
 
         public async Task<bool> Install()
         {
-            string serverFilesPath = Functions.Path.GetServerFiles(ServerID);
+            string serverFilesPath = Functions.Path.GetServerFiles(_serverId);
 
             //Download PHP-7.2-Windows-x64
             string filename = "PHP-7.3-Windows-x64.zip";
@@ -154,7 +149,7 @@ namespace WindowsGSM.GameServer
                 return false;
             }
 
-            string PHPPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles\bin\php\php.exe";
+            string PHPPath = MainWindow.WGSM_PATH + @"\servers\" + _serverId + @"\serverfiles\bin\php\php.exe";
             bool isDownloaded = false;
             while (!isDownloaded)
             {
@@ -198,7 +193,7 @@ namespace WindowsGSM.GameServer
 
         private async void ExtractPHP(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
         {
-            string installPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles";
+            string installPath = MainWindow.WGSM_PATH + @"\servers\" + _serverId + @"\serverfiles";
             string zipPath = installPath + @"\PHP-7.3-Windows-x64.zip";
 
             if (File.Exists(zipPath))
@@ -212,7 +207,7 @@ namespace WindowsGSM.GameServer
         {
             //Download PocketMine-MP.phar
             string installer = "https://jenkins.pmmp.io/job/PocketMine-MP/lastSuccessfulBuild/artifact/PocketMine-MP.phar";
-            string PMMPPath = MainWindow.WGSM_PATH + @"\servers\" + ServerID + @"\serverfiles\PocketMine-MP.phar";
+            string PMMPPath = MainWindow.WGSM_PATH + @"\servers\" + _serverId + @"\serverfiles\PocketMine-MP.phar";
             
             if (File.Exists(PMMPPath))
             {

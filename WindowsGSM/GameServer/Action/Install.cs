@@ -130,7 +130,7 @@ namespace WindowsGSM.GameServer.Action
                         string hldsPath = Functions.Path.GetServerFiles(serverConfig.ServerID, "hlds.exe");
                         if (File.Exists(hldsPath))
                         {
-                            string serverConfigPath = Functions.Path.GetServerFiles(serverConfig.ServerID) + @"\cstrike";
+                            string serverConfigPath = Functions.Path.GetServerFiles(serverConfig.ServerID, "cstrike");
                             if (!Directory.Exists(serverConfigPath))
                             {
                                 return false;
@@ -148,7 +148,7 @@ namespace WindowsGSM.GameServer.Action
                         string hldsPath = Functions.Path.GetServerFiles(serverConfig.ServerID, "hlds.exe");
                         if (File.Exists(hldsPath))
                         {
-                            string serverConfigPath = Functions.Path.GetServerFiles(serverConfig.ServerID) + @"\czero";
+                            string serverConfigPath = Functions.Path.GetServerFiles(serverConfig.ServerID, "czero");
                             if (!Directory.Exists(serverConfigPath))
                             {
                                 return false;

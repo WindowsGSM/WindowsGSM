@@ -9,8 +9,8 @@ namespace WindowsGSM.Installer
 {
     class SteamCMD
     {
-        private string Param;
-        private string Error;
+        private string _param;
+        public string Error;
 
         public async Task<bool> Download()
         {
@@ -73,56 +73,52 @@ namespace WindowsGSM.Installer
         {
             if (steamuser == null && steampass == null)
             {
-                Param = "+login anonymous";
+                _param = "+login anonymous";
             }
             else
             {
-                Param = "+login " + steamuser + " " + steampass;
+                //REMARK: Not tested
+                _param = "+login " + steamuser + " " + steampass;
             }
 
-            Param += " +force_install_dir \"" + install_dir + "\"";
+            _param += $" +force_install_dir \"{install_dir}\"";
 
-            Param += (String.IsNullOrWhiteSpace(set_config) ? "" : " " + set_config) + " +app_update " + app_id + (validate ? " validate" : "");
+            _param += (String.IsNullOrWhiteSpace(set_config) ? "" : " " + set_config) + $" +app_update {app_id}" + (validate ? " validate" : "");
             if (app_id == "90")
             {
                 //Install 4 more times if hlds.exe
                 for (int i = 0; i < 4; i++)
                 {
-                    Param += " +app_update " + app_id + (validate ? " validate" : "");
+                    _param += $" +app_update {app_id}" + (validate ? " validate" : "");
                 }
             }
 
-            Param += " +quit";
+            _param += " +quit";
         }
 
-        public Process Run()
+        public async Task<Process> Run()
         {
-            string exePath = MainWindow.WGSM_PATH + @"\installer\steamcmd\steamcmd.exe";
+            string exePath = Path.Combine(MainWindow.WGSM_PATH, @"installer\steamcmd\steamcmd.exe");
 
             if (!File.Exists(exePath))
             {
-                Error = "steamcmd.exe not found (" + exePath + ")";
+                Error = $"steamcmd.exe not found ({exePath})";
                 return null;
             }
 
             WindowsFirewall firewall = new WindowsFirewall("steamcmd.exe", exePath);
-            if (!firewall.IsRuleExist())
+            if (!await firewall.IsRuleExist())
             {
                 firewall.AddRule();
             }
 
             Process p = new Process();
             p.StartInfo.FileName = exePath;
-            p.StartInfo.Arguments = Param;
+            p.StartInfo.Arguments = _param;
             p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
             p.Start();
 
             return p;
-        }
-
-        public string GetError()
-        {
-            return Error;
         }
     }
 }

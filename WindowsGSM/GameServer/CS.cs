@@ -2,20 +2,16 @@
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Windows.Forms;
 
 namespace WindowsGSM.GameServer
 {
     class CS
     {
-        [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
+        private readonly string _serverId;
 
-        private readonly string ServerID;
-
-        private string Param;
+        private string _param;
         public string Error;
+        public string Notice;
 
         public const string FullName = "Counter-Strike: 1.6 Dedicated Server";
 
@@ -26,26 +22,26 @@ namespace WindowsGSM.GameServer
 
         public CS(string serverid)
         {
-            ServerID = serverid;
+            _serverId = serverid;
         }
 
         public void CreateServerCFG(string hostname, string rcon_password)
         {
-            string serverConfigPath = Functions.Path.GetServerFiles(ServerID) + @"\cstrike\server.cfg";
+            string configPath = Functions.Path.GetServerFiles(_serverId, @"cstrike\server.cfg");
 
-            File.Create(serverConfigPath).Dispose();
+            File.Create(configPath).Dispose();
 
-            using (TextWriter textwriter = new StreamWriter(serverConfigPath))
+            using (TextWriter textwriter = new StreamWriter(configPath))
             {
-                textwriter.WriteLine("hostname \"" + hostname + "\"");
-                textwriter.WriteLine("rcon_password \"" + rcon_password + "\"");
+                textwriter.WriteLine($"hostname \"{hostname}\"");
+                textwriter.WriteLine($"rcon_password \"{rcon_password}\"");
                 textwriter.WriteLine("sv_password \"\"");
                 textwriter.WriteLine("sv_aim \"0\"");
                 textwriter.WriteLine("pausable  \"0\"");
                 textwriter.WriteLine("sv_maxspeed \"320\"");
             }
 
-            string txtPath = Functions.Path.GetServerFiles(ServerID) + @"\steam_appid.txt";
+            string txtPath = Functions.Path.GetServerFiles(_serverId, "steam_appid.txt");
 
             File.Create(txtPath).Dispose();
 
@@ -57,121 +53,51 @@ namespace WindowsGSM.GameServer
 
         public void SetParameter(string ip, string port, string map, string maxplayers, string gslt, string additional)
         {
-            Param = "-console -game cstrike";
-            Param += String.Format("{0}", String.IsNullOrEmpty(ip) ? "" : $" -ip {ip}");
-            Param += String.Format("{0}", String.IsNullOrEmpty(port) ? "" : $" -port {port}");
-            Param += String.Format("{0}", String.IsNullOrEmpty(maxplayers) ? "" : $" -maxplayers {maxplayers}");
-            Param += String.Format("{0}", String.IsNullOrEmpty(gslt) ? "" : $" +sv_setsteamaccount {gslt}");
-            Param += String.Format("{0}", String.IsNullOrEmpty(additional) ? "" : $" {additional}");
-            Param += String.Format("{0}", String.IsNullOrEmpty(map) ? "" : $" +map {map}");
+            _param = "-console -game cstrike";
+            _param += String.Format("{0}", String.IsNullOrEmpty(ip) ? "" : $" -ip {ip}");
+            _param += String.Format("{0}", String.IsNullOrEmpty(port) ? "" : $" -port {port}");
+            _param += String.Format("{0}", String.IsNullOrEmpty(maxplayers) ? "" : $" -maxplayers {maxplayers}");
+            _param += String.Format("{0}", String.IsNullOrEmpty(gslt) ? "" : $" +sv_setsteamaccount {gslt}");
+            _param += String.Format("{0}", String.IsNullOrEmpty(additional) ? "" : $" {additional}");
+            _param += String.Format("{0}", String.IsNullOrEmpty(map) ? "" : $" +map {map}");
         }
 
-        public (Process Process, string Error, string Notice) Start()
+        public async Task<Process> Start()
         {
-            string workingDir = Functions.Path.GetServerFiles(ServerID);
-            string hldsPath = workingDir + @"\hlds.exe";
-
-            if (!File.Exists(hldsPath))
+            string configPath = Functions.Path.GetServerFiles(_serverId, @"cstrike\server.cfg");
+            if (!File.Exists(configPath))
             {
-                return (null, "hlds.exe not found (" + hldsPath + ")", "");
+                Notice = $"server.cfg not found ({configPath})";
             }
 
-            if (string.IsNullOrWhiteSpace(Param))
-            {
-                return (null, "Start Parameter not set", "");
-            }
+            Steam.HLDS hlds = new Steam.HLDS(_serverId);
+            Process p = await hlds.Start(_param);
+            Error = hlds.Error;
 
-            string serverConfigPath = workingDir + @"\cstrike\server.cfg";
-            if (!File.Exists(serverConfigPath))
-            {
-                return (null, "", "server.cfg not found (" + serverConfigPath + ")");
-            }
-
-            WindowsFirewall firewall = new WindowsFirewall("hlds.exe", hldsPath);
-            if (!firewall.IsRuleExist())
-            {
-                firewall.AddRule();
-            }
-
-            Process p = new Process();
-            p.StartInfo.WorkingDirectory = workingDir;
-            p.StartInfo.FileName = hldsPath;
-            p.StartInfo.Arguments = Param;
-            p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
-            p.Start();
-
-            return (p, "", "");
+            return p;
         }
 
-        public async Task<bool> Stop(Process p)
+        public static async Task<bool> Stop(Process p)
         {
-            SetForegroundWindow(p.MainWindowHandle);
-            SendKeys.SendWait("quit");
-            SendKeys.SendWait("{ENTER}");
-            SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
-
-            int attempt = 0;
-            while (attempt++ < 10)
-            {
-                if (p != null && p.HasExited)
-                {
-                    return true;
-                }
-
-                await Task.Delay(1000);
-            }
-
-            return false;
+            return await Steam.HLDS.Stop(p);
         }
 
         public async Task<Process> Install()
         {
-            Installer.SteamCMD steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(ServerID), "", "90", true);
+            Steam.HLDS hlds = new Steam.HLDS(_serverId);
+            Process p = await hlds.Install("", "90");
+            Error = hlds.Error;
 
-            if (!await steamCMD.Download())
-            {
-                Error = steamCMD.GetError();
-                return null;
-            }
-
-            Process process = steamCMD.Run();
-            if (process == null)
-            {
-                Error = steamCMD.GetError();
-                return null;
-            }
-
-            return process;
+            return p;
         }
 
         public async Task<bool> Update()
         {
-            Installer.SteamCMD steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(ServerID), "", "90", false);
+            Steam.HLDS hlds = new Steam.HLDS(_serverId);
+            bool success = await hlds.Update("", "90");
+            Error = hlds.Error;
 
-            if (!await steamCMD.Download())
-            {
-                Error = steamCMD.GetError();
-                return false;
-            }
-
-            Process pSteamCMD = steamCMD.Run();
-            if (pSteamCMD == null)
-            {
-                Error = steamCMD.GetError();
-                return false;
-            }
-
-            await Task.Run(() => pSteamCMD.WaitForExit());
-
-            if (pSteamCMD.ExitCode != 0)
-            {
-                Error = "Exit code: " + pSteamCMD.ExitCode.ToString();
-                return false;
-            }
-
-            return true;
+            return success;
         }
     }
 }
