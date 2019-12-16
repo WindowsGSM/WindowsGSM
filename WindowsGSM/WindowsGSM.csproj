@@ -151,6 +151,7 @@
     <Compile Include="GameServer\CSCZ.cs" />
     <Compile Include="GameServer\HL2DM.cs" />
     <Compile Include="GameServer\L4D2.cs" />
+    <Compile Include="GameServer\MC.cs" />
     <Compile Include="GameServer\Steam\HLDS.cs" />
     <Compile Include="GameServer\Steam\SRCDS.cs" />
     <Compile Include="WindowsFirewall.cs" />

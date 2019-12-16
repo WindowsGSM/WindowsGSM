@@ -63,6 +63,11 @@ namespace WindowsGSM.GameServer.Action
                         await GameServer.L4D2.Stop(process);
                         break;
                     }
+                case (GameServer.MC.FullName):
+                    {
+                        await GameServer.MC.Stop(process);
+                        break;
+                    }
                 default: return true;
             }
 

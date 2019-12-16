@@ -112,6 +112,16 @@ namespace WindowsGSM.GameServer.Action
 
                         break;
                     }
+                case (GameServer.MC.FullName):
+                    {
+                        GameServer.MC gameServer = new GameServer.MC(server.ID);
+                        gameServer.SetParameter(additionalParam);
+                        process = await gameServer.Start();
+                        Error = gameServer.Error;
+                        Notice = gameServer.Notice;
+
+                        break;
+                    }
                 default: break;
             }
 

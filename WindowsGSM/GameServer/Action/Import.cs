@@ -92,6 +92,14 @@ namespace WindowsGSM.GameServer.Action
 
                         break;
                     }
+                case (GameServer.MC.FullName):
+                    {
+                        GameServer.MC gameServer = new GameServer.MC(serverConfig.ServerID);
+                        serverConfig.CreateServerDirectory();
+                        serverConfig.CreateWindowsGSMConfig(serverGame, serverName, GetIPAddress(), GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
+
+                        break;
+                    }
             }
         }
 
@@ -164,6 +172,19 @@ namespace WindowsGSM.GameServer.Action
                         else
                         {
                             Error = "Invalid Path! Fail to find hlds.exe";
+                            return false;
+                        }
+                    }
+                case (GameServer.MC.FullName):
+                    {
+                        string serverJarPath = Path.Combine(serverDir, "server.jar");
+                        if (File.Exists(serverJarPath))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            Error = "Invalid Path! Fail to find server.jar";
                             return false;
                         }
                     }

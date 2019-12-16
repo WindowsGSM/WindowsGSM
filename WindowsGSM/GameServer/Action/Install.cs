@@ -69,6 +69,13 @@ namespace WindowsGSM.GameServer.Action
                         GameServer.L4D2 gameServer = new GameServer.L4D2(serverConfig.ServerID);
                         return await gameServer.Install();
                     }
+                case (GameServer.MC.FullName):
+                    {
+                        GameServer.MC gameServer = new GameServer.MC(serverConfig.ServerID);
+                        await gameServer.Install();
+
+                        return null;
+                    }
                 default: break;
             }
 
@@ -154,6 +161,18 @@ namespace WindowsGSM.GameServer.Action
                                 return false;
                             }
 
+                            CreateServerConfigs(serverGame, serverName);
+
+                            return true;
+                        }
+
+                        return false;
+                    }
+                case (GameServer.MC.FullName):
+                    {
+                        string serverPath = Functions.Path.GetServerFiles(serverConfig.ServerID, "server.jar");
+                        if (File.Exists(serverPath))
+                        {
                             CreateServerConfigs(serverGame, serverName);
 
                             return true;
@@ -252,6 +271,18 @@ namespace WindowsGSM.GameServer.Action
                         serverConfig.CreateServerDirectory();
                         serverConfig.CreateWindowsGSMConfig(serverGame, serverName, GetIPAddress(), GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
                         gameServer.CreateServerCFG(serverName, GetRCONPassword());
+
+                        break;
+                    }
+                case (GameServer.MC.FullName):
+                    {
+                        GameServer.MC gameServer = new GameServer.MC(serverConfig.ServerID);
+                        serverConfig.CreateServerDirectory();
+
+                        string ip = GetIPAddress();
+                        string port = GetAvailablePort(gameServer.port);
+                        serverConfig.CreateWindowsGSMConfig(serverGame, serverName, ip, port, gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
+                        gameServer.CreateServerCFG(serverName, ip, port, GetRCONPassword());
 
                         break;
                     }

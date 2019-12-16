@@ -115,6 +115,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to /WindowsGSM;component/Images/games/mc.png.
+        /// </summary>
+        public static string Minecraft__Java_Edition_Server {
+            get {
+                return ResourceManager.GetString("Minecraft: Java Edition Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to /WindowsGSM;component/Images/games/mcpe.png.
         /// </summary>
         public static string Minecraft_Pocket_Edition_Server___PocketMine_MP {

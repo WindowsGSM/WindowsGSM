@@ -82,6 +82,13 @@ namespace WindowsGSM.GameServer.Action
                         Error = gameServer.Error;
                         break;
                     }
+                case (GameServer.MC.FullName):
+                    {
+                        GameServer.MC gameServer = new GameServer.MC(server.ID);
+                        updated = await gameServer.Update();
+                        Error = gameServer.Error;
+                        break;
+                    }
                 default: break;
             }
 

@@ -52,7 +52,7 @@ namespace WindowsGSM
             Restoring = 11
         }
 
-        public static readonly string WGSM_VERSION = "v1.4.1";
+        public static readonly string WGSM_VERSION = "v1.5.0";
         public static readonly int MAX_SERVER = 100;
         public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
         //public static readonly string WGSM_PATH = @"D:\WindowsGSMtest2";
@@ -420,7 +420,7 @@ namespace WindowsGSM
             if (result != MessageBoxResult.Yes) { return; }
 
             WindowsFirewall firewall = new WindowsFirewall(null, Functions.Path.Get(server.ID));
-            firewall.RemoveRuleEx();
+            await firewall.RemoveRuleEx();
 
             await GameServer_Delete(server);
         }
@@ -1251,7 +1251,7 @@ namespace WindowsGSM
             Function.ServerTable row = (Function.ServerTable)ServerGrid.SelectedItem;
             if (row == null) { return; }
 
-            if (row.Game == GameServer.MCPE.FullName)
+            if (row.Game == GameServer.MCPE.FullName || row.Game == GameServer.MC.FullName)
             {
                 Log(row.ID, "This feature is not applicable on " + row.Game);
                 return;

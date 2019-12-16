@@ -120,6 +120,9 @@
   <data name="1" xml:space="preserve">
     <value>Counter-Strike: 1.6 Dedicated Server</value>
   </data>
+  <data name="10" xml:space="preserve">
+    <value>Team Fortress 2 Dedicated Server</value>
+  </data>
   <data name="2" xml:space="preserve">
     <value>Counter-Strike: Condition Zero Dedicated Server</value>
   </data>
@@ -139,9 +142,9 @@
     <value>Minecraft Pocket Edition Server | PocketMine-MP</value>
   </data>
   <data name="8" xml:space="preserve">
-    <value>Rust Dedicated Server</value>
+    <value>Minecraft: Java Edition Server</value>
   </data>
   <data name="9" xml:space="preserve">
-    <value>Team Fortress 2 Dedicated Server</value>
+    <value>Rust Dedicated Server</value>
   </data>
 </root>
