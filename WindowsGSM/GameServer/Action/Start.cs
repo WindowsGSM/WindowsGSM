@@ -122,6 +122,16 @@ namespace WindowsGSM.GameServer.Action
 
                         break;
                     }
+                case (GameServer.GTA5.FullName):
+                    {
+                        GameServer.GTA5 gameServer = new GameServer.GTA5(server.ID);
+                        gameServer.SetParameter(additionalParam);
+                        process = await gameServer.Start();
+                        Error = gameServer.Error;
+                        Notice = gameServer.Notice;
+
+                        break;
+                    }
                 default: break;
             }
 

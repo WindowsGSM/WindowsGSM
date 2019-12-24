@@ -70,11 +70,20 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Team Fortress 2 Dedicated Server.
+        ///   Looks up a localized string similar to Rust Dedicated Server.
         /// </summary>
         internal static string _10 {
             get {
                 return ResourceManager.GetString("10", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Team Fortress 2 Dedicated Server.
+        /// </summary>
+        internal static string _11 {
+            get {
+                return ResourceManager.GetString("11", resourceCulture);
             }
         }
         
@@ -106,7 +115,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Half-Life 2: Deathmatch Dedicated Server.
+        ///   Looks up a localized string similar to Grand Theft Auto V Dedicated Server (FiveM).
         /// </summary>
         internal static string _5 {
             get {
@@ -115,7 +124,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Left 4 Dead 2 Dedicated Server.
+        ///   Looks up a localized string similar to Half-Life 2: Deathmatch Dedicated Server.
         /// </summary>
         internal static string _6 {
             get {
@@ -124,7 +133,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Minecraft Pocket Edition Server | PocketMine-MP.
+        ///   Looks up a localized string similar to Left 4 Dead 2 Dedicated Server.
         /// </summary>
         internal static string _7 {
             get {
@@ -142,7 +151,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Rust Dedicated Server.
+        ///   Looks up a localized string similar to Minecraft: Pocket Edition Server (PocketMine-MP).
         /// </summary>
         internal static string _9 {
             get {

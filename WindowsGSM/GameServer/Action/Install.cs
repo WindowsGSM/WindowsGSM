@@ -76,6 +76,13 @@ namespace WindowsGSM.GameServer.Action
 
                         return null;
                     }
+                case (GameServer.GTA5.FullName):
+                    {
+                        GameServer.GTA5 gameServer = new GameServer.GTA5(serverConfig.ServerID);
+                        await gameServer.Install();
+
+                        return null;
+                    }
                 default: break;
             }
 
@@ -180,12 +187,24 @@ namespace WindowsGSM.GameServer.Action
 
                         return false;
                     }
+                case (GameServer.GTA5.FullName):
+                    {
+                        string serverPath = Functions.Path.GetServerFiles(serverConfig.ServerID, @"server\FXServer.exe");
+                        if (File.Exists(serverPath))
+                        {
+                            CreateServerConfigs(serverGame, serverName);
+
+                            return true;
+                        }
+
+                        return false;
+                    }
             }
 
             return false;
         }
 
-        public void CreateServerConfigs(string serverGame, string serverName)
+        public async void CreateServerConfigs(string serverGame, string serverName)
         {
             switch (serverGame)
             {
@@ -283,6 +302,18 @@ namespace WindowsGSM.GameServer.Action
                         string port = GetAvailablePort(gameServer.port);
                         serverConfig.CreateWindowsGSMConfig(serverGame, serverName, ip, port, gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
                         gameServer.CreateServerCFG(serverName, ip, port, GetRCONPassword());
+
+                        break;
+                    }
+                case (GameServer.GTA5.FullName):
+                    {
+                        GameServer.GTA5 gameServer = new GameServer.GTA5(serverConfig.ServerID);
+                        serverConfig.CreateServerDirectory();
+
+                        string ip = GetIPAddress();
+                        string port = GetAvailablePort(gameServer.port);
+                        serverConfig.CreateWindowsGSMConfig(serverGame, serverName, ip, port, gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
+                        gameServer.CreateServerCFG(serverName, GetRCONPassword(), ip, port);
 
                         break;
                     }

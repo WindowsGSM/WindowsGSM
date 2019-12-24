@@ -52,7 +52,7 @@ namespace WindowsGSM
             Restoring = 11
         }
 
-        public static readonly string WGSM_VERSION = "v1.5.0";
+        public static readonly string WGSM_VERSION = "v1.6.0";
         public static readonly int MAX_SERVER = 100;
         public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
         //public static readonly string WGSM_PATH = @"D:\WindowsGSMtest2";
@@ -70,6 +70,7 @@ namespace WindowsGSM
         private static readonly string[] g_AdditionalParam = new string[MAX_SERVER + 1];
 
         private static readonly bool[] g_bAutoRestart = new bool[MAX_SERVER + 1];
+        private static readonly bool[] g_bAutoStart = new bool[MAX_SERVER + 1];
         private static readonly bool[] g_bUpdateOnStart = new bool[MAX_SERVER + 1];
 
         private static readonly bool[] g_bDiscordAlert = new bool[MAX_SERVER + 1];
@@ -88,22 +89,27 @@ namespace WindowsGSM
                 key.SetValue("HardWareAcceleration", "True");
                 key.SetValue("UIAnimation", "True");
                 key.SetValue("DarkTheme", "False");
+                key.SetValue("StartOnBoot", "False");
 
                 MahAppSwitch_HardWareAcceleration.IsChecked = true;
                 MahAppSwitch_UIAnimation.IsChecked = true;
                 MahAppSwitch_DarkTheme.IsChecked = false;
+                MahAppSwitch_StartOnBoot.IsChecked = false;
             }
             else
             {
                 MahAppSwitch_HardWareAcceleration.IsChecked = ((key.GetValue("HardWareAcceleration") ?? false).ToString() == "True") ? true : false;
                 MahAppSwitch_UIAnimation.IsChecked = ((key.GetValue("UIAnimation") ?? false).ToString() == "True") ? true : false;
                 MahAppSwitch_DarkTheme.IsChecked = ((key.GetValue("DarkTheme") ?? false).ToString() == "True") ? true : false;
+                MahAppSwitch_StartOnBoot.IsChecked = ((key.GetValue("StartOnBoot") ?? false).ToString() == "True") ? true : false;
             }
             key.Close();
 
             RenderOptions.ProcessRenderMode = (MahAppSwitch_HardWareAcceleration.IsChecked ?? false) ? System.Windows.Interop.RenderMode.SoftwareOnly : System.Windows.Interop.RenderMode.Default;
             WindowTransitionsEnabled = MahAppSwitch_UIAnimation.IsChecked ?? false;
             ThemeManager.ChangeAppTheme(App.Current, (MahAppSwitch_DarkTheme.IsChecked ?? false) ? "BaseDark" : "BaseLight");
+            //Not required
+            //SetStartOnBoot(MahAppSwitch_StartOnBoot.IsChecked ?? false);
 
             notifyIcon = new NotifyIcon();
             notifyIcon.BalloonTipTitle = "WindowsGSM";
@@ -132,6 +138,8 @@ namespace WindowsGSM
             {
                 ServerGrid.SelectedItem = ServerGrid.Items[0];
             }
+
+            AutoStartServer();
         }
 
         private void RefreshServerList_Click(object sender, RoutedEventArgs e)
@@ -209,12 +217,26 @@ namespace WindowsGSM
                 g_SteamGSLT[i] = serverConfig.ServerGSLT;
                 g_AdditionalParam[i] = serverConfig.ServerParam;
                 g_bAutoRestart[i] = serverConfig.AutoRestart;
+                g_bAutoStart[i] = serverConfig.AutoStart;
                 g_bUpdateOnStart[i] = serverConfig.UpdateOnStart;
                 g_bDiscordAlert[i] = serverConfig.DiscordAlert;
                 g_DiscordWebhook[i] = serverConfig.DiscordWebhook;
             }
 
             grid_action.Visibility = (ServerGrid.Items.Count != 0) ? Visibility.Visible : Visibility.Hidden;
+        }
+
+        private void AutoStartServer()
+        {
+            int num_row = ServerGrid.Items.Count;
+            for (int i = 0; i < num_row; i++)
+            {
+                Function.ServerTable server = (Function.ServerTable)ServerGrid.Items[i];
+                if (g_bAutoStart[Int32.Parse(server.ID)])
+                {
+                    GameServer_Start(server);
+                }
+            }
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -314,6 +336,9 @@ namespace WindowsGSM
 
                 button_autorestart.Content = (g_bAutoRestart[Int32.Parse(row.ID)]) ? "TRUE" : "FALSE";
                 button_autorestart.Background = (g_bAutoRestart[Int32.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
+
+                button_autostart.Content = (g_bAutoStart[Int32.Parse(row.ID)]) ? "TRUE" : "FALSE";
+                button_autostart.Background = (g_bAutoStart[Int32.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
 
                 button_updateonstart.Content = (g_bUpdateOnStart[Int32.Parse(row.ID)]) ? "TRUE" : "FALSE";
                 button_updateonstart.Background = (g_bUpdateOnStart[Int32.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
@@ -461,6 +486,17 @@ namespace WindowsGSM
         {
             Function.ServerTable server = (Function.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
+
+            //Reload WindowsGSM.cfg on start
+            int i = Int32.Parse(server.ID);
+            Functions.ServerConfig serverConfig = new Functions.ServerConfig(i.ToString());
+            g_SteamGSLT[i] = serverConfig.ServerGSLT;
+            g_AdditionalParam[i] = serverConfig.ServerParam;
+            g_bAutoRestart[i] = serverConfig.AutoRestart;
+            g_bAutoStart[i] = serverConfig.AutoStart;
+            g_bUpdateOnStart[i] = serverConfig.UpdateOnStart;
+            g_bDiscordAlert[i] = serverConfig.DiscordAlert;
+            g_DiscordWebhook[i] = serverConfig.DiscordWebhook;
 
             GameServer_Start(server);
         }
@@ -1038,7 +1074,7 @@ namespace WindowsGSM
 
             if (row == null) { return; }
 
-            string log = DateTime.Now.ToString("MM/dd/yyyy - HH:mm:ss") + ": [" + row.Name + "]" + "(ID: " + serverid + ") - " + logtext + Environment.NewLine;
+            string log = DateTime.Now.ToString("MM/dd/yyyy-HH:mm:ss") + $": [{row.Name}](#{serverid})-" + logtext + Environment.NewLine;
 
             string logPath = WGSM_PATH + "/logs/";
             if (!Directory.Exists(logPath))
@@ -1185,6 +1221,32 @@ namespace WindowsGSM
             }
 
             ThemeManager.ChangeAppTheme(App.Current, (MahAppSwitch_DarkTheme.IsChecked ?? false) ? "BaseDark" : "BaseLight");
+        }
+
+        private void StartOnBoot_IsCheckedChanged(object sender, EventArgs e)
+        {
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
+            if (key != null)
+            {
+                key.SetValue("StartOnBoot", (MahAppSwitch_StartOnBoot.IsChecked ?? false).ToString());
+                key.Close();
+            }
+
+            SetStartOnBoot(MahAppSwitch_StartOnBoot.IsChecked ?? false);
+        }
+
+        private void SetStartOnBoot(bool enable)
+        {
+            string taskName = "WindowsGSM";
+            string wgsmPath = Process.GetCurrentProcess().MainModule.FileName;
+            if (enable)
+            {
+                Process.Start("schtasks", $"/create /tn {taskName} /tr \"{wgsmPath}\" /sc onlogon /rl HIGHEST /f");
+            }
+            else
+            {
+                Process.Start("schtasks", $"/delete /tn {taskName} /f");
+            }
         }
 
         private void Help_OnlineDocumentation_Click(object sender, RoutedEventArgs e)

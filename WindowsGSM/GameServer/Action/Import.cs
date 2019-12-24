@@ -99,6 +99,15 @@ namespace WindowsGSM.GameServer.Action
                         serverConfig.CreateWindowsGSMConfig(serverGame, serverName, GetIPAddress(), GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
 
                         break;
+
+                    }
+                case (GameServer.GTA5.FullName):
+                    {
+                        GameServer.GTA5 gameServer = new GameServer.GTA5(serverConfig.ServerID);
+                        serverConfig.CreateServerDirectory();
+                        serverConfig.CreateWindowsGSMConfig(serverGame, serverName, GetIPAddress(), GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
+
+                        break;
                     }
             }
         }
@@ -185,6 +194,19 @@ namespace WindowsGSM.GameServer.Action
                         else
                         {
                             Error = "Invalid Path! Fail to find server.jar";
+                            return false;
+                        }
+                    }
+                case (GameServer.GTA5.FullName):
+                    {
+                        string serverJarPath = Path.Combine(serverDir, "FXServer.exe");
+                        if (File.Exists(serverJarPath))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            Error = "Invalid Path! Fail to find FXServer.exe";
                             return false;
                         }
                     }

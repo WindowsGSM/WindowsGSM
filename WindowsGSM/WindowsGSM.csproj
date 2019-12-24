@@ -149,6 +149,7 @@
     <Compile Include="GameServer\Action\Update.cs" />
     <Compile Include="GameServer\CS.cs" />
     <Compile Include="GameServer\CSCZ.cs" />
+    <Compile Include="GameServer\GTA5.cs" />
     <Compile Include="GameServer\HL2DM.cs" />
     <Compile Include="GameServer\L4D2.cs" />
     <Compile Include="GameServer\MC.cs" />
@@ -323,6 +324,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\games\l4d2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\games\gta5.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -97,6 +97,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to /WindowsGSM;component/Images/games/gta5.png.
+        /// </summary>
+        public static string Grand_Theft_Auto_V_Dedicated_Server__FiveM_ {
+            get {
+                return ResourceManager.GetString("Grand Theft Auto V Dedicated Server (FiveM)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to /WindowsGSM;component/Images/games/hl2dm.png.
         /// </summary>
         public static string Half_Life_2__Deathmatch_Dedicated_Server {
@@ -126,9 +135,9 @@ namespace WindowsGSM.GameServer.Data {
         /// <summary>
         ///   Looks up a localized string similar to /WindowsGSM;component/Images/games/mcpe.png.
         /// </summary>
-        public static string Minecraft_Pocket_Edition_Server___PocketMine_MP {
+        public static string Minecraft__Pocket_Edition_Server__PocketMine_MP_ {
             get {
-                return ResourceManager.GetString("Minecraft Pocket Edition Server | PocketMine-MP", resourceCulture);
+                return ResourceManager.GetString("Minecraft: Pocket Edition Server (PocketMine-MP)", resourceCulture);
             }
         }
         

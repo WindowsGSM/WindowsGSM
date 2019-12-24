@@ -89,6 +89,13 @@ namespace WindowsGSM.GameServer.Action
                         Error = gameServer.Error;
                         break;
                     }
+                case (GameServer.GTA5.FullName):
+                    {
+                        GameServer.GTA5 gameServer = new GameServer.GTA5(server.ID);
+                        updated = await gameServer.Update();
+                        Error = gameServer.Error;
+                        break;
+                    }
                 default: break;
             }
 

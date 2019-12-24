@@ -32,6 +32,7 @@
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_HardWareAcceleration" Header="Hardware Acceleration" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="HardWareAcceleration_IsCheckedChanged"/>
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_UIAnimation" Header="UI Animation" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="UIAnimation_IsCheckedChanged"/>
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_DarkTheme" Header="Dark Theme" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="DarkTheme_IsCheckedChanged"/>
+                    <Controls:ToggleSwitch x:Name="MahAppSwitch_StartOnBoot" Header="Start WindowsGSM on Boot" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="StartOnBoot_IsCheckedChanged"/>
                 </StackPanel>
             </Controls:Flyout>
         </Controls:FlyoutsControl>
@@ -85,9 +86,9 @@
             <Button x:Name="button_Refresh" Content="REFRESH SERVER LIST" Margin="0,5,10,5" Height="20" Click="RefreshServerList_Click" HorizontalAlignment="Right" Width="150"/>
         </Grid>
         <Grid Height="1" Background="Black" DockPanel.Dock="Top"/>
-        <Grid>
+        <Grid DockPanel.Dock="Top">
             <Grid.RowDefinitions>
-                <RowDefinition Height="3*"/>
+                <RowDefinition Height="4*"/>
                 <RowDefinition Height="5"/>
                 <RowDefinition Height="3*"/>
             </Grid.RowDefinitions>
@@ -119,7 +120,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="3*"/>
                     <ColumnDefinition Width="5"/>
-                    <ColumnDefinition Width="3*" MinWidth="460"/>
+                    <ColumnDefinition Width="3*" MinWidth="480"/>
                 </Grid.ColumnDefinitions>
 
                 <Grid>
@@ -131,14 +132,18 @@
                     <Label x:Name="label_Status" Content="Status:" HorizontalAlignment="Left" Margin="55,26,0,0" VerticalAlignment="Top"/>
                     <Button x:Name="button_Status" Content="" HorizontalAlignment="Left" Margin="105,27,0,0" Width="100" Height="11" Background="Orange" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
                     <Label x:Name="label_ServerGame" Content="Game Server:" HorizontalAlignment="Left" Margin="20,57,0,0" VerticalAlignment="Top"/>
-                    <TextBox x:Name="textBox_ServerGame" Height="23" Margin="105,58,10,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true"/>
+                    <TextBox x:Name="textBox_ServerGame" Height="23" Margin="105,58,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="359"/>
                     <Label x:Name="label_autorestart" Content="Auto Restart:" HorizontalAlignment="Left" Margin="22,88,0,0" VerticalAlignment="Top"/>
                     <Button x:Name="button_autorestart" Content="" HorizontalAlignment="Left" Margin="105,90,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
-                    <Label x:Name="label_updateonstart" Content="Update on start:" HorizontalAlignment="Left" Margin="5,118,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_updateonstart" Content="" HorizontalAlignment="Left" Margin="105,120,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
-                    <Label x:Name="label_discordalert" Content="Discord Alert:" HorizontalAlignment="Left" Margin="19,149,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_discordalert" Content="" HorizontalAlignment="Left" Margin="105,150,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
-                    <Button x:Name="button_discordtest" Content="Send Test Alert" HorizontalAlignment="Left" Margin="155,150,0,0" VerticalAlignment="Top" Width="112" Height="25" Click="Button_DiscordWebhookTest_Click" IsEnabled="False"/>
+
+                    <Label x:Name="label_autostart" Content="Auto Start:" HorizontalAlignment="Left" Margin="178,88,0,0" VerticalAlignment="Top"/>
+                    <Button x:Name="button_autostart" Content="" HorizontalAlignment="Left" Margin="249,90,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
+
+                    <Label x:Name="label_updateonstart" Content="Update on Start:" HorizontalAlignment="Left" Margin="313,89,0,0" VerticalAlignment="Top"/>
+                    <Button x:Name="button_updateonstart" Content="" HorizontalAlignment="Left" Margin="414,90,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
+                    <Label x:Name="label_discordalert" Content="Discord Alert:" HorizontalAlignment="Left" Margin="19,119,0,0" VerticalAlignment="Top"/>
+                    <Button x:Name="button_discordalert" Content="" HorizontalAlignment="Left" Margin="105,120,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
+                    <Button x:Name="button_discordtest" Content="Send Test Alert" HorizontalAlignment="Left" Margin="155,120,0,0" VerticalAlignment="Top" Width="112" Height="25" Click="Button_DiscordWebhookTest_Click" IsEnabled="False"/>
                 </Grid>
 
                 <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch">

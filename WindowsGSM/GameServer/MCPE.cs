@@ -18,7 +18,7 @@ namespace WindowsGSM.GameServer
 
         public string Error;
 
-        public const string FullName = "Minecraft Pocket Edition Server | PocketMine-MP";
+        public const string FullName = "Minecraft: Pocket Edition Server (PocketMine-MP)";
 
         public string port = "19132";
         public string defaultmap = "world";
