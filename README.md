@@ -6,7 +6,7 @@
 [![GitHub release](https://img.shields.io/github/release/BattlefieldDuck/WindowsGSM.svg)](https://github.com/BattlefieldDuck/WindowsGSM/releases/)
 [![Github all releases](https://img.shields.io/github/downloads/BattlefieldDuck/WindowsGSM/total.svg)](https://github.com/BattlefieldDuck/WindowsGSM/releases/)
 
-![Screenshot](https://tatlead.com/WindowsGSM/screenshot/WindowsGSM-v1.3.0.png)
+![Screenshot](https://windowsgsm.com/assets/images/WindowsGSM-v1.6.0.png)
 
 ## 🎮 Supported Game Servers
 |               |   Game Server   |
@@ -17,8 +17,9 @@
 | ![logo](WindowsGSM/Images/games/gmod.png?raw=true) | Garry's Mod Dedicated Server                      |
 | ![logo](WindowsGSM/Images/games/hl2dm.png?raw=true)| Half-Life 2: Deathmatch Dedicated Server          |
 | ![logo](WindowsGSM/Images/games/l4d2.png?raw=true) | Left 4 Dead 2 Dedicated Server                    |
-| ![logo](WindowsGSM/Images/games/mcpe.png?raw=true) | Minecraft Pocket Edition Server ([PocketMine-MP](https://github.com/pmmp/PocketMine-MP))   |
 | ![logo](WindowsGSM/Images/games/mc.png?raw=true)   | Minecraft: Java Edition Server                    |
+| ![logo](WindowsGSM/Images/games/mcpe.png?raw=true) | Minecraft: Pocket Edition Server ([PocketMine-MP](https://github.com/pmmp/PocketMine-MP)) |
+| ![logo](WindowsGSM/Images/games/gta5.png?raw=true) | Grand Theft Auto V Dedicated Server (FiveM)       |
 | ![logo](WindowsGSM/Images/games/rust.png?raw=true) | Rust Dedicated Server                             |
 | ![logo](WindowsGSM/Images/games/tf2.png?raw=true)  | Team Fortress 2 Dedicated Server                  |
 
