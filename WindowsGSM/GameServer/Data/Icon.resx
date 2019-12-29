@@ -118,36 +118,36 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Counter-Strike: 1.6 Dedicated Server" xml:space="preserve">
-    <value>/WindowsGSM;component/Images/games/cs.png</value>
+    <value>Images/Games/cs.png</value>
   </data>
   <data name="Counter-Strike: Condition Zero Dedicated Server" xml:space="preserve">
-    <value>/WindowsGSM;component/Images/games/cscz.png</value>
+    <value>Images/Games/cscz.png</value>
   </data>
   <data name="Counter-Strike: Global Offensive Dedicated Server" xml:space="preserve">
-    <value>/WindowsGSM;component/Images/games/csgo.png</value>
+    <value>Images/Games/csgo.png</value>
   </data>
   <data name="Garry's Mod Dedicated Server" xml:space="preserve">
-    <value>/WindowsGSM;component/Images/games/gmod.png</value>
+    <value>Images/Games/gmod.png</value>
   </data>
   <data name="Grand Theft Auto V Dedicated Server (FiveM)" xml:space="preserve">
-    <value>/WindowsGSM;component/Images/games/gta5.png</value>
+    <value>Images/Games/gta5.png</value>
   </data>
   <data name="Half-Life 2: Deathmatch Dedicated Server" xml:space="preserve">
-    <value>/WindowsGSM;component/Images/games/hl2dm.png</value>
+    <value>Images/Games/hl2dm.png</value>
   </data>
   <data name="Left 4 Dead 2 Dedicated Server" xml:space="preserve">
-    <value>/WindowsGSM;component/Images/games/l4d2.png</value>
+    <value>Images/Games/l4d2.png</value>
   </data>
   <data name="Minecraft: Java Edition Server" xml:space="preserve">
-    <value>/WindowsGSM;component/Images/games/mc.png</value>
+    <value>Images/Games/mc.png</value>
   </data>
   <data name="Minecraft: Pocket Edition Server (PocketMine-MP)" xml:space="preserve">
-    <value>/WindowsGSM;component/Images/games/mcpe.png</value>
+    <value>Images/Games/mcpe.png</value>
   </data>
   <data name="Rust Dedicated Server" xml:space="preserve">
-    <value>/WindowsGSM;component/Images/games/rust.png</value>
+    <value>Images/Games/rust.png</value>
   </data>
   <data name="Team Fortress 2 Dedicated Server" xml:space="preserve">
-    <value>/WindowsGSM;component/Images/games/tf2.png</value>
+    <value>Images/Games/tf2.png</value>
   </data>
 </root>
