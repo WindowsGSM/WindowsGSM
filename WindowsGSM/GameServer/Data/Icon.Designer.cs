@@ -61,6 +61,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/games/7dtd.png.
+        /// </summary>
+        public static string _7_Days_to_Die_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("7 Days to Die Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/games/cs.png.
         /// </summary>
         public static string Counter_Strike__1_6_Dedicated_Server {

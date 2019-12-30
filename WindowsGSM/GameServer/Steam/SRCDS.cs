@@ -21,12 +21,7 @@ namespace WindowsGSM.GameServer.Steam
             _serverId = serverId;
         }
 
-        public async Task<Process> Start(string param)
-        {
-            return await Start(param, "srcds.exe");
-        }
-
-        public async Task<Process> Start(string param, string customSrcdsName)
+        public async Task<Process> Start(string param, string customSrcdsName = "srcds.exe", bool setWorkingDirectory = true)
         {
             string workingDir = Functions.Path.GetServerFiles(_serverId);
             string srcdsPath = Path.Combine(workingDir, customSrcdsName);
@@ -50,7 +45,10 @@ namespace WindowsGSM.GameServer.Steam
             }
 
             Process p = new Process();
-            p.StartInfo.WorkingDirectory = workingDir;
+            if (setWorkingDirectory)
+            {
+                p.StartInfo.WorkingDirectory = workingDir;
+            }
             p.StartInfo.FileName = srcdsPath;
             p.StartInfo.Arguments = param;
             p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
@@ -59,10 +57,17 @@ namespace WindowsGSM.GameServer.Steam
             return p;
         }
 
-        public static async Task<bool> Stop(Process p)
+        public static async Task<bool> Stop(Process p, bool sendCloseMessage = false)
         {
             SetForegroundWindow(p.MainWindowHandle);
-            SendKeys.SendWait("quit");
+            if (sendCloseMessage)
+            {
+                p.CloseMainWindow();
+            }
+            else
+            {
+                SendKeys.SendWait("quit");
+            }
             SendKeys.SendWait("{ENTER}");
             SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
 

@@ -61,7 +61,7 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>WindowsGSM.ico</ApplicationIcon>
+    <ApplicationIcon>Images\WindowsGSM.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>WindowsGSM.Program</StartupObject>
@@ -141,6 +141,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="GameServer\7DTD.cs" />
     <Compile Include="GameServer\Action\Import.cs" />
     <Compile Include="GameServer\Action\Install.cs" />
     <Compile Include="GameServer\Action\Restart.cs" />
@@ -242,17 +243,14 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\steamcmd.png" />
+    <Resource Include="Images\SteamCMD.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\games\csgo.png" />
-    <Resource Include="Images\games\tf2.png" />
+    <Resource Include="Images\Games\csgo.png" />
+    <Resource Include="Images\Games\tf2.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\shield.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\games\mc.png" />
+    <Resource Include="Images\Games\mc.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
@@ -267,13 +265,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="WindowsGSM.ico" />
+    <Resource Include="Images\WindowsGSM.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\windowsgsm.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\windowsgsm.png" />
+    <Resource Include="Images\WindowsGSM.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\packages\ControlzEx.3.0.2.4\lib\net462\System.Windows.Interactivity.dll">
@@ -289,13 +284,13 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\games\gmod.png" />
+    <Resource Include="Images\Games\gmod.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\games\mcpe.png" />
+    <Resource Include="Images\Games\mcpe.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\games\rust.png" />
+    <Resource Include="Images\Games\rust.png" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="NetFwTypeLib">
@@ -314,19 +309,34 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\games\cs.png" />
+    <Resource Include="Images\Games\cs.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\games\cscz.png" />
+    <Resource Include="Images\Games\cscz.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\games\hl2dm.png" />
+    <Resource Include="Images\Games\hl2dm.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\games\l4d2.png" />
+    <Resource Include="Images\Games\l4d2.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\games\gta5.png" />
+    <Resource Include="Images\Games\gta5.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\WindowsGSM-BRONZE.ico" />
+    <Resource Include="Images\WindowsGSM-GOLD.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\WindowsGSM-EMERALD.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\WindowsGSM-BRONZE.png" />
+    <Resource Include="Images\WindowsGSM-EMERALD.png" />
+    <Resource Include="Images\WindowsGSM-GOLD.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\7dtd.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -164,7 +164,7 @@ namespace WindowsGSM
                 {
                     ID = serverConfig.ServerID,
                     Game = serverConfig.ServerGame,
-                    Icon = GameServer.Data.Icon.ResourceManager.GetString(servergame),
+                    Icon = "/WindowsGSM;component/" + GameServer.Data.Icon.ResourceManager.GetString(servergame),
                     Status = "Stopped",
                     Name = serverConfig.ServerName,
                     IP = serverConfig.ServerIP,

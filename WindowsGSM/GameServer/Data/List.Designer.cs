@@ -61,7 +61,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Counter-Strike: 1.6 Dedicated Server.
+        ///   Looks up a localized string similar to 7 Days to Die Dedicated Server.
         /// </summary>
         internal static string _1 {
             get {
@@ -70,7 +70,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Rust Dedicated Server.
+        ///   Looks up a localized string similar to Minecraft: Pocket Edition Server (PocketMine-MP).
         /// </summary>
         internal static string _10 {
             get {
@@ -79,7 +79,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Team Fortress 2 Dedicated Server.
+        ///   Looks up a localized string similar to Rust Dedicated Server.
         /// </summary>
         internal static string _11 {
             get {
@@ -88,7 +88,16 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Counter-Strike: Condition Zero Dedicated Server.
+        ///   Looks up a localized string similar to Team Fortress 2 Dedicated Server.
+        /// </summary>
+        internal static string _12 {
+            get {
+                return ResourceManager.GetString("12", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Counter-Strike: 1.6 Dedicated Server.
         /// </summary>
         internal static string _2 {
             get {
@@ -97,7 +106,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Counter-Strike: Global Offensive Dedicated Server.
+        ///   Looks up a localized string similar to Counter-Strike: Condition Zero Dedicated Server.
         /// </summary>
         internal static string _3 {
             get {
@@ -106,7 +115,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Garry&apos;s Mod Dedicated Server.
+        ///   Looks up a localized string similar to Counter-Strike: Global Offensive Dedicated Server.
         /// </summary>
         internal static string _4 {
             get {
@@ -115,7 +124,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Grand Theft Auto V Dedicated Server (FiveM).
+        ///   Looks up a localized string similar to Garry&apos;s Mod Dedicated Server.
         /// </summary>
         internal static string _5 {
             get {
@@ -124,7 +133,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Half-Life 2: Deathmatch Dedicated Server.
+        ///   Looks up a localized string similar to Grand Theft Auto V Dedicated Server (FiveM).
         /// </summary>
         internal static string _6 {
             get {
@@ -133,7 +142,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Left 4 Dead 2 Dedicated Server.
+        ///   Looks up a localized string similar to Half-Life 2: Deathmatch Dedicated Server.
         /// </summary>
         internal static string _7 {
             get {
@@ -142,7 +151,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Minecraft: Java Edition Server.
+        ///   Looks up a localized string similar to Left 4 Dead 2 Dedicated Server.
         /// </summary>
         internal static string _8 {
             get {
@@ -151,7 +160,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Minecraft: Pocket Edition Server (PocketMine-MP).
+        ///   Looks up a localized string similar to Minecraft: Java Edition Server.
         /// </summary>
         internal static string _9 {
             get {

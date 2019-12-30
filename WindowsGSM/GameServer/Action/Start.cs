@@ -132,6 +132,16 @@ namespace WindowsGSM.GameServer.Action
 
                         break;
                     }
+                case (GameServer._7DTD.FullName):
+                    {
+                        GameServer._7DTD gameServer = new GameServer._7DTD(server.ID);
+                        gameServer.SetParameter(additionalParam);
+                        process = await gameServer.Start();
+                        Error = gameServer.Error;
+                        Notice = gameServer.Notice;
+
+                        break;
+                    }
                 default: break;
             }
 

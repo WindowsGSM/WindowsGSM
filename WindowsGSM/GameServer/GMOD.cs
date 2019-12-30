@@ -64,7 +64,8 @@ namespace WindowsGSM.GameServer
             }
 
             Steam.SRCDS srcds = new Steam.SRCDS(_serverId);
-            Process p = await srcds.Start(_param);
+            //Garry's Mod server should set working directory to null because the workshop data only works when set to false
+            Process p = await srcds.Start(_param, setWorkingDirectory: false);
             Error = srcds.Error;
 
             return p;

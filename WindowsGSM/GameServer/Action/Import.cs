@@ -109,11 +109,21 @@ namespace WindowsGSM.GameServer.Action
 
                         break;
                     }
+                case (GameServer._7DTD.FullName):
+                    {
+                        GameServer._7DTD gameServer = new GameServer._7DTD(serverConfig.ServerID);
+                        serverConfig.CreateServerDirectory();
+                        serverConfig.CreateWindowsGSMConfig(serverGame, serverName, GetIPAddress(), GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
+
+                        break;
+                    }
             }
         }
 
         public bool CanImport(string serverGame, string serverDir)
         {
+            string exeName = "";
+
             //Check is the path contain game server files
             switch (serverGame)
             {
@@ -122,18 +132,8 @@ namespace WindowsGSM.GameServer.Action
                 case (GameServer.TF2.FullName):
                 case (GameServer.HL2DM.FullName):
                 case (GameServer.L4D2.FullName):
-                    {
-                        string srcdsPath = Path.Combine(serverDir, "srcds.exe");
-                        if (File.Exists(srcdsPath))
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            Error = "Invalid Path! Fail to find srcds.exe";
-                            return false;
-                        }
-                    }
+                    exeName = "srcds.exe";
+                    break;
                 case (GameServer.MCPE.FullName):
                     {
                         string PHPPath = Path.Combine(serverDir, @"bin\php\php.exe");
@@ -158,62 +158,34 @@ namespace WindowsGSM.GameServer.Action
                         }
                     }
                 case (GameServer.RUST.FullName):
-                    {
-                        string rustPath = Path.Combine(serverDir, "RustDedicated.exe");
-                        if (File.Exists(rustPath))
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            Error = "Invalid Path! Fail to find RustDedicated.exe";
-                            return false;
-                        }
-                    }
+                    exeName = "RustDedicated.exe";
+                    break;
                 case (GameServer.CS.FullName):
                 case (GameServer.CSCZ.FullName):
-                    {
-                        string hldsPath = Path.Combine(serverDir, "hlds.exe");
-                        if (File.Exists(hldsPath))
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            Error = "Invalid Path! Fail to find hlds.exe";
-                            return false;
-                        }
-                    }
+                    exeName = "hlds.exe";
+                    break;
                 case (GameServer.MC.FullName):
-                    {
-                        string serverJarPath = Path.Combine(serverDir, "server.jar");
-                        if (File.Exists(serverJarPath))
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            Error = "Invalid Path! Fail to find server.jar";
-                            return false;
-                        }
-                    }
+                    exeName = "server.jar";
+                    break;
                 case (GameServer.GTA5.FullName):
-                    {
-                        string serverJarPath = Path.Combine(serverDir, "FXServer.exe");
-                        if (File.Exists(serverJarPath))
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            Error = "Invalid Path! Fail to find FXServer.exe";
-                            return false;
-                        }
-                    }
+                    exeName = @"server\FXServer.exe";
+                    break;
+                case (GameServer._7DTD.FullName):
+                    exeName = "7DaysToDieServer.exe";
+                    break;
                 default: break;
             }
 
-            return false;
+            string exePath = Path.Combine(serverDir, exeName);
+            if (File.Exists(exePath))
+            {
+                return true;
+            }
+            else
+            {
+                Error = $"Invalid Path! Fail to find {exeName}";
+                return false;
+            }
         }
 
         private static string GetIPAddress()

@@ -29,6 +29,7 @@ namespace WindowsGSM.GameServer.Action
                 case (GameServer.L4D2.FullName): await GameServer.L4D2.Stop(process); break;
                 case (GameServer.MC.FullName): await GameServer.MC.Stop(process); break;
                 case (GameServer.GTA5.FullName): await GameServer.GTA5.Stop(process); break;
+                case (GameServer._7DTD.FullName): await GameServer._7DTD.Stop(process); break;
                 default: return true;
             }
 

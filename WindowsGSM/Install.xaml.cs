@@ -101,6 +101,7 @@ namespace WindowsGSM
             serverConfig.CreateServerDirectory();
 
             pInstaller = await gameServerAction.Run(servergame);
+            string error = gameServerAction.Error;
             bool IsSuccess = await gameServerAction.IsSuccess(pInstaller, servergame, servername);
 
             if (IsSuccess)
@@ -111,7 +112,7 @@ namespace WindowsGSM
                 {
                     ID = serverConfig.ServerID,
                     Game = serverConfig.ServerGame,
-                    Icon = GameServer.Data.Icon.ResourceManager.GetString(servergame),
+                    Icon = "/WindowsGSM;component/" + GameServer.Data.Icon.ResourceManager.GetString(servergame),
                     Status = "Stopped",
                     Name = serverConfig.ServerName,
                     IP = serverConfig.ServerIP,
@@ -137,7 +138,7 @@ namespace WindowsGSM
                 }
                 else
                 {
-                    textblock_progress.Text = "Fail to install";
+                    textblock_progress.Text = $"Fail to install {error}";
                 }
 
                 button_install.Content = "Install";

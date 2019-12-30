@@ -14,6 +14,8 @@ using System.Windows.Forms;
 using Microsoft.Win32;
 using MahApps.Metro;
 using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
+using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
 
 namespace WindowsGSM
@@ -52,7 +54,7 @@ namespace WindowsGSM
             Restoring = 11
         }
 
-        public static readonly string WGSM_VERSION = "v1.6.0";
+        public static readonly string WGSM_VERSION = "v1.7.0";
         public static readonly int MAX_SERVER = 100;
         public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
         //public static readonly string WGSM_PATH = @"D:\WindowsGSMtest2";
@@ -76,6 +78,8 @@ namespace WindowsGSM
         private static readonly bool[] g_bDiscordAlert = new bool[MAX_SERVER + 1];
         private static readonly string[] g_DiscordWebhook = new string[MAX_SERVER + 1];
 
+        private static string g_DonorType = "";
+
         public MainWindow()
         {
             InitializeComponent();
@@ -90,11 +94,16 @@ namespace WindowsGSM
                 key.SetValue("UIAnimation", "True");
                 key.SetValue("DarkTheme", "False");
                 key.SetValue("StartOnBoot", "False");
+                key.SetValue("DonorTheme", "False");
+                key.SetValue("DonorAuthKey", "");
+                key.SetValue("Height", "540");
+                key.SetValue("Width", "960");
 
                 MahAppSwitch_HardWareAcceleration.IsChecked = true;
                 MahAppSwitch_UIAnimation.IsChecked = true;
                 MahAppSwitch_DarkTheme.IsChecked = false;
                 MahAppSwitch_StartOnBoot.IsChecked = false;
+                MahAppSwitch_DonorTheme.IsChecked = false;
             }
             else
             {
@@ -102,13 +111,26 @@ namespace WindowsGSM
                 MahAppSwitch_UIAnimation.IsChecked = ((key.GetValue("UIAnimation") ?? false).ToString() == "True") ? true : false;
                 MahAppSwitch_DarkTheme.IsChecked = ((key.GetValue("DarkTheme") ?? false).ToString() == "True") ? true : false;
                 MahAppSwitch_StartOnBoot.IsChecked = ((key.GetValue("StartOnBoot") ?? false).ToString() == "True") ? true : false;
+                MahAppSwitch_DonorTheme.IsChecked = ((key.GetValue("DonorTheme") ?? false).ToString() == "True") ? true : false;
+
+                if (MahAppSwitch_DonorTheme.IsChecked ?? false)
+                {
+                    string authKey = (key.GetValue("DonorAuthKey") == null) ? "" : key.GetValue("DonorAuthKey").ToString();
+                    if (!String.IsNullOrWhiteSpace(authKey))
+                    {
+                        ActivateDonorTheme(authKey);
+                    }
+                }
+
+                Height = (key.GetValue("Height") == null) ? 540 : double.Parse(key.GetValue("Height").ToString());
+                Width = (key.GetValue("Width") == null) ? 960 : double.Parse(key.GetValue("Width").ToString());
             }
             key.Close();
 
             RenderOptions.ProcessRenderMode = (MahAppSwitch_HardWareAcceleration.IsChecked ?? false) ? System.Windows.Interop.RenderMode.SoftwareOnly : System.Windows.Interop.RenderMode.Default;
             WindowTransitionsEnabled = MahAppSwitch_UIAnimation.IsChecked ?? false;
             ThemeManager.ChangeAppTheme(App.Current, (MahAppSwitch_DarkTheme.IsChecked ?? false) ? "BaseDark" : "BaseLight");
-            //Not required
+            //Not required - it is set by windows settings
             //SetStartOnBoot(MahAppSwitch_StartOnBoot.IsChecked ?? false);
 
             notifyIcon = new NotifyIcon();
@@ -117,7 +139,7 @@ namespace WindowsGSM
             notifyIcon.Text = "WindowsGSM";
             notifyIcon.BalloonTipIcon = ToolTipIcon.Info;
 
-            Stream iconStream = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/WindowsGSM.ico")).Stream;
+            Stream iconStream = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/Images/WindowsGSM.ico")).Stream;
             if (iconStream != null)
             {
                 notifyIcon.Icon = new System.Drawing.Icon(iconStream);
@@ -195,7 +217,7 @@ namespace WindowsGSM
                 {
                     ID = i.ToString(),
                     Game = serverConfig.ServerGame,
-                    Icon = GameServer.Data.Icon.ResourceManager.GetString(serverConfig.ServerGame),
+                    Icon = "/WindowsGSM;component/" + GameServer.Data.Icon.ResourceManager.GetString(serverConfig.ServerGame),
                     Status = status,
                     Name = serverConfig.ServerName,
                     IP = serverConfig.ServerIP,
@@ -241,6 +263,16 @@ namespace WindowsGSM
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            //Save height and width
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
+            if (key != null)
+            {
+                key.SetValue("Height", Height.ToString());
+                key.SetValue("Width", Width.ToString());
+                key.Close();
+            }
+
+            //Shutdown all server before WindowsGSM close
             bool hasServerRunning = false;
             for (int i = 0; i <= MAX_SERVER; i++)
             {
@@ -368,7 +400,7 @@ namespace WindowsGSM
                         break;
                     }
 
-                    var row = new Images.Row { Image = GameServer.Data.Icon.ResourceManager.GetString(servergame), Name = servergame };
+                    var row = new Images.Row { Image = "/WindowsGSM;component/" + GameServer.Data.Icon.ResourceManager.GetString(servergame), Name = servergame };
                     InstallWindow.comboBox.Items.Add(row);
                 }
             }
@@ -410,7 +442,7 @@ namespace WindowsGSM
                         break;
                     }
 
-                    var row = new Images.Row { Image = GameServer.Data.Icon.ResourceManager.GetString(servergame), Name = servergame };
+                    var row = new Images.Row { Image = "/WindowsGSM;component/" + GameServer.Data.Icon.ResourceManager.GetString(servergame), Name = servergame };
                     ImportWindow.comboBox.Items.Add(row);
                 }
             }
@@ -457,7 +489,7 @@ namespace WindowsGSM
 
             if (!g_bDiscordAlert[Int32.Parse(row.ID)]) { return; }
 
-            Discord.Webhook webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(row.ID)]);
+            Discord.Webhook webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(row.ID)], g_DonorType);
             await webhook.Send(row.ID, row.Game, "Webhook Test Alert", row.Name, row.IP, row.Port);
         }
 
@@ -647,7 +679,7 @@ namespace WindowsGSM
                     ShowWindow(p.MainWindowHandle, WindowShowStyle.Hide);
                 }
 
-                if (server.Game == "Rust Dedicated Server")
+                if (server.Game == GameServer.RUST.FullName || server.Game == GameServer._7DTD.FullName)
                 {
                     while (!p.HasExited && !ShowWindow(p.MainWindowHandle, WindowShowStyle.Hide)) { }
                 }
@@ -678,7 +710,7 @@ namespace WindowsGSM
 
             if (g_bDiscordAlert[Int32.Parse(server.ID)])
             {
-                Discord.Webhook webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)]);
+                Discord.Webhook webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)], g_DonorType);
                 await webhook.Send(server.ID, server.Game, "Started", server.Name, server.IP, server.Port);
             }
 
@@ -711,7 +743,7 @@ namespace WindowsGSM
 
             if (g_bDiscordAlert[Int32.Parse(server.ID)])
             {
-                Discord.Webhook webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)]);
+                Discord.Webhook webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)], g_DonorType);
                 await webhook.Send(server.ID, server.Game, "Stopped", server.Name, server.IP, server.Port);
             }
         }
@@ -800,7 +832,7 @@ namespace WindowsGSM
 
             if (g_bDiscordAlert[Int32.Parse(server.ID)])
             {
-                Discord.Webhook webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)]);
+                Discord.Webhook webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)], g_DonorType);
                 await webhook.Send(server.ID, server.Game, "Restarted", server.Name, server.IP, server.Port);
             }
 
@@ -1017,7 +1049,7 @@ namespace WindowsGSM
 
                     if (g_bDiscordAlert[Int32.Parse(server.ID)])
                     {
-                        Discord.Webhook webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)]);
+                        Discord.Webhook webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)], g_DonorType);
                         await webhook.Send(server.ID, server.Game, "Crashed", server.Name, server.IP, server.Port);
                     }
 
@@ -1174,9 +1206,9 @@ namespace WindowsGSM
             }
         }
 
-        private void Button_Github_Click(object sender, RoutedEventArgs e)
+        private void Button_Patreon_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start("https://github.com/BattlefieldDuck/WindowsGSM");
+            Process.Start("https://www.patreon.com/WindowsGSM/");
         }
 
         private void Button_Settings_Click(object sender, RoutedEventArgs e)
@@ -1246,6 +1278,133 @@ namespace WindowsGSM
             else
             {
                 Process.Start("schtasks", $"/delete /tn {taskName} /f");
+            }
+        }
+
+        private async void DonorTheme_IsCheckedChanged(object sender, EventArgs e)
+        {
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
+
+            //If switch is checked
+            if (!MahAppSwitch_DonorTheme.IsChecked ?? false)
+            {
+                SetDonorTheme();
+                key.SetValue("DonorTheme", (MahAppSwitch_DonorTheme.IsChecked ?? false).ToString());
+                key.Close();
+                return;
+            }
+
+            //If switch is not checked
+            key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
+            string authKey = (key.GetValue("DonorAuthKey") == null) ? "" : key.GetValue("DonorAuthKey").ToString();
+
+            MetroDialogSettings settings = new MetroDialogSettings
+            {
+                AffirmativeButtonText = "Activate",
+                DefaultText = authKey
+            };
+
+            authKey = await this.ShowInputAsync("Donor Theme (Patreon)", "Please enter the activation key.", settings);
+
+            //If pressed cancel or key is null or whitespace
+            if (String.IsNullOrWhiteSpace(authKey))
+            {
+                MahAppSwitch_DonorTheme.IsChecked = false;
+                key.Close();
+                return;
+            }
+
+            var controller = await this.ShowProgressAsync("Authenticating...", "Please wait...");
+            controller.SetIndeterminate();
+            bool success = await ActivateDonorTheme(authKey);
+            await controller.CloseAsync();
+
+            if (success)
+            {
+                key.SetValue("DonorTheme", "True");
+                key.SetValue("DonorAuthKey", authKey);
+                await this.ShowMessageAsync("Success!", "Thanks for your donation! Here is your Donor Theme.");
+            }
+            else
+            {
+                key.SetValue("DonorTheme", "False");
+                key.SetValue("DonorAuthKey", "");
+                await this.ShowMessageAsync("Fail to activate.", "Please visit https://windowsgsm.com/patreon/ to get the key.");
+
+                MahAppSwitch_DonorTheme.IsChecked = false;
+            }
+            key.Close();
+        }
+
+        private async Task<bool> ActivateDonorTheme(string authKey)
+        {
+            try
+            {
+                using (WebClient webClient = new WebClient())
+                {
+                    string json = await webClient.DownloadStringTaskAsync($"https://windowsgsm.com/patreon/patreonAuth.php?auth={authKey}");
+                    bool success = (JObject.Parse(json)["success"].ToString() == "True") ? true : false;
+
+                    if (success)
+                    {
+                        string name = JObject.Parse(json)["name"].ToString();
+                        Title = $"WindowsGSM {WGSM_VERSION} - Patreon: {name}";
+
+                        string type = JObject.Parse(json)["type"].ToString();
+                        SetDonorTheme(type);
+
+                        g_DonorType = type;
+
+                        return true;
+                    }
+                }
+            }
+            catch
+            {
+
+            }
+
+            return false;
+        }
+
+        private void SetDonorTheme(string type = "")
+        {
+            //Set theme
+            var theme = ThemeManager.GetAppTheme((MahAppSwitch_DarkTheme.IsChecked ?? false) ? "BaseDark" : "BaseLight");
+            var color = "Teal";
+            switch (type)
+            {
+                case "BRONZE":
+                    color = "Orange";
+                    break;
+                case "GOLD":
+                    color = "Amber";
+                    break;
+                case "EMERALD":
+                    color = "Emerald";
+                    break;
+            }
+            ThemeManager.ChangeAppStyle(App.Current, ThemeManager.GetAccent(color), theme);
+
+            //Set icon
+            string uriPath = "pack://application:,,,/Images/WindowsGSM";
+            switch (type)
+            {
+                case "BRONZE":
+                case "GOLD":
+                case "EMERALD":
+                    uriPath += $"-{type}";
+                    break;
+            }
+            uriPath += ".ico";
+            Uri iconUri = new Uri(uriPath, UriKind.RelativeOrAbsolute);
+            this.Icon = BitmapFrame.Create(iconUri);
+
+            //Set notify icon
+            Stream iconStream = System.Windows.Application.GetResourceStream(new Uri(uriPath)).Stream;
+            if (iconStream != null)
+            {
+                notifyIcon.Icon = new System.Drawing.Icon(iconStream);
             }
         }
 

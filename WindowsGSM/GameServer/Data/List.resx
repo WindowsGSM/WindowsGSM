@@ -118,36 +118,39 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="1" xml:space="preserve">
-    <value>Counter-Strike: 1.6 Dedicated Server</value>
+    <value>7 Days to Die Dedicated Server</value>
   </data>
   <data name="10" xml:space="preserve">
-    <value>Rust Dedicated Server</value>
+    <value>Minecraft: Pocket Edition Server (PocketMine-MP)</value>
   </data>
   <data name="11" xml:space="preserve">
+    <value>Rust Dedicated Server</value>
+  </data>
+  <data name="12" xml:space="preserve">
     <value>Team Fortress 2 Dedicated Server</value>
   </data>
   <data name="2" xml:space="preserve">
-    <value>Counter-Strike: Condition Zero Dedicated Server</value>
+    <value>Counter-Strike: 1.6 Dedicated Server</value>
   </data>
   <data name="3" xml:space="preserve">
-    <value>Counter-Strike: Global Offensive Dedicated Server</value>
+    <value>Counter-Strike: Condition Zero Dedicated Server</value>
   </data>
   <data name="4" xml:space="preserve">
-    <value>Garry's Mod Dedicated Server</value>
+    <value>Counter-Strike: Global Offensive Dedicated Server</value>
   </data>
   <data name="5" xml:space="preserve">
-    <value>Grand Theft Auto V Dedicated Server (FiveM)</value>
+    <value>Garry's Mod Dedicated Server</value>
   </data>
   <data name="6" xml:space="preserve">
-    <value>Half-Life 2: Deathmatch Dedicated Server</value>
+    <value>Grand Theft Auto V Dedicated Server (FiveM)</value>
   </data>
   <data name="7" xml:space="preserve">
-    <value>Left 4 Dead 2 Dedicated Server</value>
+    <value>Half-Life 2: Deathmatch Dedicated Server</value>
   </data>
   <data name="8" xml:space="preserve">
-    <value>Minecraft: Java Edition Server</value>
+    <value>Left 4 Dead 2 Dedicated Server</value>
   </data>
   <data name="9" xml:space="preserve">
-    <value>Minecraft: Pocket Edition Server (PocketMine-MP)</value>
+    <value>Minecraft: Java Edition Server</value>
   </data>
 </root>

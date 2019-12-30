@@ -83,6 +83,11 @@ namespace WindowsGSM.GameServer.Action
 
                         return null;
                     }
+                case (GameServer._7DTD.FullName):
+                    {
+                        GameServer._7DTD gameServer = new GameServer._7DTD(serverConfig.ServerID);
+                        return await gameServer.Install();
+                    }
                 default: break;
             }
 
@@ -190,6 +195,18 @@ namespace WindowsGSM.GameServer.Action
                 case (GameServer.GTA5.FullName):
                     {
                         string serverPath = Functions.Path.GetServerFiles(serverConfig.ServerID, @"server\FXServer.exe");
+                        if (File.Exists(serverPath))
+                        {
+                            CreateServerConfigs(serverGame, serverName);
+
+                            return true;
+                        }
+
+                        return false;
+                    }
+                case (GameServer._7DTD.FullName):
+                    {
+                        string serverPath = Functions.Path.GetServerFiles(serverConfig.ServerID, "7DaysToDieServer.exe");
                         if (File.Exists(serverPath))
                         {
                             CreateServerConfigs(serverGame, serverName);
@@ -314,6 +331,17 @@ namespace WindowsGSM.GameServer.Action
                         string port = GetAvailablePort(gameServer.port);
                         serverConfig.CreateWindowsGSMConfig(serverGame, serverName, ip, port, gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
                         gameServer.CreateServerCFG(serverName, GetRCONPassword(), ip, port);
+
+                        break;
+                    }
+                case (GameServer._7DTD.FullName):
+                    {
+                        GameServer._7DTD gameServer = new GameServer._7DTD(serverConfig.ServerID);
+                        serverConfig.CreateServerDirectory();
+
+                        string port = GetAvailablePort(gameServer.port);
+                        serverConfig.CreateWindowsGSMConfig(serverGame, serverName, GetIPAddress(), port, gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
+                        gameServer.CreateServerCFG(serverName, GetRCONPassword(), port);
 
                         break;
                     }
