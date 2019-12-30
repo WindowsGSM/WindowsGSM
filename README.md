@@ -11,17 +11,18 @@
 ## 🎮 Supported Game Servers
 |               |   Game Server   |
 | ------------- | --------------- |
-| ![logo](WindowsGSM/Images/games/cs.png?raw=true)   | Counter-Strike: 1.6 Dedicated Server              |
-| ![logo](WindowsGSM/Images/games/cscz.png?raw=true) | Counter-Strike: Condition Zero Dedicated Server   |
-| ![logo](WindowsGSM/Images/games/csgo.png?raw=true) | Counter-Strike: Global Offensive Dedicated Server |
-| ![logo](WindowsGSM/Images/games/gmod.png?raw=true) | Garry's Mod Dedicated Server                      |
-| ![logo](WindowsGSM/Images/games/hl2dm.png?raw=true)| Half-Life 2: Deathmatch Dedicated Server          |
-| ![logo](WindowsGSM/Images/games/l4d2.png?raw=true) | Left 4 Dead 2 Dedicated Server                    |
-| ![logo](WindowsGSM/Images/games/mc.png?raw=true)   | Minecraft: Java Edition Server                    |
-| ![logo](WindowsGSM/Images/games/mcpe.png?raw=true) | Minecraft: Pocket Edition Server ([PocketMine-MP](https://github.com/pmmp/PocketMine-MP)) |
-| ![logo](WindowsGSM/Images/games/gta5.png?raw=true) | Grand Theft Auto V Dedicated Server ([FiveM](https://github.com/citizenfx/fivem))|
-| ![logo](WindowsGSM/Images/games/rust.png?raw=true) | Rust Dedicated Server                             |
-| ![logo](WindowsGSM/Images/games/tf2.png?raw=true)  | Team Fortress 2 Dedicated Server                  |
+| ![logo](WindowsGSM/Images/Games/7dtd.png?raw=true) | 7 Days to Die Dedicated Server                    |
+| ![logo](WindowsGSM/Images/Games/cs.png?raw=true)   | Counter-Strike: 1.6 Dedicated Server              |
+| ![logo](WindowsGSM/Images/Games/cscz.png?raw=true) | Counter-Strike: Condition Zero Dedicated Server   |
+| ![logo](WindowsGSM/Images/Games/csgo.png?raw=true) | Counter-Strike: Global Offensive Dedicated Server |
+| ![logo](WindowsGSM/Images/Games/gmod.png?raw=true) | Garry's Mod Dedicated Server                      |
+| ![logo](WindowsGSM/Images/Games/hl2dm.png?raw=true)| Half-Life 2: Deathmatch Dedicated Server          |
+| ![logo](WindowsGSM/Images/Games/l4d2.png?raw=true) | Left 4 Dead 2 Dedicated Server                    |
+| ![logo](WindowsGSM/Images/Games/mc.png?raw=true)   | Minecraft: Java Edition Server                    |
+| ![logo](WindowsGSM/Images/Games/mcpe.png?raw=true) | Minecraft: Pocket Edition Server ([PocketMine-MP](https://github.com/pmmp/PocketMine-MP)) |
+| ![logo](WindowsGSM/Images/Games/gta5.png?raw=true) | Grand Theft Auto V Dedicated Server ([FiveM](https://github.com/citizenfx/fivem))|
+| ![logo](WindowsGSM/Images/Games/rust.png?raw=true) | Rust Dedicated Server                             |
+| ![logo](WindowsGSM/Images/Games/tf2.png?raw=true)  | Team Fortress 2 Dedicated Server                  |
 
 ## ⭐ Features
 * 📥 One Click Installation
