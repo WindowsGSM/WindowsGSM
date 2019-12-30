@@ -61,7 +61,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Images/games/7dtd.png.
+        ///   Looks up a localized string similar to Images/Games/7dtd.png.
         /// </summary>
         public static string _7_Days_to_Die_Dedicated_Server {
             get {
@@ -70,7 +70,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Images/games/cs.png.
+        ///   Looks up a localized string similar to Images/Games/cs.png.
         /// </summary>
         public static string Counter_Strike__1_6_Dedicated_Server {
             get {
@@ -79,7 +79,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Images/games/cscz.png.
+        ///   Looks up a localized string similar to Images/Games/cscz.png.
         /// </summary>
         public static string Counter_Strike__Condition_Zero_Dedicated_Server {
             get {
@@ -88,7 +88,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Images/games/csgo.png.
+        ///   Looks up a localized string similar to Images/Games/csgo.png.
         /// </summary>
         public static string Counter_Strike__Global_Offensive_Dedicated_Server {
             get {
@@ -97,7 +97,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Images/games/gmod.png.
+        ///   Looks up a localized string similar to Images/Games/gmod.png.
         /// </summary>
         public static string Garry_s_Mod_Dedicated_Server {
             get {
@@ -106,7 +106,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Images/games/gta5.png.
+        ///   Looks up a localized string similar to Images/Games/gta5.png.
         /// </summary>
         public static string Grand_Theft_Auto_V_Dedicated_Server__FiveM_ {
             get {
@@ -115,7 +115,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Images/games/hl2dm.png.
+        ///   Looks up a localized string similar to Images/Games/hl2dm.png.
         /// </summary>
         public static string Half_Life_2__Deathmatch_Dedicated_Server {
             get {
@@ -124,7 +124,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Images/games/l4d2.png.
+        ///   Looks up a localized string similar to Images/Games/l4d2.png.
         /// </summary>
         public static string Left_4_Dead_2_Dedicated_Server {
             get {
@@ -133,7 +133,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Images/games/mc.png.
+        ///   Looks up a localized string similar to Images/Games/mc.png.
         /// </summary>
         public static string Minecraft__Java_Edition_Server {
             get {
@@ -142,7 +142,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Images/games/mcpe.png.
+        ///   Looks up a localized string similar to Images/Games/mcpe.png.
         /// </summary>
         public static string Minecraft__Pocket_Edition_Server__PocketMine_MP_ {
             get {
@@ -151,7 +151,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Images/games/rust.png.
+        ///   Looks up a localized string similar to Images/Games/rust.png.
         /// </summary>
         public static string Rust_Dedicated_Server {
             get {
@@ -160,7 +160,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Images/games/tf2.png.
+        ///   Looks up a localized string similar to Images/Games/tf2.png.
         /// </summary>
         public static string Team_Fortress_2_Dedicated_Server {
             get {
