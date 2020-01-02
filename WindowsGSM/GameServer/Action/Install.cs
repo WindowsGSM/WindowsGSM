@@ -223,7 +223,6 @@ namespace WindowsGSM.GameServer.Action
 
         public async void CreateServerConfigs(string serverGame, string serverName)
         {
-            await Task.Yield();
             switch (serverGame)
             {
                 case (GameServer.CSGO.FullName):
