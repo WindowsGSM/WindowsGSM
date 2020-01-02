@@ -206,7 +206,7 @@ namespace WindowsGSM.GameServer.Action
 
             for (int i = 0; i < WindowsGSM.ServerGrid.Items.Count; i++)
             {
-                Function.ServerTable row = WindowsGSM.ServerGrid.Items[i] as Function.ServerTable;
+                Functions.ServerTable row = WindowsGSM.ServerGrid.Items[i] as Functions.ServerTable;
                 portlist[i] = Int32.Parse(string.IsNullOrWhiteSpace(row.Port) ? "0" : row.Port);
             }
 

@@ -1,4 +1,4 @@
-﻿namespace WindowsGSM.Function
+﻿namespace WindowsGSM.Functions
 {
     class ServerTable
     {
