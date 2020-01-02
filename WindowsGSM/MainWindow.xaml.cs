@@ -119,7 +119,9 @@ namespace WindowsGSM
                     string authKey = (key.GetValue("DonorAuthKey") == null) ? "" : key.GetValue("DonorAuthKey").ToString();
                     if (!String.IsNullOrWhiteSpace(authKey))
                     {
+#pragma warning disable 4014
                         ActivateDonorTheme(authKey);
+#pragma warning restore
                     }
                 }
 
