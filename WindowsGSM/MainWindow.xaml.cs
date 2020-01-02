@@ -57,9 +57,10 @@ namespace WindowsGSM
         public static readonly string WGSM_VERSION = "v1.7.0";
         public static readonly int MAX_SERVER = 100;
         public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
+
         //public static readonly string WGSM_PATH = @"D:\WindowsGSMtest2";
 
-        NotifyIcon notifyIcon;
+        private readonly NotifyIcon notifyIcon;
 
         private Install InstallWindow;
         private Import ImportWindow;
@@ -133,11 +134,13 @@ namespace WindowsGSM
             //Not required - it is set by windows settings
             //SetStartOnBoot(MahAppSwitch_StartOnBoot.IsChecked ?? false);
 
-            notifyIcon = new NotifyIcon();
-            notifyIcon.BalloonTipTitle = "WindowsGSM";
-            notifyIcon.BalloonTipText = "WindowsGSM is running in the background";
-            notifyIcon.Text = "WindowsGSM";
-            notifyIcon.BalloonTipIcon = ToolTipIcon.Info;
+            notifyIcon = new NotifyIcon
+            {
+                BalloonTipTitle = "WindowsGSM",
+                BalloonTipText = "WindowsGSM is running in the background",
+                Text = "WindowsGSM",
+                BalloonTipIcon = ToolTipIcon.Info
+            };
 
             Stream iconStream = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/Images/WindowsGSM.ico")).Stream;
             if (iconStream != null)
