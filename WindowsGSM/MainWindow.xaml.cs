@@ -119,7 +119,7 @@ namespace WindowsGSM
                     string authKey = (key.GetValue("DonorAuthKey") == null) ? "" : key.GetValue("DonorAuthKey").ToString();
                     if (!String.IsNullOrWhiteSpace(authKey))
                     {
-                        Task.Run(async () => await ActivateDonorTheme(authKey) );
+                        ActivateDonorTheme(authKey);
                     }
                 }
 
