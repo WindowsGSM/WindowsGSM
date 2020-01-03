@@ -5,11 +5,11 @@ namespace WindowsGSM.GameServer.Action
 {
     class Stop
     {
-        private readonly Function.ServerTable server;
+        private readonly Functions.ServerTable server;
         public string Error = "";
         public string Notice = "";
 
-        public Stop(Function.ServerTable server)
+        public Stop(Functions.ServerTable server)
         {
             this.server = server;
         }

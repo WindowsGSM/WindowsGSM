@@ -4,11 +4,11 @@ namespace WindowsGSM.GameServer.Action
 {
     class Update
     {
-        private readonly Function.ServerTable server;
+        private readonly Functions.ServerTable server;
         public string Error = "";
         public string Notice = "";
 
-        public Update(Function.ServerTable server)
+        public Update(Functions.ServerTable server)
         {
             this.server = server;
         }

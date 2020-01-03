@@ -108,7 +108,7 @@ namespace WindowsGSM
             {
                 MainWindow WindowsGSM = (MainWindow)System.Windows.Application.Current.MainWindow;
 
-                Function.ServerTable row = new Function.ServerTable
+                Functions.ServerTable row = new Functions.ServerTable
                 {
                     ID = serverConfig.ServerID,
                     Game = serverConfig.ServerGame,
