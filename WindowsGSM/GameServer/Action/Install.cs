@@ -221,6 +221,7 @@ namespace WindowsGSM.GameServer.Action
             return false;
         }
 
+#pragma warning disable 1998
         public async void CreateServerConfigs(string serverGame, string serverName)
         {
             switch (serverGame)
@@ -347,6 +348,7 @@ namespace WindowsGSM.GameServer.Action
                     }
             }
         }
+#pragma warning restore 1998
 
         private static string GetIPAddress()
         {
