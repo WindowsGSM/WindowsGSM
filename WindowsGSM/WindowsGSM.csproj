@@ -141,6 +141,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Functions\Github.cs" />
+    <Compile Include="Functions\ServerConsole.cs" />
     <Compile Include="GameServer\7DTD.cs" />
     <Compile Include="GameServer\Action\Import.cs" />
     <Compile Include="GameServer\Action\Install.cs" />
@@ -156,6 +158,8 @@
     <Compile Include="GameServer\MC.cs" />
     <Compile Include="GameServer\Steam\HLDS.cs" />
     <Compile Include="GameServer\Steam\SRCDS.cs" />
+    <Compile Include="Tools\GlobalServerList.cs" />
+    <Compile Include="Tools\InstallMod.cs" />
     <Compile Include="WindowsFirewall.cs" />
     <Page Include="Import.xaml">
       <SubType>Designer</SubType>
@@ -173,7 +177,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Function\Path.cs" />
+    <Compile Include="Functions\Path.cs" />
     <Compile Include="Discord\Webhook.cs" />
     <Compile Include="GameServer\GMOD.cs" />
     <Compile Include="GameServer\MCPE.cs" />
@@ -184,7 +188,7 @@
     <Compile Include="Install.xaml.cs">
       <DependentUpon>Install.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Function\ServerConfig.cs" />
+    <Compile Include="Functions\ServerConfig.cs" />
     <Compile Include="GameServer\Data\List.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -199,7 +203,7 @@
     <Compile Include="GameServer\CSGO.cs" />
     <Compile Include="GameServer\TF2.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Function\ServerTable.cs" />
+    <Compile Include="Functions\ServerTable.cs" />
     <Compile Include="Installer\SteamCMD.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

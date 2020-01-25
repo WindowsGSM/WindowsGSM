@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
 using System.Net;
 using System.Text.RegularExpressions;
 
@@ -22,6 +21,7 @@ namespace WindowsGSM.GameServer
         public string Notice;
 
         public const string FullName = "Grand Theft Auto V Dedicated Server (FiveM)";
+        public const bool ToggleConsole = false;
 
         public string port = "30120";
         public string defaultmap = "fivem-map-skater";
@@ -35,30 +35,22 @@ namespace WindowsGSM.GameServer
 
         public async void CreateServerCFG(string hostname, string rcon_password, string ip, string port)
         {
-            try
+            //Download server.cfg
+            string configPath = Functions.Path.GetServerFiles(_serverId, @"cfx-server-data-master\server.cfg");
+            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName, "server.cfg"))
             {
-                using (WebClient webClient = new WebClient())
-                {
-                    //Download server.cfg
-                    string configPath = Functions.Path.GetServerFiles(_serverId, @"cfx-server-data-master\server.cfg");
-                    await webClient.DownloadFileTaskAsync($"https://github.com/WindowsGSM/Game-Server-Configs/raw/master/{FullName}/server.cfg", configPath);
-                    string configText = File.ReadAllText(configPath);
-                    configText = configText.Replace("{{hostname}}", hostname);
-                    configText = configText.Replace("{{rcon_password}}", rcon_password);
-                    configText = configText.Replace("{{ip}}", ip);
-                    configText = configText.Replace("{{port}}", port);
-                    configText = configText.Replace("{{maxplayers}}", maxplayers);
-                    File.WriteAllText(configPath, configText);
-
-                    //Download sample logo
-                    string logoPath = Functions.Path.GetServerFiles(_serverId, @"cfx-server-data-master\myLogo.png");
-                    await webClient.DownloadFileTaskAsync($"https://github.com/WindowsGSM/Game-Server-Configs/raw/master/{FullName}/myLogo.png", logoPath);
-                }
+                string configText = File.ReadAllText(configPath);
+                configText = configText.Replace("{{hostname}}", hostname);
+                configText = configText.Replace("{{rcon_password}}", rcon_password);
+                configText = configText.Replace("{{ip}}", ip);
+                configText = configText.Replace("{{port}}", port);
+                configText = configText.Replace("{{maxplayers}}", maxplayers);
+                File.WriteAllText(configPath, configText);
             }
-            catch
-            {
 
-            }
+            //Download sample logo
+            string logoPath = Functions.Path.GetServerFiles(_serverId, @"cfx-server-data-master\myLogo.png");
+            await Functions.Github.DownloadGameServerConfig(logoPath, FullName, @"cfx-server-data-master\myLogo.png");
         }
 
         public void SetParameter(string additional)
@@ -101,22 +93,34 @@ namespace WindowsGSM.GameServer
                 firewall.AddRule();
             }
 
-            Process p = new Process();
-            p.StartInfo.WorkingDirectory = serverDataPath;
-            p.StartInfo.FileName = fxServerPath;
-            p.StartInfo.Arguments = $"+set citizen_dir \"{citizenPath}\" {_param}";
-            p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
+            Process p = new Process
+            {
+                StartInfo =
+                {
+                    WorkingDirectory = serverDataPath,
+                    FileName = fxServerPath,
+                    Arguments = $"+set citizen_dir \"{citizenPath}\" {_param}",
+                    WindowStyle = ProcessWindowStyle.Minimized,
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                }
+            };
+            var serverConsole = new Functions.ServerConsole(_serverId);
+            p.OutputDataReceived += serverConsole.AddOutput;
+            p.ErrorDataReceived += serverConsole.AddOutput;
             p.Start();
+            p.BeginOutputReadLine();
+            p.BeginErrorReadLine();
 
             return p;
         }
 
         public static async Task<bool> Stop(Process p)
         {
-            SetForegroundWindow(p.MainWindowHandle);
-            SendKeys.SendWait("quit");
-            SendKeys.SendWait("{ENTER}");
-            SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
+            p.StandardInput.WriteLine("quit");
 
             for (int i = 0; i < 10; i++)
             {

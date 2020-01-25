@@ -7,6 +7,27 @@ using System.Windows.Forms;
 
 namespace WindowsGSM.GameServer.Steam
 {
+    /// <summary>
+    /// 
+    /// Notes:
+    /// srcds.exe works almost perfect on WindowsGSM.
+    /// The one that cause it not perfect is RedirectStandardInput=true will cause an Engine Error - CTextConsoleWin32::GetLine: !GetNumberOfConsoleInputEvents
+    /// Therefore, SendKeys Input Method is used.
+    /// 
+    /// RedirectStandardInput:  NO WORKING
+    /// RedirectStandardOutput: YES (Used)
+    /// RedirectStandardError:  YES (Used)
+    /// SendKeys Input Method:  YES (Used)
+    /// 
+    /// Classes that used SRCDS.cs for Start
+    /// 
+    /// CSGO.cs
+    /// GMOD.cs
+    /// HL2DM.cs
+    /// L4D2.cs
+    /// TF2.cs
+    /// 
+    /// </summary>
     class SRCDS
     {
         [DllImport("user32.dll")]
@@ -44,40 +65,41 @@ namespace WindowsGSM.GameServer.Steam
                 firewall.AddRule();
             }
 
-            Process p = new Process();
-            if (setWorkingDirectory)
+            Process p = new Process
             {
-                p.StartInfo.WorkingDirectory = workingDir;
-            }
-            p.StartInfo.FileName = srcdsPath;
-            p.StartInfo.Arguments = param;
-            p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
+                StartInfo =
+                {
+                    WorkingDirectory = setWorkingDirectory ? workingDir : "",
+                    FileName = srcdsPath,
+                    Arguments = param,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                },
+                //Console is useless
+                EnableRaisingEvents = false
+            };
+            var serverConsole = new Functions.ServerConsole(_serverId);
+            p.OutputDataReceived += serverConsole.AddOutput;
+            p.ErrorDataReceived += serverConsole.AddOutput;
             p.Start();
+            p.BeginOutputReadLine();
+            p.BeginErrorReadLine();
 
             return p;
         }
 
-        public static async Task<bool> Stop(Process p, bool sendCloseMessage = false)
+        public static async Task<bool> Stop(Process p)
         {
             SetForegroundWindow(p.MainWindowHandle);
-            if (sendCloseMessage)
-            {
-                p.CloseMainWindow();
-            }
-            else
-            {
-                SendKeys.SendWait("quit");
-            }
+            SendKeys.SendWait("quit");
             SendKeys.SendWait("{ENTER}");
             SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
 
             for (int i = 0; i < 10; i++)
             {
-                if (p != null && p.HasExited)
-                {
-                    return true;
-                }
-
+                if (p.HasExited) { return true; }
                 await Task.Delay(1000);
             }
 
@@ -89,18 +111,8 @@ namespace WindowsGSM.GameServer.Steam
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
             steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(_serverId), "", appId, true);
 
-            if (!await steamCMD.Download())
-            {
-                Error = steamCMD.Error;
-                return null;
-            }
-
             Process process = await steamCMD.Run();
-            if (process == null)
-            {
-                Error = steamCMD.Error;
-                return null;
-            }
+            Error = steamCMD.Error;
 
             return process;
         }
@@ -109,12 +121,6 @@ namespace WindowsGSM.GameServer.Steam
         {
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
             steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(_serverId), "", appId, false);
-
-            if (!await steamCMD.Download())
-            {
-                Error = steamCMD.Error;
-                return false;
-            }
 
             Process pSteamCMD = await steamCMD.Run();
             if (pSteamCMD == null)

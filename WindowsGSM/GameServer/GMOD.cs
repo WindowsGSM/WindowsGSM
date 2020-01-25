@@ -14,6 +14,7 @@ namespace WindowsGSM.GameServer
         public string Notice;
 
         public const string FullName = "Garry's Mod Dedicated Server";
+        public const bool ToggleConsole = false;
 
         public string port = "27015";
         public string defaultmap = "gm_construct";
@@ -25,22 +26,16 @@ namespace WindowsGSM.GameServer
             _serverId = serverid;
         }
 
-        public void CreateServerCFG(string hostname, string rcon_password)
+        public async void CreateServerCFG(string hostname, string rcon_password)
         {
+            //Download server.cfg
             string configPath = Functions.Path.GetServerFiles(_serverId, @"garrysmod\cfg\server.cfg");
-
-            File.Create(configPath).Dispose();
-
-            using (TextWriter textwriter = new StreamWriter(configPath))
+            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName, "server.cfg"))
             {
-                textwriter.WriteLine($"hostname \"{hostname}\"");
-                textwriter.WriteLine($"rcon_password \"{rcon_password}\"");
-                textwriter.WriteLine("sv_password \"\"");
-                textwriter.WriteLine("net_maxfilesize \"64\"");
-                textwriter.WriteLine("sv_downloadurl \"\"");
-                textwriter.WriteLine("sv_loadingurl \"\"");
-                textwriter.WriteLine("exec banned_user.cfg");
-                textwriter.WriteLine("exec banned_ip.cfg");
+                string configText = File.ReadAllText(configPath);
+                configText = configText.Replace("{{hostname}}", hostname);
+                configText = configText.Replace("{{rcon_password}}", rcon_password);
+                File.WriteAllText(configPath, configText);
             }
         }
 

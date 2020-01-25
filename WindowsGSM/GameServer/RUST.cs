@@ -1,10 +1,19 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
 
 namespace WindowsGSM.GameServer
 {
+    /// <summary>
+    /// 
+    /// Notes:
+    /// Rust server is the most user-unfriendly server in my opinion. Both RedirectStandardInput or RedirectStandardOutput cannot use on WindowsGSM.
+    /// RedirectStandardOutput is possible but it will break the input, if used both, the server can run successfully but the input become useless again.
+    /// 
+    /// The solution for this is don't use either RedirectStandardInput or RedirectStandardOutput.
+    /// Just use the traditional method to handle the server.
+    /// 
+    /// </summary>
     class RUST
     {
         private readonly string _serverId;
@@ -14,6 +23,7 @@ namespace WindowsGSM.GameServer
         public string Notice;
 
         public const string FullName = "Rust Dedicated Server";
+        public const bool ToggleConsole = true;
 
         public string port = "28015";
         public string defaultmap = "Procedural Map";
@@ -25,35 +35,23 @@ namespace WindowsGSM.GameServer
             _serverId = serverid;
         }
 
-        public void CreateServerCFG(string hostname, string rcon_password, string port)
+        public async void CreateServerCFG(string hostname, string rcon_password, string port)
         {
+            //Download server.cfg
             string configPath = Functions.Path.GetServerFiles(_serverId, "server.cfg");
-
-            File.Create(configPath).Dispose();
-
-            using (TextWriter textwriter = new StreamWriter(configPath))
+            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName, "server.cfg"))
             {
-                textwriter.WriteLine("+rcon.ip 0.0.0.0");
-                textwriter.WriteLine($"+rcon.port \"{port}\"");
-                textwriter.WriteLine($"+rcon.password \"{rcon_password}\"");
-                textwriter.WriteLine("+rcon.web 1");
-                textwriter.WriteLine("+server.tickrate 10");
-                textwriter.WriteLine($"+server.hostname \"{hostname}\"");
-                textwriter.WriteLine("+server.description \"Rust Dedicated Server - Manage by WindowsGSM\\n\\nEdit server.cfg\"");
-                textwriter.WriteLine("+server.url \"https://github.com/BattlefieldDuck/WindowsGSM\"");
-                textwriter.WriteLine("+server.headerimage \"\"");
-                textwriter.WriteLine("+server.identity \"server1\"");
-                textwriter.WriteLine("+server.seed 689777");
-                textwriter.WriteLine("+server.maxplayers 50");
-                textwriter.WriteLine("+server.worldsize 3000");
-                textwriter.WriteLine("+server.saveinterval 600");
-                textwriter.WriteLine("-logfile \"server.log\"");
+                string configText = File.ReadAllText(configPath);
+                configText = configText.Replace("{{hostname}}", hostname);
+                configText = configText.Replace("{{rcon_password}}", rcon_password);
+                configText = configText.Replace("{{port}}", port);
+                File.WriteAllText(configPath, configText);
             }
         }
 
         public void SetParameter(string ip, string port, string map, string maxplayers)
         {
-            _param = $"-batchmode +server.ip {ip} +server.port {port} +server.level \"{map}\" +server.maxplayers {maxplayers} ";
+            _param = $"-nographics -batchmode -silent-crashes +server.ip {ip} +server.port {port} +server.level \"{map}\" +server.maxplayers {maxplayers} ";
 
             string configPath = Functions.Path.GetServerFiles(_serverId, "server.cfg");
             if (File.Exists(configPath))
@@ -75,9 +73,25 @@ namespace WindowsGSM.GameServer
                 Notice = $"server.cfg not found ({configPath})";
             }
 
-            Steam.SRCDS srcds = new Steam.SRCDS(_serverId);
-            Process p = await srcds.Start(_param, "RustDedicated.exe");
-            Error = srcds.Error;
+            string workingDir = Functions.Path.GetServerFiles(_serverId);
+            string srcdsPath = Path.Combine(workingDir, "RustDedicated.exe");
+
+            WindowsFirewall firewall = new WindowsFirewall("RustDedicated.exe", srcdsPath);
+            if (!await firewall.IsRuleExist())
+            {
+                firewall.AddRule();
+            }
+
+            Process p = new Process
+            {
+                StartInfo =
+                {
+                    WorkingDirectory = workingDir,
+                    FileName = srcdsPath,
+                    Arguments = _param,
+                },
+            };
+            p.Start();
 
             return p;
         }

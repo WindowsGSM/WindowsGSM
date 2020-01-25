@@ -7,18 +7,18 @@ namespace WindowsGSM.Discord
 {
     class Webhook 
     {
-        private readonly string WebhookUrl;
-        private readonly string DonorType;
+        private readonly string _webhookUrl;
+        private readonly string _donorType;
 
         public Webhook(string webhookurl, string donorType = "")
         {
-            WebhookUrl = webhookurl;
-            DonorType = donorType;
+            _webhookUrl = webhookurl;
+            _donorType = donorType;
         }
 
         public async Task<bool> Send(string serverid, string servergame, string serverstatus, string servername, string serverip, string serverport)
         {
-            if (string.IsNullOrWhiteSpace(WebhookUrl))
+            if (string.IsNullOrWhiteSpace(_webhookUrl))
             {
                 return false;
             }
@@ -28,7 +28,6 @@ namespace WindowsGSM.Discord
             string gameicon = GetServerGameIcon(servergame);
             string avatarUrl = GetAvatarUrl();
             string time = DateTime.UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss.mssZ");
-
             string json = @"
             {
                 ""username"": ""WindowsGSM"",
@@ -57,75 +56,57 @@ namespace WindowsGSM.Discord
                         ""icon_url"": """ + avatarUrl + @"""
                     },
                     ""timestamp"": """ + time + @"""
-                }]
+                }],
+                ""thumbnail"": {
+                    ""url"": ""https://upload.wikimedia.org/wikipedia/commons/3/38/4-Nature-Wallpapers-2014-1_ukaavUI.jpg""
+                }
             }";
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             using (var httpClient = new HttpClient())
             {
-                try
+                var httpResponse = await httpClient.PostAsync(_webhookUrl, content);
+                if (httpResponse.Content != null)
                 {
-                    var httpResponse = await httpClient.PostAsync(WebhookUrl, content);
-
-                    if (httpResponse.Content != null)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
-                catch
-                {
-                    return false;
-                }
-
-                return false;
             }
+
+            return false;
         }
 
-        private string GetColor(string serverstatus)
+        private string GetColor(string serverStatus)
         {
-            string color;
-            switch (serverstatus)
+            switch (serverStatus)
             {
-                case "Started":
-                    color = "65280"; break; //Green
-                case "Stopped":
-                    color = "16755200"; break; //Orange
-                case "Restarted":
-                    color = "65535"; break; //Cyan
-                case "Crashed":
-                    color = "16711680"; break; //Red
+                case "Started": return "65280"; //Green
+                case "Stopped": return "16755200"; //Orange
+                case "Restarted": return "65535"; //Cyan
+                case "Crashed": return "16711680"; //Red
                 default:
-                    color = "16777215"; break;
+                    return "16777215";
             }
-
-            return color;
         }
 
-        private string GetStatusWithEmoji(string serverstatus)
+        private string GetStatusWithEmoji(string serverStatus)
         {
-            string status = serverstatus;
-            switch (serverstatus)
+            switch (serverStatus)
             {
-                case "Started":
-                    status += " :ok:"; break;
-                case "Stopped":
-                    status += " :octagonal_sign:"; break;
-                case "Restarted":
-                    status += " :arrows_counterclockwise:"; break;
-                case "Crashed":
-                    status += " :warning:"; break;
+                case "Started": return $"{serverStatus} :ok:";
+                case "Stopped": return $"{serverStatus} :octagonal_sign:";
+                case "Restarted": return $"{serverStatus} :arrows_counterclockwise:";
+                case "Crashed": return $"{serverStatus} :warning:";
+                default:
+                    return serverStatus;
             }
-
-            return status;
         }
 
-        private string GetServerGameIcon(string servergame)
+        private string GetServerGameIcon(string serverGame)
         {
             try
             {
-                string gameicon = @"https://github.com/BattlefieldDuck/WindowsGSM/raw/master/WindowsGSM/" + GameServer.Data.Icon.ResourceManager.GetString(servergame);
-                return gameicon;
+                return @"https://github.com/BattlefieldDuck/WindowsGSM/raw/master/WindowsGSM/" + GameServer.Data.Icon.ResourceManager.GetString(serverGame);
             }
             catch
             {
@@ -136,17 +117,16 @@ namespace WindowsGSM.Discord
         private string GetAvatarUrl()
         {
             string avatarUrl = "https://github.com/BattlefieldDuck/WindowsGSM/raw/master/WindowsGSM/Images/WindowsGSM";
-            switch (DonorType)
+            switch (_donorType)
             {
                 case "BRONZE":
                 case "GOLD":
                 case "EMERALD":
-                    avatarUrl += $"-{DonorType}";
+                    avatarUrl += $"-{_donorType}";
                     break;
             }
-            avatarUrl += ".png";
 
-            return avatarUrl;
+            return $"{avatarUrl}.png";
         }
     }
 }

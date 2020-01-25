@@ -66,6 +66,7 @@
             </MenuItem>
             <MenuItem Header="Tools" Height="30">
                 <MenuItem Header="Global Server List Check" Click="Tools_GlobalServerListCheck_Click"/>
+                <!--<MenuItem Header="Install Sourcemod+Metamod" Click="Tools_InstallSourcemodMetamod_Click"/>-->
             </MenuItem>
             <MenuItem Header="Help" Height="30">
                 <MenuItem Header="Online Documentation" Click="Help_OnlineDocumentation_Click"/>
@@ -91,7 +92,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="4*"/>
                 <RowDefinition Height="5"/>
-                <RowDefinition Height="3*"/>
+                <RowDefinition Height="4*"/>
             </Grid.RowDefinitions>
 
             <DataGrid x:Name="ServerGrid" SelectionMode="Single" SelectionUnit="FullRow" RowHeaderWidth="0" HeadersVisibility="Column" GridLinesVisibility="None" DockPanel.Dock="Top" SelectionChanged="DataGrid_SelectionChanged" IsSynchronizedWithCurrentItem="True">
@@ -125,26 +126,31 @@
                 </Grid.ColumnDefinitions>
 
                 <Grid>
-                    <Label x:Name="label_servercommand" Content="Send Command:" Margin="5,0,0,10" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="97"/>
-                    <TextBox x:Name="textbox_servercommand" TextWrapping="Wrap" Text="" Margin="105,0,106,10" Height="23" VerticalAlignment="Bottom" KeyDown="Textbox_ServerCommand_KeyDown" IsEnabled="False"/>
-                    <Button x:Name="button_servercommand" Content="Send" Margin="0,0,10,10" Click="Button_ServerCommand_Click" IsEnabled="False" Height="23" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="96"/>
 
                     <Label x:Name="label_serverdetails" Content="Server Details" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Top"/>
-                    <Label x:Name="label_Status" Content="Status:" HorizontalAlignment="Left" Margin="55,26,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_Status" Content="" HorizontalAlignment="Left" Margin="105,27,0,0" Width="100" Height="11" Background="Orange" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
-                    <Label x:Name="label_ServerGame" Content="Game Server:" HorizontalAlignment="Left" Margin="20,57,0,0" VerticalAlignment="Top"/>
-                    <TextBox x:Name="textBox_ServerGame" Height="23" Margin="105,58,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="359"/>
-                    <Label x:Name="label_autorestart" Content="Auto Restart:" HorizontalAlignment="Left" Margin="22,88,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_autorestart" Content="" HorizontalAlignment="Left" Margin="105,90,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
+                    <Label x:Name="label_Status" Content="Status:" HorizontalAlignment="Left" Margin="41,21,0,0" VerticalAlignment="Top"/>
+                    <Button x:Name="button_Status" Content="" HorizontalAlignment="Left" Margin="92,22,0,0" Width="207" Height="11" Background="Orange" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
+                    <Label x:Name="label_ServerGame" Content="Game Server:" HorizontalAlignment="Left" Margin="5,52,0,0" VerticalAlignment="Top"/>
+                    <TextBox x:Name="textBox_ServerGame" Height="23" Margin="92,53,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="372"/>
+                    <Label x:Name="label_autorestart" Content="Auto Restart:" HorizontalAlignment="Left" Margin="8,83,0,0" VerticalAlignment="Top"/>
+                    <Button x:Name="button_autorestart" Content="" HorizontalAlignment="Left" Margin="92,84,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
 
-                    <Label x:Name="label_autostart" Content="Auto Start:" HorizontalAlignment="Left" Margin="178,88,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_autostart" Content="" HorizontalAlignment="Left" Margin="249,90,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
+                    <Label x:Name="label_autostart" Content="Auto Start:" HorizontalAlignment="Left" Margin="178,83,0,0" VerticalAlignment="Top"/>
+                    <Button x:Name="button_autostart" Content="" HorizontalAlignment="Left" Margin="249,85,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
 
-                    <Label x:Name="label_updateonstart" Content="Update on Start:" HorizontalAlignment="Left" Margin="313,89,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_updateonstart" Content="" HorizontalAlignment="Left" Margin="414,90,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
-                    <Label x:Name="label_discordalert" Content="Discord Alert:" HorizontalAlignment="Left" Margin="19,119,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_discordalert" Content="" HorizontalAlignment="Left" Margin="105,120,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
-                    <Button x:Name="button_discordtest" Content="Send Test Alert" HorizontalAlignment="Left" Margin="155,120,0,0" VerticalAlignment="Top" Width="112" Height="25" Click="Button_DiscordWebhookTest_Click" IsEnabled="False"/>
+                    <Label x:Name="label_autoupdate" Content="Auto Update:" HorizontalAlignment="Left" Margin="329,83,0,0" VerticalAlignment="Top"/>
+                    <Button x:Name="button_autoupdate" Content="" HorizontalAlignment="Left" Margin="414,85,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
+
+                    <Label x:Name="label_updateonstart" Content="Update on Start:" HorizontalAlignment="Left" Margin="313,114,0,0" VerticalAlignment="Top"/>
+                    <Button x:Name="button_updateonstart" Content="" HorizontalAlignment="Left" Margin="414,115,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
+
+                    <Label x:Name="label_discordalert" Content="Discord Alert:" HorizontalAlignment="Left" Margin="5,114,0,0" VerticalAlignment="Top"/>
+                    <Button x:Name="button_discordalert" Content="" HorizontalAlignment="Left" Margin="92,115,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
+                    <Button x:Name="button_discordtest" Content="Send Test Alert" HorizontalAlignment="Left" Margin="142,115,0,0" VerticalAlignment="Top" Width="157" Height="25" Click="Button_DiscordWebhookTest_Click" IsEnabled="False"/>
+                    <Button x:Name="button_clearServerConsole" Content="CLEAR SERVER CONSOLE" Margin="304,22,0,0" VerticalAlignment="Top" Height="18" Click="Button_ClearServerConsole_Click" HorizontalAlignment="Left" Width="160"/>
+                    <TextBox x:Name="textBox_wgsmlog" Margin="92,145,10,10" Background="White" CaretBrush="White" Foreground="Black"/>
+                    <Label x:Name="label_wgsmlog" Content="WGSM Log:" HorizontalAlignment="Left" Margin="15,145,0,0" VerticalAlignment="Top"/>
+                    <Button x:Name="button_clearwgsmlog" Content="CLEAR LOG" Margin="10,183,0,0" VerticalAlignment="Top" Height="18" Click="Button_ClearWGSMLog_Click" HorizontalAlignment="Left" Width="77"/>
                 </Grid>
 
                 <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch">
@@ -154,11 +160,16 @@
                 </GridSplitter>
 
                 <Grid Grid.Column="2" MinWidth="100">
-                    <Label x:Name="wgsmconsole" Content="WindowsGSM Console" VerticalAlignment="top" HorizontalAlignment="Left" Margin="5,0,0,0"/>
-                    <TextBox x:Name="console" Margin="10,26,10,10" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility ="Visible" Background="Black" Foreground="White" IsReadOnly="True"/>
-                    <Button x:Name="button_clearlog" Content="CLEAR LOG" Margin="0,1,10,0" VerticalAlignment="Top" Height="18" Click="Button_ClearLog_Click" HorizontalAlignment="Right" Width="113"/>
+                    <RichTextBox x:Name="console" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility ="Disabled" Background="Black" IsReadOnly="True" Margin="0,0,0,26" BorderBrush="Black" Foreground="White" Opacity="0.995" BorderThickness="0">
+                        <RichTextBox.Resources>
+                            <Style TargetType="{x:Type Paragraph}">
+                                <Setter Property="Margin" Value="0" />
+                            </Style>
+                        </RichTextBox.Resources>
+                    </RichTextBox>
+                    <TextBox x:Name="textbox_servercommand" TextWrapping="Wrap" Text="" Margin="0,0,61,0" Height="23" VerticalAlignment="Bottom" KeyDown="Textbox_ServerCommand_KeyDown" IsEnabled="False" Background="Black" BorderBrush="White" Foreground="White" CaretBrush="White" PreviewKeyDown="Textbox_ServerCommand_PreviewKeyDown"/>
+                    <Button x:Name="button_servercommand" Content="Send" Click="Button_ServerCommand_Click" IsEnabled="False" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="61" Controls:ButtonHelper.CornerRadius="0"/>
                 </Grid>
-
             </Grid>
         </Grid>
     </DockPanel>

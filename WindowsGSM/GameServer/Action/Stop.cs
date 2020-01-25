@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using System.Diagnostics;
 
 namespace WindowsGSM.GameServer.Action
@@ -37,6 +38,8 @@ namespace WindowsGSM.GameServer.Action
             {
                 process.Kill();
             }
+
+            MainWindow.g_ServerConsoles[Int32.Parse(server.ID)].Clear();
 
             return true;
         }

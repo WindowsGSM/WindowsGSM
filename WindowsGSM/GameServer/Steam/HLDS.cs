@@ -7,6 +7,22 @@ using System.Windows.Forms;
 
 namespace WindowsGSM.GameServer.Steam
 {
+    /// <summary>
+    /// 
+    /// Notes:
+    /// hlds.exe works almost perfect on WindowsGSM. RedirectStandardInput doesn't work on this. Therefore, SendKeys Input Method is used.
+    /// 
+    /// RedirectStandardInput:  NO WORKING
+    /// RedirectStandardOutput: YES (Used)
+    /// RedirectStandardError:  YES (Used)
+    /// SendKeys Input Method:  YES (Used)
+    /// 
+    /// Classes that used hlds.cs for Start
+    /// 
+    /// CS.cs
+    /// CSCZ.cs
+    /// 
+    /// </summary>
     class HLDS
     {
         [DllImport("user32.dll")]
@@ -44,12 +60,25 @@ namespace WindowsGSM.GameServer.Steam
                 firewall.AddRule();
             }
 
-            Process p = new Process();
-            p.StartInfo.WorkingDirectory = workingDir;
-            p.StartInfo.FileName = hldsPath;
-            p.StartInfo.Arguments = param;
-            p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
+            Process p = new Process
+            {
+                StartInfo =
+                {
+                    WorkingDirectory = workingDir,
+                    FileName = hldsPath,
+                    Arguments = param,
+                    WindowStyle = ProcessWindowStyle.Minimized,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                },
+            };
+            var serverConsole = new Functions.ServerConsole(_serverId);
+            p.OutputDataReceived += serverConsole.AddOutput;
+            p.ErrorDataReceived += serverConsole.AddOutput;
             p.Start();
+            p.BeginOutputReadLine();
+            p.BeginErrorReadLine();
 
             return p;
         }
@@ -63,11 +92,7 @@ namespace WindowsGSM.GameServer.Steam
 
             for (int i = 0; i < 10; i++)
             {
-                if (p != null && p.HasExited)
-                {
-                    return true;
-                }
-
+                if (p.HasExited) { return true; }
                 await Task.Delay(1000);
             }
 
@@ -79,18 +104,8 @@ namespace WindowsGSM.GameServer.Steam
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
             steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(_serverId), $"+app_set_config {appSetConfig}", appId, true);
 
-            if (!await steamCMD.Download())
-            {
-                Error = steamCMD.Error;
-                return null;
-            }
-
             Process process = await steamCMD.Run();
-            if (process == null)
-            {
-                Error = steamCMD.Error;
-                return null;
-            }
+            Error = steamCMD.Error;
 
             return process;
         }
@@ -99,12 +114,6 @@ namespace WindowsGSM.GameServer.Steam
         {
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
             steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(_serverId), $"+app_set_config {appSetConfig}", appId, false);
-
-            if (!await steamCMD.Download())
-            {
-                Error = steamCMD.Error;
-                return false;
-            }
 
             Process pSteamCMD = await steamCMD.Run();
             if (pSteamCMD == null)

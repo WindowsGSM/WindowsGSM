@@ -9,31 +9,37 @@ namespace WindowsGSM.Installer
 {
     class SteamCMD
     {
+        private static string _installPath = MainWindow.WGSM_PATH + @"\installer\steamcmd\";
         private string _param;
         public string Error;
 
-        public async Task<bool> Download()
+        public SteamCMD()
         {
-            string installPath = MainWindow.WGSM_PATH + @"\installer\steamcmd";
-            if (!Directory.Exists(installPath))
+            if (!Directory.Exists(_installPath))
             {
-                Directory.CreateDirectory(installPath);
+                Directory.CreateDirectory(_installPath);
             }
+        }
 
-            string exePath = installPath + @"\steamcmd.exe";
+        private async Task<bool> Download()
+        {
+            string exePath = Path.Combine(_installPath, "steamcmd.exe");
             if (File.Exists(exePath))
             {
                 return true;
             }
 
-            string installer = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip";
-            string zipPath = installPath + @"\steamcmd.zip";
+            string installUrl = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip";
+            string zipPath = Path.Combine(_installPath, "steamcmd.zip");
 
             try
             {
                 WebClient webClient = new WebClient();
-                webClient.DownloadFileCompleted += ExtractSteamCMD;
-                webClient.DownloadFileAsync(new Uri(installer), zipPath);
+                await webClient.DownloadFileTaskAsync(installUrl, zipPath);
+
+                //Extract steamcmd.zip and delete the zip
+                await Task.Run(() => ZipFile.ExtractToDirectory(zipPath, _installPath));
+                await Task.Run(() => File.Delete(zipPath));
             }
             catch
             {
@@ -41,32 +47,7 @@ namespace WindowsGSM.Installer
                 return false;
             }
 
-            bool isDownloaded = false;
-            while (!isDownloaded)
-            {
-                if (!File.Exists(zipPath) && File.Exists(exePath))
-                {
-                    isDownloaded = true;
-                    break;
-                }
-
-                await Task.Delay(1000);
-            }
-
-            return isDownloaded;
-        }
-
-        private async void ExtractSteamCMD(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
-        {
-            string installPath = MainWindow.WGSM_PATH + @"\installer\steamcmd";
-            string zipPath = installPath + @"\steamcmd.zip";
-
-            if (File.Exists(zipPath))
-            {
-                await Task.Run(() => ZipFile.ExtractToDirectory(zipPath, installPath));
-
-                File.Delete(zipPath);
-            }
+            return true;
         }
 
         public void SetParameter(string steamuser, string steampass, string install_dir, string set_config, string app_id, bool validate)
@@ -81,9 +62,8 @@ namespace WindowsGSM.Installer
                 _param = "+login " + steamuser + " " + steampass;
             }
 
-            _param += $" +force_install_dir \"{install_dir}\"";
-
-            _param += (String.IsNullOrWhiteSpace(set_config) ? "" : " " + set_config) + $" +app_update {app_id}" + (validate ? " validate" : "");
+            _param += $" +force_install_dir \"{install_dir}\"" + (String.IsNullOrWhiteSpace(set_config) ? "" : $" {set_config}") + $" +app_update {app_id}" + (validate ? " validate" : "");
+            
             if (app_id == "90")
             {
                 //Install 4 more times if hlds.exe
@@ -98,12 +78,15 @@ namespace WindowsGSM.Installer
 
         public async Task<Process> Run()
         {
-            string exePath = Path.Combine(MainWindow.WGSM_PATH, @"installer\steamcmd\steamcmd.exe");
-
+            string exePath = Path.Combine(_installPath, "steamcmd.exe");
             if (!File.Exists(exePath))
             {
-                Error = $"steamcmd.exe not found ({exePath})";
-                return null;
+                //If steamcmd.exe not exists, download steamcmd.exe
+                if (!await Download())
+                {
+                    Error = "Fail to download steamcmd.exe";
+                    return null;
+                }
             }
 
             WindowsFirewall firewall = new WindowsFirewall("steamcmd.exe", exePath);
@@ -112,10 +95,15 @@ namespace WindowsGSM.Installer
                 firewall.AddRule();
             }
 
-            Process p = new Process();
-            p.StartInfo.FileName = exePath;
-            p.StartInfo.Arguments = _param;
-            p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
+            Process p = new Process
+            {
+                StartInfo =
+                {
+                    FileName = exePath,
+                    Arguments = _param,
+                    WindowStyle = ProcessWindowStyle.Minimized
+                }
+            };
             p.Start();
 
             return p;

@@ -14,6 +14,7 @@ namespace WindowsGSM.GameServer
         public string Notice;
 
         public const string FullName = "Left 4 Dead 2 Dedicated Server";
+        public const bool ToggleConsole = false;
 
         public string port = "27015";
         public string defaultmap = "c1m1_hotel";
@@ -25,18 +26,16 @@ namespace WindowsGSM.GameServer
             _serverId = serverid;
         }
 
-        public void CreateServerCFG(string hostname, string rcon_password)
+        public async void CreateServerCFG(string hostname, string rcon_password)
         {
+            //Download server.cfg
             string configPath = Functions.Path.GetServerFiles(_serverId, @"left4dead2\cfg\server.cfg");
-
-            File.Create(configPath).Dispose();
-
-            using (TextWriter textwriter = new StreamWriter(configPath))
+            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName, "server.cfg"))
             {
-                textwriter.WriteLine($"hostname \"{hostname}\"");
-                textwriter.WriteLine($"rcon_password \"{rcon_password}\"");
-                textwriter.WriteLine("sv_password \"\"");
-                textwriter.WriteLine("sv_lan \"0\"");
+                string configText = File.ReadAllText(configPath);
+                configText = configText.Replace("{{hostname}}", hostname);
+                configText = configText.Replace("{{rcon_password}}", rcon_password);
+                File.WriteAllText(configPath, configText);
             }
         }
 

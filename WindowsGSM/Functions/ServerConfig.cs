@@ -15,6 +15,7 @@ namespace WindowsGSM.Functions
         public string ServerParam;
         public bool AutoRestart;
         public bool AutoStart;
+        public bool AutoUpdate;
         public bool UpdateOnStart;
         public bool DiscordAlert;
         public string DiscordWebhook;
@@ -71,6 +72,7 @@ namespace WindowsGSM.Functions
                             case "serverparam": ServerParam = keyvalue[1]; break;
                             case "autorestart": AutoRestart = (keyvalue[1] == "1") ? true : false; break;
                             case "autostart": AutoStart = (keyvalue[1] == "1") ? true : false; break;
+                            case "autoupdate": AutoUpdate = (keyvalue[1] == "1") ? true : false; break;
                             case "updateonstart": UpdateOnStart = (keyvalue[1] == "1") ? true : false; break;
                             case "discordalert": DiscordAlert = (keyvalue[1] == "1") ? true : false; break;
                             case "discordwebhook": DiscordWebhook = keyvalue[1]; break;
@@ -100,6 +102,7 @@ namespace WindowsGSM.Functions
                     textwriter.WriteLine("");
                     textwriter.WriteLine("autorestart=\"1\"");
                     textwriter.WriteLine("autostart=\"0\"");
+                    textwriter.WriteLine("autoupdate=\"0\"");
                     textwriter.WriteLine("updateonstart=\"0\"");
                     textwriter.WriteLine("");
                     textwriter.WriteLine("discordalert=\"0\"");
@@ -116,6 +119,7 @@ namespace WindowsGSM.Functions
                 ServerParam = serverparam;
                 AutoRestart = true;
                 AutoStart = false;
+                AutoUpdate = false;
                 UpdateOnStart = false;
                 DiscordAlert = false;
                 DiscordWebhook = "";
@@ -153,13 +157,13 @@ namespace WindowsGSM.Functions
                 try
                 {
                     Directory.Delete(serverid_dir, true);
+
+                    return true;
                 }
                 catch
                 {
                     return false;
                 }
-
-                return true;
             }
 
             return false;

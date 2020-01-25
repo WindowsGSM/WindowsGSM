@@ -14,6 +14,7 @@ namespace WindowsGSM.GameServer
         public string Notice;
 
         public const string FullName = "Counter-Strike: 1.6 Dedicated Server";
+        public const bool ToggleConsole = false;
 
         public string port = "27015";
         public string defaultmap = "de_dust2";
@@ -25,30 +26,21 @@ namespace WindowsGSM.GameServer
             _serverId = serverid;
         }
 
-        public void CreateServerCFG(string hostname, string rcon_password)
+        public async void CreateServerCFG(string hostname, string rcon_password)
         {
+            //Download server.cfg
             string configPath = Functions.Path.GetServerFiles(_serverId, @"cstrike\server.cfg");
-
-            File.Create(configPath).Dispose();
-
-            using (TextWriter textwriter = new StreamWriter(configPath))
+            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName, "server.cfg"))
             {
-                textwriter.WriteLine($"hostname \"{hostname}\"");
-                textwriter.WriteLine($"rcon_password \"{rcon_password}\"");
-                textwriter.WriteLine("sv_password \"\"");
-                textwriter.WriteLine("sv_aim \"0\"");
-                textwriter.WriteLine("pausable  \"0\"");
-                textwriter.WriteLine("sv_maxspeed \"320\"");
+                string configText = File.ReadAllText(configPath);
+                configText = configText.Replace("{{hostname}}", hostname);
+                configText = configText.Replace("{{rcon_password}}", rcon_password);
+                File.WriteAllText(configPath, configText);
             }
 
+            //Create steam_appid.txt
             string txtPath = Functions.Path.GetServerFiles(_serverId, "steam_appid.txt");
-
-            File.Create(txtPath).Dispose();
-
-            using (TextWriter textwriter = new StreamWriter(txtPath))
-            {
-                textwriter.WriteLine("10");
-            }
+            File.WriteAllText(txtPath, "10");
         }
 
         public void SetParameter(string ip, string port, string map, string maxplayers, string gslt, string additional)
