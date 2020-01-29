@@ -58,7 +58,8 @@ namespace WindowsGSM.Functions
             {
                 foreach (string line in File.ReadLines(configpath))
                 {
-                    string[] keyvalue = line.Split('=');
+                    string[] keyvalue = line.Split(new char[] { '=' }, 2);
+
                     if (keyvalue.Length == 2)
                     {
                         keyvalue[1] = keyvalue[1].Trim('\"');
@@ -256,21 +257,17 @@ namespace WindowsGSM.Functions
                     //Write all lines
                     foreach (string line in lines)
                     {
-                        string[] keyvalue = line.Split('=');
-                        if (keyvalue.Length == 2)
+                        string[] keyvalue = line.Split(new char[] { '=' }, 2);
+                        if (keyvalue.Length == 2 && settingName == keyvalue[0])
                         {
                             keyvalue[1] = keyvalue[1].Trim('\"');
-
-                            if (settingName == keyvalue[0])
-                            {
-                                returnBool = (keyvalue[1] == "1") ? false : true;
-                                string nextBool = (keyvalue[1] == "1") ? "0" : "1";
-                                textwriter.WriteLine($"{keyvalue[0]}=\"{nextBool}\"");
-                            }
-                            else
-                            {
-                                textwriter.WriteLine(line);
-                            }
+                            returnBool = (keyvalue[1] == "1") ? false : true;
+                            string nextBool = (keyvalue[1] == "1") ? "0" : "1";
+                            textwriter.WriteLine($"{keyvalue[0]}=\"{nextBool}\"");
+                        }
+                        else
+                        {
+                            textwriter.WriteLine(line);
                         }
                     }
 
@@ -299,7 +296,7 @@ namespace WindowsGSM.Functions
                 //Read all lines
                 foreach (string line in lines)
                 {
-                    string[] keyvalue = line.Split('=');
+                    string[] keyvalue = line.Split(new char[] { '=' }, 2);
                     if (keyvalue.Length == 2)
                     {
                         if ("discordwebhook" == keyvalue[0])
@@ -333,18 +330,15 @@ namespace WindowsGSM.Functions
                     //Write lines
                     foreach (string line in lines)
                     {
-                        string[] keyvalue = line.Split('=');
-                        if (keyvalue.Length == 2)
+                        string[] keyvalue = line.Split(new char[] { '=' }, 2);
+                        if (keyvalue.Length == 2 && "discordwebhook" == keyvalue[0])
                         {
-                            if ("discordwebhook" == keyvalue[0])
-                            {
-                                textwriter.WriteLine($"discordwebhook=\"{webhookUrl}\"");
-                                saved = true;
-                            }
-                            else
-                            {
-                                textwriter.WriteLine(line);
-                            }
+                            textwriter.WriteLine($"discordwebhook=\"{webhookUrl}\"");
+                            saved = true;
+                        }
+                        else
+                        {
+                            textwriter.WriteLine(line);
                         }
                     }
 

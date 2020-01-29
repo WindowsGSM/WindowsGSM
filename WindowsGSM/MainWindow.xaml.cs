@@ -56,7 +56,7 @@ namespace WindowsGSM
             Deleting = 12
         }
 
-        public static readonly string WGSM_VERSION = "v1.8.0";
+        public static readonly string WGSM_VERSION = "v1.8.1";
         public static readonly int MAX_SERVER = 100;
         public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
 
@@ -225,35 +225,42 @@ namespace WindowsGSM
                         }
                 }
 
-                var row = new Functions.ServerTable
+                try
                 {
-                    ID = i.ToString(),
-                    Game = serverConfig.ServerGame,
-                    Icon = "/WindowsGSM;component/" + GameServer.Data.Icon.ResourceManager.GetString(serverConfig.ServerGame),
-                    Status = status,
-                    Name = serverConfig.ServerName,
-                    IP = serverConfig.ServerIP,
-                    Port = serverConfig.ServerPort,
-                    Defaultmap = serverConfig.ServerMap,
-                    Maxplayers = serverConfig.ServerMaxPlayer
-                };
-
-                ServerGrid.Items.Add(row);
-
-                if (selectedrow != null)
-                {
-                    if (selectedrow.ID == row.ID)
+                    var row = new Functions.ServerTable
                     {
-                        ServerGrid.SelectedItem = row;
-                    }
-                }
+                        ID = i.ToString(),
+                        Game = serverConfig.ServerGame,
+                        Icon = "/WindowsGSM;component/" + GameServer.Data.Icon.ResourceManager.GetString(serverConfig.ServerGame),
+                        Status = status,
+                        Name = serverConfig.ServerName,
+                        IP = serverConfig.ServerIP,
+                        Port = serverConfig.ServerPort,
+                        Defaultmap = serverConfig.ServerMap,
+                        Maxplayers = serverConfig.ServerMaxPlayer
+                    };
 
-                g_bAutoRestart[i] = serverConfig.AutoRestart;
-                g_bAutoStart[i] = serverConfig.AutoStart;
-                g_bAutoUpdate[i] = serverConfig.AutoUpdate;
-                g_bUpdateOnStart[i] = serverConfig.UpdateOnStart;
-                g_bDiscordAlert[i] = serverConfig.DiscordAlert;
-                g_DiscordWebhook[i] = serverConfig.DiscordWebhook;
+                    ServerGrid.Items.Add(row);
+
+                    if (selectedrow != null)
+                    {
+                        if (selectedrow.ID == row.ID)
+                        {
+                            ServerGrid.SelectedItem = row;
+                        }
+                    }
+
+                    g_bAutoRestart[i] = serverConfig.AutoRestart;
+                    g_bAutoStart[i] = serverConfig.AutoStart;
+                    g_bAutoUpdate[i] = serverConfig.AutoUpdate;
+                    g_bUpdateOnStart[i] = serverConfig.UpdateOnStart;
+                    g_bDiscordAlert[i] = serverConfig.DiscordAlert;
+                    g_DiscordWebhook[i] = serverConfig.DiscordWebhook;
+                }
+                catch
+                {
+                    continue;
+                }
             }
 
             grid_action.Visibility = (ServerGrid.Items.Count != 0) ? Visibility.Visible : Visibility.Hidden;
