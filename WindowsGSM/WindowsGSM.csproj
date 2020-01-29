@@ -154,7 +154,6 @@
     <Compile Include="GameServer\MORDHAU.cs" />
     <Compile Include="GameServer\Steam\HLDS.cs" />
     <Compile Include="GameServer\Steam\SRCDS.cs" />
-    <Compile Include="GameServer\__Template__.cs" />
     <Compile Include="Tools\GlobalServerList.cs" />
     <Compile Include="Tools\InstallMod.cs" />
     <Compile Include="WindowsFirewall.cs" />

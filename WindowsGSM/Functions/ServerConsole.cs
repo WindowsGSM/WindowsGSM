@@ -14,8 +14,7 @@ namespace WindowsGSM.Functions
         private static readonly int MAX_LINE = 50;
         private readonly ArrayList _arrayList = new ArrayList(MAX_LINE);
         private readonly string _serverId;
-
-        public int LineNumber = 0;
+        private static int _lineNumber = 0;
 
         public ServerConsole(string serverId)
         {
@@ -93,35 +92,35 @@ namespace WindowsGSM.Functions
 
         public string GetPreviousCommand()
         {
-            --LineNumber;
+            --_lineNumber;
             return (_arrayList.Count == 0) ? "" : _arrayList[GetLineNumber()].ToString();
         }
 
         public string GetNextCommand()
         {
-            ++LineNumber;
+            ++_lineNumber;
             return (_arrayList.Count == 0) ? "" : _arrayList[GetLineNumber()].ToString();
         }
 
         private int GetLineNumber()
         {
-            if (LineNumber < 0)
+            if (_lineNumber < 0)
             {
-                LineNumber = 0;
+                _lineNumber = 0;
             }
-            else if (LineNumber >= _arrayList.Count)
+            else if (_lineNumber >= _arrayList.Count)
             {
-                LineNumber = (_arrayList.Count <= 0) ? 0 : _arrayList.Count - 1;
+                _lineNumber = (_arrayList.Count <= 0) ? 0 : _arrayList.Count - 1;
             }
 
-            return LineNumber;
+            return _lineNumber;
         }
 
         public void Add(string text)
         {
             if (_serverId == "0")
             {
-                LineNumber = _arrayList.Count + 1;
+                _lineNumber = _arrayList.Count + 1;
 
                 if (_arrayList.Count > 0 && text == _arrayList[_arrayList.Count - 1].ToString())
                 {
