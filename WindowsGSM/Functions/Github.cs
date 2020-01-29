@@ -10,6 +10,13 @@ namespace WindowsGSM.Functions
     {
         public static async Task<bool> DownloadGameServerConfig(string filePath, string gameFullName, string fileName)
         {
+            Directory.CreateDirectory(filePath.Replace(fileName, ""));
+
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+
             using (WebClient webClient = new WebClient())
             {
                 await webClient.DownloadFileTaskAsync("https://" + $"github.com/WindowsGSM/Game-Server-Configs/raw/master/{gameFullName.Replace(":", "")}/{fileName}", filePath);

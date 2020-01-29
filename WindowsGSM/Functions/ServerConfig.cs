@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Net;
+using System.Net.Sockets;
 
 namespace WindowsGSM.Functions
 {
@@ -84,6 +87,8 @@ namespace WindowsGSM.Functions
 
         public bool CreateWindowsGSMConfig(string servergame, string servername, string serverip, string serverport, string servermap, string servermaxplayer, string servergslt, string serverparam)
         {
+            CreateServerDirectory();
+
             string configpath = Functions.Path.GetConfigs(ServerID, "WindowsGSM.cfg");
             if (!File.Exists(configpath))
             {
@@ -100,7 +105,7 @@ namespace WindowsGSM.Functions
                     textwriter.WriteLine("servergslt=\"" + servergslt + "\"");
                     textwriter.WriteLine("serverparam=\"" + serverparam + "\"");
                     textwriter.WriteLine("");
-                    textwriter.WriteLine("autorestart=\"1\"");
+                    textwriter.WriteLine("autorestart=\"0\"");
                     textwriter.WriteLine("autostart=\"0\"");
                     textwriter.WriteLine("autoupdate=\"0\"");
                     textwriter.WriteLine("updateonstart=\"0\"");
@@ -117,7 +122,7 @@ namespace WindowsGSM.Functions
                 ServerMaxPlayer = servermaxplayer;
                 ServerGSLT = servergslt;
                 ServerParam = serverparam;
-                AutoRestart = true;
+                AutoRestart = false;
                 AutoStart = false;
                 AutoUpdate = false;
                 UpdateOnStart = false;
@@ -171,8 +176,184 @@ namespace WindowsGSM.Functions
 
         public bool IsWindowsGSMConfigExist()
         {
-            string configpath = Functions.Path.GetConfigs(ServerID, "WindowsGSM.cfg");
+            string configpath = Path.GetConfigs(ServerID, "WindowsGSM.cfg");
             return File.Exists(configpath);
+        }
+
+        public string GetIPAddress()
+        {
+            using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
+            {
+                socket.Connect("8.8.8.8", 65530);
+                IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+                return endPoint.Address.ToString();
+            }
+        }
+
+        public string GetAvailablePort(string defaultport)
+        {
+            MainWindow WindowsGSM = (MainWindow)System.Windows.Application.Current.MainWindow;
+
+            int[] portlist = new int[WindowsGSM.ServerGrid.Items.Count];
+
+            for (int i = 0; i < WindowsGSM.ServerGrid.Items.Count; i++)
+            {
+                Functions.ServerTable row = WindowsGSM.ServerGrid.Items[i] as Functions.ServerTable;
+                portlist[i] = Int32.Parse(string.IsNullOrWhiteSpace(row.Port) ? "0" : row.Port);
+            }
+
+            Array.Sort(portlist);
+
+            int port = Int32.Parse(defaultport);
+            for (int i = 0; i < WindowsGSM.ServerGrid.Items.Count; i++)
+            {
+                if (port == portlist[i])
+                {
+                    port++;
+                }
+
+                //SourceTV port 27020
+                if (port == 27020)
+                {
+                    port++;
+                }
+            }
+
+            return port.ToString();
+        }
+
+        public string GetRCONPassword()
+        {
+            string allowedChars = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ0123456789!@$?_-";
+            char[] chars = new char[12];
+            Random rd = new Random();
+
+            for (int i = 0; i < 12; i++)
+            {
+                chars[i] = allowedChars[rd.Next(0, allowedChars.Length)];
+            }
+
+            return new string(chars);
+        }
+
+        public static bool ToggleSetting(string serverId, string settingName)
+        {
+            string configFile = Path.GetConfigs(serverId, "WindowsGSM.cfg");
+
+            if (File.Exists(configFile))
+            {
+                bool? returnBool = null;
+
+                //Read the config lines
+                string[] lines = File.ReadAllLines(configFile);
+
+                //Overwrite the config file
+                File.Create(configFile).Dispose();
+
+                //Create the TextWriter
+                using (TextWriter textwriter = new StreamWriter(configFile))
+                {
+                    //Write all lines
+                    foreach (string line in lines)
+                    {
+                        string[] keyvalue = line.Split('=');
+                        if (keyvalue.Length == 2)
+                        {
+                            keyvalue[1] = keyvalue[1].Trim('\"');
+
+                            if (settingName == keyvalue[0])
+                            {
+                                returnBool = (keyvalue[1] == "1") ? false : true;
+                                string nextBool = (keyvalue[1] == "1") ? "0" : "1";
+                                textwriter.WriteLine($"{keyvalue[0]}=\"{nextBool}\"");
+                            }
+                            else
+                            {
+                                textwriter.WriteLine(line);
+                            }
+                        }
+                    }
+
+                    if (returnBool == null)
+                    {
+                        returnBool = true;
+                        textwriter.WriteLine($"{settingName}=\"1\"");
+                    }
+                }
+
+                return returnBool ?? true;
+            }
+
+            return false;
+        }
+
+        public static string GetDiscordWebhookUrl(string serverId)
+        {
+            string configFile = Path.GetConfigs(serverId, "WindowsGSM.cfg");
+
+            if (File.Exists(configFile))
+            {
+                //Read the config lines
+                string[] lines = File.ReadAllLines(configFile);
+
+                //Read all lines
+                foreach (string line in lines)
+                {
+                    string[] keyvalue = line.Split('=');
+                    if (keyvalue.Length == 2)
+                    {
+                        if ("discordwebhook" == keyvalue[0])
+                        {
+                            return keyvalue[1].Trim('\"');
+                        }
+                    }
+                }
+            }
+
+            return "";
+        }
+
+        public static void SetDiscordWebhookUrl(string serverId, string webhookUrl)
+        {
+            string configFile = Path.GetConfigs(serverId, "WindowsGSM.cfg");
+
+            if (File.Exists(configFile))
+            {
+                bool saved = false;
+
+                //Read the config lines
+                string[] lines = File.ReadAllLines(configFile);
+
+                //Overwrite the config file
+                File.Create(configFile).Dispose();
+
+                //Create the TextWriter
+                using (TextWriter textwriter = new StreamWriter(configFile))
+                {
+                    //Write lines
+                    foreach (string line in lines)
+                    {
+                        string[] keyvalue = line.Split('=');
+                        if (keyvalue.Length == 2)
+                        {
+                            if ("discordwebhook" == keyvalue[0])
+                            {
+                                textwriter.WriteLine($"discordwebhook=\"{webhookUrl}\"");
+                                saved = true;
+                            }
+                            else
+                            {
+                                textwriter.WriteLine(line);
+                            }
+                        }
+                    }
+
+                    if (!saved)
+                    {
+                        textwriter.WriteLine($"discordwebhook=\"{webhookUrl}\"");
+                    }
+                }
+            }
         }
     }
 }

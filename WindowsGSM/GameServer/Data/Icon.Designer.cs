@@ -151,6 +151,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/mordhau.png.
+        /// </summary>
+        public static string Mordhau_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Mordhau Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/rust.png.
         /// </summary>
         public static string Rust_Dedicated_Server {

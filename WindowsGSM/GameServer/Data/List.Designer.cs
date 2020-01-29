@@ -79,7 +79,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Rust Dedicated Server.
+        ///   Looks up a localized string similar to Mordhau Dedicated Server.
         /// </summary>
         internal static string _11 {
             get {
@@ -88,11 +88,20 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Team Fortress 2 Dedicated Server.
+        ///   Looks up a localized string similar to Rust Dedicated Server.
         /// </summary>
         internal static string _12 {
             get {
                 return ResourceManager.GetString("12", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Team Fortress 2 Dedicated Server.
+        /// </summary>
+        internal static string _13 {
+            get {
+                return ResourceManager.GetString("13", resourceCulture);
             }
         }
         

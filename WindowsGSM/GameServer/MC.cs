@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Net;
 using Newtonsoft.Json.Linq;
+using System.Text.RegularExpressions;
 
 namespace WindowsGSM.GameServer
 {
@@ -14,14 +15,13 @@ namespace WindowsGSM.GameServer
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
 
-        private readonly string _serverId;
+        private readonly Functions.ServerConfig _serverData;
 
-        private string _param;
         public string Error;
         public string Notice;
 
         public const string FullName = "Minecraft: Java Edition Server";
-        public const bool ToggleConsole = false;
+        public bool ToggleConsole = false;
 
         public string port = "25565";
         public string defaultmap = "world";
@@ -35,32 +35,28 @@ namespace WindowsGSM.GameServer
             InstalledAbsolute = 2 //Path: (C:\Program Files (x86)\Java\jre1.8.0_231\bin\java.exe)
         }
 
-        public MC(string serverid)
+        public MC(Functions.ServerConfig serverData)
         {
-            _serverId = serverid;
+            _serverData = serverData;
         }
 
-        public async void CreateServerCFG(string serverName, string serverIP, string serverPort, string rcon_password)
+        public async void CreateServerCFG()
         {
             //Create server.properties
-            string configPath = Functions.Path.GetServerFiles(_serverId, "server.properties");
+            string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, "server.properties");
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName, "server.properties"))
             {
+                string serverPort = _serverData.GetAvailablePort(this.port.ToString());
                 string configText = File.ReadAllText(configPath);
                 configText = configText.Replace("{{serverPort}}", serverPort);
                 configText = configText.Replace("{{maxplayers}}", maxplayers);
                 configText = configText.Replace("{{rconPort}}", (Int32.Parse(serverPort) + 10).ToString());
-                configText = configText.Replace("{{serverIP}}", serverIP);
+                configText = configText.Replace("{{serverIP}}", _serverData.ServerIP);
                 configText = configText.Replace("{{defaultmap}}", defaultmap);
-                configText = configText.Replace("{{rcon_password}}", rcon_password);
-                configText = configText.Replace("{{serverName}}", serverName);
+                configText = configText.Replace("{{rcon_password}}", _serverData.GetRCONPassword());
+                configText = configText.Replace("{{serverName}}", _serverData.ServerName);
                 File.WriteAllText(configPath, configText);
             }
-        }
-
-        public void SetParameter(string additional)
-        {
-            _param = additional;
         }
 
         public async Task<Process> Start()
@@ -72,7 +68,7 @@ namespace WindowsGSM.GameServer
                 return null;
             }
 
-            string workingDir = Functions.Path.GetServerFiles(_serverId);
+            string workingDir = Functions.Path.GetServerFiles(_serverData.ServerID);
 
             string serverJarPath = Path.Combine(workingDir, "server.jar");
             if (!File.Exists(serverJarPath))
@@ -104,7 +100,7 @@ namespace WindowsGSM.GameServer
                 {
                     WorkingDirectory = workingDir,
                     FileName = javaPath,
-                    Arguments = $"{_param} -jar server.jar nogui",
+                    Arguments = $"{_serverData.ServerParam} -jar server.jar nogui",
                     WindowStyle = ProcessWindowStyle.Minimized,
                     CreateNoWindow = true,
                     UseShellExecute = false,
@@ -112,8 +108,9 @@ namespace WindowsGSM.GameServer
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
                 },
+                EnableRaisingEvents = true
             };
-            var serverConsole = new Functions.ServerConsole(_serverId);
+            var serverConsole = new Functions.ServerConsole(_serverData.ServerID);
             p.OutputDataReceived += serverConsole.AddOutput;
             p.ErrorDataReceived += serverConsole.AddOutput;
             p.Start();
@@ -123,31 +120,27 @@ namespace WindowsGSM.GameServer
             return p;
         }
 
-        public static async Task<bool> Stop(Process p)
+        public async Task<bool> Stop(Process p)
         {
             p.StandardInput.WriteLine("stop");
 
             for (int i = 0; i < 10; i++)
             {
-                if (p != null && p.HasExited)
-                {
-                    return true;
-                }
-
+                if (p.HasExited) { return true; }
                 await Task.Delay(1000);
             }
 
             return false;
         }
 
-        public async Task<bool> Install()
+        public async Task<Process> Install()
         {
             //EULA
             MessageBoxResult result = System.Windows.MessageBox.Show("By continuing you are indicating your agreement to the EULA.\n(https://account.mojang.com/documents/minecraft_eula)", "Agreement to the EULA", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result != MessageBoxResult.Yes)
             {
                 Error = "Disagree to the EULA";
-                return false;
+                return null;
             }
 
             //Install JAVA if not installed
@@ -158,12 +151,12 @@ namespace WindowsGSM.GameServer
                 if (result != MessageBoxResult.Yes)
                 {
                     Error = "Java is not installed";
-                    return false;
+                    return null;
                 }
 
                 if (!await DownloadJavaJRE())
                 {
-                    return false;
+                    return null;
                 }
             }
 
@@ -188,7 +181,7 @@ namespace WindowsGSM.GameServer
                 if (packageUrl == null)
                 {
                     Error = $"Fail to fetch packageUrl from {manifestUrl}";
-                    return false;
+                    return null;
                 }
 
                 //packageUrl example: https://launchermeta.mojang.com/v1/packages/6876d19c096de56d1aa2cf434ec6b0e66e0aba00/1.15.json
@@ -198,15 +191,15 @@ namespace WindowsGSM.GameServer
                 string serverJarUrl = JObject.Parse(packageJson)["downloads"]["server"]["url"].ToString();
 
                 webClient.DownloadFileCompleted += InitiateServerJar;
-                webClient.DownloadFileAsync(new Uri(serverJarUrl), Functions.Path.GetServerFiles(_serverId, "server.jar"));
+                webClient.DownloadFileAsync(new Uri(serverJarUrl), Functions.Path.GetServerFiles(_serverData.ServerID, "server.jar"));
             }
             catch
             {
                 Error = $"Fail to install {FullName}";
-                return false;
+                return null;
             }
 
-            return true;
+            return null;
         }
 
         public async Task<bool> Update()
@@ -220,20 +213,17 @@ namespace WindowsGSM.GameServer
                 }
             }
 
-            string serverJarPath = Functions.Path.GetServerFiles(_serverId, "server.jar");
+            string serverJarPath = Functions.Path.GetServerFiles(_serverData.ServerID, "server.jar");
             if (File.Exists(serverJarPath))
             {
-                await Task.Run(() =>
+                try
                 {
-                    try
-                    {
-                        File.Delete(serverJarPath);
-                    }
-                    catch
-                    {
+                    File.Delete(serverJarPath);
+                }
+                catch
+                {
 
-                    }
-                });
+                }
             }
 
             if (File.Exists(serverJarPath))
@@ -273,7 +263,7 @@ namespace WindowsGSM.GameServer
                 string serverJarUrl = JObject.Parse(packageJson)["downloads"]["server"]["url"].ToString();
 
                 webClient.DownloadFileCompleted += InitiateServerJar;
-                webClient.DownloadFileAsync(new Uri(serverJarUrl), Functions.Path.GetServerFiles(_serverId, "server.jar"));
+                webClient.DownloadFileAsync(new Uri(serverJarUrl), serverJarPath);
             }
             catch
             {
@@ -282,6 +272,79 @@ namespace WindowsGSM.GameServer
             }
 
             return true;
+        }
+
+        public bool IsInstallValid()
+        {
+            string jarFile = "server.jar";
+            string jarPath = Functions.Path.GetServerFiles(_serverData.ServerID, jarFile);
+
+            return File.Exists(jarPath);
+        }
+
+        public bool IsImportValid(string path)
+        {
+            string jarFile = "server.jar";
+            string jarPath = Path.Combine(path, jarFile);
+
+            Error = $"Invalid Path! Fail to find {jarFile}";
+            return File.Exists(jarPath);
+        }
+
+        public string GetLocalBuild()
+        {
+            string logFile = "latest.log";
+            string logPath = Functions.Path.GetServerFiles(_serverData.ServerID, "logs", logFile);
+
+            if (!File.Exists(logPath))
+            {
+                Error = $"{logFile} is missing.";
+                return "";
+            }
+
+            FileStream fileStream = new FileStream(logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            StreamReader streamReader = new StreamReader(fileStream);
+
+            while (!streamReader.EndOfStream)
+            {
+                string line = streamReader.ReadLine();
+                if (line.Contains("] [Server thread/INFO]: Starting minecraft server version"))
+                {
+                    Regex regex = new Regex("\\d+\\.\\d+\\.\\d+");
+                    return regex.Match(line).Value;
+                }
+            }
+
+            streamReader.Close();
+            fileStream.Close();
+
+            Error = $"Fail to get local build";
+            return "";
+        }
+
+        public async Task<string> GetRemoteBuild()
+        {
+            try
+            {
+                WebClient webClient = new WebClient();
+                string remoteUrl = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
+                string html = await webClient.DownloadStringTaskAsync(remoteUrl);
+
+                Regex regex = new Regex("\"latest\":.{\"release\":.\"(.*?)\"");
+                var matches = regex.Matches(html);
+
+                if (matches.Count == 1 && matches[0].Groups.Count == 2)
+                {
+                    return matches[0].Groups[1].Value;
+                }
+            }
+            catch
+            {
+
+            }
+
+            Error = $"Fail to get remote build";
+            return "";
         }
 
         private Java IsJavaJREInstalled()
@@ -335,7 +398,7 @@ namespace WindowsGSM.GameServer
 
         private async Task<bool> DownloadJavaJRE()
         {
-            string serverFilesPath = Functions.Path.GetServerFiles(_serverId);
+            string serverFilesPath = Functions.Path.GetServerFiles(_serverData.ServerID);
             string filename = "jre-8u231-windows-i586-iftw.exe";
             string installer = "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=240725_5b13a193868b4bf28bcb45c792fce896";
 
@@ -371,7 +434,7 @@ namespace WindowsGSM.GameServer
 
         private async void InstallJavaJRE(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
         {
-            string installPath = Functions.Path.GetServerFiles(_serverId);
+            string installPath = Functions.Path.GetServerFiles(_serverData.ServerID);
             string filename = "jre-8u231-windows-i586-iftw.exe";
             string jrePath = Path.Combine(installPath, filename);
             string javaPath = @"C:\Program Files (x86)\Java\jre1.8.0_231";
@@ -409,7 +472,7 @@ namespace WindowsGSM.GameServer
         private void InitiateServerJar(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
         {
             //Create eula.txt
-            string eulaPath = Functions.Path.GetServerFiles(_serverId, "eula.txt");
+            string eulaPath = Functions.Path.GetServerFiles(_serverData.ServerID, "eula.txt");
             File.Create(eulaPath).Dispose();
 
             using (TextWriter textwriter = new StreamWriter(eulaPath))

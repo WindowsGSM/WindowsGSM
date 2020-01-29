@@ -124,9 +124,12 @@
     <value>Minecraft: Pocket Edition Server (PocketMine-MP)</value>
   </data>
   <data name="11" xml:space="preserve">
-    <value>Rust Dedicated Server</value>
+    <value>Mordhau Dedicated Server</value>
   </data>
   <data name="12" xml:space="preserve">
+    <value>Rust Dedicated Server</value>
+  </data>
+  <data name="13" xml:space="preserve">
     <value>Team Fortress 2 Dedicated Server</value>
   </data>
   <data name="2" xml:space="preserve">

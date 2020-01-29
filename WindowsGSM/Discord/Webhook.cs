@@ -64,13 +64,20 @@ namespace WindowsGSM.Discord
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            using (var httpClient = new HttpClient())
+            try
             {
-                var httpResponse = await httpClient.PostAsync(_webhookUrl, content);
-                if (httpResponse.Content != null)
+                using (var httpClient = new HttpClient())
                 {
-                    return true;
+                    var httpResponse = await httpClient.PostAsync(_webhookUrl, content);
+                    if (httpResponse.Content != null)
+                    {
+                        return true;
+                    }
                 }
+            }
+            catch
+            {
+
             }
 
             return false;

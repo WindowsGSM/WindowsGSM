@@ -10,71 +10,63 @@ namespace WindowsGSM.GameServer
     /// Rust server is the most user-unfriendly server in my opinion. Both RedirectStandardInput or RedirectStandardOutput cannot use on WindowsGSM.
     /// RedirectStandardOutput is possible but it will break the input, if used both, the server can run successfully but the input become useless again.
     /// 
-    /// The solution for this is don't use either RedirectStandardInput or RedirectStandardOutput.
+    /// The solution for this is don't use neither RedirectStandardInput nor RedirectStandardOutput.
     /// Just use the traditional method to handle the server.
     /// 
     /// </summary>
     class RUST
     {
-        private readonly string _serverId;
+        private readonly Functions.ServerConfig _serverData;
 
-        private string _param;
         public string Error;
         public string Notice;
 
         public const string FullName = "Rust Dedicated Server";
-        public const bool ToggleConsole = true;
+        public bool ToggleConsole = true;
 
         public string port = "28015";
         public string defaultmap = "Procedural Map";
         public string maxplayers = "50";
         public string additional = "";
 
-        public RUST(string serverid)
+        public RUST(Functions.ServerConfig serverData)
         {
-            _serverId = serverid;
+            _serverData = serverData;
         }
 
-        public async void CreateServerCFG(string hostname, string rcon_password, string port)
+        public async void CreateServerCFG()
         {
             //Download server.cfg
-            string configPath = Functions.Path.GetServerFiles(_serverId, "server.cfg");
+            string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, "server.cfg");
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName, "server.cfg"))
             {
                 string configText = File.ReadAllText(configPath);
-                configText = configText.Replace("{{hostname}}", hostname);
-                configText = configText.Replace("{{rcon_password}}", rcon_password);
-                configText = configText.Replace("{{port}}", port);
+                configText = configText.Replace("{{hostname}}", _serverData.ServerName);
+                configText = configText.Replace("{{rcon_password}}", _serverData.GetRCONPassword());
+                configText = configText.Replace("{{port}}", _serverData.GetAvailablePort(port));
                 File.WriteAllText(configPath, configText);
             }
         }
 
-        public void SetParameter(string ip, string port, string map, string maxplayers)
-        {
-            _param = $"-nographics -batchmode -silent-crashes +server.ip {ip} +server.port {port} +server.level \"{map}\" +server.maxplayers {maxplayers} ";
-
-            string configPath = Functions.Path.GetServerFiles(_serverId, "server.cfg");
-            if (File.Exists(configPath))
-            {
-                foreach (string line in File.ReadLines(configPath))
-                {
-                    _param += line + " ";
-                }
-            }
-
-            _param.TrimEnd();
-        }
-
         public async Task<Process> Start()
         {
-            string configPath = Functions.Path.GetServerFiles(_serverId, "server.cfg");
+            string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, "server.cfg");
             if (!File.Exists(configPath))
             {
                 Notice = $"server.cfg not found ({configPath})";
             }
 
-            string workingDir = Functions.Path.GetServerFiles(_serverId);
+            string workingDir = Functions.Path.GetServerFiles(_serverData.ServerID);
             string srcdsPath = Path.Combine(workingDir, "RustDedicated.exe");
+
+            string param = $"-nographics -batchmode -silent-crashes +server.ip {_serverData.ServerIP} +server.port {_serverData.ServerPort} +server.level \"{_serverData.ServerMap}\" +server.maxplayers {_serverData.ServerMaxPlayer} ";
+
+            foreach (string line in File.ReadLines(configPath))
+            {
+                param += line + " ";
+            }
+
+            param.TrimEnd();
 
             WindowsFirewall firewall = new WindowsFirewall("RustDedicated.exe", srcdsPath);
             if (!await firewall.IsRuleExist())
@@ -88,22 +80,23 @@ namespace WindowsGSM.GameServer
                 {
                     WorkingDirectory = workingDir,
                     FileName = srcdsPath,
-                    Arguments = _param,
+                    Arguments = param,
                 },
+                EnableRaisingEvents = true
             };
             p.Start();
 
             return p;
         }
 
-        public static async Task<bool> Stop(Process p)
+        public async Task<bool> Stop(Process p)
         {
             return await Steam.SRCDS.Stop(p);
         }
 
         public async Task<Process> Install()
         {
-            Steam.SRCDS srcds = new Steam.SRCDS(_serverId);
+            Steam.SRCDS srcds = new Steam.SRCDS(_serverData.ServerID);
             Process p = await srcds.Install("258550");
             Error = srcds.Error;
 
@@ -112,11 +105,40 @@ namespace WindowsGSM.GameServer
 
         public async Task<bool> Update()
         {
-            Steam.SRCDS srcds = new Steam.SRCDS(_serverId);
+            Steam.SRCDS srcds = new Steam.SRCDS(_serverData.ServerID);
             bool success = await srcds.Update("258550");
             Error = srcds.Error;
 
             return success;
+        }
+
+        public bool IsInstallValid()
+        {
+            string exeFile = "RustDedicated.exe";
+            string exePath = Functions.Path.GetServerFiles(_serverData.ServerID, exeFile);
+
+            return File.Exists(exePath);
+        }
+
+        public bool IsImportValid(string path)
+        {
+            string exeFile = "RustDedicated.exe";
+            string exePath = Path.Combine(path, exeFile);
+
+            Error = $"Invalid Path! Fail to find {exeFile}";
+            return File.Exists(exePath);
+        }
+
+        public string GetLocalBuild()
+        {
+            var steamCMD = new Installer.SteamCMD();
+            return steamCMD.GetLocalBuild(_serverData.ServerID, "258550");
+        }
+
+        public async Task<string> GetRemoteBuild()
+        {
+            var steamCMD = new Installer.SteamCMD();
+            return await steamCMD.GetRemoteBuild("258550");
         }
     }
 }

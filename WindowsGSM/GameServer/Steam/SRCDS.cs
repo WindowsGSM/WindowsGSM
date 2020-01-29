@@ -77,8 +77,7 @@ namespace WindowsGSM.GameServer.Steam
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
                 },
-                //Console is useless
-                EnableRaisingEvents = false
+                EnableRaisingEvents = true
             };
             var serverConsole = new Functions.ServerConsole(_serverId);
             p.OutputDataReceived += serverConsole.AddOutput;

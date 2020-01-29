@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Text;
 using System.Diagnostics;
 using System.Collections;
-using System.Windows.Documents;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -31,23 +29,8 @@ namespace WindowsGSM.Functions
 
         public static bool IsToggleable(string serverGame)
         {
-            switch (serverGame)
-            {
-                case GameServer._7DTD.FullName: return GameServer._7DTD.ToggleConsole;
-                case GameServer.CS.FullName: return GameServer.CS.ToggleConsole;
-                case GameServer.CSCZ.FullName: return GameServer.CSCZ.ToggleConsole;
-                case GameServer.CSGO.FullName: return GameServer.CSGO.ToggleConsole;
-                case GameServer.GMOD.FullName: return GameServer.GMOD.ToggleConsole;
-                case GameServer.GTA5.FullName: return GameServer.GTA5.ToggleConsole;
-                case GameServer.HL2DM.FullName: return GameServer.HL2DM.ToggleConsole;
-                case GameServer.L4D2.FullName: return GameServer.L4D2.ToggleConsole;
-                case GameServer.MC.FullName: return GameServer.MC.ToggleConsole;
-                case GameServer.MCPE.FullName: return GameServer.MCPE.ToggleConsole;
-                case GameServer.RUST.FullName: return GameServer.RUST.ToggleConsole;
-                case GameServer.TF2.FullName: return GameServer.TF2.ToggleConsole;
-            }
-
-            return true;
+            dynamic gameServer = GameServer.ClassObject.Get(serverGame, null);
+            return gameServer.ToggleConsole;
         }
 
         public void Input(Process process, string text)
@@ -90,17 +73,22 @@ namespace WindowsGSM.Functions
 
         public string Get()
         {
-            StringBuilder sb = new StringBuilder();
+            /*
+                Note:
+                Don't use foreach loop, StringBUilder
+                It will cause error
+            */
 
-            foreach (object line in _arrayList)
+            string output = "";
+            for (int i = 0; i < _arrayList.Count; i++)
             {
-                if (line != null)
+                if (_arrayList[i] != null)
                 {
-                    sb.AppendLine(line.ToString());
+                    output += _arrayList[i] + Environment.NewLine;
                 }
             }
 
-            return sb.ToString() ?? "";
+            return output;
         }
 
         public string GetPreviousCommand()
@@ -120,12 +108,10 @@ namespace WindowsGSM.Functions
             if (LineNumber < 0)
             {
                 LineNumber = 0;
-                System.Media.SystemSounds.Asterisk.Play();
             }
             else if (LineNumber >= _arrayList.Count)
             {
                 LineNumber = (_arrayList.Count <= 0) ? 0 : _arrayList.Count - 1;
-                System.Media.SystemSounds.Asterisk.Play();
             }
 
             return LineNumber;
@@ -150,7 +136,10 @@ namespace WindowsGSM.Functions
                 _arrayList.RemoveAt(0);
             }
 
-            Refresh(_serverId);
+            if (_serverId != "0")
+            {
+                Refresh(_serverId);
+            }
         }
 
         public static void Refresh(string serverId)
@@ -163,8 +152,7 @@ namespace WindowsGSM.Functions
 
                 if (selectedRow.ID == serverId)
                 {
-                    WindowsGSM.console.Document.Blocks.Clear();
-                    WindowsGSM.console.Document.Blocks.Add(new Paragraph(new Run(MainWindow.g_ServerConsoles[Int32.Parse(serverId)].Get())));
+                    WindowsGSM.console.Text = MainWindow.g_ServerConsoles[Int32.Parse(serverId)].Get();
                     WindowsGSM.console.ScrollToEnd();
                 }
             });

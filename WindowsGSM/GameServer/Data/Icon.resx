@@ -147,6 +147,9 @@
   <data name="Minecraft: Pocket Edition Server (PocketMine-MP)" xml:space="preserve">
     <value>Images/Games/mcpe.png</value>
   </data>
+  <data name="Mordhau Dedicated Server" xml:space="preserve">
+    <value>Images/Games/mordhau.png</value>
+  </data>
   <data name="Rust Dedicated Server" xml:space="preserve">
     <value>Images/Games/rust.png</value>
   </data>

@@ -3,38 +3,40 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace WindowsGSM.GameServer
 {
     class MCPE
     {
-        private readonly string _serverId;
+        private readonly Functions.ServerConfig _serverData;
 
         public string Error;
+        public string Notice;
 
         public const string FullName = "Minecraft: Pocket Edition Server (PocketMine-MP)";
-        public const bool ToggleConsole = false;
+        public bool ToggleConsole = false;
 
         public string port = "19132";
         public string defaultmap = "world";
         public string maxplayers = "20";
         public string additional = "";
 
-        public MCPE(string serverid)
+        public MCPE(Functions.ServerConfig serverData)
         {
-            _serverId = serverid;
+            _serverData = serverData;
         }
 
-        public async void CreateServerCFG(string serverName, string serverPort, string rcon_password)
+        public async void CreateServerCFG()
         {
             //Download server.properties
-            string configPath = Functions.Path.GetServerFiles(_serverId, "server.properties");
+            string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, "server.properties");
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName, "server.properties"))
             {
                 string configText = File.ReadAllText(configPath);
-                configText = configText.Replace("{{hostname}}", serverName);
-                configText = configText.Replace("{{rcon_password}}", rcon_password);
-                configText = configText.Replace("{{port}}", serverPort);
+                configText = configText.Replace("{{hostname}}", _serverData.ServerName);
+                configText = configText.Replace("{{rcon_password}}", _serverData.GetRCONPassword());
+                configText = configText.Replace("{{port}}", _serverData.GetAvailablePort(port));
                 configText = configText.Replace("{{maxplayers}}", maxplayers);
                 File.WriteAllText(configPath, configText);
             }
@@ -42,7 +44,7 @@ namespace WindowsGSM.GameServer
 
         public async Task<Process> Start()
         {
-            string workingDir = Functions.Path.GetServerFiles(_serverId);
+            string workingDir = Functions.Path.GetServerFiles(_serverData.ServerID);
 
             string phpPath = Path.Combine(workingDir, @"bin\php\php.exe");
             if (!File.Exists(phpPath))
@@ -84,9 +86,10 @@ namespace WindowsGSM.GameServer
                     RedirectStandardInput = true,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
-                }
+                },
+                EnableRaisingEvents = true
             };
-            var serverConsole = new Functions.ServerConsole(_serverId);
+            var serverConsole = new Functions.ServerConsole(_serverData.ServerID);
             p.OutputDataReceived += serverConsole.AddOutput;
             p.ErrorDataReceived += serverConsole.AddOutput;
             p.Start();
@@ -96,7 +99,7 @@ namespace WindowsGSM.GameServer
             return p;
         }
 
-        public static async Task<bool> Stop(Process p)
+        public async Task<bool> Stop(Process p)
         {
             p.StandardInput.WriteLine("stop");
 
@@ -109,13 +112,13 @@ namespace WindowsGSM.GameServer
             return false;
         }
 
-        public async Task<bool> Install()
+        public async Task<Process> Install()
         {
-            string serverFilesPath = Functions.Path.GetServerFiles(_serverId);
+            string serverFilesPath = Functions.Path.GetServerFiles(_serverData.ServerID);
 
             //Download PHP-7.3-Windows-x64.zip
             string fileName = "PHP-7.3-Windows-x64.zip";
-            string installUrl = "https://jenkins.pmmp.io/job/PHP-7.3-Aggregate/lastSuccessfulBuild/artifact/PHP-7.3-Windows-x64.zip";
+            string installUrl = "https://jenkins.pmmp.io/job/PHP-7.3-Aggregate/lastStableBuild/artifact/PHP-7.3-Windows-x64.zip";
             string PHPzipPath = Path.Combine(serverFilesPath, fileName);
             try
             {
@@ -129,12 +132,12 @@ namespace WindowsGSM.GameServer
             catch
             {
                 Error = $"Fail to download {fileName}";
-                return false;
+                return null;
             }
 
             //Download PocketMine-MP.phar
             fileName = "PocketMine-MP.phar";
-            installUrl = "https://jenkins.pmmp.io/job/PocketMine-MP/lastSuccessfulBuild/artifact/PocketMine-MP.phar";
+            installUrl = "https://jenkins.pmmp.io/job/PocketMine-MP/lastStableBuild/artifact/PocketMine-MP.phar";
             try
             {
                 WebClient webClient = new WebClient();
@@ -143,19 +146,17 @@ namespace WindowsGSM.GameServer
             catch
             {
                 Error = $"Fail to download {fileName}";
-                return false;
+                return null;
             }
 
-            return true;
+            return null;
         }
 
         public async Task<bool> Update()
         {
-            string fileName = "PocketMine-MP.phar";
-            string installUrl = "https://jenkins.pmmp.io/job/PocketMine-MP/lastSuccessfulBuild/artifact/PocketMine-MP.phar";
-            string PMMPPath = Functions.Path.GetServerFiles(_serverId, fileName);
-
             //Delete PocketMine-MP.phar
+            string fileName = "PocketMine-MP.phar";
+            string PMMPPath = Functions.Path.GetServerFiles(_serverData.ServerID, fileName);
             try
             {
                 if (File.Exists(PMMPPath))
@@ -170,6 +171,7 @@ namespace WindowsGSM.GameServer
             }
 
             //Download PocketMine-MP.phar
+            string installUrl = "https://jenkins.pmmp.io/job/PocketMine-MP/lastStableBuild/artifact/PocketMine-MP.phar";
             try
             {
                 WebClient webClient = new WebClient();
@@ -182,6 +184,74 @@ namespace WindowsGSM.GameServer
             }
 
             return true;
+        }
+
+        public bool IsInstallValid()
+        {
+            string PHPPath = Functions.Path.GetServerFiles(_serverData.ServerID, @"bin\php\php.exe");
+            string PMMPPath = Functions.Path.GetServerFiles(_serverData.ServerID, "PocketMine-MP.phar");
+            return File.Exists(PHPPath) && File.Exists(PMMPPath);
+        }
+
+        public bool IsImportValid(string path)
+        {
+            string PMMPFile = "PocketMine-MP.phar";
+            string PMMPPath = Path.Combine(path, PMMPFile);
+
+            Error = $"Invalid Path! Fail to find {PMMPFile}";
+            return File.Exists(PMMPPath);
+        }
+
+        public string GetLocalBuild()
+        {
+            string PMMPFile = "PocketMine-MP.phar";
+            string PMMPPath = Functions.Path.GetServerFiles(_serverData.ServerID, PMMPFile);
+
+            if (!File.Exists(PMMPPath))
+            {
+                Error = $"{PMMPFile} is missing.";
+                return "";
+            }
+
+            using (StreamReader sr = File.OpenText(PMMPPath))
+            {
+                string s = string.Empty;
+                while ((s = sr.ReadLine()) != null)
+                {
+                    if (s.Contains("const BUILD_NUMBER"))
+                    {
+                        Regex regex = new Regex("\\d+");
+                        return regex.Match(s).Value;
+                    }
+                }
+            }
+
+            Error = $"Fail to get local build";
+            return "";
+        }
+
+        public async Task<string> GetRemoteBuild()
+        {
+            try
+            {
+                WebClient webClient = new WebClient();
+                string remoteUrl = "https://jenkins.pmmp.io/job/PocketMine-MP/lastStableBuild/artifact/build_info.json";
+                string html = await webClient.DownloadStringTaskAsync(remoteUrl);
+                Regex regex = new Regex("\"build_number\":\\D{0,}(.*?),");
+                var matches = regex.Matches(html);
+
+                if (matches.Count == 1 && matches[0].Groups.Count == 2)
+                {
+                    return matches[0].Groups[1].Value;
+                }
+            }
+            catch
+            {
+
+            }
+
+            Error = $"Fail to get remote build";
+            return "";
         }
     }
 }

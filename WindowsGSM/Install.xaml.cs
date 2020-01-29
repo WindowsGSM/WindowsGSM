@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace WindowsGSM
@@ -11,7 +12,6 @@ namespace WindowsGSM
     {
         //Get ServerID for this install
         private readonly Functions.ServerConfig serverConfig = new Functions.ServerConfig(null);
-        private readonly GameServer.Action.Install gameServerAction;
 
         //Store Installer Process, such as steamcmd.exe
         private Process pInstaller;
@@ -31,8 +31,6 @@ namespace WindowsGSM
 
             Title = "WindowsGSM - Install (ID: " + serverConfig.ServerID + ")";
             textbox_name.Text = "WindowsGSM - Server #" + serverConfig.ServerID;
-
-            gameServerAction = new GameServer.Action.Install(serverConfig);
         }
 
         private async void Button_install_Click(object sender, RoutedEventArgs e)
@@ -100,12 +98,24 @@ namespace WindowsGSM
 
             serverConfig.CreateServerDirectory();
 
-            pInstaller = await gameServerAction.Run(servergame);
-            string error = gameServerAction.Error;
-            bool IsSuccess = await gameServerAction.IsSuccess(pInstaller, servergame, servername);
+            dynamic gameServer = GameServer.ClassObject.Get(servergame, serverConfig);
+            pInstaller = await gameServer.Install();
 
-            if (IsSuccess)
+            if (pInstaller != null)
             {
+                //Wait installer exit. Example: steamcmd.exe
+                await Task.Run(() => pInstaller.WaitForExit());
+            }
+
+            if (gameServer.IsInstallValid())
+            {
+                //Create WindowsGSM.cfg
+                serverConfig.CreateWindowsGSMConfig(servergame, servername, serverConfig.GetIPAddress(), serverConfig.GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
+
+                //Create game server config
+                gameServer = GameServer.ClassObject.Get(servergame, serverConfig);
+                gameServer.CreateServerCFG();
+
                 MainWindow WindowsGSM = (MainWindow)System.Windows.Application.Current.MainWindow;
 
                 Functions.ServerTable row = new Functions.ServerTable
@@ -138,7 +148,7 @@ namespace WindowsGSM
                 }
                 else
                 {
-                    textblock_progress.Text = $"Fail to install {error}";
+                    textblock_progress.Text = $"Fail to install {gameServer.Error}";
                 }
 
                 button_install.Content = "Install";
