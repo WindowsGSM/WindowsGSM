@@ -120,17 +120,12 @@ namespace WindowsGSM.GameServer
             return p;
         }
 
-        public async Task<bool> Stop(Process p)
+        public async Task Stop(Process p)
         {
-            p.StandardInput.WriteLine("stop");
-
-            for (int i = 0; i < 10; i++)
+            await Task.Run(() =>
             {
-                if (p.HasExited) { return true; }
-                await Task.Delay(1000);
-            }
-
-            return false;
+                p.StandardInput.WriteLine("stop");
+            });
         }
 
         public async Task<Process> Install()

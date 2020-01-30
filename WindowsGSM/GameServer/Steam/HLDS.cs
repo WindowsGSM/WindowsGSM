@@ -84,20 +84,15 @@ namespace WindowsGSM.GameServer.Steam
             return p;
         }
 
-        public static async Task<bool> Stop(Process p)
+        public static async Task Stop(Process p)
         {
-            SetForegroundWindow(p.MainWindowHandle);
-            SendKeys.SendWait("quit");
-            SendKeys.SendWait("{ENTER}");
-            SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
-
-            for (int i = 0; i < 10; i++)
+            await Task.Run(() =>
             {
-                if (p.HasExited) { return true; }
-                await Task.Delay(1000);
-            }
-
-            return false;
+                SetForegroundWindow(p.MainWindowHandle);
+                SendKeys.SendWait("quit");
+                SendKeys.SendWait("{ENTER}");
+                SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
+            });
         }
 
         public async Task<Process> Install(string appSetConfig, string appId)

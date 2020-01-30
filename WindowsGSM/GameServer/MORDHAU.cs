@@ -5,6 +5,21 @@ using System.IO;
 
 namespace WindowsGSM.GameServer
 {
+    /// <summary>
+    /// 
+    /// Note:
+    /// Mordhau Dedicated Server is very special, the console doesn't allow any input, only output.
+    /// Server owner are required to port forward three ports which is unique.
+    /// 
+    /// RedirectStandardOutput works, but there is a problem figure out by ! AssaultLine who is a server owner of Mordhau community.
+    /// when changing a map to a custom map, the redirect output is stucked in p.OutputDataReceived and the whole WindowsGSM and Mordhau freeze.
+    /// Therefore, I give up to use RedirectStandardOutput and use the traditional method to handle this server which is ToggleConsole=true.
+    /// Although this may not cool as the server output is not within WindowsGSM, but that is the only choice to keep Mordhau stable.
+    /// 
+    /// The freezing issue is cause by heavy loading of custom map and output deadlocked, I think there is no fix for this until Mordhau developer fix the between output and load.
+    /// The issue can reproduce by change ToggleConsole=false. Then start a server and join the server, type ChangeMap <custommap> command in the terminal in Mordhau, the freeze issue occur.
+    /// 
+    /// </summary>
     class MORDHAU
     {
         private readonly Functions.ServerConfig _serverData;
@@ -13,7 +28,7 @@ namespace WindowsGSM.GameServer
         public string Notice;
 
         public const string FullName = "Mordhau Dedicated Server";
-        public bool ToggleConsole = false;
+        public bool ToggleConsole = true;
 
         public string port = "7777";
         public string defaultmap = "FFA_ThePit";
@@ -41,7 +56,7 @@ namespace WindowsGSM.GameServer
                 {
                     WorkingDirectory = Functions.Path.GetServerFiles(_serverData.ServerID),
                     FileName = shipExePath,
-                    WindowStyle = ProcessWindowStyle.Minimized,
+                    WindowStyle = ProcessWindowStyle.Hidden,
                     CreateNoWindow = true,
                     UseShellExecute = false
                 }
@@ -94,8 +109,9 @@ namespace WindowsGSM.GameServer
                 return null;
             }
 
-            string shipExePath = Functions.Path.GetServerFiles(_serverData.ServerID, @"Mordhau\Binaries\Win64\MordhauServer-Win64-Shipping.exe");
-            WindowsFirewall firewall = new WindowsFirewall("MordhauServer-Win64-Shipping.exe", shipExePath);
+            string shipExeFile = "MordhauServer-Win64-Shipping.exe";
+            string shipExePath = Functions.Path.GetServerFiles(_serverData.ServerID, @"Mordhau\Binaries\Win64", shipExeFile);
+            WindowsFirewall firewall = new WindowsFirewall(shipExeFile, shipExePath);
             if (!await firewall.IsRuleExist())
             {
                 firewall.AddRule();
@@ -103,53 +119,79 @@ namespace WindowsGSM.GameServer
 
             if (!File.Exists(shipExePath))
             {
-                Error = $"MordhauServer-Win64-Shipping.exe not found ({shipExePath})";
+                Error = $"{shipExeFile} not found ({shipExePath})";
                 return null;
             }
 
-            string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, @"Mordhau\Saved\Config\WindowsServer\Game.ini");
+            string configFile = "Game.ini";
+            string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, @"Mordhau\Saved\Config\WindowsServer", configFile);
             if (!File.Exists(configPath))
             {
-                Notice = $"Game.ini not found ({configPath})";
+                Notice = $"{configFile} not found ({configPath})";
             }
 
-            string param = $"Mordhau {_serverData.ServerMap} -log -MultiHome={_serverData.ServerIP} -Port={_serverData.ServerPort} {_serverData.ServerParam}";
+            string param = string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : $"{_serverData.ServerMap}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? "" : $" -MultiHome={_serverData.ServerIP}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" -Port={_serverData.ServerPort}";
+            param += $" {_serverData.ServerParam}" + ((ToggleConsole) ? " -log" : "");
 
-            Process p = new Process
+            Process p;
+            if (ToggleConsole)
             {
-                StartInfo =
+                p = new Process
                 {
-                    WorkingDirectory = Functions.Path.GetServerFiles(_serverData.ServerID),
-                    FileName = shipExePath,
-                    Arguments = param,
-                    WindowStyle = ProcessWindowStyle.Minimized,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                },
-                EnableRaisingEvents = true
-            };
-            var serverConsole = new Functions.ServerConsole(_serverData.ServerID);
-            p.OutputDataReceived += serverConsole.AddOutput;
-            p.ErrorDataReceived += serverConsole.AddOutput;
-            p.Start();
-            p.BeginOutputReadLine();
-            p.BeginErrorReadLine();
-
+                    StartInfo =
+                    {
+                        WorkingDirectory = Functions.Path.GetServerFiles(_serverData.ServerID),
+                        FileName = shipExePath,
+                        Arguments = param,
+                        WindowStyle = ProcessWindowStyle.Minimized,
+                    },
+                    EnableRaisingEvents = true
+                };
+                p.Start();
+            }
+            else
+            {
+                p = new Process
+                {
+                    StartInfo =
+                    {
+                        WorkingDirectory = Functions.Path.GetServerFiles(_serverData.ServerID),
+                        FileName = shipExePath,
+                        Arguments = param,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
+                    },
+                    EnableRaisingEvents = true
+                };
+                var serverConsole = new Functions.ServerConsole(_serverData.ServerID);
+                p.OutputDataReceived += serverConsole.AddOutput;
+                p.ErrorDataReceived += serverConsole.AddOutput;
+                p.Start();
+                p.BeginOutputReadLine();
+                p.BeginErrorReadLine();
+            }
+            
             return p;
         }
 
-        public async Task<bool> Stop(Process p)
+        public async Task Stop(Process p)
         {
-            p.CloseMainWindow();
-
-            for (int i = 0; i < 10; i++)
+            await Task.Run(() =>
             {
-                if (p.HasExited) { return true; }
-                await Task.Delay(1000);
-            }
-
-            return false;
+                if (ToggleConsole)
+                {
+                    p.CloseMainWindow();
+                }
+                else
+                {
+                    p.Kill();
+                }
+            });
         }
 
         public async Task<Process> Install()

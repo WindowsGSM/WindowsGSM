@@ -36,6 +36,7 @@ namespace WindowsGSM
             Hide = 0,
             ShowNormal = 1,
             Show = 5,
+            Minimize = 6,
             ShowMinNoActivate = 7
         }
 
@@ -56,7 +57,7 @@ namespace WindowsGSM
             Deleting = 12
         }
 
-        public static readonly string WGSM_VERSION = "v1.8.1";
+        public static readonly string WGSM_VERSION = "v1.8.2";
         public static readonly int MAX_SERVER = 100;
         public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
 
@@ -804,14 +805,23 @@ namespace WindowsGSM
                 {
                     if (!p.StartInfo.CreateNoWindow)
                     {
-                        while (!p.HasExited && !ShowWindow(p.MainWindowHandle, WindowShowStyle.ShowMinNoActivate)) { }
+                        while (!p.HasExited && !ShowWindow(p.MainWindowHandle, WindowShowStyle.Minimize))
+                        {
+                            Debug.WriteLine("Try Setting ShowMinNoActivate Console Window");
+                        }
+                        Debug.WriteLine("Set ShowMinNoActivate Console Window");
                     }
 
                     p.WaitForInputIdle();
+
+                    if (!p.StartInfo.CreateNoWindow)
+                    {
+                        ShowWindow(p.MainWindowHandle, WindowShowStyle.Hide);
+                    }
                 }
                 catch
                 {
-
+                    Debug.WriteLine("No Window require to hide");
                 }
             });
 
@@ -841,6 +851,12 @@ namespace WindowsGSM
 
             dynamic gameServer = GameServer.ClassObject.Get(server.Game, null);
             await gameServer.Stop(p);
+
+            for (int i = 0; i < 10; i++)
+            {
+                if (p.HasExited) { return true; }
+                await Task.Delay(1000);
+            }
 
             if (!p.HasExited)
             {

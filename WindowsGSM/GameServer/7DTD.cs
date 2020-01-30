@@ -119,20 +119,15 @@ namespace WindowsGSM.GameServer
             return p;
         }
 
-        public async Task<bool> Stop(Process p)
+        public async Task Stop(Process p)
         {
-            SetForegroundWindow(p.MainWindowHandle);
-            p.CloseMainWindow();
-            SendKeys.SendWait("{ENTER}");
-            SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
-
-            for (int i = 0; i < 10; i++)
+            await Task.Run(() =>
             {
-                if (p.HasExited) { return true; }
-                await Task.Delay(1000);
-            }
-
-            return false;
+                SetForegroundWindow(p.MainWindowHandle);
+                p.CloseMainWindow();
+                SendKeys.SendWait("{ENTER}");
+                SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
+            });
         }
 
         public async Task<Process> Install()

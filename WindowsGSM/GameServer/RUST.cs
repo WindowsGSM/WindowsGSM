@@ -89,9 +89,9 @@ namespace WindowsGSM.GameServer
             return p;
         }
 
-        public async Task<bool> Stop(Process p)
+        public async Task Stop(Process p)
         {
-            return await Steam.SRCDS.Stop(p);
+            await Steam.SRCDS.Stop(p);
         }
 
         public async Task<Process> Install()
