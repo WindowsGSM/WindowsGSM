@@ -88,6 +88,14 @@ namespace WindowsGSM
 
             Title = "WindowsGSM " + WGSM_VERSION;
 
+            //Check DLL
+            if(!IsMahAppsMetroDllExist())
+            {
+#pragma warning disable 4014
+                Functions.Github.DownloadMahAppsMetroDll();
+#pragma warning restore
+            }
+
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM");
             if (key == null)
             {
@@ -169,6 +177,12 @@ namespace WindowsGSM
             }
 
             AutoStartServer();
+        }
+
+        private bool IsMahAppsMetroDllExist()
+        {
+            string mahappsPath = Path.Combine(WGSM_PATH, "MahApps.Metro.dll");
+            return File.Exists(mahappsPath);
         }
 
         private void RefreshServerList_Click(object sender, RoutedEventArgs e)
