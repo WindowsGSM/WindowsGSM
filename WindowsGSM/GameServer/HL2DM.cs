@@ -13,6 +13,7 @@ namespace WindowsGSM.GameServer
         public string Notice;
 
         public const string FullName = "Half-Life 2: Deathmatch Dedicated Server";
+        public string StartPath = "srcds.exe";
         public bool ToggleConsole = false;
 
         public string port = "27015";
@@ -111,6 +112,11 @@ namespace WindowsGSM.GameServer
         {
             var steamCMD = new Installer.SteamCMD();
             return await steamCMD.GetRemoteBuild("232370");
+        }
+
+        public string GetQueryPort()
+        {
+            return _serverData.ServerPort;
         }
     }
 }

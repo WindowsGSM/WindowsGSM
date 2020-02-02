@@ -52,7 +52,7 @@ namespace WindowsGSM
         }
 
         //Remove the firewall rule by similar path
-        public async Task RemoveRuleEx()
+        public async void RemoveRuleEx()
         {
             await Task.Run(() =>
             {

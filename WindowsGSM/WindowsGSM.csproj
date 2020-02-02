@@ -45,6 +45,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -147,6 +148,7 @@
     <Compile Include="GameServer\ClassObject.cs" />
     <Compile Include="GameServer\CS.cs" />
     <Compile Include="GameServer\CSCZ.cs" />
+    <Compile Include="GameServer\DAYZ.cs" />
     <Compile Include="GameServer\GTA5.cs" />
     <Compile Include="GameServer\HL2DM.cs" />
     <Compile Include="GameServer\L4D2.cs" />

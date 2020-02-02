@@ -7,6 +7,7 @@ namespace WindowsGSM.Discord
 {
     class Webhook 
     {
+        private static readonly HttpClient _httpClient = new HttpClient();
         private readonly string _webhookUrl;
         private readonly string _donorType;
 
@@ -66,18 +67,15 @@ namespace WindowsGSM.Discord
 
             try
             {
-                using (var httpClient = new HttpClient())
+                var response = await _httpClient.PostAsync(_webhookUrl, content);
+                if (response.Content != null)
                 {
-                    var httpResponse = await httpClient.PostAsync(_webhookUrl, content);
-                    if (httpResponse.Content != null)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
             catch
             {
-
+                System.Diagnostics.Debug.WriteLine($"Fail to send webhook ({_webhookUrl})");
             }
 
             return false;

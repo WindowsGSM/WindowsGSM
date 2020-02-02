@@ -13,6 +13,7 @@ namespace WindowsGSM.GameServer
         public string Notice;
 
         public const string FullName = "Counter-Strike: Global Offensive Dedicated Server";
+        public string StartPath = "srcds.exe";
         public bool ToggleConsole = false;
 
         public string port = "27015";
@@ -111,6 +112,11 @@ namespace WindowsGSM.GameServer
         {
             var steamCMD = new Installer.SteamCMD();
             return await steamCMD.GetRemoteBuild("740");
+        }
+
+        public string GetQueryPort()
+        {
+            return _serverData.ServerPort;
         }
     }
 }
