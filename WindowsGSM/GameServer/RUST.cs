@@ -73,15 +73,13 @@ namespace WindowsGSM.GameServer
 
             param += $" {additional}";
 
-            param.TrimEnd();
-
             Process p = new Process
             {
                 StartInfo =
                 {
                     WorkingDirectory = workingDir,
                     FileName = srcdsPath,
-                    Arguments = param,
+                    Arguments = param.TrimEnd()
                 },
                 EnableRaisingEvents = true
             };
