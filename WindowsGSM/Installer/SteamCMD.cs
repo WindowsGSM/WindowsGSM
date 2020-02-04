@@ -5,12 +5,14 @@ using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace WindowsGSM.Installer
 {
     class SteamCMD
     {
         private static readonly string _installPath = Path.Combine(MainWindow.WGSM_PATH, @"installer\steamcmd");
+        private static readonly string _userDataPath = Path.Combine(_installPath, "userData.txt");
         private string _param;
         public string Error;
 
@@ -51,16 +53,71 @@ namespace WindowsGSM.Installer
             return true;
         }
 
-        public void SetParameter(string steamUser, string steamPass, string installDir, string set_config, string appId, bool validate)
+        public static void CreateUserDataTxtIfNotExist()
         {
-            if (steamUser == null && steamPass == null)
+            if (!File.Exists(_userDataPath))
+            {
+                File.Create(_userDataPath).Dispose();
+
+                using (TextWriter textwriter = new StreamWriter(_userDataPath))
+                {
+                    textwriter.WriteLine("// For security and compatibility reasons, WindowsGSM suggests you to create a new steam account.");
+                    textwriter.WriteLine("// More info: (https://docs.windowsgsm.com/installer/steamcmd)");
+                    textwriter.WriteLine("// ");
+                    textwriter.WriteLine("// Username and password - No Steam Guard (Supported + Recommanded)");
+                    textwriter.WriteLine("// Username and password - Steam Guard via Email (Supported)");
+                    textwriter.WriteLine("// Username and password - Steam Guard via Smartphone (NOT Supported)");
+                    textwriter.WriteLine("// ");
+                    textwriter.WriteLine("steamUser=\"\"");
+                    textwriter.WriteLine("steamPass=\"\"");
+                }
+            }
+        }
+
+        public void SetParameter(string installDir, string set_config, string appId, bool validate, bool loginAnonymous = true)
+        {
+            if (loginAnonymous)
             {
                 _param = "+login anonymous";
             }
             else
             {
-                //REMARK: Not tested
-                _param = "+login " + steamUser + " " + steamPass;
+                string steamUser = null, steamPass = null;
+
+                if (File.Exists(_userDataPath))
+                {
+                    string[] lines = File.ReadAllLines(_userDataPath);
+
+                    foreach (string line in lines)
+                    {
+                        if (line[0] == '/' && line[1] == '/')
+                        {
+                            continue;
+                        }
+
+                        string[] keyvalue = line.Split(new char[] { '=' }, 2);
+                        if (keyvalue[0] == "steamUser")
+                        {
+                            steamUser = keyvalue[1].Trim('\"');
+                        }
+                        else if(keyvalue[0] == "steamPass")
+                        {
+                            steamPass = keyvalue[1].Trim('\"');
+                        }
+                    }
+                }
+                else
+                {
+                    CreateUserDataTxtIfNotExist();
+                }
+
+                if (string.IsNullOrWhiteSpace(steamUser) || string.IsNullOrWhiteSpace(steamUser))
+                {
+                    _param = null;
+                    return;
+                }
+
+                _param = $"+login \"{steamUser}\" \"{steamPass}\"";
             }
 
             _param += $" +force_install_dir \"{installDir}\"" + (String.IsNullOrWhiteSpace(set_config) ? "" : $" {set_config}") + $" +app_update {appId}" + (validate ? " validate" : "");
@@ -79,18 +136,25 @@ namespace WindowsGSM.Installer
 
         public async Task<Process> Run()
         {
-            string exePath = Path.Combine(_installPath, "steamcmd.exe");
+            string exeFile = "steamcmd.exe";
+            string exePath = Path.Combine(_installPath, exeFile);
             if (!File.Exists(exePath))
             {
                 //If steamcmd.exe not exists, download steamcmd.exe
                 if (!await Download())
                 {
-                    Error = "Fail to download steamcmd.exe";
+                    Error = $"Fail to download {exeFile}";
                     return null;
                 }
             }
 
-            WindowsFirewall firewall = new WindowsFirewall("steamcmd.exe", exePath);
+            if (_param == null)
+            {
+                Error = "Steam account is not set";
+                return null;
+            }
+
+            WindowsFirewall firewall = new WindowsFirewall(exeFile, exePath);
             if (!await firewall.IsRuleExist())
             {
                 firewall.AddRule();
@@ -100,10 +164,20 @@ namespace WindowsGSM.Installer
             {
                 StartInfo =
                 {
+                    WorkingDirectory = _installPath,
                     FileName = exePath,
-                    Arguments = _param,
-                    WindowStyle = ProcessWindowStyle.Minimized
-                }
+                    //FileName = "cmd.exe",
+                    Arguments = _param + " > log.txt",
+                    //Arguments = $"/c steamcmd.exe {_param}",
+                    WindowStyle = ProcessWindowStyle.Minimized,
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardInput = true,
+                    StandardOutputEncoding = System.Text.Encoding.UTF8,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                },
+                EnableRaisingEvents = true
             };
             p.Start();
 

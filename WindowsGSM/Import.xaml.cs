@@ -158,25 +158,14 @@ namespace WindowsGSM
                 //Create WindowsGSM.cfg
                 serverConfig.CreateWindowsGSMConfig(servergame, servername, serverConfig.GetIPAddress(), serverConfig.GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
 
-                MainWindow WindowsGSM = (MainWindow)System.Windows.Application.Current.MainWindow;
-
-                Functions.ServerTable row = new Functions.ServerTable
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
-                    ID = serverConfig.ServerID,
-                    Game = serverConfig.ServerGame,
-                    Icon = "/WindowsGSM;component/" + GameServer.Data.Icon.ResourceManager.GetString(servergame),
-                    Status = "Stopped",
-                    Name = serverConfig.ServerName,
-                    IP = serverConfig.ServerIP,
-                    Port = serverConfig.ServerPort,
-                    Defaultmap = serverConfig.ServerMap,
-                    Maxplayers = serverConfig.ServerMaxPlayer
-                };
-                WindowsGSM.ServerGrid.Items.Add(row);
-                WindowsGSM.LoadServerTable();
-                WindowsGSM.Log(serverConfig.ServerID, "Import: Success");
+                    MainWindow WindowsGSM = (MainWindow)System.Windows.Application.Current.MainWindow;
+                    WindowsGSM.LoadServerTable();
+                    WindowsGSM.Log(serverConfig.ServerID, "Import: Success");
 
-                Close();
+                    Close();
+                });
             }
             else
             {

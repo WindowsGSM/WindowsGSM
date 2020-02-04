@@ -121,15 +121,21 @@
     <value>7 Days to Die Dedicated Server</value>
   </data>
   <data name="10" xml:space="preserve">
-    <value>Minecraft: Pocket Edition Server (PocketMine-MP)</value>
+    <value>Minecraft: Java Edition Server</value>
   </data>
   <data name="11" xml:space="preserve">
-    <value>Mordhau Dedicated Server</value>
+    <value>Minecraft: Pocket Edition Server (PocketMine-MP)</value>
   </data>
   <data name="12" xml:space="preserve">
-    <value>Rust Dedicated Server</value>
+    <value>Mordhau Dedicated Server</value>
   </data>
   <data name="13" xml:space="preserve">
+    <value>Rust Dedicated Server</value>
+  </data>
+  <data name="14" xml:space="preserve">
+    <value>Space Engineers Dedicated Server</value>
+  </data>
+  <data name="15" xml:space="preserve">
     <value>Team Fortress 2 Dedicated Server</value>
   </data>
   <data name="2" xml:space="preserve">
@@ -142,18 +148,18 @@
     <value>Counter-Strike: Global Offensive Dedicated Server</value>
   </data>
   <data name="5" xml:space="preserve">
-    <value>Garry's Mod Dedicated Server</value>
+    <value>DayZ Dedicated Server</value>
   </data>
   <data name="6" xml:space="preserve">
-    <value>Grand Theft Auto V Dedicated Server (FiveM)</value>
+    <value>Garry's Mod Dedicated Server</value>
   </data>
   <data name="7" xml:space="preserve">
-    <value>Half-Life 2: Deathmatch Dedicated Server</value>
+    <value>Grand Theft Auto V Dedicated Server (FiveM)</value>
   </data>
   <data name="8" xml:space="preserve">
-    <value>Left 4 Dead 2 Dedicated Server</value>
+    <value>Half-Life 2: Deathmatch Dedicated Server</value>
   </data>
   <data name="9" xml:space="preserve">
-    <value>Minecraft: Java Edition Server</value>
+    <value>Left 4 Dead 2 Dedicated Server</value>
   </data>
 </root>

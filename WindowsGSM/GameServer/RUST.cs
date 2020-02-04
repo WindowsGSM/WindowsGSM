@@ -22,6 +22,7 @@ namespace WindowsGSM.GameServer
         public string Notice;
 
         public const string FullName = "Rust Dedicated Server";
+        public string StartPath = "RustDedicated.exe";
         public bool ToggleConsole = true;
 
         public string port = "28015";
@@ -38,7 +39,7 @@ namespace WindowsGSM.GameServer
         {
             //Download server.cfg
             string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, "server.cfg");
-            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName, "server.cfg"))
+            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string configText = File.ReadAllText(configPath);
                 configText = configText.Replace("{{hostname}}", _serverData.ServerName);
@@ -59,20 +60,20 @@ namespace WindowsGSM.GameServer
             string workingDir = Functions.Path.GetServerFiles(_serverData.ServerID);
             string srcdsPath = Path.Combine(workingDir, "RustDedicated.exe");
 
-            string param = $"-nographics -batchmode -silent-crashes +server.ip {_serverData.ServerIP} +server.port {_serverData.ServerPort} +server.level \"{_serverData.ServerMap}\" +server.maxplayers {_serverData.ServerMaxPlayer} ";
+            string param = $"-nographics -batchmode -silent-crashes";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? "" : $" +server.ip {_serverData.ServerIP}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" +server.port {_serverData.ServerPort}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : $" +server.level {_serverData.ServerMap}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? "" : $" +server.maxplayers {_serverData.ServerMaxPlayer}";
 
             foreach (string line in File.ReadLines(configPath))
             {
                 param += line + " ";
             }
 
-            param.TrimEnd();
+            param += $" {additional}";
 
-            WindowsFirewall firewall = new WindowsFirewall("RustDedicated.exe", srcdsPath);
-            if (!await firewall.IsRuleExist())
-            {
-                firewall.AddRule();
-            }
+            param.TrimEnd();
 
             Process p = new Process
             {
@@ -139,6 +140,11 @@ namespace WindowsGSM.GameServer
         {
             var steamCMD = new Installer.SteamCMD();
             return await steamCMD.GetRemoteBuild("258550");
+        }
+
+        public string GetQueryPort()
+        {
+            return _serverData.ServerPort;
         }
     }
 }

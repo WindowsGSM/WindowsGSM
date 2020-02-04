@@ -33,7 +33,7 @@
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_HardWareAcceleration" Header="Hardware Acceleration" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="HardWareAcceleration_IsCheckedChanged"/>
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_UIAnimation" Header="UI Animation" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="UIAnimation_IsCheckedChanged"/>
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_DarkTheme" Header="Dark Theme" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="DarkTheme_IsCheckedChanged"/>
-                    <Controls:ToggleSwitch x:Name="MahAppSwitch_StartOnBoot" Header="Start WindowsGSM on Boot" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="StartOnBoot_IsCheckedChanged"/>
+                    <Controls:ToggleSwitch x:Name="MahAppSwitch_StartOnBoot" Header="Start WindowsGSM on Login" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="StartOnLogin_IsCheckedChanged"/>
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_DonorTheme" Header="Donor Theme (Patreon)" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="DonorTheme_IsCheckedChanged"/>
                 </StackPanel>
             </Controls:Flyout>

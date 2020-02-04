@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WindowsGSM.GameServer
+﻿namespace WindowsGSM.GameServer
 {
     class ClassObject
     {
@@ -25,6 +19,8 @@ namespace WindowsGSM.GameServer
                 case (GTA5.FullName): return new GTA5(serverData);
                 case (_7DTD.FullName): return new _7DTD(serverData);
                 case (MORDHAU.FullName): return new MORDHAU(serverData);
+                case (SE.FullName): return new SE(serverData);
+                case (DAYZ.FullName): return new DAYZ(serverData);
                 default: return null;
             }
         }

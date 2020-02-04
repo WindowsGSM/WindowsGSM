@@ -54,12 +54,6 @@ namespace WindowsGSM.GameServer.Steam
                 return null;
             }
 
-            WindowsFirewall firewall = new WindowsFirewall("hlds.exe", hldsPath);
-            if (!await firewall.IsRuleExist())
-            {
-                firewall.AddRule();
-            }
-
             Process p = new Process
             {
                 StartInfo =
@@ -98,7 +92,7 @@ namespace WindowsGSM.GameServer.Steam
         public async Task<Process> Install(string appSetConfig, string appId)
         {
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(_serverId), $"+app_set_config {appSetConfig}", appId, true);
+            steamCMD.SetParameter(Functions.Path.GetServerFiles(_serverId), $"+app_set_config {appSetConfig}", appId, true);
 
             Process process = await steamCMD.Run();
             Error = steamCMD.Error;
@@ -109,7 +103,7 @@ namespace WindowsGSM.GameServer.Steam
         public async Task<bool> Update(string appSetConfig, string appId)
         {
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(null, null, Functions.Path.GetServerFiles(_serverId), $"+app_set_config {appSetConfig}", appId, false);
+            steamCMD.SetParameter(Functions.Path.GetServerFiles(_serverId), $"+app_set_config {appSetConfig}", appId, false);
 
             Process pSteamCMD = await steamCMD.Run();
             if (pSteamCMD == null)

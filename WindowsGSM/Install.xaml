@@ -5,12 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WindowsGSM.Installer"
         mc:Ignorable="d"
-        Title="WindowsGSM - Install" Height="200" Width="535" ResizeMode="CanMinimize">
+        Title="WindowsGSM - Install" Height="350" Width="535" ResizeMode="CanMinimize">
     <Grid>
         <Grid Height="10" Background="Coral" VerticalAlignment="Top"/>
 
-        <Label x:Name="label_game" Content="Game Server:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,24,0,0"/>
-        <ComboBox x:Name="comboBox" Margin="95,24,20,0" VerticalAlignment="Top">
+        <Label x:Name="label_game" Content="Game Server:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,23,0,0"/>
+        <ComboBox x:Name="comboBox" Margin="96,24,20,0" VerticalAlignment="Top">
             <ComboBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
@@ -23,8 +23,8 @@
         </ComboBox>
         <Label x:Name="label_gamewarn" Content="" HorizontalAlignment="Left" Margin="95,43,0,0" VerticalAlignment="Top"/>
 
-        <Label x:Name="label_name" Content="Server Name:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,72,0,0"/>
-        <TextBox x:Name="textbox_name" Height="23" Margin="95,72,20,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top"/>
+        <Label x:Name="label_name" Content="Server Name:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,70,0,0"/>
+        <TextBox x:Name="textbox_name" Height="23" Margin="96,72,20,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top"/>
         <Label x:Name="label_namewarn" Content="" HorizontalAlignment="Left" Margin="96,90,0,0" VerticalAlignment="Top"/>
 
         <Label x:Name="label_progress" Content="Status:" Margin="46,117,0,0" Height="26" VerticalAlignment="Top" HorizontalAlignment="Left" Width="45"/>
@@ -34,5 +34,12 @@
         </Grid>
 
         <Button x:Name="button_install" Content="Install" Margin="376,120,20,0" Click="Button_install_Click" Height="23" VerticalAlignment="Top"/>
+        <Label x:Name="label_installlog" Content="Install Log:" Margin="24,164,0,0" Height="26" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+        <TextBox x:Name="textbox_installlog" HorizontalAlignment="Left" Height="134" Margin="96,168,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="413" IsReadOnly="true"/>
+        
+        <Button x:Name="button_setaccount" Content="Set Account" HorizontalAlignment="Left" Margin="9,195,0,0" VerticalAlignment="Top" Width="81" Click="Button_SetAccount_Click"/>
+        <TextBox x:Name="textBox_token" HorizontalAlignment="Left" Height="23" Margin="9,248,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="81" MaxLines="1"/>
+        <Button x:Name="button_tokensend" Content="Send Token" HorizontalAlignment="Left" Margin="9,275,0,0" VerticalAlignment="Top" Width="81" Click="Button_SendToken_Click"/>
+        <Label x:Name="label" Content="Login Token" HorizontalAlignment="Left" Margin="13,224,0,0" VerticalAlignment="Top"/>
     </Grid>
 </Window>

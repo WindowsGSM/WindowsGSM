@@ -15,6 +15,7 @@ namespace WindowsGSM.GameServer
         public string Notice;
 
         public const string FullName = "Minecraft: Pocket Edition Server (PocketMine-MP)";
+        public string StartPath = @"bin\php\php.exe";
         public bool ToggleConsole = false;
 
         public string port = "19132";
@@ -31,7 +32,7 @@ namespace WindowsGSM.GameServer
         {
             //Download server.properties
             string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, "server.properties");
-            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName, "server.properties"))
+            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string configText = File.ReadAllText(configPath);
                 configText = configText.Replace("{{hostname}}", _serverData.ServerName);
@@ -65,12 +66,6 @@ namespace WindowsGSM.GameServer
             {
                 Error = $"server.properties not found ({serverConfigPath})";
                 return null;
-            }
-
-            WindowsFirewall firewall = new WindowsFirewall("php.exe", phpPath);
-            if (!await firewall.IsRuleExist())
-            {
-                firewall.AddRule();
             }
 
             Process p = new Process
@@ -179,6 +174,11 @@ namespace WindowsGSM.GameServer
             }
 
             return true;
+        }
+
+        public string GetQueryPort()
+        {
+            return _serverData.ServerPort;
         }
 
         public bool IsInstallValid()

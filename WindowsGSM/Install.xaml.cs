@@ -93,6 +93,8 @@ namespace WindowsGSM
             textblock_progress.Text = "Installing";
             button_install.Content = "Cancel Installation";
 
+            textbox_installlog.Text = "";
+
             string servername = textbox_name.Text;
             string servergame = selectedgame.Name;
 
@@ -104,7 +106,25 @@ namespace WindowsGSM
             if (pInstaller != null)
             {
                 //Wait installer exit. Example: steamcmd.exe
-                await Task.Run(() => pInstaller.WaitForExit());
+                await Task.Run(() =>
+                {
+                    var reader = pInstaller.StandardOutput;
+                    while (!reader.EndOfStream)
+                    {
+                        var nextLine = reader.ReadLine();
+                        if (nextLine.Contains("Logging in user "))
+                        {
+                            nextLine += System.Environment.NewLine + "Please send the Login Token:";
+                        }
+
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            textbox_installlog.AppendText(nextLine + System.Environment.NewLine);
+                        });
+                    }
+
+                    pInstaller?.WaitForExit();
+                });
             }
 
             if (gameServer.IsInstallValid())
@@ -113,28 +133,24 @@ namespace WindowsGSM
                 serverConfig.CreateWindowsGSMConfig(servergame, servername, serverConfig.GetIPAddress(), serverConfig.GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
 
                 //Create game server config
-                gameServer = GameServer.ClassObject.Get(servergame, serverConfig);
-                gameServer.CreateServerCFG();
-
-                MainWindow WindowsGSM = (MainWindow)System.Windows.Application.Current.MainWindow;
-
-                Functions.ServerTable row = new Functions.ServerTable
+                try
+                { 
+                    gameServer = GameServer.ClassObject.Get(servergame, serverConfig);
+                    gameServer.CreateServerCFG();
+                }
+                catch
                 {
-                    ID = serverConfig.ServerID,
-                    Game = serverConfig.ServerGame,
-                    Icon = "/WindowsGSM;component/" + GameServer.Data.Icon.ResourceManager.GetString(servergame),
-                    Status = "Stopped",
-                    Name = serverConfig.ServerName,
-                    IP = serverConfig.ServerIP,
-                    Port = serverConfig.ServerPort,
-                    Defaultmap = serverConfig.ServerMap,
-                    Maxplayers = serverConfig.ServerMaxPlayer
-                };
-                WindowsGSM.ServerGrid.Items.Add(row);
-                WindowsGSM.LoadServerTable();
-                WindowsGSM.Log(serverConfig.ServerID, "Install: Success");
 
-                Close();
+                }
+
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    MainWindow WindowsGSM = (MainWindow)System.Windows.Application.Current.MainWindow;
+                    WindowsGSM.LoadServerTable();
+                    WindowsGSM.Log(serverConfig.ServerID, "Install: Success");
+
+                    Close();
+                });
             }
             else
             {
@@ -153,6 +169,28 @@ namespace WindowsGSM
 
                 button_install.Content = "Install";
             }
+        }
+
+        private void Button_SetAccount_Click(object sender, RoutedEventArgs e)
+        {
+            Installer.SteamCMD.CreateUserDataTxtIfNotExist();
+
+            string userDataPath = Path.Combine(MainWindow.WGSM_PATH, @"installer\steamcmd\userData.txt");
+
+            if (File.Exists(userDataPath))
+            {
+                Process.Start("notepad.exe", userDataPath);
+            }
+        }
+
+        private void Button_SendToken_Click(object sender, RoutedEventArgs e)
+        {
+            if (pInstaller != null)
+            {
+                pInstaller.StandardInput.WriteLine(textBox_token.Text);
+            }
+
+            textBox_token.Text = "";
         }
     }
 }

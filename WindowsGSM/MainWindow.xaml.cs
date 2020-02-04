@@ -57,7 +57,7 @@ namespace WindowsGSM
             Deleting = 12
         }
 
-        public static readonly string WGSM_VERSION = "v1.8.2";
+        public static readonly string WGSM_VERSION = "v1.9.0";
         public static readonly int MAX_SERVER = 100;
         public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
 
@@ -216,6 +216,12 @@ namespace WindowsGSM
                     continue;
                 }
 
+                //If Game server not exist return
+                if (GameServer.ClassObject.Get(serverConfig.ServerGame, null) == null)
+                {
+                    continue;
+                }
+
                 string status;
                 switch (g_iServerStatus[i])
                 {
@@ -242,7 +248,7 @@ namespace WindowsGSM
 
                 try
                 {
-                    var row = new Functions.ServerTable
+                    var server = new Functions.ServerTable
                     {
                         ID = i.ToString(),
                         Game = serverConfig.ServerGame,
@@ -255,13 +261,13 @@ namespace WindowsGSM
                         Maxplayers = serverConfig.ServerMaxPlayer
                     };
 
-                    ServerGrid.Items.Add(row);
+                    ServerGrid.Items.Add(server);
 
                     if (selectedrow != null)
                     {
-                        if (selectedrow.ID == row.ID)
+                        if (selectedrow.ID == server.ID)
                         {
-                            ServerGrid.SelectedItem = row;
+                            ServerGrid.SelectedItem = server;
                         }
                     }
 
@@ -274,7 +280,7 @@ namespace WindowsGSM
                 }
                 catch
                 {
-                    continue;
+
                 }
             }
 
@@ -537,6 +543,7 @@ namespace WindowsGSM
                 return;
             }
 
+            g_DiscordWebhook[Int32.Parse(server.ID)] = webhookUrl;
             Functions.ServerConfig.SetDiscordWebhookUrl(server.ID, webhookUrl);
         }
 
@@ -797,6 +804,19 @@ namespace WindowsGSM
         private async Task<dynamic> Server_BeginStart(Functions.ServerTable server)
         {
             dynamic gameServer = GameServer.ClassObject.Get(server.Game, new Functions.ServerConfig(server.ID));
+            if (gameServer == null) { return null; }
+
+            //Add Start File to WindowsFirewall before start
+            string startPath = Functions.Path.GetServerFiles(server.ID, gameServer.StartPath);
+            if (!string.IsNullOrWhiteSpace(gameServer.StartPath))
+            {
+                WindowsFirewall firewall = new WindowsFirewall(Path.GetFileName(startPath), startPath);
+                if (!await firewall.IsRuleExist())
+                {
+                    firewall.AddRule();
+                }
+            }  
+
             Process p = await gameServer.Start();
 
             //Fail to start
@@ -868,7 +888,7 @@ namespace WindowsGSM
 
             for (int i = 0; i < 10; i++)
             {
-                if (p.HasExited) { return true; }
+                if (p.HasExited) { break; }
                 await Task.Delay(1000);
             }
 
@@ -1084,7 +1104,7 @@ namespace WindowsGSM
 
             //Remove firewall rule
             var firewall = new WindowsFirewall(null, Functions.Path.Get(server.ID));
-            await firewall.RemoveRuleEx();
+            firewall.RemoveRuleEx();
 
             string serverPath = WGSM_PATH + @"\servers\" + server.ID;
 
@@ -1117,6 +1137,9 @@ namespace WindowsGSM
             }
 
             Log(server.ID, "Server: Deleted server");
+
+            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
+            SetServerStatus(server, "Stopped");
 
             LoadServerTable();
 
@@ -1461,7 +1484,7 @@ namespace WindowsGSM
             ThemeManager.ChangeAppTheme(App.Current, (MahAppSwitch_DarkTheme.IsChecked ?? false) ? "BaseDark" : "BaseLight");
         }
 
-        private void StartOnBoot_IsCheckedChanged(object sender, EventArgs e)
+        private void StartOnLogin_IsCheckedChanged(object sender, EventArgs e)
         {
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
             if (key != null)
@@ -1684,6 +1707,9 @@ namespace WindowsGSM
                 return;
             }
 
+            dynamic gameServer = GameServer.ClassObject.Get(row.Game, new Functions.ServerConfig(row.ID));
+            string queryPort = gameServer.GetQueryPort();
+
             string publicIP = GetPublicIP();
             if (publicIP == null)
             {
@@ -1691,8 +1717,8 @@ namespace WindowsGSM
                 return;
             }
 
-            string messageText = $"Server Name: {row.Name}\nPublic IP: {publicIP}\nServer Port: {row.Port}";
-            if (Tools.GlobalServerList.IsServerOnSteamServerList(publicIP, row.Port))
+            string messageText = $"Server Name: {row.Name}\nPublic IP: {publicIP}\nQuery Port: {queryPort}";
+            if (Tools.GlobalServerList.IsServerOnSteamServerList(publicIP, queryPort))
             {
                 System.Windows.MessageBox.Show(messageText + "\n\nResult: Online\n\nYour server is on the global server list!", "Global Server List Check", MessageBoxButton.OK, MessageBoxImage.Information);
             }

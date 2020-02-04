@@ -97,6 +97,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/dayz.png.
+        /// </summary>
+        public static string DayZ_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("DayZ Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/gmod.png.
         /// </summary>
         public static string Garry_s_Mod_Dedicated_Server {
@@ -165,6 +174,15 @@ namespace WindowsGSM.GameServer.Data {
         public static string Rust_Dedicated_Server {
             get {
                 return ResourceManager.GetString("Rust Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/se.png.
+        /// </summary>
+        public static string Space_Engineers_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Space Engineers Dedicated Server", resourceCulture);
             }
         }
         

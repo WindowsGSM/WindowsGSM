@@ -12,15 +12,13 @@ namespace WindowsGSM.GameServer
 {
     class MC
     {
-        [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
-
         private readonly Functions.ServerConfig _serverData;
 
         public string Error;
         public string Notice;
 
         public const string FullName = "Minecraft: Java Edition Server";
+        public string StartPath = "";
         public bool ToggleConsole = false;
 
         public string port = "25565";
@@ -44,7 +42,7 @@ namespace WindowsGSM.GameServer
         {
             //Create server.properties
             string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, "server.properties");
-            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName, "server.properties"))
+            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string serverPort = _serverData.GetAvailablePort(this.port.ToString());
                 string configText = File.ReadAllText(configPath);
@@ -340,6 +338,11 @@ namespace WindowsGSM.GameServer
 
             Error = $"Fail to get remote build";
             return "";
+        }
+
+        public string GetQueryPort()
+        {
+            return _serverData.ServerPort;
         }
 
         private Java IsJavaJREInstalled()

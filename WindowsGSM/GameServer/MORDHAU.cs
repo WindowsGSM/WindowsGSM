@@ -28,6 +28,7 @@ namespace WindowsGSM.GameServer
         public string Notice;
 
         public const string FullName = "Mordhau Dedicated Server";
+        public string StartPath = @"Mordhau\Binaries\Win64\MordhauServer-Win64-Shipping.exe";
         public bool ToggleConsole = true;
 
         public string port = "7777";
@@ -80,7 +81,7 @@ namespace WindowsGSM.GameServer
             }
 
             //Download Game.ini
-            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName, "Game.ini"))
+            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string configText = File.ReadAllText(configPath);
                 configText = configText.Replace("{{hostname}}", _serverData.ServerName);
@@ -142,7 +143,7 @@ namespace WindowsGSM.GameServer
                 {
                     StartInfo =
                     {
-                        WorkingDirectory = Functions.Path.GetServerFiles(_serverData.ServerID),
+                        //WorkingDirectory = Functions.Path.GetServerFiles(_serverData.ServerID),
                         FileName = shipExePath,
                         Arguments = param,
                         WindowStyle = ProcessWindowStyle.Minimized,
@@ -157,7 +158,7 @@ namespace WindowsGSM.GameServer
                 {
                     StartInfo =
                     {
-                        WorkingDirectory = Functions.Path.GetServerFiles(_serverData.ServerID),
+                        //WorkingDirectory = Functions.Path.GetServerFiles(_serverData.ServerID),
                         FileName = shipExePath,
                         Arguments = param,
                         WindowStyle = ProcessWindowStyle.Hidden,
@@ -239,6 +240,46 @@ namespace WindowsGSM.GameServer
         {
             var steamCMD = new Installer.SteamCMD();
             return await steamCMD.GetRemoteBuild("629800");
+        }
+
+        public string GetQueryPort()
+        {
+            string configFile = Functions.Path.GetConfigs(_serverData.ServerID, "WindowsGSM.cfg");
+
+            //Get -QueryPort value in serverparam
+            if (File.Exists(configFile))
+            {
+                string[] lines = File.ReadAllLines(configFile);
+
+                foreach (string line in lines)
+                {
+                    Debug.WriteLine(line);
+
+                    string[] keyvalue = line.Split(new char[] { '=' }, 2);
+                    if (keyvalue.Length == 2)
+                    {
+                        if ("serverparam" == keyvalue[0])
+                        {
+                            string param = keyvalue[1].Trim('\"');
+                            string[] settings = param.Split(' ');
+
+                            foreach (string setting in settings)
+                            {
+                                string[] key = setting.Split(new char[] { '=' }, 2);
+                                if (key.Length == 2)
+                                {
+                                    if ("-QueryPort" == key[0])
+                                    {
+                                        return key[1];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }

@@ -38,6 +38,7 @@ namespace WindowsGSM.GameServer
         public string Notice;
 
         public const string FullName = "7 Days to Die Dedicated Server";
+        public string StartPath = "7DaysToDieServer.exe";
         public bool ToggleConsole = true;
 
         public string port = "26900";
@@ -54,7 +55,7 @@ namespace WindowsGSM.GameServer
         {
             //Download serverconfig.xml
             string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, "serverconfig.xml");
-            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName, "serverconfig.xml"))
+            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string configText = File.ReadAllText(configPath);
                 configText = configText.Replace("{{hostname}}", hostname);
@@ -175,6 +176,11 @@ namespace WindowsGSM.GameServer
         {
             var steamCMD = new Installer.SteamCMD();
             return await steamCMD.GetRemoteBuild("294420");
+        }
+
+        public string GetQueryPort()
+        {
+            return _serverData.ServerPort;
         }
     }
 }

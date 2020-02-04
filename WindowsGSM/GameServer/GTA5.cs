@@ -20,6 +20,7 @@ namespace WindowsGSM.GameServer
         public string Notice;
 
         public const string FullName = "Grand Theft Auto V Dedicated Server (FiveM)";
+        public string StartPath = @"server\FXServer.exe";
         public bool ToggleConsole = false;
 
         public string port = "30120";
@@ -36,7 +37,7 @@ namespace WindowsGSM.GameServer
         {
             //Download server.cfg
             string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, @"cfx-server-data-master\server.cfg");
-            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName, "server.cfg"))
+            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string configText = File.ReadAllText(configPath);
                 configText = configText.Replace("{{hostname}}", _serverData.ServerName);
@@ -49,7 +50,7 @@ namespace WindowsGSM.GameServer
 
             //Download sample logo
             string logoPath = Functions.Path.GetServerFiles(_serverData.ServerID, @"cfx-server-data-master\myLogo.png");
-            await Functions.Github.DownloadGameServerConfig(logoPath, FullName, @"cfx-server-data-master\myLogo.png");
+            await Functions.Github.DownloadGameServerConfig(logoPath, FullName);
         }
 
         public async Task<Process> Start()
@@ -79,12 +80,6 @@ namespace WindowsGSM.GameServer
             if (!File.Exists(configPath))
             {
                 Notice = $"server.cfg not found ({configPath})";
-            }
-
-            WindowsFirewall firewall = new WindowsFirewall("FXServer.exe", fxServerPath);
-            if (!await firewall.IsRuleExist())
-            {
-                firewall.AddRule();
             }
 
             Process p = new Process
@@ -272,6 +267,11 @@ namespace WindowsGSM.GameServer
 
             Error = $"Fail to get remote build";
             return "";
+        }
+
+        public string GetQueryPort()
+        {
+            return _serverData.ServerPort;
         }
     }
 }

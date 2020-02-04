@@ -44,7 +44,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>0</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -154,6 +154,7 @@
     <Compile Include="GameServer\L4D2.cs" />
     <Compile Include="GameServer\MC.cs" />
     <Compile Include="GameServer\MORDHAU.cs" />
+    <Compile Include="GameServer\SE.cs" />
     <Compile Include="GameServer\Steam\HLDS.cs" />
     <Compile Include="GameServer\Steam\SRCDS.cs" />
     <Compile Include="Tools\GlobalServerList.cs" />
@@ -342,6 +343,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Games\mordhau.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\dayz.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\se.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

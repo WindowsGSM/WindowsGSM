@@ -30,7 +30,7 @@ namespace WindowsGSM.GameServer
         {
             //Download server.cfg
             string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, @"left4dead2\cfg\server.cfg");
-            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName, "server.cfg"))
+            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string configText = File.ReadAllText(configPath);
                 configText = configText.Replace("{{hostname}}", _serverData.ServerName);

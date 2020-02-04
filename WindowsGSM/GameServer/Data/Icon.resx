@@ -129,6 +129,9 @@
   <data name="Counter-Strike: Global Offensive Dedicated Server" xml:space="preserve">
     <value>Images/Games/csgo.png</value>
   </data>
+  <data name="DayZ Dedicated Server" xml:space="preserve">
+    <value>Images/Games/dayz.png</value>
+  </data>
   <data name="Garry's Mod Dedicated Server" xml:space="preserve">
     <value>Images/Games/gmod.png</value>
   </data>
@@ -152,6 +155,9 @@
   </data>
   <data name="Rust Dedicated Server" xml:space="preserve">
     <value>Images/Games/rust.png</value>
+  </data>
+  <data name="Space Engineers Dedicated Server" xml:space="preserve">
+    <value>Images/Games/se.png</value>
   </data>
   <data name="Team Fortress 2 Dedicated Server" xml:space="preserve">
     <value>Images/Games/tf2.png</value>
