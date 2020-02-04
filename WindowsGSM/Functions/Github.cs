@@ -7,7 +7,7 @@ namespace WindowsGSM.Functions
 {
     //Link: https://github.com/WindowsGSM/Game-Server-Configs
 
-    class Github
+    static class Github
     {
         public static async Task<bool> DownloadGameServerConfig(string filePath, string gameFullName)
         {

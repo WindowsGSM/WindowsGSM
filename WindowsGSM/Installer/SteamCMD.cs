@@ -111,7 +111,7 @@ namespace WindowsGSM.Installer
                     CreateUserDataTxtIfNotExist();
                 }
 
-                if (string.IsNullOrWhiteSpace(steamUser) || string.IsNullOrWhiteSpace(steamUser))
+                if (string.IsNullOrWhiteSpace(steamUser) || string.IsNullOrWhiteSpace(steamPass))
                 {
                     _param = null;
                     return;

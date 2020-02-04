@@ -241,7 +241,7 @@ namespace WindowsGSM.GameServer
                         packageUrl = obj["url"].ToString();
                         break;
                     }
-                };
+                }
 
                 if (packageUrl == null)
                 {
@@ -345,7 +345,7 @@ namespace WindowsGSM.GameServer
             return _serverData.ServerPort;
         }
 
-        private Java IsJavaJREInstalled()
+        private static Java IsJavaJREInstalled()
         {
             try
             {
@@ -405,9 +405,32 @@ namespace WindowsGSM.GameServer
             try
             {
                 WebClient webClient = new WebClient();
+
                 //Run jre-8u231-windows-i586-iftw.exe to install Java
-                webClient.DownloadFileCompleted += InstallJavaJRE;
-                webClient.DownloadFileAsync(new Uri(installer), jrePath);
+                await webClient.DownloadFileTaskAsync(installer, jrePath);
+                string installPath = Functions.Path.GetServerFiles(_serverData.ServerID);
+                string javaPath = @"C:\Program Files (x86)\Java\jre1.8.0_231";
+                ProcessStartInfo psi = new ProcessStartInfo(jrePath);
+                psi.WorkingDirectory = installPath;
+                psi.Arguments = $"INSTALL_SILENT=Enable INSTALLDIR=\"{javaPath}\"";
+                Process p = new Process
+                {
+                    StartInfo = psi,
+                    EnableRaisingEvents = true
+                };
+                p.Start();
+                p.Exited += (object sender, EventArgs e) => 
+                {
+                    try
+                    {
+                        //Delete the jre-8u231-windows-i586-iftw.exe after installation
+                        File.Delete(jrePath);
+                    }
+                    catch
+                    {
+                        //Ignore
+                    }
+                };      
             }
             catch
             {
@@ -415,56 +438,7 @@ namespace WindowsGSM.GameServer
                 return false;
             }
 
-            //Wait until Java is installed
-            while (true)
-            {
-                //Check jre-8u231-windows-i586-iftw.exe is deleted
-                if (!File.Exists(jrePath))
-                {
-                    break;
-                }
-
-                await Task.Delay(1000);
-            }
-
             return true;
-        }
-
-        private async void InstallJavaJRE(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
-        {
-            string installPath = Functions.Path.GetServerFiles(_serverData.ServerID);
-            string filename = "jre-8u231-windows-i586-iftw.exe";
-            string jrePath = Path.Combine(installPath, filename);
-            string javaPath = @"C:\Program Files (x86)\Java\jre1.8.0_231";
-
-            if (File.Exists(jrePath))
-            {
-                ProcessStartInfo psi = new ProcessStartInfo(jrePath);
-                psi.WorkingDirectory = installPath;
-                psi.Arguments = $"INSTALL_SILENT=Enable INSTALLDIR=\"{javaPath}\"";
-                Process p = Process.Start(psi);
-
-                //Delete the jre-8u231-windows-i586-iftw.exe after installation
-                await Task.Run(() =>
-                {
-                    while (File.Exists(jrePath)) 
-                    {
-                        if (p.HasExited)
-                        {
-                            try
-                            {
-                                File.Delete(jrePath);
-                            }
-                            catch
-                            {
-
-                            }
-                        }
-
-                        Task.Delay(1000);
-                    }
-                });
-            }
         }
 
         private void InitiateServerJar(object sender, System.ComponentModel.AsyncCompletedEventArgs e)

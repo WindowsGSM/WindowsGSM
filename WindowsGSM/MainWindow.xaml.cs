@@ -179,7 +179,7 @@ namespace WindowsGSM
             AutoStartServer();
         }
 
-        private bool IsMahAppsMetroDllExist()
+        private static bool IsMahAppsMetroDllExist()
         {
             string mahappsPath = Path.Combine(WGSM_PATH, "MahApps.Metro.dll");
             return File.Exists(mahappsPath);
@@ -430,7 +430,7 @@ namespace WindowsGSM
             if (InstallWindow == null && ImportWindow == null)
             {
                 InstallWindow = new Install();
-                InstallWindow.Closed += new EventHandler(InstallWindow_Closed);
+                InstallWindow.Closed += (object s, EventArgs arg) => { InstallWindow = null; };
 
                 //Add games to ComboBox
                 int i = 0;
@@ -462,17 +462,12 @@ namespace WindowsGSM
             }
         }
 
-        private void InstallWindow_Closed(object sender, EventArgs e)
-        {
-            InstallWindow = null;
-        }
-
         private void Import_Click(object sender, RoutedEventArgs e)
         {
             if (InstallWindow == null && ImportWindow == null)
             {
                 ImportWindow = new Import();
-                ImportWindow.Closed += new EventHandler(ImportWindow_Closed);
+                ImportWindow.Closed += (object s, EventArgs arg) => { ImportWindow = null; };
 
                 //Add games to ComboBox
                 int i = 0;
@@ -502,11 +497,6 @@ namespace WindowsGSM
                     ImportWindow.WindowState = WindowState.Normal;
                 }
             }
-        }
-
-        private void ImportWindow_Closed(object sender, EventArgs e)
-        {
-            ImportWindow = null;
         }
 
         private async void Delete_Click(object sender, RoutedEventArgs e)
@@ -1428,6 +1418,11 @@ namespace WindowsGSM
             {
                 Process.Start(path);
             }
+        }
+
+        private void Button_Website_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("https://windowsgsm.com/");
         }
 
         private void Button_Discord_Click(object sender, RoutedEventArgs e)

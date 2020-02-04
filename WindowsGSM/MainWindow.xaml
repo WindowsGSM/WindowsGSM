@@ -19,6 +19,7 @@
 
     <Controls:MetroWindow.RightWindowCommands>
         <Controls:WindowCommands>
+            <Button x:Name="button_Website" Content="Website" Click="Button_Website_Click"/>
             <Button x:Name="button_Discord" Content="Discord" Click="Button_Discord_Click"/>
             <Button x:Name="button_Patreon" Content="Patreon" Click="Button_Patreon_Click"/>
             <Button x:Name="button_Settings" Content="Settings" Click="Button_Settings_Click"/>

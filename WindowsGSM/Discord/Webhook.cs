@@ -81,7 +81,7 @@ namespace WindowsGSM.Discord
             return false;
         }
 
-        private string GetColor(string serverStatus)
+        private static string GetColor(string serverStatus)
         {
             switch (serverStatus)
             {
@@ -89,12 +89,11 @@ namespace WindowsGSM.Discord
                 case "Stopped": return "16755200"; //Orange
                 case "Restarted": return "65535"; //Cyan
                 case "Crashed": return "16711680"; //Red
-                default:
-                    return "16777215";
+                default: return "16777215";
             }
         }
 
-        private string GetStatusWithEmoji(string serverStatus)
+        private static string GetStatusWithEmoji(string serverStatus)
         {
             switch (serverStatus)
             {
@@ -102,12 +101,11 @@ namespace WindowsGSM.Discord
                 case "Stopped": return $"{serverStatus} :octagonal_sign:";
                 case "Restarted": return $"{serverStatus} :arrows_counterclockwise:";
                 case "Crashed": return $"{serverStatus} :warning:";
-                default:
-                    return serverStatus;
+                default: return serverStatus;
             }
         }
 
-        private string GetServerGameIcon(string serverGame)
+        private static string GetServerGameIcon(string serverGame)
         {
             try
             {
@@ -121,17 +119,7 @@ namespace WindowsGSM.Discord
 
         private string GetAvatarUrl()
         {
-            string avatarUrl = "https://github.com/BattlefieldDuck/WindowsGSM/raw/master/WindowsGSM/Images/WindowsGSM";
-            switch (_donorType)
-            {
-                case "BRONZE":
-                case "GOLD":
-                case "EMERALD":
-                    avatarUrl += $"-{_donorType}";
-                    break;
-            }
-
-            return $"{avatarUrl}.png";
+            return "https://github.com/BattlefieldDuck/WindowsGSM/raw/master/WindowsGSM/Images/WindowsGSM" + (string.IsNullOrWhiteSpace(_donorType) ? "" : $"-{_donorType}") + ".png";
         }
     }
 }

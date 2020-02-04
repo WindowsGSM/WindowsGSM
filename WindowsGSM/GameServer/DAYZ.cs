@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace WindowsGSM.GameServer
 {
@@ -32,7 +34,7 @@ namespace WindowsGSM.GameServer
         public string port = "2302";
         public string defaultmap = "dayzOffline.chernarusplus";
         public string maxplayers = "60";
-        public string additional = "-dologs -adminlog -netlog";
+        public string additional = "-doLogs -adminLog -netLog";
 
         public DAYZ(Functions.ServerConfig serverData)
         {
@@ -57,10 +59,11 @@ namespace WindowsGSM.GameServer
             string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, "serverDZ.cfg");
             if (!File.Exists(configPath))
             {
-                Notice = $"{Path.GetFileName(configPath)} not found ({configPath})";
+                Error = $"{Path.GetFileName(configPath)} not found ({configPath})";
+                return null;
             }
 
-            string param = "-config=serverDZ.cfg";
+            string param = $"DayZServer_x64.exe -config=serverDZ.cfg";
             param += string.IsNullOrEmpty(_serverData.ServerPort) ? "" : $" -port {_serverData.ServerPort}";
             param += $" {_serverData.ServerParam}";
 
@@ -68,9 +71,10 @@ namespace WindowsGSM.GameServer
             {
                 StartInfo =
                 {
+                    WorkingDirectory = Functions.Path.GetServerFiles(_serverData.ServerID),
                     FileName = Functions.Path.GetServerFiles(_serverData.ServerID, StartPath),
                     Arguments = param,
-                    WindowStyle = ProcessWindowStyle.Hidden
+                    WindowStyle = ProcessWindowStyle.Minimized
                 },
                 EnableRaisingEvents = true
             };
@@ -83,14 +87,7 @@ namespace WindowsGSM.GameServer
         {
             await Task.Run(() =>
             {
-                if (ToggleConsole)
-                {
-                    p.CloseMainWindow();
-                }
-                else
-                {
-                    p.Kill();
-                }
+                p.Kill();
             });
         }
 

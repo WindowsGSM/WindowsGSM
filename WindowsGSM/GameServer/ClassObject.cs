@@ -1,6 +1,6 @@
 ﻿namespace WindowsGSM.GameServer
 {
-    class ClassObject
+    static class ClassObject
     {
         public static dynamic Get(string serverGame, Functions.ServerConfig serverData)
         {
