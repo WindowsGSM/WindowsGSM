@@ -2,7 +2,7 @@
 
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/BattlefieldDuck/WindowsGSM/)
 [![Build status](https://ci.appveyor.com/api/projects/status/ttaomnayo3gidf2g?svg=true)](https://ci.appveyor.com/project/BattlefieldDuck/windowsgsm)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/02a105dad6a34de6a15ff1f7fd7ee423)](https://app.codacy.com/app/BattlefieldDuck/WindowsGSM?utm_source=github.com&utm_medium=referral&utm_content=BattlefieldDuck/WindowsGSM&utm_campaign=Badge_Grade_Dashboard)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/35390bff1d4140da806eaff186cfbf5c)](https://www.codacy.com/gh/WindowsGSM/WindowsGSM?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=WindowsGSM/WindowsGSM&amp;utm_campaign=Badge_Grade)
 [![GitHub license](https://img.shields.io/github/license/BattlefieldDuck/WindowsGSM.svg)](https://github.com/BattlefieldDuck/WindowsGSM/blob/master/LICENSE)
 [![GitHub release](https://img.shields.io/github/release/BattlefieldDuck/WindowsGSM.svg)](https://github.com/BattlefieldDuck/WindowsGSM/releases/)
 [![Github all releases](https://img.shields.io/github/downloads/BattlefieldDuck/WindowsGSM/total.svg)](https://github.com/BattlefieldDuck/WindowsGSM/releases/)
@@ -30,20 +30,20 @@ WindowsGSM is powerful tool to manage game servers and gives server admins keep 
 | ![logo](WindowsGSM/Images/Games/tf2.png?raw=true)    | Team Fortress 2 Dedicated Server                  |✅|
 
 ### ⭐ Features
-* 📥 One Click Installation
-* 💾 One Click Backup and Restore
-* ⚠️ Server Crash Detection
-* 📲 Discord Alert
-* 💌 Allows Import game servers to WindowsGSM
+  * 📥 One Click Installation
+  * 💾 One Click Backup and Restore
+  * ⚠️ Server Crash Detection
+  * 📲 Discord Alert
+  * 💌 Allows Import game servers to WindowsGSM
 
 ### Documentation
-* Website: (https://docs.windowsgsm.com/)
-* Github: (https://github.com/WindowsGSM/Documentation)
+  * Website: <https://docs.windowsgsm.com/>
+  * Github: <https://github.com/WindowsGSM/Documentation>
 
 ### Authors & Credits
-* **TatLead** - *Initial work* - [BattlefieldDuck](https://github.com/BattlefieldDuck)
-* **! AssaultLine** - *Mordhau server test*
-* **Dennis** - *Mordhau server test*
+  * **TatLead** - *Initial work* - [BattlefieldDuck](https://github.com/BattlefieldDuck)
+  * **! AssaultLine** - *Mordhau server test*
+  * **Dennis** - *Mordhau server test*
 
 ### License
 This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/BattlefieldDuck/WindowsGSM/blob/master/LICENSE) file for details
