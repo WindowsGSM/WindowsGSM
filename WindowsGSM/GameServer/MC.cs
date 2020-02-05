@@ -44,7 +44,7 @@ namespace WindowsGSM.GameServer
             string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, "server.properties");
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
-                string serverPort = _serverData.GetAvailablePort(this.port.ToString());
+                string serverPort = _serverData.GetAvailablePort(this.port);
                 string configText = File.ReadAllText(configPath);
                 configText = configText.Replace("{{serverPort}}", serverPort);
                 configText = configText.Replace("{{maxplayers}}", maxplayers);
@@ -169,7 +169,7 @@ namespace WindowsGSM.GameServer
                         packageUrl = obj["url"].ToString();
                         break;
                     }
-                };
+                }
 
                 if (packageUrl == null)
                 {
@@ -215,7 +215,7 @@ namespace WindowsGSM.GameServer
                 }
                 catch
                 {
-
+                    //ignore
                 }
             }
 
@@ -333,7 +333,7 @@ namespace WindowsGSM.GameServer
             }
             catch
             {
-
+                //ignore
             }
 
             Error = $"Fail to get remote build";

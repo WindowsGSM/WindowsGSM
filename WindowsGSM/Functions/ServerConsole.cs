@@ -14,7 +14,7 @@ namespace WindowsGSM.Functions
         private static readonly int MAX_LINE = 50;
         private readonly ArrayList _arrayList = new ArrayList(MAX_LINE);
         private readonly string _serverId;
-        private static int _lineNumber = 0;
+        private int _lineNumber = 0;
 
         public ServerConsole(string serverId)
         {

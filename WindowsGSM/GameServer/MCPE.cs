@@ -242,7 +242,7 @@ namespace WindowsGSM.GameServer
             }
             catch
             {
-
+                //ignore
             }
 
             Error = $"Fail to get remote build";

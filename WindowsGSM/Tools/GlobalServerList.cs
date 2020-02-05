@@ -3,7 +3,7 @@ using System.Net;
 
 namespace WindowsGSM.Tools
 {
-    class GlobalServerList
+    static class GlobalServerList
     {
         public static bool IsServerOnSteamServerList(string publicIP, string port)
         {
@@ -28,7 +28,7 @@ namespace WindowsGSM.Tools
                 }
                 catch
                 {
-
+                    //ignore
                 }
             }
 
