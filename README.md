@@ -44,6 +44,7 @@ WindowsGSM is powerful tool to manage game servers and gives server admins keep 
 
 ### Authors & Credits
   * **TatLead** - *Initial work* - [BattlefieldDuck](https://github.com/BattlefieldDuck)
+  * **Deathreus** - *Code optimization* - [Deathreus](https://github.com/Deathreus)
   * **! AssaultLine** - *Mordhau server test*
   * **Dennis** - *Mordhau server test*
 
