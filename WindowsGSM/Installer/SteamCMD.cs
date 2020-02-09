@@ -18,10 +18,7 @@ namespace WindowsGSM.Installer
 
         public SteamCMD()
         {
-            if (!Directory.Exists(_installPath))
-            {
-                Directory.CreateDirectory(_installPath);
-            }
+            Directory.CreateDirectory(_installPath);
         }
 
         private async Task<bool> Download()

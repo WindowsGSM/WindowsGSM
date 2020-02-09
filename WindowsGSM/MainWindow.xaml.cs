@@ -17,8 +17,6 @@ using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
-using System.Management;
-using System.Collections.Generic;
 using NCrontab;
 
 namespace WindowsGSM
@@ -60,7 +58,7 @@ namespace WindowsGSM
             Deleting = 12
         }
 
-        public static readonly string WGSM_VERSION = "v1.10.0";
+        public static readonly string WGSM_VERSION = "v1.10.1";
         public static readonly int MAX_SERVER = 100;
         public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
 
@@ -1819,7 +1817,10 @@ namespace WindowsGSM
 
                 if (result.ToString().Equals("Affirmative"))
                 {
-                    string filePath = Path.Combine(MainWindow.WGSM_PATH, "installer", "WindowsGSM-Updater.exe");
+                    string installPath = Path.Combine(WGSM_PATH, "installer");
+                    Directory.CreateDirectory(installPath);
+
+                    string filePath = Path.Combine(installPath, "WindowsGSM-Updater.exe");
 
                     if (!File.Exists(filePath))
                     {
@@ -1851,7 +1852,7 @@ namespace WindowsGSM
                         {
                             StartInfo =
                             {
-                                WorkingDirectory = Path.Combine(MainWindow.WGSM_PATH, "installer"),
+                                WorkingDirectory = installPath,
                                 FileName = filePath,
                                 Arguments = "-autostart -forceupdate"
                             }
