@@ -1,4 +1,4 @@
-![Screenshot](https://windowsgsm.com/assets/images/WindowsGSM-v1.9.0.png)
+![Screenshot](https://windowsgsm.com/assets/images/WindowsGSM-v1.10.0.png)
 
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/BattlefieldDuck/WindowsGSM/)
 [![Build status](https://ci.appveyor.com/api/projects/status/ttaomnayo3gidf2g?svg=true)](https://ci.appveyor.com/project/BattlefieldDuck/windowsgsm)
@@ -22,9 +22,11 @@ WindowsGSM is powerful tool to manage game servers and gives server admins keep 
 | ![logo](WindowsGSM/Images/Games/gta5.png?raw=true)   | Grand Theft Auto V Dedicated Server ([FiveM](https://github.com/citizenfx/fivem))|✅|
 | ![logo](WindowsGSM/Images/Games/hl2dm.png?raw=true)  | Half-Life 2: Deathmatch Dedicated Server          |✅|
 | ![logo](WindowsGSM/Images/Games/l4d2.png?raw=true)   | Left 4 Dead 2 Dedicated Server                    |✅|
+| ![logo](WindowsGSM/Images/Games/mcbe.png?raw=true)   | Minecraft: Bedrock Edition Server                 |✅|
 | ![logo](WindowsGSM/Images/Games/mc.png?raw=true)     | Minecraft: Java Edition Server                    |✅|
 | ![logo](WindowsGSM/Images/Games/mcpe.png?raw=true)   | Minecraft: Pocket Edition Server ([PocketMine-MP](https://github.com/pmmp/PocketMine-MP)) |✅|
 | ![logo](WindowsGSM/Images/Games/mordhau.png?raw=true)| Mordhau Dedicated Server                          |✅|
+| ![logo](WindowsGSM/Images/Games/olow.png?raw=true)   |Outlaws of the Old West Dedicated Server           |✅|
 | ![logo](WindowsGSM/Images/Games/rust.png?raw=true)   | Rust Dedicated Server                             |✅|
 | ![logo](WindowsGSM/Images/Games/se.png?raw=true)     | Space Engineers Dedicated Server                  |✅|
 | ![logo](WindowsGSM/Images/Games/tf2.png?raw=true)    | Team Fortress 2 Dedicated Server                  |✅|
