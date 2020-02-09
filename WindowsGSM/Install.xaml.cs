@@ -173,7 +173,8 @@ namespace WindowsGSM
 
         private void Button_SetAccount_Click(object sender, RoutedEventArgs e)
         {
-            Installer.SteamCMD.CreateUserDataTxtIfNotExist();
+            var steamCMD = new Installer.SteamCMD();
+            steamCMD.CreateUserDataTxtIfNotExist();
 
             string userDataPath = Path.Combine(MainWindow.WGSM_PATH, @"installer\steamcmd\userData.txt");
 

@@ -53,7 +53,7 @@ namespace WindowsGSM.Installer
             return true;
         }
 
-        public static void CreateUserDataTxtIfNotExist()
+        public void CreateUserDataTxtIfNotExist()
         {
             if (!File.Exists(_userDataPath))
             {
