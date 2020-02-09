@@ -97,7 +97,7 @@ namespace WindowsGSM.GameServer
                 configText = configText.Replace("{{beaconport}}", (Int32.Parse(_serverData.ServerPort) + 7223).ToString());
                 configText = configText.Replace("{{queryport}}", (Int32.Parse(_serverData.ServerPort) + 19238).ToString());
                 File.WriteAllText(configFile, configText);
-            }     
+            }
         }
 
         public async Task<Process> Start()
@@ -143,7 +143,6 @@ namespace WindowsGSM.GameServer
                 {
                     StartInfo =
                     {
-                        //WorkingDirectory = Functions.Path.GetServerFiles(_serverData.ServerID),
                         FileName = shipExePath,
                         Arguments = param,
                         WindowStyle = ProcessWindowStyle.Minimized,
@@ -158,7 +157,6 @@ namespace WindowsGSM.GameServer
                 {
                     StartInfo =
                     {
-                        //WorkingDirectory = Functions.Path.GetServerFiles(_serverData.ServerID),
                         FileName = shipExePath,
                         Arguments = param,
                         WindowStyle = ProcessWindowStyle.Hidden,

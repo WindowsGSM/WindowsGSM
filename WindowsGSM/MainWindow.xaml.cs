@@ -17,6 +17,9 @@ using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
+using System.Management;
+using System.Collections.Generic;
+using NCrontab;
 
 namespace WindowsGSM
 {
@@ -57,7 +60,7 @@ namespace WindowsGSM
             Deleting = 12
         }
 
-        public static readonly string WGSM_VERSION = "v1.9.0";
+        public static readonly string WGSM_VERSION = "v1.10.0";
         public static readonly int MAX_SERVER = 100;
         public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
 
@@ -77,6 +80,9 @@ namespace WindowsGSM
 
         private static readonly bool[] g_bDiscordAlert = new bool[MAX_SERVER + 1];
         private static readonly string[] g_DiscordWebhook = new string[MAX_SERVER + 1];
+
+        private static readonly bool[] g_bRestartCrontab = new bool[MAX_SERVER + 1];
+        private static readonly string[] g_CrontabFormat = new string[MAX_SERVER + 1];
 
         private static string g_DonorType = "";
 
@@ -169,6 +175,32 @@ namespace WindowsGSM
                 g_ServerConsoles[i] = new Functions.ServerConsole(i.ToString());
             }
 
+            //LINQ query for windowsgsm old processes
+            var processes = (from p in Process.GetProcesses()
+                             where ((Predicate<Process>)(p_ =>
+                             {
+                                try
+                                {
+                                    return p_.MainModule.FileName.Contains(Path.Combine(WGSM_PATH, "servers"));
+                                }
+                                catch
+                                {
+                                    return false;
+                                }
+                             }))(p)
+                             select p).ToList();
+
+            // Kill all old processes
+            foreach (var process in processes)
+            {
+                string path = process.MainModule.FileName.Replace(Path.Combine(WGSM_PATH, "servers"), "").Substring(1);
+
+                if (Int32.TryParse(path.Split(Path.DirectorySeparatorChar).First(), out int serverId))
+                {
+                    process.Kill();
+                }
+            }
+            
             LoadServerTable();
 
             if (ServerGrid.Items.Count > 0)
@@ -277,6 +309,8 @@ namespace WindowsGSM
                     g_bUpdateOnStart[i] = serverConfig.UpdateOnStart;
                     g_bDiscordAlert[i] = serverConfig.DiscordAlert;
                     g_DiscordWebhook[i] = serverConfig.DiscordWebhook;
+                    g_bRestartCrontab[i] = serverConfig.RestartCrontab;
+                    g_CrontabFormat[i] = serverConfig.CrontabFormat;
                 }
                 catch
                 {
@@ -403,8 +437,7 @@ namespace WindowsGSM
 
                 button_Status.Content = row.Status.ToUpper();
                 button_Status.Background = (g_iServerStatus[Int32.Parse(row.ID)] == ServerStatus.Started) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Orange;
-                textBox_ServerGame.Text = row.Game;
-
+               
                 button_autorestart.Content = (g_bAutoRestart[Int32.Parse(row.ID)]) ? "TRUE" : "FALSE";
                 button_autorestart.Background = (g_bAutoRestart[Int32.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
 
@@ -420,6 +453,11 @@ namespace WindowsGSM
                 button_discordalert.Content = (g_bDiscordAlert[Int32.Parse(row.ID)]) ? "TRUE" : "FALSE";
                 button_discordalert.Background = (g_bDiscordAlert[Int32.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
                 button_discordtest.IsEnabled = (g_bDiscordAlert[Int32.Parse(row.ID)]) ? true : false;
+
+                button_restartcrontab.Content = (g_bRestartCrontab[Int32.Parse(row.ID)]) ? "TRUE" : "FALSE";
+                button_restartcrontab.Background = (g_bRestartCrontab[Int32.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
+                textBox_restartcrontab.Text = g_CrontabFormat[Int32.Parse(row.ID)];
+                textBox_nextcrontab.Text = CrontabSchedule.TryParse(g_CrontabFormat[Int32.Parse(row.ID)])?.GetNextOccurrence(DateTime.Now).ToString("ddd, MM/dd/yyyy HH:mm:ss");
 
                 Functions.ServerConsole.Refresh(row.ID);
             }
@@ -517,7 +555,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            string webhookUrl = Functions.ServerConfig.GetDiscordWebhookUrl(server.ID);
+            string webhookUrl = Functions.ServerConfig.GetSetting(server.ID, "discordwebhook");
 
             var settings = new MetroDialogSettings
             {
@@ -534,7 +572,7 @@ namespace WindowsGSM
             }
 
             g_DiscordWebhook[Int32.Parse(server.ID)] = webhookUrl;
-            Functions.ServerConfig.SetDiscordWebhookUrl(server.ID, webhookUrl);
+            Functions.ServerConfig.SetSetting(server.ID, "discordwebhook", webhookUrl);
         }
 
         private async void Button_DiscordWebhookTest_Click(object sender, RoutedEventArgs e)
@@ -634,7 +672,7 @@ namespace WindowsGSM
             if (!Functions.ServerConsole.IsToggleable(server.Game)) { return; }
 
             IntPtr hWnd = p.MainWindowHandle;
-            ShowWindow(hWnd, (ShowWindow(hWnd, WindowShowStyle.Hide)) ? (WindowShowStyle.Hide) : (WindowShowStyle.ShowNormal));
+            ShowWindow(hWnd, ShowWindow(hWnd, WindowShowStyle.Hide) ? WindowShowStyle.Hide : WindowShowStyle.ShowNormal);
         }
 
         private async void Actions_Update_Click(object sender, RoutedEventArgs e)
@@ -866,6 +904,8 @@ namespace WindowsGSM
 
             StartAutoUpdateCheck(server);
 
+            StartRestartCrontabCheck(server);
+
             return gameServer;
         }
 
@@ -972,6 +1012,10 @@ namespace WindowsGSM
             Log(server.ID, "Action: Backup");
             SetServerStatus(server, "Backuping");
 
+            //End All Running Process
+            await EndAllRunningProcess(server.ID);
+            await Task.Delay(1000);
+
             string startPath = WGSM_PATH + @"\servers\" + server.ID;
             string zipPath = WGSM_PATH + @"\backups\" + server.ID;
             string zipFile = zipPath + @"\backup-id-" + server.ID + ".zip";
@@ -1043,6 +1087,10 @@ namespace WindowsGSM
                 return false;
             }
 
+            //End All Running Process
+            await EndAllRunningProcess(server.ID);
+            await Task.Delay(1000);
+
             if (Directory.Exists(extractPath))
             {
                 await Task.Run(() =>
@@ -1066,7 +1114,6 @@ namespace WindowsGSM
                 }
             }
 
-            //Begin backup
             g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Restoring;
             Log(server.ID, "Action: Restore Backup");
             SetServerStatus(server, "Restoring");
@@ -1096,6 +1143,10 @@ namespace WindowsGSM
             var firewall = new WindowsFirewall(null, Functions.Path.Get(server.ID));
             firewall.RemoveRuleEx();
 
+            //End All Running Process
+            await EndAllRunningProcess(server.ID);
+            await Task.Delay(1000);
+
             string serverPath = WGSM_PATH + @"\servers\" + server.ID;
 
             await Task.Run(() =>
@@ -1113,7 +1164,7 @@ namespace WindowsGSM
                 }
             });
 
-            await Task.Delay(100);
+            await Task.Delay(1000);
 
             if (Directory.Exists(serverPath))
             {
@@ -1279,6 +1330,105 @@ namespace WindowsGSM
             }
         }
 
+        private async void StartRestartCrontabCheck(Functions.ServerTable server)
+        {
+            int serverId = Int32.Parse(server.ID);
+
+            //Save the process of game server
+            Process p = g_Process[serverId];
+
+            while (!p.HasExited)
+            {
+                //If not enable return
+                if (!g_bRestartCrontab[serverId])
+                {
+                    await Task.Delay(1000);
+
+                    continue;
+                }
+
+                //Try get next DataTime restart
+                DateTime? crontabTime = CrontabSchedule.TryParse(g_CrontabFormat[serverId])?.GetNextOccurrence(DateTime.Now);
+
+                //Delay 1 second for later compare
+                await Task.Delay(1000);
+
+                //Return if crontab expression is invalid 
+                if (crontabTime == null) { continue; }
+
+                //If now >= crontab time
+                if (DateTime.Compare(DateTime.Now, crontabTime ?? DateTime.Now) >= 0)
+                {
+                    //Update the next crontab
+                    var currentRow = (Functions.ServerTable)ServerGrid.SelectedItem;
+                    if (currentRow.ID == server.ID)
+                    {
+                        textBox_nextcrontab.Text = CrontabSchedule.TryParse(g_CrontabFormat[serverId])?.GetNextOccurrence(DateTime.Now).ToString("ddd, MM/dd/yyyy HH:mm:ss");
+                    }
+
+                    if (p.HasExited)
+                    {
+                        break;
+                    }
+
+                    //Restart the server
+                    if (g_iServerStatus[serverId] == ServerStatus.Started)
+                    {
+                        g_Process[Int32.Parse(server.ID)] = null;
+
+                        //Begin Restart
+                        g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Restarting;
+                        Log(server.ID, "Action: Restart");
+                        SetServerStatus(server, "Restarting");
+
+                        await Server_BeginStop(server, p);
+                        var gameServer = await Server_BeginStart(server);
+                        if (gameServer == null) { return; }
+
+                        g_iServerStatus[Int32.Parse(server.ID)] = (int)ServerStatus.Started;
+                        Log(server.ID, "Server: Restarted | Restart Crontab");
+                        if (!string.IsNullOrWhiteSpace(gameServer.Notice))
+                        {
+                            Log(server.ID, "[Notice] " + gameServer.Notice);
+                        }
+                        SetServerStatus(server, "Started");
+
+                        if (g_bDiscordAlert[Int32.Parse(server.ID)])
+                        {
+                            var webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)], g_DonorType);
+                            await webhook.Send(server.ID, server.Game, "Restarted | Restart Crontab", server.Name, server.IP, server.Port);
+                        }
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        private async Task EndAllRunningProcess(string serverId)
+        {
+            //LINQ query for windowsgsm old processes
+            var processes = (from p in Process.GetProcesses()
+                             where ((Predicate<Process>)(p_ =>
+                             {
+                                 try
+                                 {
+                                     return p_.MainModule.FileName.Contains(Path.Combine(WGSM_PATH, "servers", serverId));
+                                 }
+                                 catch
+                                 {
+                                     return false;
+                                 }
+                             }))(p)
+                             select p).ToList();
+
+            // Kill all processes
+            foreach (var process in processes)
+            {
+                process.Kill();
+            }
+        }
+
         private void SetServerStatus(Functions.ServerTable server, string status)
         {
             server.Status = status;
@@ -1335,7 +1485,6 @@ namespace WindowsGSM
             g_ServerConsoles[Int32.Parse(server.ID)].Clear();
             console.Clear();
         }
-
 
         private void Button_ClearWGSMLog_Click(object sender, RoutedEventArgs e)
         {
@@ -1505,6 +1654,7 @@ namespace WindowsGSM
             }
         }
 
+        #region Donor Theme
         private async void DonorTheme_IsCheckedChanged(object sender, EventArgs e)
         {
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
@@ -1513,6 +1663,7 @@ namespace WindowsGSM
             if (!MahAppSwitch_DonorTheme.IsChecked ?? false)
             {
                 SetDonorTheme();
+                Title = $"WindowsGSM {WGSM_VERSION}";
                 key.SetValue("DonorTheme", (MahAppSwitch_DonorTheme.IsChecked ?? false).ToString());
                 key.Close();
                 return;
@@ -1631,7 +1782,9 @@ namespace WindowsGSM
                 notifyIcon.Icon = new System.Drawing.Icon(iconStream);
             }
         }
+        #endregion
 
+        #region Menu - Help
         private void Help_OnlineDocumentation_Click(object sender, RoutedEventArgs e)
         {
             Process.Start("https://docs.windowsgsm.com");
@@ -1642,28 +1795,80 @@ namespace WindowsGSM
             Process.Start("https://github.com/BattlefieldDuck/WindowsGSM/issues");
         }
 
-        private void Help_CheckForUpdate_Click(object sender, RoutedEventArgs e)
+        private async void Help_SoftwareUpdates_Click(object sender, RoutedEventArgs e)
         {
-            string messageText = "Your WindowsGSM is up to date.";
+            ProgressDialogController controller = await this.ShowProgressAsync("Checking updates...", "Please wait...");
+            controller.SetIndeterminate();
+            string latestVersion = await GetLatestVersion();
+            await controller.CloseAsync();
 
-            string latestVersion = GetLatestVersion();
-            if (latestVersion != WGSM_VERSION)
+            if (latestVersion == WGSM_VERSION)
             {
-                messageText = "A new version of WindowsGSM is available, would you like to browse the release page?";
-
-                MessageBoxResult result = System.Windows.MessageBox.Show("Current version: " + WGSM_VERSION + "\nLatest version: " + latestVersion + "\n\n" + messageText, "Check for Update", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (result == MessageBoxResult.Yes)
-                {
-                    Process.Start("https://github.com/BattlefieldDuck/WindowsGSM/releases");
-                }
+                await this.ShowMessageAsync("Software Updates", "WindowsGSM is up to date.");
+                return;
             }
             else
             {
-                System.Windows.MessageBox.Show("Current version: " + WGSM_VERSION + "\nLatest version: " + latestVersion + "\n\n" + messageText, "Check for Update", MessageBoxButton.OK, MessageBoxImage.Information);
+                var settings = new MetroDialogSettings
+                {
+                    AffirmativeButtonText = "Update",
+                    DefaultButtonFocus = MessageDialogResult.Affirmative
+                };
+
+                var result = await this.ShowMessageAsync("Software Updates", $"Version {latestVersion} is available, would you like to update now?\n\nWarning: All servers will be shutdown!", MessageDialogStyle.AffirmativeAndNegative, settings);
+
+                if (result.ToString().Equals("Affirmative"))
+                {
+                    string filePath = Path.Combine(MainWindow.WGSM_PATH, "installer", "WindowsGSM-Updater.exe");
+
+                    if (!File.Exists(filePath))
+                    {
+                        //Download WindowsGSM-Updater.exe
+                        controller = await this.ShowProgressAsync("Downloading WindowsGSM-Updater...", "Please wait...");
+                        controller.SetIndeterminate();
+                        bool success = await DownloadWindowsGSMUpdater();
+                        await controller.CloseAsync();
+                    }
+
+                    if (File.Exists(filePath))
+                    {
+                        //Kill all the server
+                        for (int i = 0; i <= MAX_SERVER; i++)
+                        {
+                            if (g_Process[i] == null)
+                            {
+                                continue;
+                            }
+
+                            if (!g_Process[i].HasExited)
+                            {
+                                g_Process[i].Kill();
+                            }
+                        }
+
+                        //Run WindowsGSM-Updater.exe
+                        Process updater = new Process
+                        {
+                            StartInfo =
+                            {
+                                WorkingDirectory = Path.Combine(MainWindow.WGSM_PATH, "installer"),
+                                FileName = filePath,
+                                Arguments = "-autostart -forceupdate"
+                            }
+                        };
+                        updater.Start();
+
+                        Close();
+                    }
+                    else
+                    {
+                        await this.ShowMessageAsync("Software Updates", $"Fail to download WindowsGSM-Updater.exe");
+                    }
+                }
             }
         }
 
-        private string GetLatestVersion()
+        private async Task<string> GetLatestVersion()
         {
             var webRequest = System.Net.WebRequest.Create("https://api.github.com/repos/BattlefieldDuck/WindowsGSM/releases/latest") as HttpWebRequest;
             if (webRequest != null)
@@ -1674,7 +1879,8 @@ namespace WindowsGSM
 
                 try
                 {
-                    using (var responseReader = new StreamReader(webRequest.GetResponse().GetResponseStream()))
+                    var response = await webRequest.GetResponseAsync();
+                    using (var responseReader = new StreamReader(response.GetResponseStream()))
                     {
                         string json = responseReader.ReadToEnd();
                         string version = JObject.Parse(json)["tag_name"].ToString();
@@ -1684,12 +1890,49 @@ namespace WindowsGSM
                 }
                 catch
                 {
-                    return null;
+                    //ignore
                 }
             }
 
             return null;
         }
+
+        private async Task<bool> DownloadWindowsGSMUpdater()
+        {
+            string filePath = Path.Combine(MainWindow.WGSM_PATH, "installer", "WindowsGSM-Updater.exe");
+
+            try
+            {
+                using (WebClient webClient = new WebClient())
+                {
+                    await webClient.DownloadFileTaskAsync("https://github.com/WindowsGSM/WindowsGSM-Updater/releases/latest/download/WindowsGSM-Updater.exe", filePath);
+                }
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine($"Github.WindowsGSM-Updater.exe {e}");
+            }
+
+            return File.Exists(filePath);
+        }
+
+        private async void Help_AboutWindowsGSM_Click(object sender, RoutedEventArgs e)
+        {
+            var settings = new MetroDialogSettings
+            {
+                AffirmativeButtonText = "Patreon",
+                NegativeButtonText = "Ok",
+                DefaultButtonFocus = MessageDialogResult.Negative                
+            };
+
+            var result = await this.ShowMessageAsync("About WindowsGSM", $"Product:\t\tWindowsGSM\nVersion:\t\t{WGSM_VERSION.Substring(1)}\nCreator:\t\tTatLead\n\nIf you like WindowsGSM, consider becoming a Patron!", MessageDialogStyle.AffirmativeAndNegative, settings);
+
+            if (result.ToString() == "Affirmative")
+            {
+                Process.Start("https://www.patreon.com/WindowsGSM/");
+            }
+        }
+        #endregion
 
         private void Tools_GlobalServerListCheck_Click(object sender, RoutedEventArgs e)
         {
@@ -1768,6 +2011,17 @@ namespace WindowsGSM
             notifyIcon.Visible = true;
         }
 
+        #region Left Buttom Grid
+        private void Button_RestartCrontab_Click(object sender, RoutedEventArgs e)
+        {
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
+
+            g_bRestartCrontab[Int32.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "restartcrontab");
+            button_restartcrontab.Content = (g_bRestartCrontab[Int32.Parse(server.ID)]) ? "TRUE" : "FALSE";
+            button_restartcrontab.Background = (g_bRestartCrontab[Int32.Parse(server.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
+        }
+
         private void Button_AutoRestart_Click(object sender, RoutedEventArgs e)
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
@@ -1818,5 +2072,34 @@ namespace WindowsGSM
             button_discordalert.Background = (g_bDiscordAlert[Int32.Parse(server.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
             button_discordtest.IsEnabled = (g_bDiscordAlert[Int32.Parse(server.ID)]) ? true : false;
         }
+
+        private async void Button_CrontabEdit_Click(object sender, RoutedEventArgs e)
+        {
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
+
+            string crontabFormat = Functions.ServerConfig.GetSetting(server.ID, "crontabformat");
+
+            var settings = new MetroDialogSettings
+            {
+                AffirmativeButtonText = "Save",
+                DefaultText = crontabFormat
+            };
+
+            crontabFormat = await this.ShowInputAsync("Crontab Format", "Please enter the crontab expressions", settings);
+
+            //If pressed cancel or key is null or whitespace
+            if (string.IsNullOrWhiteSpace(crontabFormat))
+            {
+                return;
+            }
+
+            g_CrontabFormat[Int32.Parse(server.ID)] = crontabFormat;
+            Functions.ServerConfig.SetSetting(server.ID, "crontabformat", crontabFormat);
+
+            textBox_restartcrontab.Text = crontabFormat;
+            textBox_nextcrontab.Text = CrontabSchedule.TryParse(crontabFormat)?.GetNextOccurrence(DateTime.Now).ToString("ddd, MM/dd/yyyy HH:mm:ss");
+        }
+        #endregion
     }
 }

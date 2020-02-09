@@ -21,6 +21,8 @@
                 case (MORDHAU.FullName): return new MORDHAU(serverData);
                 case (SE.FullName): return new SE(serverData);
                 case (DAYZ.FullName): return new DAYZ(serverData);
+                case (MCBE.FullName): return new MCBE(serverData);
+                case (OLOW.FullName): return new OLOW(serverData);
                 default: return null;
             }
         }

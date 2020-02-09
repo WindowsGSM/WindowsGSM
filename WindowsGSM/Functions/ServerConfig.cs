@@ -22,6 +22,8 @@ namespace WindowsGSM.Functions
         public bool UpdateOnStart;
         public bool DiscordAlert;
         public string DiscordWebhook;
+        public bool RestartCrontab;
+        public string CrontabFormat;
 
         public ServerConfig(string serverid)
         {
@@ -80,6 +82,8 @@ namespace WindowsGSM.Functions
                             case "updateonstart": UpdateOnStart = (keyvalue[1] == "1") ? true : false; break;
                             case "discordalert": DiscordAlert = (keyvalue[1] == "1") ? true : false; break;
                             case "discordwebhook": DiscordWebhook = keyvalue[1]; break;
+                            case "restartcrontab": RestartCrontab = (keyvalue[1] == "1") ? true : false; break;
+                            case "crontabformat": CrontabFormat = keyvalue[1]; break;
                         }
                     }
                 }
@@ -93,28 +97,6 @@ namespace WindowsGSM.Functions
             string configpath = Functions.Path.GetConfigs(ServerID, "WindowsGSM.cfg");
             if (!File.Exists(configpath))
             {
-                File.Create(configpath).Dispose();
-
-                using (TextWriter textwriter = new StreamWriter(configpath))
-                {
-                    textwriter.WriteLine("servergame=\"" + servergame + "\"");
-                    textwriter.WriteLine("servername=\"" + servername + "\"");
-                    textwriter.WriteLine("serverip=\"" + serverip + "\"");
-                    textwriter.WriteLine("serverport=\"" + serverport + "\"");
-                    textwriter.WriteLine("servermap=\"" + servermap + "\"");
-                    textwriter.WriteLine("servermaxplayer=\"" + servermaxplayer + "\"");
-                    textwriter.WriteLine("servergslt=\"" + servergslt + "\"");
-                    textwriter.WriteLine("serverparam=\"" + serverparam + "\"");
-                    textwriter.WriteLine("");
-                    textwriter.WriteLine("autorestart=\"0\"");
-                    textwriter.WriteLine("autostart=\"0\"");
-                    textwriter.WriteLine("autoupdate=\"0\"");
-                    textwriter.WriteLine("updateonstart=\"0\"");
-                    textwriter.WriteLine("");
-                    textwriter.WriteLine("discordalert=\"0\"");
-                    textwriter.WriteLine("discordwebhook=\"\"");
-                }
-
                 ServerGame = servergame;
                 ServerName = servername;
                 ServerIP = serverip;
@@ -129,6 +111,33 @@ namespace WindowsGSM.Functions
                 UpdateOnStart = false;
                 DiscordAlert = false;
                 DiscordWebhook = "";
+                RestartCrontab = false;
+                CrontabFormat = "0 6 * * *";
+
+                File.Create(configpath).Dispose();
+
+                using (TextWriter textwriter = new StreamWriter(configpath))
+                {
+                    textwriter.WriteLine($"servergame=\"{ServerGame}\"");
+                    textwriter.WriteLine($"servername=\"{ServerName}\"");
+                    textwriter.WriteLine($"serverip=\"{ServerIP}\"");
+                    textwriter.WriteLine($"serverport=\"{ServerPort}\"");
+                    textwriter.WriteLine($"servermap=\"{ServerMap}\"");
+                    textwriter.WriteLine($"servermaxplayer=\"{ServerMaxPlayer}\"");
+                    textwriter.WriteLine($"servergslt=\"{ServerGSLT}\"");
+                    textwriter.WriteLine($"serverparam=\"{ServerParam}\"");
+                    textwriter.WriteLine("");
+                    textwriter.WriteLine("autorestart=\"0\"");
+                    textwriter.WriteLine("autostart=\"0\"");
+                    textwriter.WriteLine("autoupdate=\"0\"");
+                    textwriter.WriteLine("updateonstart=\"0\"");
+                    textwriter.WriteLine("");
+                    textwriter.WriteLine("discordalert=\"0\"");
+                    textwriter.WriteLine($"discordwebhook=\"{DiscordWebhook}\"");
+                    textwriter.WriteLine("");
+                    textwriter.WriteLine("restartcrontab=\"0\"");
+                    textwriter.WriteLine($"crontabformat=\"{CrontabFormat}\"");
+                }
 
                 return true;
             }
@@ -284,7 +293,7 @@ namespace WindowsGSM.Functions
             return false;
         }
 
-        public static string GetDiscordWebhookUrl(string serverId)
+        public static string GetSetting(string serverId, string settingName)
         {
             string configFile = Path.GetConfigs(serverId, "WindowsGSM.cfg");
 
@@ -299,7 +308,7 @@ namespace WindowsGSM.Functions
                     string[] keyvalue = line.Split(new char[] { '=' }, 2);
                     if (keyvalue.Length == 2)
                     {
-                        if ("discordwebhook" == keyvalue[0])
+                        if (settingName == keyvalue[0])
                         {
                             return keyvalue[1].Trim('\"');
                         }
@@ -310,7 +319,7 @@ namespace WindowsGSM.Functions
             return "";
         }
 
-        public static void SetDiscordWebhookUrl(string serverId, string webhookUrl)
+        public static void SetSetting(string serverId, string settingName, string data)
         {
             string configFile = Path.GetConfigs(serverId, "WindowsGSM.cfg");
 
@@ -331,9 +340,9 @@ namespace WindowsGSM.Functions
                     foreach (string line in lines)
                     {
                         string[] keyvalue = line.Split(new char[] { '=' }, 2);
-                        if (keyvalue.Length == 2 && "discordwebhook" == keyvalue[0])
+                        if (keyvalue.Length == 2 && settingName == keyvalue[0])
                         {
-                            textwriter.WriteLine($"discordwebhook=\"{webhookUrl}\"");
+                            textwriter.WriteLine($"{settingName}=\"{data}\"");
                             saved = true;
                         }
                         else
@@ -344,7 +353,7 @@ namespace WindowsGSM.Functions
 
                     if (!saved)
                     {
-                        textwriter.WriteLine($"discordwebhook=\"{webhookUrl}\"");
+                        textwriter.WriteLine($"{settingName}=\"{data}\"");
                     }
                 }
             }

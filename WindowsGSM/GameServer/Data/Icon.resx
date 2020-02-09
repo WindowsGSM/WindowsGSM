@@ -144,6 +144,9 @@
   <data name="Left 4 Dead 2 Dedicated Server" xml:space="preserve">
     <value>Images/Games/l4d2.png</value>
   </data>
+  <data name="Minecraft: Bedrock Edition Server" xml:space="preserve">
+    <value>Images/Games/mcbe.png</value>
+  </data>
   <data name="Minecraft: Java Edition Server" xml:space="preserve">
     <value>Images/Games/mc.png</value>
   </data>
@@ -152,6 +155,9 @@
   </data>
   <data name="Mordhau Dedicated Server" xml:space="preserve">
     <value>Images/Games/mordhau.png</value>
+  </data>
+  <data name="Outlaws of the Old West Dedicated Server" xml:space="preserve">
+    <value>Images/Games/olow.png</value>
   </data>
   <data name="Rust Dedicated Server" xml:space="preserve">
     <value>Images/Games/rust.png</value>

@@ -142,6 +142,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/mcbe.png.
+        /// </summary>
+        public static string Minecraft__Bedrock_Edition_Server {
+            get {
+                return ResourceManager.GetString("Minecraft: Bedrock Edition Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/mc.png.
         /// </summary>
         public static string Minecraft__Java_Edition_Server {
@@ -165,6 +174,15 @@ namespace WindowsGSM.GameServer.Data {
         public static string Mordhau_Dedicated_Server {
             get {
                 return ResourceManager.GetString("Mordhau Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/olow.png.
+        /// </summary>
+        public static string Outlaws_of_the_Old_West_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Outlaws of the Old West Dedicated Server", resourceCulture);
             }
         }
         

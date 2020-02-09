@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using System.Collections;
+using System.Linq;
 
 namespace WindowsGSM.GameServer
 {
@@ -29,7 +31,7 @@ namespace WindowsGSM.GameServer
         public bool ToggleConsole = false;
 
         public string port = "27016";
-        public string defaultmap = "";
+        public string defaultmap = "WindowsGSM_World";
         public string maxplayers = "4";
         public string additional = "";
 
@@ -41,23 +43,46 @@ namespace WindowsGSM.GameServer
         public async void CreateServerCFG()
         {
             /*
-             * The configs is created under %APPDATA% points to C:\Users\(Username)\AppData\Roaming\ 
+             * The configs is created under %APPDATA% points to C:\Users\(Username)\AppData\Roaming\  Environment.GetEnvironmentVariable("APPDATA")
              */
+
+            /*
+            string serverFilePath = Functions.Path.GetServerFiles(_serverData.ServerID);
+            Directory.CreateDirectory(Path.Combine(serverFilePath, "Instance"));
+            Directory.CreateDirectory(Path.Combine(serverFilePath, "Instance", "cache"));
+            Directory.CreateDirectory(Path.Combine(serverFilePath, "Instance", "Mods"));
+            Directory.CreateDirectory(Path.Combine(serverFilePath, "Instance", "Saves"));
+
+            string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, "Instance", "SpaceEngineers-Dedicated.cfg");
+            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
+            {
+                string configText = File.ReadAllText(configPath);
+                configText = configText.Replace("{{maxplayers}}", maxplayers);
+                configText = configText.Replace("{{LoadWorld}}", Path.Combine(serverFilePath, "Instance", "Saves", defaultmap));
+                configText = configText.Replace("{{ip}}", _serverData.ServerIP);
+                configText = configText.Replace("{{port}}", _serverData.GetAvailablePort(port));
+                configText = configText.Replace("{{ServerName}}", _serverData.ServerName);
+                configText = configText.Replace("{{WorldName}}", defaultmap);
+                File.WriteAllText(configPath, configText);
+            }
+            */
         }
 
         public async Task<Process> Start()
         {
+            /*
             string configFile = "SpaceEngineers-Dedicated.cfg";
             string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, "Config", configFile);
             if (!File.Exists(configPath))
             {
                 Notice = $"{configFile} not found ({configPath})";
             }
+            */
 
             string param = (ToggleConsole ? "-console" : "-noconsole") + " -ignorelastsession";
             param += (string.IsNullOrEmpty(_serverData.ServerIP)) ? "" : $" -ip {_serverData.ServerIP}";
             param += (string.IsNullOrEmpty(_serverData.ServerPort)) ? "" : $" -port {_serverData.ServerPort}";
-            param += $" {_serverData.ServerParam} -config server.cfg";
+            param += $" {_serverData.ServerParam}";
 
             Process p = new Process
             {
@@ -76,7 +101,11 @@ namespace WindowsGSM.GameServer
             /*
              * I had tried to change APPDATA value but fail... seems there is no way to change config dir...
              */
-            //p.StartInfo.EnvironmentVariables["APPDATA"] = Functions.Path.GetServerFiles(_serverData.ServerID, "Config");
+            //Environment.CurrentDirectory = Functions.Path.GetServerFiles(_serverData.ServerID, "Instance");
+            //Environment.SetEnvironmentVariable("APPDATA", Functions.Path.GetServerFiles(_serverData.ServerID, "Instance"), EnvironmentVariableTarget.User);
+            //Environment.appdata
+            //p.StartInfo.EnvironmentVariables["APPDATA"] = Functions.Path.GetServerFiles(_serverData.ServerID, "Instance");
+            //p.StartInfo.EnvironmentVariables.Add("AppData", Functions.Path.GetServerFiles(_serverData.ServerID, "Instance"));
             //p.StartInfo.Environment["APPDATA"] = Functions.Path.GetServerFiles(_serverData.ServerID, "Config");
             var serverConsole = new Functions.ServerConsole(_serverData.ServerID);
             p.OutputDataReceived += serverConsole.AddOutput;

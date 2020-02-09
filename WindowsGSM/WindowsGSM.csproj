@@ -111,6 +111,10 @@
       <Private>True</Private>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
+    <Reference Include="NCrontab.Signed, Version=3.3.2.0, Culture=neutral, PublicKeyToken=5247b4370afff365, processorArchitecture=MSIL">
+      <HintPath>..\packages\NCrontab.Signed.3.3.2\lib\net35\NCrontab.Signed.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
@@ -119,6 +123,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\ControlzEx.3.0.2.4\lib\net462\System.Windows.Interactivity.dll</HintPath>
@@ -153,7 +158,9 @@
     <Compile Include="GameServer\HL2DM.cs" />
     <Compile Include="GameServer\L4D2.cs" />
     <Compile Include="GameServer\MC.cs" />
+    <Compile Include="GameServer\MCBE.cs" />
     <Compile Include="GameServer\MORDHAU.cs" />
+    <Compile Include="GameServer\OLOW.cs" />
     <Compile Include="GameServer\SE.cs" />
     <Compile Include="GameServer\Steam\HLDS.cs" />
     <Compile Include="GameServer\Steam\SRCDS.cs" />
@@ -349,6 +356,17 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Games\se.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\mcbe.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\olow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\NCrontab.Signed.3.3.2\lib\net35\NCrontab.Signed.dll">
+      <Link>ReferencesEx\NCrontab.Signed.dll</Link>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

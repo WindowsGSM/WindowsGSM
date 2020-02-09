@@ -70,7 +70,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Minecraft: Java Edition Server.
+        ///   Looks up a localized string similar to Minecraft: Bedrock Edition Server.
         /// </summary>
         internal static string _10 {
             get {
@@ -79,7 +79,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Minecraft: Pocket Edition Server (PocketMine-MP).
+        ///   Looks up a localized string similar to Minecraft: Java Edition Server.
         /// </summary>
         internal static string _11 {
             get {
@@ -88,7 +88,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Mordhau Dedicated Server.
+        ///   Looks up a localized string similar to Minecraft: Pocket Edition Server (PocketMine-MP).
         /// </summary>
         internal static string _12 {
             get {
@@ -97,7 +97,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Rust Dedicated Server.
+        ///   Looks up a localized string similar to Mordhau Dedicated Server.
         /// </summary>
         internal static string _13 {
             get {
@@ -106,7 +106,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Space Engineers Dedicated Server.
+        ///   Looks up a localized string similar to Outlaws of the Old West Dedicated Server.
         /// </summary>
         internal static string _14 {
             get {
@@ -115,11 +115,29 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Team Fortress 2 Dedicated Server.
+        ///   Looks up a localized string similar to Rust Dedicated Server.
         /// </summary>
         internal static string _15 {
             get {
                 return ResourceManager.GetString("15", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Space Engineers Dedicated Server.
+        /// </summary>
+        internal static string _16 {
+            get {
+                return ResourceManager.GetString("16", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Team Fortress 2 Dedicated Server.
+        /// </summary>
+        internal static string _17 {
+            get {
+                return ResourceManager.GetString("17", resourceCulture);
             }
         }
         
