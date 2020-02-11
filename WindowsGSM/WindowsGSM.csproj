@@ -110,7 +110,7 @@
     </Reference>
     <Reference Include="MahApps.Metro, Version=1.6.5.1, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MahApps.Metro.1.6.5\lib\net47\MahApps.Metro.dll</HintPath>
-      <Private>True</Private>
+      <Private>False</Private>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="NCrontab.Signed, Version=3.3.2.0, Culture=neutral, PublicKeyToken=5247b4370afff365, processorArchitecture=MSIL">
@@ -126,6 +126,7 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Management" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\ControlzEx.3.0.2.4\lib\net462\System.Windows.Interactivity.dll</HintPath>
@@ -150,6 +151,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Functions\Github.cs" />
+    <Compile Include="Functions\GoogleAnalytics.cs" />
     <Compile Include="Functions\ServerConsole.cs" />
     <Compile Include="GameServer\7DTD.cs" />
     <Compile Include="GameServer\ClassObject.cs" />
@@ -164,8 +166,8 @@
     <Compile Include="GameServer\MORDHAU.cs" />
     <Compile Include="GameServer\OLOW.cs" />
     <Compile Include="GameServer\SE.cs" />
-    <Compile Include="GameServer\Steam\HLDS.cs" />
-    <Compile Include="GameServer\Steam\SRCDS.cs" />
+    <Compile Include="GameServer\Valve\HLDS.cs" />
+    <Compile Include="GameServer\Valve\SRCDS.cs" />
     <Compile Include="Tools\GlobalServerList.cs" />
     <Compile Include="Tools\InstallMod.cs" />
     <Compile Include="WindowsFirewall.cs" />
@@ -185,7 +187,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Functions\Path.cs" />
+    <Compile Include="Functions\ServerPath.cs" />
     <Compile Include="Discord\Webhook.cs" />
     <Compile Include="GameServer\GMOD.cs" />
     <Compile Include="GameServer\MCPE.cs" />
@@ -369,6 +371,9 @@
     <EmbeddedResource Include="..\packages\NCrontab.Signed.3.3.2\lib\net35\NCrontab.Signed.dll">
       <Link>ReferencesEx\NCrontab.Signed.dll</Link>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\SplashScreen.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

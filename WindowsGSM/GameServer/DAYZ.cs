@@ -44,7 +44,7 @@ namespace WindowsGSM.GameServer
         public async void CreateServerCFG()
         {
             //Download serverDZ.cfg
-            string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, "serverDZ.cfg");
+            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "serverDZ.cfg");
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string configText = File.ReadAllText(configPath);
@@ -56,7 +56,7 @@ namespace WindowsGSM.GameServer
 
         public async Task<Process> Start()
         {
-            string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, "serverDZ.cfg");
+            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "serverDZ.cfg");
             if (!File.Exists(configPath))
             {
                 Error = $"{Path.GetFileName(configPath)} not found ({configPath})";
@@ -71,8 +71,8 @@ namespace WindowsGSM.GameServer
             {
                 StartInfo =
                 {
-                    WorkingDirectory = Functions.Path.GetServerFiles(_serverData.ServerID),
-                    FileName = Functions.Path.GetServerFiles(_serverData.ServerID, StartPath),
+                    WorkingDirectory = Functions.ServerPath.GetServerFiles(_serverData.ServerID),
+                    FileName = Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath),
                     Arguments = param,
                     WindowStyle = ProcessWindowStyle.Minimized
                 },
@@ -94,7 +94,7 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(Functions.Path.GetServerFiles(_serverData.ServerID), "", "223350", true, loginAnonymous: false);
+            steamCMD.SetParameter(Functions.ServerPath.GetServerFiles(_serverData.ServerID), "", "223350", true, loginAnonymous: false);
 
             Process process = await steamCMD.Run();
             Error = steamCMD.Error;
@@ -105,7 +105,7 @@ namespace WindowsGSM.GameServer
         public async Task<bool> Update()
         {
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(Functions.Path.GetServerFiles(_serverData.ServerID), "", "223350", false, loginAnonymous: false);
+            steamCMD.SetParameter(Functions.ServerPath.GetServerFiles(_serverData.ServerID), "", "223350", false, loginAnonymous: false);
 
             Process pSteamCMD = await steamCMD.Run();
             if (pSteamCMD == null)
@@ -127,7 +127,7 @@ namespace WindowsGSM.GameServer
 
         public bool IsInstallValid()
         {
-            return File.Exists(Functions.Path.GetServerFiles(_serverData.ServerID, StartPath));
+            return File.Exists(Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath));
         }
 
         public bool IsImportValid(string path)

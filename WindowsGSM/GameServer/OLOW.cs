@@ -40,7 +40,7 @@ namespace WindowsGSM.GameServer
             //No server config
 
             //Edit WindowsGSM.cfg
-            string configFile = Functions.Path.GetConfigs(_serverData.ServerID, "WindowsGSM.cfg");
+            string configFile = Functions.ServerPath.GetConfigs(_serverData.ServerID, "WindowsGSM.cfg");
             if (File.Exists(configFile))
             {
                 string configText = File.ReadAllText(configFile);
@@ -51,7 +51,7 @@ namespace WindowsGSM.GameServer
 
         public async Task<Process> Start()
         {
-            string shipExePath = Functions.Path.GetServerFiles(_serverData.ServerID, StartPath);
+            string shipExePath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath);
             if (!File.Exists(shipExePath))
             {
                 Error = $"{Path.GetFileName(shipExePath)} not found ({shipExePath})";
@@ -123,25 +123,25 @@ namespace WindowsGSM.GameServer
 
         public async Task<Process> Install()
         {
-            Steam.SRCDS srcds = new Steam.SRCDS(_serverData.ServerID);
-            Process p = await srcds.Install("915070");
-            Error = srcds.Error;
+            var steamCMD = new Installer.SteamCMD();
+            Process p = await steamCMD.Install(_serverData.ServerID, "", "915070");
+            Error = steamCMD.Error;
 
             return p;
         }
 
-        public async Task<bool> Update()
+        public async Task<bool> Update(bool validate = false)
         {
-            Steam.SRCDS srcds = new Steam.SRCDS(_serverData.ServerID);
-            bool success = await srcds.Update("915070");
-            Error = srcds.Error;
+            var steamCMD = new Installer.SteamCMD();
+            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "915070", validate);
+            Error = steamCMD.Error;
 
-            return success;
+            return updateSuccess;
         }
 
         public bool IsInstallValid()
         {
-            return File.Exists(Functions.Path.GetServerFiles(_serverData.ServerID, StartPath));
+            return File.Exists(Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath));
         }
 
         public bool IsImportValid(string path)
@@ -165,7 +165,7 @@ namespace WindowsGSM.GameServer
 
         public string GetQueryPort()
         {
-            string configFile = Functions.Path.GetConfigs(_serverData.ServerID, "WindowsGSM.cfg");
+            string configFile = Functions.ServerPath.GetConfigs(_serverData.ServerID, "WindowsGSM.cfg");
 
             //Get -QueryPort value in serverparam
             if (File.Exists(configFile))

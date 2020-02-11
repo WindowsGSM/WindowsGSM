@@ -29,7 +29,7 @@ namespace WindowsGSM.GameServer
         public async void CreateServerCFG()
         {
             //Download server.cfg
-            string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, @"cstrike\server.cfg");
+            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"cstrike\server.cfg");
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string configText = File.ReadAllText(configPath);
@@ -39,13 +39,13 @@ namespace WindowsGSM.GameServer
             }
 
             //Create steam_appid.txt
-            string txtPath = Functions.Path.GetServerFiles(_serverData.ServerID, "steam_appid.txt");
+            string txtPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "steam_appid.txt");
             File.WriteAllText(txtPath, "10");
         }
 
         public async Task<Process> Start()
         {
-            string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, @"cstrike\server.cfg");
+            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"cstrike\server.cfg");
             if (!File.Exists(configPath))
             {
                 Notice = $"server.cfg not found ({configPath})";
@@ -59,7 +59,7 @@ namespace WindowsGSM.GameServer
             param += String.Format("{0}", String.IsNullOrEmpty(_serverData.ServerParam) ? "" : $" {_serverData.ServerParam}");
             param += String.Format("{0}", String.IsNullOrEmpty(_serverData.ServerMap) ? "" : $" +map {_serverData.ServerMap}");
 
-            Steam.HLDS hlds = new Steam.HLDS(_serverData.ServerID);
+            Valve.HLDS hlds = new Valve.HLDS(_serverData.ServerID);
             Process p = await hlds.Start(param);
             Error = hlds.Error;
 
@@ -68,12 +68,12 @@ namespace WindowsGSM.GameServer
 
         public async Task Stop(Process p)
         {
-            await Steam.HLDS.Stop(p);
+            await Valve.HLDS.Stop(p);
         }
 
         public async Task<Process> Install()
         {
-            Steam.HLDS hlds = new Steam.HLDS(_serverData.ServerID);
+            Valve.HLDS hlds = new Valve.HLDS(_serverData.ServerID);
             Process p = await hlds.Install("", "90");
             Error = hlds.Error;
 
@@ -82,7 +82,7 @@ namespace WindowsGSM.GameServer
 
         public async Task<bool> Update()
         {
-            Steam.HLDS hlds = new Steam.HLDS(_serverData.ServerID);
+            Valve.HLDS hlds = new Valve.HLDS(_serverData.ServerID);
             bool success = await hlds.Update("", "90");
             Error = hlds.Error;
 
@@ -92,7 +92,7 @@ namespace WindowsGSM.GameServer
         public bool IsInstallValid()
         {
             string hldsFile = "hlds.exe";
-            string hldsPath = Functions.Path.GetServerFiles(_serverData.ServerID, hldsFile);
+            string hldsPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, hldsFile);
 
             return File.Exists(hldsPath);
         }

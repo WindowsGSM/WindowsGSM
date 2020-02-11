@@ -55,7 +55,7 @@ namespace WindowsGSM.Functions
             ServerID = serverid;
 
             //Get values from configpath
-            string configpath = Functions.Path.GetConfigs(serverid, "WindowsGSM.cfg");
+            string configpath = Functions.ServerPath.GetConfigs(serverid, "WindowsGSM.cfg");
             if (File.Exists(configpath))
             {
                 foreach (string line in File.ReadLines(configpath))
@@ -94,7 +94,7 @@ namespace WindowsGSM.Functions
         {
             CreateServerDirectory();
 
-            string configpath = Functions.Path.GetConfigs(ServerID, "WindowsGSM.cfg");
+            string configpath = Functions.ServerPath.GetConfigs(ServerID, "WindowsGSM.cfg");
             if (!File.Exists(configpath))
             {
                 ServerGame = servergame;
@@ -147,7 +147,7 @@ namespace WindowsGSM.Functions
 
         public void CreateServerDirectory()
         {
-            string serverid_dir = Functions.Path.Get(ServerID);
+            string serverid_dir = Functions.ServerPath.Get(ServerID);
             if (!Directory.Exists(serverid_dir))
             {
                 Directory.CreateDirectory(serverid_dir);
@@ -166,7 +166,7 @@ namespace WindowsGSM.Functions
 
         public bool DeleteServerDirectory()
         {
-            string serverid_dir = Functions.Path.Get(ServerID);
+            string serverid_dir = Functions.ServerPath.Get(ServerID);
             if (Directory.Exists(serverid_dir) && ServerID != null && ServerID != "")
             {
                 try
@@ -186,7 +186,7 @@ namespace WindowsGSM.Functions
 
         public bool IsWindowsGSMConfigExist()
         {
-            string configpath = Path.GetConfigs(ServerID, "WindowsGSM.cfg");
+            string configpath = ServerPath.GetConfigs(ServerID, "WindowsGSM.cfg");
             return File.Exists(configpath);
         }
 
@@ -248,7 +248,7 @@ namespace WindowsGSM.Functions
 
         public static bool ToggleSetting(string serverId, string settingName)
         {
-            string configFile = Path.GetConfigs(serverId, "WindowsGSM.cfg");
+            string configFile = ServerPath.GetConfigs(serverId, "WindowsGSM.cfg");
 
             if (File.Exists(configFile))
             {
@@ -295,7 +295,7 @@ namespace WindowsGSM.Functions
 
         public static string GetSetting(string serverId, string settingName)
         {
-            string configFile = Path.GetConfigs(serverId, "WindowsGSM.cfg");
+            string configFile = ServerPath.GetConfigs(serverId, "WindowsGSM.cfg");
 
             if (File.Exists(configFile))
             {
@@ -321,7 +321,7 @@ namespace WindowsGSM.Functions
 
         public static void SetSetting(string serverId, string settingName, string data)
         {
-            string configFile = Path.GetConfigs(serverId, "WindowsGSM.cfg");
+            string configFile = ServerPath.GetConfigs(serverId, "WindowsGSM.cfg");
 
             if (File.Exists(configFile))
             {

@@ -30,24 +30,5 @@ namespace WindowsGSM.Functions
 
             return File.Exists(filePath);
         }
-
-        public static async Task<bool> DownloadMahAppsMetroDll()
-        {
-            string filePath = MainWindow.WGSM_PATH + @"\MahApps.Metro.dll";
-
-            try
-            {
-                using (WebClient webClient = new WebClient())
-                {
-                    await webClient.DownloadFileTaskAsync("https://github.com/WindowsGSM/WindowsGSM/raw/master/packages/MahApps.Metro.1.6.5/lib/net47/MahApps.Metro.dll", filePath);
-                }
-            }
-            catch (Exception e)
-            {
-                System.Diagnostics.Debug.WriteLine($"Github.DownloadMahAppsMetroDll {e}");
-            }
-
-            return File.Exists(filePath);
-        }
     }
 }

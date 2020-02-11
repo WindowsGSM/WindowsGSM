@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace WindowsGSM.Functions
 {
-    static class Path
+    static class ServerPath
     {
         public static string Get(string serverid)
         {

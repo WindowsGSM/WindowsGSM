@@ -36,7 +36,7 @@ namespace WindowsGSM.GameServer
         public async void CreateServerCFG()
         {
             //Download server.cfg
-            string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, @"cfx-server-data-master\server.cfg");
+            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"cfx-server-data-master\server.cfg");
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string configText = File.ReadAllText(configPath);
@@ -49,27 +49,27 @@ namespace WindowsGSM.GameServer
             }
 
             //Download sample logo
-            string logoPath = Functions.Path.GetServerFiles(_serverData.ServerID, @"cfx-server-data-master\myLogo.png");
+            string logoPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"cfx-server-data-master\myLogo.png");
             await Functions.Github.DownloadGameServerConfig(logoPath, FullName);
         }
 
         public async Task<Process> Start()
         {
-            string fxServerPath = Functions.Path.GetServerFiles(_serverData.ServerID, @"server\FXServer.exe");
+            string fxServerPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"server\FXServer.exe");
             if (!File.Exists(fxServerPath))
             {
                 Error = $"FXServer.exe not found ({fxServerPath})";
                 return null;
             }
 
-            string citizenPath = Functions.Path.GetServerFiles(_serverData.ServerID, @"server\citizen");
+            string citizenPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"server\citizen");
             if (!Directory.Exists(citizenPath))
             {
                 Error = $"Directory citizen not found ({citizenPath})";
                 return null;
             }
 
-            string serverDataPath = Functions.Path.GetServerFiles(_serverData.ServerID, "cfx-server-data-master");
+            string serverDataPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "cfx-server-data-master");
             if (!Directory.Exists(serverDataPath))
             {
                 Error = $"Directory cfx-server-data-master not found ({serverDataPath})";
@@ -135,7 +135,7 @@ namespace WindowsGSM.GameServer
                     string recommended = regex.Match(html).ToString();
 
                     //Download server.zip and extract then delete server.zip
-                    string serverPath = Functions.Path.GetServerFiles(_serverData.ServerID, "server");
+                    string serverPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "server");
                     Directory.CreateDirectory(serverPath);
                     string zipPath = Path.Combine(serverPath, "server.zip");
                     await webClient.DownloadFileTaskAsync($"https://runtime.fivem.net/artifacts/fivem/build_server_windows/master/{recommended}/server.zip", zipPath);
@@ -153,12 +153,12 @@ namespace WindowsGSM.GameServer
                     await Task.Run(() => File.Delete(zipPath));
 
                     //Create FiveM-version.txt and write the downloaded version with hash
-                    File.WriteAllText(Functions.Path.GetServerFiles(_serverData.ServerID, "FiveM-version.txt"), recommended);
+                    File.WriteAllText(Functions.ServerPath.GetServerFiles(_serverData.ServerID, "FiveM-version.txt"), recommended);
 
                     //Download cfx-server-data-master and extract to folder cfx-server-data-master then delete cfx-server-data-master.zip
-                    zipPath = Functions.Path.GetServerFiles(_serverData.ServerID, "cfx-server-data-master.zip");
+                    zipPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "cfx-server-data-master.zip");
                     await webClient.DownloadFileTaskAsync("https://github.com/citizenfx/cfx-server-data/archive/master.zip", zipPath);
-                    await Task.Run(() => ZipFile.ExtractToDirectory(zipPath, Functions.Path.GetServerFiles(_serverData.ServerID)));
+                    await Task.Run(() => ZipFile.ExtractToDirectory(zipPath, Functions.ServerPath.GetServerFiles(_serverData.ServerID)));
                     await Task.Run(() => File.Delete(zipPath));
                 }
 
@@ -179,7 +179,7 @@ namespace WindowsGSM.GameServer
                     string remoteBuild = await GetRemoteBuild();
 
                     //Download server.zip and extract then delete server.zip
-                    string serverPath = Functions.Path.GetServerFiles(_serverData.ServerID, "server");
+                    string serverPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "server");
                     await Task.Run(() =>
                     {
                         try
@@ -214,7 +214,7 @@ namespace WindowsGSM.GameServer
                     await Task.Run(() => File.Delete(zipPath));
 
                     //Create FiveM-version.txt and write the downloaded version with hash
-                    File.WriteAllText(Functions.Path.GetServerFiles(_serverData.ServerID, "FiveM-version.txt"), remoteBuild);
+                    File.WriteAllText(Functions.ServerPath.GetServerFiles(_serverData.ServerID, "FiveM-version.txt"), remoteBuild);
                 }
 
                 return true;
@@ -228,7 +228,7 @@ namespace WindowsGSM.GameServer
         public bool IsInstallValid()
         {
             string exeFile = @"server\FXServer.exe";
-            string exePath = Functions.Path.GetServerFiles(_serverData.ServerID, exeFile);
+            string exePath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, exeFile);
 
             return File.Exists(exePath);
         }
@@ -244,7 +244,7 @@ namespace WindowsGSM.GameServer
 
         public string GetLocalBuild()
         {
-            string versionPath = Functions.Path.GetServerFiles(_serverData.ServerID, "FiveM-version.txt");
+            string versionPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "FiveM-version.txt");
             Error = $"Fail to get local build";
             return File.Exists(versionPath) ? File.ReadAllText(versionPath) : "";
         }

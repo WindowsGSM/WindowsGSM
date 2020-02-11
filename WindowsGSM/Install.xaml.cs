@@ -129,6 +129,9 @@ namespace WindowsGSM
 
             if (gameServer.IsInstallValid())
             {
+                var analytics = new Functions.GoogleAnalytics();
+                analytics.SendGameServerInstall(serverConfig.ServerID, servergame);
+
                 //Create WindowsGSM.cfg
                 serverConfig.CreateWindowsGSMConfig(servergame, servername, serverConfig.GetIPAddress(), serverConfig.GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
 

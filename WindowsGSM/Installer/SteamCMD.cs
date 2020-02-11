@@ -50,27 +50,6 @@ namespace WindowsGSM.Installer
             return true;
         }
 
-        public void CreateUserDataTxtIfNotExist()
-        {
-            if (!File.Exists(_userDataPath))
-            {
-                File.Create(_userDataPath).Dispose();
-
-                using (TextWriter textwriter = new StreamWriter(_userDataPath))
-                {
-                    textwriter.WriteLine("// For security and compatibility reasons, WindowsGSM suggests you to create a new steam account.");
-                    textwriter.WriteLine("// More info: (https://docs.windowsgsm.com/installer/steamcmd)");
-                    textwriter.WriteLine("// ");
-                    textwriter.WriteLine("// Username and password - No Steam Guard (Supported + Recommanded)");
-                    textwriter.WriteLine("// Username and password - Steam Guard via Email (Supported)");
-                    textwriter.WriteLine("// Username and password - Steam Guard via Smartphone (NOT Supported)");
-                    textwriter.WriteLine("// ");
-                    textwriter.WriteLine("steamUser=\"\"");
-                    textwriter.WriteLine("steamPass=\"\"");
-                }
-            }
-        }
-
         public void SetParameter(string installDir, string set_config, string appId, bool validate, bool loginAnonymous = true)
         {
             if (loginAnonymous)
@@ -163,9 +142,7 @@ namespace WindowsGSM.Installer
                 {
                     WorkingDirectory = _installPath,
                     FileName = exePath,
-                    //FileName = "cmd.exe",
-                    Arguments = _param + " > log.txt",
-                    //Arguments = $"/c steamcmd.exe {_param}",
+                    Arguments = _param,
                     WindowStyle = ProcessWindowStyle.Minimized,
                     CreateNoWindow = true,
                     UseShellExecute = false,
@@ -181,10 +158,37 @@ namespace WindowsGSM.Installer
             return p;
         }
 
+        public async Task<Process> Install(string serverId, string set_config, string appId, bool validate = true, bool loginAnonymous = true)
+        {
+            SetParameter(Functions.ServerPath.GetServerFiles(serverId), set_config, appId, validate, loginAnonymous);
+            return await Run();
+        }
+
+        public async Task<bool> Update(string serverId, string set_config, string appId, bool validate, bool loginAnonymous = true)
+        {
+            SetParameter(Functions.ServerPath.GetServerFiles(serverId), set_config, appId, validate, loginAnonymous);
+
+            Process p = await Run();
+            if (p == null)
+            {
+                return false;
+            }
+
+            await Task.Run(() => p.WaitForExit());
+
+            if (p.ExitCode != 0)
+            {
+                Error = $"Exit code: {p.ExitCode.ToString()}";
+                return false;
+            }
+
+            return true;
+        }
+
         public string GetLocalBuild(string serverId, string appId)
         {
             string manifestFile = $"appmanifest_{appId}.acf";
-            string manifestPath = Path.Combine(Functions.Path.GetServerFiles(serverId), "steamapps", manifestFile);
+            string manifestPath = Path.Combine(Functions.ServerPath.GetServerFiles(serverId), "steamapps", manifestFile);
 
             if (!File.Exists(manifestPath))
             {
@@ -296,6 +300,27 @@ namespace WindowsGSM.Installer
             }
 
             return matches[0].Groups[1].Value;
+        }
+        
+        public void CreateUserDataTxtIfNotExist()
+        {
+            if (!File.Exists(_userDataPath))
+            {
+                File.Create(_userDataPath).Dispose();
+
+                using (TextWriter textwriter = new StreamWriter(_userDataPath))
+                {
+                    textwriter.WriteLine("// For security and compatibility reasons, WindowsGSM suggests you to create a new steam account.");
+                    textwriter.WriteLine("// More info: (https://docs.windowsgsm.com/installer/steamcmd)");
+                    textwriter.WriteLine("// ");
+                    textwriter.WriteLine("// Username and password - No Steam Guard (Supported + Recommanded)");
+                    textwriter.WriteLine("// Username and password - Steam Guard via Email (Supported)");
+                    textwriter.WriteLine("// Username and password - Steam Guard via Smartphone (NOT Supported)");
+                    textwriter.WriteLine("// ");
+                    textwriter.WriteLine("steamUser=\"\"");
+                    textwriter.WriteLine("steamPass=\"\"");
+                }
+            }
         }
     }
 }

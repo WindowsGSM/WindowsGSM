@@ -5,30 +5,25 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace WindowsGSM.GameServer.Steam
+namespace WindowsGSM.GameServer.Valve
 {
     /// <summary>
     /// 
     /// Notes:
-    /// srcds.exe works almost perfect on WindowsGSM.
-    /// The one that cause it not perfect is RedirectStandardInput=true will cause an Engine Error - CTextConsoleWin32::GetLine: !GetNumberOfConsoleInputEvents
-    /// Therefore, SendKeys Input Method is used.
+    /// hlds.exe works almost perfect on WindowsGSM. RedirectStandardInput doesn't work on this. Therefore, SendKeys Input Method is used.
     /// 
     /// RedirectStandardInput:  NO WORKING
     /// RedirectStandardOutput: YES (Used)
     /// RedirectStandardError:  YES (Used)
     /// SendKeys Input Method:  YES (Used)
     /// 
-    /// Classes that used SRCDS.cs for Start
+    /// Classes that used hlds.cs for Start
     /// 
-    /// CSGO.cs
-    /// GMOD.cs
-    /// HL2DM.cs
-    /// L4D2.cs
-    /// TF2.cs
+    /// CS.cs
+    /// CSCZ.cs
     /// 
     /// </summary>
-    class SRCDS
+    class HLDS
     {
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -37,19 +32,19 @@ namespace WindowsGSM.GameServer.Steam
 
         public string Error;
 
-        public SRCDS(string serverId)
+        public HLDS(string serverId)
         {
             _serverId = serverId;
         }
 
-        public async Task<Process> Start(string param, string customSrcdsName = "srcds.exe", bool setWorkingDirectory = true)
+        public async Task<Process> Start(string param)
         {
-            string workingDir = Functions.Path.GetServerFiles(_serverId);
-            string srcdsPath = Path.Combine(workingDir, customSrcdsName);
+            string workingDir = Functions.ServerPath.GetServerFiles(_serverId);
+            string hldsPath = Path.Combine(workingDir, "hlds.exe");
 
-            if (!File.Exists(srcdsPath))
+            if (!File.Exists(hldsPath))
             {
-                Error = $"{customSrcdsName} not found ({srcdsPath})";
+                Error = $"hlds.exe not found ({hldsPath})";
                 return null;
             }
 
@@ -63,10 +58,10 @@ namespace WindowsGSM.GameServer.Steam
             {
                 StartInfo =
                 {
-                    WorkingDirectory = setWorkingDirectory ? workingDir : "",
-                    FileName = srcdsPath,
+                    WorkingDirectory = workingDir,
+                    FileName = hldsPath,
                     Arguments = param,
-                    WindowStyle = ProcessWindowStyle.Hidden,
+                    WindowStyle = ProcessWindowStyle.Minimized,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
@@ -94,10 +89,10 @@ namespace WindowsGSM.GameServer.Steam
             });
         }
 
-        public async Task<Process> Install(string appId)
+        public async Task<Process> Install(string appSetConfig, string appId)
         {
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(Functions.Path.GetServerFiles(_serverId), "", appId, true);
+            steamCMD.SetParameter(Functions.ServerPath.GetServerFiles(_serverId), $"+app_set_config {appSetConfig}", appId, true);
 
             Process process = await steamCMD.Run();
             Error = steamCMD.Error;
@@ -105,10 +100,10 @@ namespace WindowsGSM.GameServer.Steam
             return process;
         }
 
-        public async Task<bool> Update(string appId)
+        public async Task<bool> Update(string appSetConfig, string appId)
         {
             Installer.SteamCMD steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(Functions.Path.GetServerFiles(_serverId), "", appId, false);
+            steamCMD.SetParameter(Functions.ServerPath.GetServerFiles(_serverId), $"+app_set_config {appSetConfig}", appId, false);
 
             Process pSteamCMD = await steamCMD.Run();
             if (pSteamCMD == null)

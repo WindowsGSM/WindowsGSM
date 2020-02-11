@@ -43,7 +43,7 @@ namespace WindowsGSM.GameServer
 
         public async void CreateServerCFG()
         {
-            string shipExePath = Functions.Path.GetServerFiles(_serverData.ServerID, @"Mordhau\Binaries\Win64\MordhauServer-Win64-Shipping.exe");
+            string shipExePath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"Mordhau\Binaries\Win64\MordhauServer-Win64-Shipping.exe");
             WindowsFirewall firewall = new WindowsFirewall("MordhauServer-Win64-Shipping.exe", shipExePath);
             if (!await firewall.IsRuleExist())
             {
@@ -55,7 +55,7 @@ namespace WindowsGSM.GameServer
             {
                 StartInfo =
                 {
-                    WorkingDirectory = Functions.Path.GetServerFiles(_serverData.ServerID),
+                    WorkingDirectory = Functions.ServerPath.GetServerFiles(_serverData.ServerID),
                     FileName = shipExePath,
                     WindowStyle = ProcessWindowStyle.Hidden,
                     CreateNoWindow = true,
@@ -64,7 +64,7 @@ namespace WindowsGSM.GameServer
             };
             p.Start();
 
-            string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, @"Mordhau\Saved\Config\WindowsServer\Game.ini");
+            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"Mordhau\Saved\Config\WindowsServer\Game.ini");
             await Task.Run(() =>
             {
                 int tries = 0;
@@ -90,7 +90,7 @@ namespace WindowsGSM.GameServer
             }
 
             //Edit WindowsGSM.cfg
-            string configFile = Functions.Path.GetConfigs(_serverData.ServerID, "WindowsGSM.cfg");
+            string configFile = Functions.ServerPath.GetConfigs(_serverData.ServerID, "WindowsGSM.cfg");
             if (File.Exists(configFile))
             {
                 string configText = File.ReadAllText(configFile);
@@ -103,7 +103,7 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Start()
         {
             string exeFile = "MordhauServer.exe";
-            string exePath = Functions.Path.GetServerFiles(_serverData.ServerID, exeFile);
+            string exePath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, exeFile);
             if (!File.Exists(exePath))
             {
                 Error = $"{exeFile} not found ({exePath})";
@@ -111,7 +111,7 @@ namespace WindowsGSM.GameServer
             }
 
             string shipExeFile = "MordhauServer-Win64-Shipping.exe";
-            string shipExePath = Functions.Path.GetServerFiles(_serverData.ServerID, @"Mordhau\Binaries\Win64", shipExeFile);
+            string shipExePath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"Mordhau\Binaries\Win64", shipExeFile);
             WindowsFirewall firewall = new WindowsFirewall(shipExeFile, shipExePath);
             if (!await firewall.IsRuleExist())
             {
@@ -125,7 +125,7 @@ namespace WindowsGSM.GameServer
             }
 
             string configFile = "Game.ini";
-            string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, @"Mordhau\Saved\Config\WindowsServer", configFile);
+            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"Mordhau\Saved\Config\WindowsServer", configFile);
             if (!File.Exists(configPath))
             {
                 Notice = $"{configFile} not found ({configPath})";
@@ -182,39 +182,32 @@ namespace WindowsGSM.GameServer
         {
             await Task.Run(() =>
             {
-                if (ToggleConsole)
-                {
-                    p.CloseMainWindow();
-                }
-                else
-                {
-                    p.Kill();
-                }
+                p.Kill();
             });
         }
 
         public async Task<Process> Install()
         {
-            Steam.SRCDS srcds = new Steam.SRCDS(_serverData.ServerID);
-            Process p = await srcds.Install("629800");
-            Error = srcds.Error;
+            var steamCMD = new Installer.SteamCMD();
+            Process p = await steamCMD.Install(_serverData.ServerID, "", "629800");
+            Error = steamCMD.Error;
 
             return p;
         }
 
-        public async Task<bool> Update()
+        public async Task<bool> Update(bool validate = false)
         {
-            Steam.SRCDS srcds = new Steam.SRCDS(_serverData.ServerID);
-            bool success = await srcds.Update("629800");
-            Error = srcds.Error;
+            var steamCMD = new Installer.SteamCMD();
+            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "629800", validate);
+            Error = steamCMD.Error;
 
-            return success;
+            return updateSuccess;
         }
 
         public bool IsInstallValid()
         {
             string exeFile = "MordhauServer.exe";
-            string exePath = Functions.Path.GetServerFiles(_serverData.ServerID, exeFile);
+            string exePath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, exeFile);
 
             return File.Exists(exePath);
         }
@@ -242,7 +235,7 @@ namespace WindowsGSM.GameServer
 
         public string GetQueryPort()
         {
-            string configFile = Functions.Path.GetConfigs(_serverData.ServerID, "WindowsGSM.cfg");
+            string configFile = Functions.ServerPath.GetConfigs(_serverData.ServerID, "WindowsGSM.cfg");
 
             //Get -QueryPort value in serverparam
             if (File.Exists(configFile))

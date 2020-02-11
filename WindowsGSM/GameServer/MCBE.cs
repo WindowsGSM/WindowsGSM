@@ -32,7 +32,7 @@ namespace WindowsGSM.GameServer
         public async void CreateServerCFG()
         {
             //Download server.properties
-            string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, "server.properties");
+            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "server.properties");
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string configText = File.ReadAllText(configPath);
@@ -48,7 +48,7 @@ namespace WindowsGSM.GameServer
 
         public async Task<Process> Start()
         {
-            string workingDir = Functions.Path.GetServerFiles(_serverData.ServerID);
+            string workingDir = Functions.ServerPath.GetServerFiles(_serverData.ServerID);
 
             string exePath = Path.Combine(workingDir, StartPath);
             if (!File.Exists(exePath))
@@ -125,13 +125,13 @@ namespace WindowsGSM.GameServer
                     string version = matches[0].Groups[2].Value; //1.14.21.0
 
                     //Download zip and extract then delete zip
-                    string zipPath = Functions.Path.GetServerFiles(_serverData.ServerID, fileName);
+                    string zipPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, fileName);
                     await webClient.DownloadFileTaskAsync(downloadUrl, zipPath);
-                    await Task.Run(() => ZipFile.ExtractToDirectory(zipPath, Functions.Path.GetServerFiles(_serverData.ServerID)));
+                    await Task.Run(() => ZipFile.ExtractToDirectory(zipPath, Functions.ServerPath.GetServerFiles(_serverData.ServerID)));
                     await Task.Run(() => File.Delete(zipPath));
 
                     //Create MCBE-version.txt and write the version
-                    File.WriteAllText(Functions.Path.GetServerFiles(_serverData.ServerID, "MCBE-version.txt"), version);
+                    File.WriteAllText(Functions.ServerPath.GetServerFiles(_serverData.ServerID, "MCBE-version.txt"), version);
                 }
             }
             catch
@@ -163,7 +163,7 @@ namespace WindowsGSM.GameServer
                     string fileName = matches[0].Groups[1].Value; //bedrock-server-1.14.21.0.zip
                     string version = matches[0].Groups[2].Value; //1.14.21.0
 
-                    string tempPath = Functions.Path.GetServerFiles(_serverData.ServerID, "__temp");
+                    string tempPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "__temp");
 
                     //Delete old __temp folder
                     if (Directory.Exists(tempPath))
@@ -179,7 +179,7 @@ namespace WindowsGSM.GameServer
                     await Task.Run(() => ZipFile.ExtractToDirectory(zipPath, tempPath));
                     await Task.Run(() => File.Delete(zipPath));
 
-                    string serverFilesPath = Functions.Path.GetServerFiles(_serverData.ServerID);
+                    string serverFilesPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID);
 
                     //Delete old folder and files
                     await Task.Run(() =>
@@ -209,7 +209,7 @@ namespace WindowsGSM.GameServer
                     await Task.Run(() => Directory.Delete(tempPath, true));
 
                     //Create MCBE-version.txt and write the version
-                    File.WriteAllText(Functions.Path.GetServerFiles(_serverData.ServerID, "MCBE-version.txt"), version);
+                    File.WriteAllText(Functions.ServerPath.GetServerFiles(_serverData.ServerID, "MCBE-version.txt"), version);
                 }
 
                 return true;
@@ -228,7 +228,7 @@ namespace WindowsGSM.GameServer
 
         public bool IsInstallValid()
         {
-            return File.Exists(Functions.Path.GetServerFiles(_serverData.ServerID, StartPath));
+            return File.Exists(Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath));
         }
 
         public bool IsImportValid(string path)
@@ -239,7 +239,7 @@ namespace WindowsGSM.GameServer
 
         public string GetLocalBuild()
         {
-            string versionPath = Functions.Path.GetServerFiles(_serverData.ServerID, "MCBE-version.txt");
+            string versionPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "MCBE-version.txt");
             Error = $"Fail to get local build";
             return File.Exists(versionPath) ? File.ReadAllText(versionPath) : "";
         }

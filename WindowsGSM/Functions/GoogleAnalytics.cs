@@ -1,0 +1,169 @@
+﻿using Microsoft.Win32;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Management;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web;
+
+namespace WindowsGSM.Functions
+{
+    class GoogleAnalytics
+    {
+        /// <summary>
+        /// https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide
+        /// </summary>
+
+        private static readonly string _trackingId = "UA-131754595-13";
+        private static string _clientId;
+
+        public async void SendWindowsGSMVersion()
+        {
+            // Send when start
+            string version = MainWindow.WGSM_VERSION;
+            SendHit("WindowsGSMVersion", version, version);
+        }
+
+        public async void SendWindowsOS()
+        {
+            await Task.Run(() =>
+            {
+                // Send when start
+                // https://stackoverflow.com/questions/2819934/detect-windows-version-in-net
+                string osName = "", osBit = "";
+                using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT Caption, OSArchitecture FROM Win32_OperatingSystem"))
+                {
+                    ManagementObjectCollection information = searcher.Get();
+                    if (information != null)
+                    {
+                        foreach (ManagementObject obj in information)
+                        {
+                            osName = obj["Caption"].ToString();
+                            osBit = obj["OSArchitecture"].ToString();
+                        }
+                    }
+                    osName = osName.Replace("NT 5.1.2600", "XP");
+                    osName = osName.Replace("NT 5.2.3790", "Server 2003");
+                }
+
+                SendHit("OSVersion", osName, $"{osName} - {osBit}");
+            });
+        }
+
+        public async void SendProcessorName()
+        {
+            await Task.Run(() =>
+            {
+                string cpuName = "";
+                using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT Name FROM Win32_Processor"))
+                {
+                    ManagementObjectCollection information = searcher.Get();
+                    if (information != null)
+                    {
+                        foreach (ManagementObject obj in information)
+                        {
+                            cpuName = obj["Name"].ToString();
+                        }
+                    }
+                }
+
+                // Send when start
+                //string cpuName = "";
+                //ManagementObjectSearcher mos = new ManagementObjectSearcher("root\\CIMV2", "SELECT Name FROM Win32_Processor");
+                //foreach (ManagementObject mo in mos.Get())
+                //{
+                //    cpuName = mo["Name"].ToString();
+                //}
+                /*
+                int coreCount = 0;
+                foreach (var item in new ManagementObjectSearcher("Select NumberOfCores from Win32_Processor").Get())
+                {
+                    coreCount += int.Parse(item["NumberOfCores"].ToString());
+                }
+                */
+                //SendHit("CPU", cpuName, $"{cpuName} - Cores: {coreCount.ToString()}");*/
+                SendHit("CPU", cpuName, cpuName);
+            });
+        }
+
+        public async void SendGameServerInstall(string serverId, string serverGame)
+        {
+            await Task.Run(() =>
+            {
+                // Send when Installed a server
+                SendHit("Install", serverGame, $"{serverGame} #{serverId}");
+            });
+        }
+
+        public async void SendGameServerStart(string serverId, string serverGame)
+        {
+            await Task.Run(() =>
+            {
+                //Send when game server started
+                SendHit("Start", serverGame, $"{serverGame} #{serverId}");
+            });
+        }
+
+        private async void SendHit(string category, string action, string label, string value = null)
+        {
+            _clientId = string.IsNullOrEmpty(_clientId) ? GetClientID() : _clientId;
+            if (string.IsNullOrEmpty(_clientId)) { return; }
+
+            string post = $"v=1&t=event&tid={_trackingId}&cid={_clientId}";
+            post += string.IsNullOrWhiteSpace(category) ? "" : $"&ec={Uri.EscapeDataString(category)}";
+            post += string.IsNullOrWhiteSpace(action) ? "" : $"&ea={Uri.EscapeDataString(action)}";
+            post += string.IsNullOrWhiteSpace(label) ? "" : $"&el={Uri.EscapeDataString(label)}";
+            post += string.IsNullOrWhiteSpace(value) ? "" : $"&ev={Uri.EscapeDataString(value)}";
+
+            Debug.WriteLine(post);
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://www.google-analytics.com/collect");
+            request.Method = "POST";
+            request.ContentType = "application/x-www-form-urlencoded";
+            request.ContentLength = Encoding.UTF8.GetByteCount(post);
+
+            // write the request body to the request
+            using (var writer = new StreamWriter(await request.GetRequestStreamAsync()))
+            {
+                writer.Write(post);
+            }
+
+            try
+            {
+                var webResponse = (HttpWebResponse)await request.GetResponseAsync();
+                if (webResponse.StatusCode != HttpStatusCode.OK)
+                {
+                    Debug.WriteLine((int)webResponse.StatusCode + "Google Analytics tracking did not return OK 200");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+        }
+
+        private static string GetClientID()
+        {
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
+            if (key == null) { return null; }
+
+            //Get Client ID
+            string clientId = (key.GetValue("ClientID") == null) ? "" : key.GetValue("ClientID").ToString();
+
+            //If Client ID is invalid, set new client id
+            if (string.IsNullOrWhiteSpace(clientId))
+            {
+                clientId = Guid.NewGuid().ToString();
+                key.SetValue("ClientID", clientId);
+            }
+
+            key.Close();
+
+            return clientId;
+        }
+    }
+}

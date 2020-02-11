@@ -88,7 +88,7 @@ namespace WindowsGSM.GameServer
             {
                 StartInfo =
                 {
-                    FileName = Functions.Path.GetServerFiles(_serverData.ServerID, StartPath),
+                    FileName = Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath),
                     Arguments = param,
                     WindowStyle = ProcessWindowStyle.Minimized,
                     CreateNoWindow = true,
@@ -159,25 +159,25 @@ namespace WindowsGSM.GameServer
 
         public async Task<Process> Install()
         {
-            Steam.SRCDS srcds = new Steam.SRCDS(_serverData.ServerID);
-            Process p = await srcds.Install("298740");
-            Error = srcds.Error;
+            var steamCMD = new Installer.SteamCMD();
+            Process p = await steamCMD.Install(_serverData.ServerID, "", "298740");
+            Error = steamCMD.Error;
 
             return p;
         }
 
-        public async Task<bool> Update()
+        public async Task<bool> Update(bool validate = false)
         {
-            Steam.SRCDS srcds = new Steam.SRCDS(_serverData.ServerID);
-            bool success = await srcds.Update("298740");
-            Error = srcds.Error;
+            var steamCMD = new Installer.SteamCMD();
+            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "298740", validate);
+            Error = steamCMD.Error;
 
-            return success;
+            return updateSuccess;
         }
 
         public bool IsInstallValid()
         {
-            return File.Exists(Functions.Path.GetServerFiles(_serverData.ServerID, StartPath));
+            return File.Exists(Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath));
         }
 
         public bool IsImportValid(string path)

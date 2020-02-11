@@ -1,6 +1,9 @@
 ﻿using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Windows.Forms;
+using System;
 
 namespace WindowsGSM.GameServer
 {
@@ -16,6 +19,9 @@ namespace WindowsGSM.GameServer
     /// </summary>
     class RUST
     {
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
         private readonly Functions.ServerConfig _serverData;
 
         public string Error;
@@ -38,11 +44,10 @@ namespace WindowsGSM.GameServer
         public async void CreateServerCFG()
         {
             //Download server.cfg
-            string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, "server.cfg");
+            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "server.cfg");
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string configText = File.ReadAllText(configPath);
-                configText = configText.Replace("{{hostname}}", _serverData.ServerName);
                 configText = configText.Replace("{{rcon_password}}", _serverData.GetRCONPassword());
                 configText = configText.Replace("{{port}}", _serverData.GetAvailablePort(port));
                 File.WriteAllText(configPath, configText);
@@ -51,24 +56,25 @@ namespace WindowsGSM.GameServer
 
         public async Task<Process> Start()
         {
-            string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, "server.cfg");
+            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "server.cfg");
             if (!File.Exists(configPath))
             {
                 Notice = $"server.cfg not found ({configPath})";
             }
 
-            string workingDir = Functions.Path.GetServerFiles(_serverData.ServerID);
+            string workingDir = Functions.ServerPath.GetServerFiles(_serverData.ServerID);
             string srcdsPath = Path.Combine(workingDir, "RustDedicated.exe");
 
             string param = $"-nographics -batchmode -silent-crashes";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? "" : $" +server.hostname \"{_serverData.ServerName}\"";
             param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? "" : $" +server.ip {_serverData.ServerIP}";
             param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" +server.port {_serverData.ServerPort}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : $" +server.level {_serverData.ServerMap}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : $" +server.level \"{_serverData.ServerMap}\"";
             param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? "" : $" +server.maxplayers {_serverData.ServerMaxPlayer}";
 
             foreach (string line in File.ReadLines(configPath))
             {
-                param += line + " ";
+                param += $" {line}";
             }
 
             param += $" {additional}";
@@ -90,42 +96,42 @@ namespace WindowsGSM.GameServer
 
         public async Task Stop(Process p)
         {
-            await Steam.SRCDS.Stop(p);
+            await Task.Run(() =>
+            {
+                SetForegroundWindow(p.MainWindowHandle);
+                SendKeys.SendWait("quit");
+                SendKeys.SendWait("{ENTER}");
+                SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
+            });
         }
 
         public async Task<Process> Install()
         {
-            Steam.SRCDS srcds = new Steam.SRCDS(_serverData.ServerID);
-            Process p = await srcds.Install("258550");
-            Error = srcds.Error;
+            var steamCMD = new Installer.SteamCMD();
+            Process p = await steamCMD.Install(_serverData.ServerID, "", "258550");
+            Error = steamCMD.Error;
 
             return p;
         }
 
-        public async Task<bool> Update()
+        public async Task<bool> Update(bool validate = false)
         {
-            Steam.SRCDS srcds = new Steam.SRCDS(_serverData.ServerID);
-            bool success = await srcds.Update("258550");
-            Error = srcds.Error;
+            var steamCMD = new Installer.SteamCMD();
+            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "258550", validate);
+            Error = steamCMD.Error;
 
-            return success;
+            return updateSuccess;
         }
 
         public bool IsInstallValid()
         {
-            string exeFile = "RustDedicated.exe";
-            string exePath = Functions.Path.GetServerFiles(_serverData.ServerID, exeFile);
-
-            return File.Exists(exePath);
+            return File.Exists(Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath));
         }
 
         public bool IsImportValid(string path)
         {
-            string exeFile = "RustDedicated.exe";
-            string exePath = Path.Combine(path, exeFile);
-
-            Error = $"Invalid Path! Fail to find {exeFile}";
-            return File.Exists(exePath);
+            Error = $"Invalid Path! Fail to find {StartPath}";
+            return File.Exists(Path.Combine(path, StartPath));
         }
 
         public string GetLocalBuild()

@@ -54,7 +54,7 @@ namespace WindowsGSM.GameServer
         public async void CreateServerCFG(string hostname, string rcon_password, string port)
         {
             //Download serverconfig.xml
-            string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, "serverconfig.xml");
+            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "serverconfig.xml");
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string configText = File.ReadAllText(configPath);
@@ -67,14 +67,14 @@ namespace WindowsGSM.GameServer
             }
 
             //Create steam_appid.txt
-            string txtPath = Functions.Path.GetServerFiles(_serverData.ServerID, "steam_appid.txt");
+            string txtPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "steam_appid.txt");
             File.WriteAllText(txtPath, "251570");
         }
 
         public async Task<Process> Start()
         {
             string exeName = "7DaysToDieServer.exe";
-            string workingDir = Functions.Path.GetServerFiles(_serverData.ServerID);
+            string workingDir = Functions.ServerPath.GetServerFiles(_serverData.ServerID);
             string exePath = Path.Combine(workingDir, exeName);
 
             if (!File.Exists(exePath))
@@ -83,7 +83,7 @@ namespace WindowsGSM.GameServer
                 return null;
             }
 
-            string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, "serverconfig.xml");
+            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "serverconfig.xml");
             if (!File.Exists(configPath))
             {
                 Notice = $"serverconfig.xml not found ({configPath})";
@@ -133,26 +133,26 @@ namespace WindowsGSM.GameServer
 
         public async Task<Process> Install()
         {
-            Steam.SRCDS srcds = new Steam.SRCDS(_serverData.ServerID);
-            Process p = await srcds.Install("294420");
-            Error = srcds.Error;
+            var steamCMD = new Installer.SteamCMD();
+            Process p = await steamCMD.Install(_serverData.ServerID, "", "294420");
+            Error = steamCMD.Error;
 
             return p;
         }
 
-        public async Task<bool> Update()
+        public async Task<bool> Update(bool validate = false)
         {
-            Steam.SRCDS srcds = new Steam.SRCDS(_serverData.ServerID);
-            bool success = await srcds.Update("294420");
-            Error = srcds.Error;
+            var steamCMD = new Installer.SteamCMD();
+            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "294420", validate);
+            Error = steamCMD.Error;
 
-            return success;
+            return updateSuccess;
         }
 
         public bool IsInstallValid()
         {
             string exeFile = "7DaysToDieServer.exe";
-            string exePath = Functions.Path.GetServerFiles(_serverData.ServerID, exeFile);
+            string exePath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, exeFile);
 
             return File.Exists(exePath);
         }

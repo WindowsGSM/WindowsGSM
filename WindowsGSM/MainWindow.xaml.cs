@@ -32,6 +32,9 @@ namespace WindowsGSM
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
 
+        [DllImport("user32.dll")]
+        private static extern int SetWindowText(IntPtr hWnd, string windowName);
+
         private enum WindowShowStyle : uint
         {
             Hide = 0,
@@ -88,17 +91,59 @@ namespace WindowsGSM
 
         public MainWindow()
         {
+            //Add SplashScreen
+            SplashScreen splashScreen = new SplashScreen("Images/SplashScreen.png");
+            splashScreen.Show(false, true);
+
             InitializeComponent();
 
-            Title = "WindowsGSM " + WGSM_VERSION;
+            //Close SplashScreen
+            splashScreen.Close(new TimeSpan(0, 0, 1));
 
-            //Check DLL
-            if(!IsMahAppsMetroDllExist())
+            Title = $"WindowsGSM {WGSM_VERSION}";
+
+            #region Install MahApps.Metro.dll
+            string mahappsPath = Path.Combine(WGSM_PATH, "MahApps.Metro.dll");
+            bool shouldInstall = false;
+
+            //Check file size
+            if (File.Exists(mahappsPath))
             {
-#pragma warning disable 4014
-                Functions.Github.DownloadMahAppsMetroDll();
-#pragma warning restore
+                if (new FileInfo(mahappsPath).Length < 1097216)
+                {
+                    File.Delete(mahappsPath);
+                    shouldInstall = true;
+                }
             }
+
+            if (!File.Exists(mahappsPath) || shouldInstall)
+            {
+                try
+                {
+                    using (WebClient webClient = new WebClient())
+                    {
+                        webClient.DownloadFile("https://github.com/WindowsGSM/WindowsGSM/raw/master/packages/MahApps.Metro.1.6.5/lib/net47/MahApps.Metro.dll", mahappsPath);
+                    }
+                }
+                catch
+                {
+                    File.Delete(mahappsPath);
+                    Close();
+                }
+
+                while (new FileInfo(mahappsPath).Length < 1097216) { }
+
+                //Restart WindowsGSM
+                ProcessStartInfo psi = new ProcessStartInfo
+                {
+                    FileName = Process.GetCurrentProcess().MainModule.FileName,
+                    Verb = "runas"
+                };
+                Process.Start(psi);
+
+                Close();
+            }
+            #endregion
 
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM");
             if (key == null)
@@ -198,7 +243,7 @@ namespace WindowsGSM
                     process.Kill();
                 }
             }
-            
+
             LoadServerTable();
 
             if (ServerGrid.Items.Count > 0)
@@ -207,12 +252,8 @@ namespace WindowsGSM
             }
 
             AutoStartServer();
-        }
 
-        private static bool IsMahAppsMetroDllExist()
-        {
-            string mahappsPath = Path.Combine(WGSM_PATH, "MahApps.Metro.dll");
-            return File.Exists(mahappsPath);
+            SendGoogleAnalytics();
         }
 
         private void RefreshServerList_Click(object sender, RoutedEventArgs e)
@@ -330,6 +371,14 @@ namespace WindowsGSM
                     await GameServer_Start(server, " | Auto Start");
                 }
             }
+        }
+
+        private async void SendGoogleAnalytics()
+        {
+            var analytics = new Functions.GoogleAnalytics();
+            analytics.SendWindowsOS();
+            analytics.SendWindowsGSMVersion();
+            analytics.SendProcessorName();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -826,14 +875,18 @@ namespace WindowsGSM
                 await webhook.Send(server.ID, server.Game, "Restarted", server.Name, server.IP, server.Port);
             }
         }
-
+        
         private async Task<dynamic> Server_BeginStart(Functions.ServerTable server)
         {
             dynamic gameServer = GameServer.ClassObject.Get(server.Game, new Functions.ServerConfig(server.ID));
             if (gameServer == null) { return null; }
 
+            //End All Running Process
+            await EndAllRunningProcess(server.ID);
+            await Task.Delay(1000);
+
             //Add Start File to WindowsFirewall before start
-            string startPath = Functions.Path.GetServerFiles(server.ID, gameServer.StartPath);
+            string startPath = Functions.ServerPath.GetServerFiles(server.ID, gameServer.StartPath);
             if (!string.IsNullOrWhiteSpace(gameServer.StartPath))
             {
                 WindowsFirewall firewall = new WindowsFirewall(Path.GetFileName(startPath), startPath);
@@ -857,7 +910,7 @@ namespace WindowsGSM
             }
 
             g_Process[Int32.Parse(server.ID)] = p;
-            p.Exited += (sender, e) => OnGameServerExited(sender, e, server);
+            p.Exited += (sender, e) => OnGameServerExited(server);
 
             await Task.Run(() =>
             {
@@ -898,11 +951,16 @@ namespace WindowsGSM
                 return null;
             }
 
+            SetWindowText(p.MainWindowHandle, server.Name);
+
             ShowWindow(p.MainWindowHandle, WindowShowStyle.Hide);
 
             StartAutoUpdateCheck(server);
 
             StartRestartCrontabCheck(server);
+
+            var analytics = new Functions.GoogleAnalytics();
+            analytics.SendGameServerStart(server.ID, server.Game);
 
             return gameServer;
         }
@@ -1138,7 +1196,7 @@ namespace WindowsGSM
             SetServerStatus(server, "Deleting");
 
             //Remove firewall rule
-            var firewall = new WindowsFirewall(null, Functions.Path.Get(server.ID));
+            var firewall = new WindowsFirewall(null, Functions.ServerPath.Get(server.ID));
             firewall.RemoveRuleEx();
 
             //End All Running Process
@@ -1185,7 +1243,7 @@ namespace WindowsGSM
             return true;
         }
 
-        private async void OnGameServerExited(object sender, EventArgs e, Functions.ServerTable server)
+        private async void OnGameServerExited(Functions.ServerTable server)
         {
             await System.Windows.Application.Current.Dispatcher.Invoke(async () =>
             {
@@ -1193,9 +1251,10 @@ namespace WindowsGSM
 
                 if (g_iServerStatus[serverId] == ServerStatus.Started)
                 {
-                    g_iServerStatus[serverId] = ServerStatus.Stopped;
+                    bool autoRestart = g_bAutoRestart[serverId];
+                    g_iServerStatus[serverId] = autoRestart ? ServerStatus.Restarting : ServerStatus.Stopped;
                     Log(server.ID, "Server: Crashed");
-                    SetServerStatus(server, "Stopped");
+                    SetServerStatus(server, autoRestart ? "Restarting" : "Stopped");
 
                     if (g_bDiscordAlert[serverId])
                     {
@@ -1205,12 +1264,16 @@ namespace WindowsGSM
 
                     g_Process[serverId] = null;
 
-                    if (g_bAutoRestart[serverId])
+                    if (autoRestart)
                     {
                         await Task.Delay(1000);
 
                         var gameServer = await Server_BeginStart(server);
-                        if (gameServer == null) { return; }
+                        if (gameServer == null)
+                        {
+                            g_iServerStatus[serverId] = ServerStatus.Stopped;
+                            return;
+                        }
 
                         g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Started;
                         Log(server.ID, "Server: Started | Auto Restart");

@@ -7,11 +7,11 @@
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         mc:Ignorable="d"
         Title="WindowsGSM" 
-        Height="540" 
+        Height="585" 
         Width="960" 
         Icon="Images\WindowsGSM.ico"
         ResizeMode="CanResizeWithGrip"
-        MinHeight="540"
+        MinHeight="585"
         MinWidth="960"
         Closing="Window_Closing"
         GlowBrush="{DynamicResource AccentColorBrush}"
@@ -106,7 +106,7 @@
             <DataGrid x:Name="ServerGrid" SelectionMode="Single" SelectionUnit="FullRow" RowHeaderWidth="0" HeadersVisibility="Column" GridLinesVisibility="None" DockPanel.Dock="Top" SelectionChanged="DataGrid_SelectionChanged" IsSynchronizedWithCurrentItem="True">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding Path=ID}" Width="45" MinWidth="45" MaxWidth="45"/>
-                    <DataGridTemplateColumn Header="MOD" IsReadOnly="True" Width="50" MinWidth="50" MaxWidth="50">
+                    <DataGridTemplateColumn Header="MOD" IsReadOnly="True" Width="53" MinWidth="53" MaxWidth="53">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Image Source="{Binding Icon}" Width="18"/>
