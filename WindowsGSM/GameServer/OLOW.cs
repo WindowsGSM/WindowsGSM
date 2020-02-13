@@ -110,14 +110,7 @@ namespace WindowsGSM.GameServer
         {
             await Task.Run(() =>
             {
-                if (ToggleConsole)
-                {
-                    p.CloseMainWindow();
-                }
-                else
-                {
-                    p.Kill();
-                }
+                p.Kill();
             });
         }
 

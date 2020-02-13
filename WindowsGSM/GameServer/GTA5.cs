@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace WindowsGSM.GameServer
 {
@@ -43,7 +44,7 @@ namespace WindowsGSM.GameServer
                 configText = configText.Replace("{{hostname}}", _serverData.ServerName);
                 configText = configText.Replace("{{rcon_password}}", _serverData.GetRCONPassword());
                 configText = configText.Replace("{{ip}}", _serverData.GetIPAddress());
-                configText = configText.Replace("{{port}}", _serverData.GetAvailablePort(port));
+                configText = configText.Replace("{{port}}", _serverData.ServerPort);
                 configText = configText.Replace("{{maxplayers}}", maxplayers);
                 File.WriteAllText(configPath, configText);
             }
@@ -82,28 +83,47 @@ namespace WindowsGSM.GameServer
                 Notice = $"server.cfg not found ({configPath})";
             }
 
-            Process p = new Process
+            Process p;
+            if (ToggleConsole)
             {
-                StartInfo =
+                p = new Process
                 {
-                    WorkingDirectory = serverDataPath,
-                    FileName = fxServerPath,
-                    Arguments = $"+set citizen_dir \"{citizenPath}\" {_serverData.ServerParam}",
-                    WindowStyle = ProcessWindowStyle.Minimized,
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                },
-                EnableRaisingEvents = true
-            };
-            var serverConsole = new Functions.ServerConsole(_serverData.ServerID);
-            p.OutputDataReceived += serverConsole.AddOutput;
-            p.ErrorDataReceived += serverConsole.AddOutput;
-            p.Start();
-            p.BeginOutputReadLine();
-            p.BeginErrorReadLine();
+                    StartInfo =
+                    {
+                        WorkingDirectory = serverDataPath,
+                        FileName = fxServerPath,
+                        Arguments = $"+set citizen_dir \"{citizenPath}\" {_serverData.ServerParam}",
+                        WindowStyle = ProcessWindowStyle.Minimized
+                    },
+                    EnableRaisingEvents = true
+                };
+                p.Start();
+            }
+            else
+            {
+                p = new Process
+                {
+                    StartInfo =
+                    {
+                        WorkingDirectory = serverDataPath,
+                        FileName = fxServerPath,
+                        Arguments = $"+set citizen_dir \"{citizenPath}\" {_serverData.ServerParam}",
+                        WindowStyle = ProcessWindowStyle.Minimized,
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        RedirectStandardInput = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
+                    },
+                    EnableRaisingEvents = true
+                };
+                var serverConsole = new Functions.ServerConsole(_serverData.ServerID);
+                p.OutputDataReceived += serverConsole.AddOutput;
+                p.ErrorDataReceived += serverConsole.AddOutput;
+                p.Start();
+                p.BeginOutputReadLine();
+                p.BeginErrorReadLine();
+            }
 
             return p;
         }
@@ -112,7 +132,17 @@ namespace WindowsGSM.GameServer
         {
             await Task.Run(() =>
             {
-                p.StandardInput.WriteLine("quit");
+                if (p.StartInfo.RedirectStandardInput)
+                {
+                    p.StandardInput.WriteLine("quit");
+                }
+                else
+                {
+                    SetForegroundWindow(p.MainWindowHandle);
+                    SendKeys.SendWait("quit");
+                    SendKeys.SendWait("{ENTER}");
+                    SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
+                }
             });
         }
 

@@ -129,6 +129,9 @@
   <data name="Counter-Strike: Global Offensive Dedicated Server" xml:space="preserve">
     <value>Images/Games/csgo.png</value>
   </data>
+  <data name="Counter-Strike: Source Dedicated Server" xml:space="preserve">
+    <value>Images/Games/css.png</value>
+  </data>
   <data name="DayZ Dedicated Server" xml:space="preserve">
     <value>Images/Games/dayz.png</value>
   </data>
@@ -140,6 +143,9 @@
   </data>
   <data name="Half-Life 2: Deathmatch Dedicated Server" xml:space="preserve">
     <value>Images/Games/hl2dm.png</value>
+  </data>
+  <data name="Insurgency Dedicated Server" xml:space="preserve">
+    <value>Images/Games/ins.png</value>
   </data>
   <data name="Left 4 Dead 2 Dedicated Server" xml:space="preserve">
     <value>Images/Games/l4d2.png</value>
@@ -155,6 +161,9 @@
   </data>
   <data name="Mordhau Dedicated Server" xml:space="preserve">
     <value>Images/Games/mordhau.png</value>
+  </data>
+  <data name="No More Room in Hell Dedicated Server" xml:space="preserve">
+    <value>Images/Games/nmrih.png</value>
   </data>
   <data name="Outlaws of the Old West Dedicated Server" xml:space="preserve">
     <value>Images/Games/olow.png</value>

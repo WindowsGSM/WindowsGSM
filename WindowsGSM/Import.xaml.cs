@@ -156,7 +156,7 @@ namespace WindowsGSM
             if (isImportSuccess)
             {
                 //Create WindowsGSM.cfg
-                serverConfig.CreateWindowsGSMConfig(servergame, servername, serverConfig.GetIPAddress(), serverConfig.GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
+                serverConfig.CreateWindowsGSMConfig(servergame, servername, serverConfig.GetIPAddress(), serverConfig.GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional, gameServer.ToggleConsole);
 
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {

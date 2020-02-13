@@ -7,11 +7,15 @@ using System.Windows;
 using System.Net;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace WindowsGSM.GameServer
 {
     class MC
     {
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
         private readonly Functions.ServerConfig _serverData;
 
         public string Error;
@@ -44,7 +48,7 @@ namespace WindowsGSM.GameServer
             string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "server.properties");
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
-                string serverPort = _serverData.GetAvailablePort(this.port);
+                string serverPort = _serverData.ServerPort;
                 string configText = File.ReadAllText(configPath);
                 configText = configText.Replace("{{serverPort}}", serverPort);
                 configText = configText.Replace("{{maxplayers}}", maxplayers);
@@ -92,28 +96,47 @@ namespace WindowsGSM.GameServer
                 }
             }
 
-            Process p = new Process
+            Process p;
+            if (ToggleConsole)
             {
-                StartInfo =
+                p = new Process
                 {
-                    WorkingDirectory = workingDir,
-                    FileName = javaPath,
-                    Arguments = $"{_serverData.ServerParam} -jar server.jar nogui",
-                    WindowStyle = ProcessWindowStyle.Minimized,
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                },
-                EnableRaisingEvents = true
-            };
-            var serverConsole = new Functions.ServerConsole(_serverData.ServerID);
-            p.OutputDataReceived += serverConsole.AddOutput;
-            p.ErrorDataReceived += serverConsole.AddOutput;
-            p.Start();
-            p.BeginOutputReadLine();
-            p.BeginErrorReadLine();
+                    StartInfo =
+                    {
+                        WorkingDirectory = workingDir,
+                        FileName = javaPath,
+                        Arguments = $"{_serverData.ServerParam} -jar server.jar nogui",
+                        WindowStyle = ProcessWindowStyle.Minimized,
+                    },
+                    EnableRaisingEvents = true
+                };
+                p.Start();
+            }
+            else
+            {
+                p = new Process
+                {
+                    StartInfo =
+                    {
+                        WorkingDirectory = workingDir,
+                        FileName = javaPath,
+                        Arguments = $"{_serverData.ServerParam} -jar server.jar nogui",
+                        WindowStyle = ProcessWindowStyle.Minimized,
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        RedirectStandardInput = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
+                    },
+                    EnableRaisingEvents = true
+                };
+                var serverConsole = new Functions.ServerConsole(_serverData.ServerID);
+                p.OutputDataReceived += serverConsole.AddOutput;
+                p.ErrorDataReceived += serverConsole.AddOutput;
+                p.Start();
+                p.BeginOutputReadLine();
+                p.BeginErrorReadLine();
+            }
 
             return p;
         }
@@ -122,7 +145,17 @@ namespace WindowsGSM.GameServer
         {
             await Task.Run(() =>
             {
-                p.StandardInput.WriteLine("stop");
+                if (p.StartInfo.RedirectStandardInput)
+                {
+                    p.StandardInput.WriteLine("stop");
+                }
+                else
+                {
+                    SetForegroundWindow(p.MainWindowHandle);
+                    SendKeys.SendWait("stop");
+                    SendKeys.SendWait("{ENTER}");
+                    SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
+                }
             });
         }
 

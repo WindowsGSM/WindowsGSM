@@ -42,11 +42,13 @@ namespace WindowsGSM.Discord
                     ""fields"": [
                     {
                         ""name"": ""Game Server"",
-                        ""value"": """ + servergame + @"""
+                        ""value"": """ + servergame + @""",
+                        ""inline"": true
                     },
                     {
                         ""name"": ""Server IP:Port"",
-                        ""value"": """ + serverip + ":"+ serverport + @"""
+                        ""value"": """ + serverip + ":"+ serverport + @""",
+                        ""inline"": true
                     }],
                     ""author"": {
                         ""name"": """ + servername + @""",
@@ -56,11 +58,11 @@ namespace WindowsGSM.Discord
                         ""text"": ""WindowsGSM - Alert"",
                         ""icon_url"": """ + avatarUrl + @"""
                     },
-                    ""timestamp"": """ + time + @"""
-                }],
-                ""thumbnail"": {
-                    ""url"": ""https://upload.wikimedia.org/wikipedia/commons/3/38/4-Nature-Wallpapers-2014-1_ukaavUI.jpg""
-                }
+                    ""timestamp"": """ + time + @""",
+                    ""thumbnail"": {
+                        ""url"": ""https://windowsgsm.com/assets/images/warning.png""
+                    }
+                }]
             }";
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -83,26 +85,46 @@ namespace WindowsGSM.Discord
 
         private static string GetColor(string serverStatus)
         {
-            switch (serverStatus)
+            if (serverStatus.Contains("Started"))
             {
-                case "Started": return "65280"; //Green
-                case "Stopped": return "16755200"; //Orange
-                case "Restarted": return "65535"; //Cyan
-                case "Crashed": return "16711680"; //Red
-                default: return "16777215";
+                return "65280"; //Green
             }
+            else if (serverStatus.Contains("Restarted"))
+            {
+                return "65535"; //Cyan
+            }
+            else if(serverStatus.Contains("Crashed"))
+            {
+                return "16711680"; //Red
+            }
+            else if(serverStatus.Contains("Updated"))
+            {
+                return "16564292"; //Gold
+            }
+
+            return "16777215";
         }
 
         private static string GetStatusWithEmoji(string serverStatus)
         {
-            switch (serverStatus)
+            if (serverStatus.Contains("Started"))
             {
-                case "Started": return $"{serverStatus} :ok:";
-                case "Stopped": return $"{serverStatus} :octagonal_sign:";
-                case "Restarted": return $"{serverStatus} :arrows_counterclockwise:";
-                case "Crashed": return $"{serverStatus} :warning:";
-                default: return serverStatus;
+                return ":green_circle: " + serverStatus;
             }
+            else if (serverStatus.Contains("Restarted"))
+            {
+                return ":blue_circle: " + serverStatus;
+            }
+            else if (serverStatus.Contains("Crashed"))
+            {
+                return ":red_circle: " + serverStatus;
+            }
+            else if (serverStatus.Contains("Updated"))
+            {
+                return ":orange_circle: " + serverStatus;
+            }
+
+            return serverStatus;
         }
 
         private static string GetServerGameIcon(string serverGame)

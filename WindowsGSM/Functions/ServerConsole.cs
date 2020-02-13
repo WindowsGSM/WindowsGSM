@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Collections;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using System.Threading.Tasks;
 
 namespace WindowsGSM.Functions
 {
@@ -26,32 +27,36 @@ namespace WindowsGSM.Functions
             MainWindow.g_ServerConsoles[Int32.Parse(_serverId)].Add(args.Data);
         }
 
-        public static bool IsToggleable(string serverGame)
+        public async void Input(Process process, string text, IntPtr mainWindow)
         {
-            dynamic gameServer = GameServer.ClassObject.Get(serverGame, null);
-            return gameServer.ToggleConsole;
-        }
-
-        public void Input(Process process, string text)
-        {
-            if (!process.HasExited)
+            await Task.Run(() =>
             {
-                try
+                if (!process.HasExited)
                 {
-                    process.StandardInput.WriteLine(text);
-                    Add(text);
+                    if (process.StartInfo.RedirectStandardInput)
+                    {
+                        try
+                        {
+                            process.StandardInput.WriteLine(text);
+                            Add(text);
+                        }
+                        catch
+                        {
+                            //ignore
+                        }
+                    }
+                    else
+                    {
+                        SetForegroundWindow(mainWindow);
+                        SendKeys.SendWait(text);
+                        SendKeys.SendWait("{ENTER}");
+                        SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
+                    }
                 }
-                catch
-                {
-                    SetForegroundWindow(process.MainWindowHandle);
-                    SendKeys.SendWait(text);
-                    SendKeys.SendWait("{ENTER}");
-                    SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
-                }
-            }
+            });
         }
 
-        public void InputFor7DTD(Process process, string text)
+        public void InputFor7DTD(Process process, string text, IntPtr mainWindow)
         {
             if (!process.HasExited)
             {

@@ -97,6 +97,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/css.png.
+        /// </summary>
+        public static string Counter_Strike__Source_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Counter-Strike: Source Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/dayz.png.
         /// </summary>
         public static string DayZ_Dedicated_Server {
@@ -129,6 +138,15 @@ namespace WindowsGSM.GameServer.Data {
         public static string Half_Life_2__Deathmatch_Dedicated_Server {
             get {
                 return ResourceManager.GetString("Half-Life 2: Deathmatch Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/ins.png.
+        /// </summary>
+        public static string Insurgency_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Insurgency Dedicated Server", resourceCulture);
             }
         }
         
@@ -174,6 +192,15 @@ namespace WindowsGSM.GameServer.Data {
         public static string Mordhau_Dedicated_Server {
             get {
                 return ResourceManager.GetString("Mordhau Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/nmrih.png.
+        /// </summary>
+        public static string No_More_Room_in_Hell_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("No More Room in Hell Dedicated Server", resourceCulture);
             }
         }
         

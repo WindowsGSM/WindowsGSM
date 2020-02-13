@@ -51,17 +51,17 @@ namespace WindowsGSM.GameServer
             _serverData = serverData;
         }
 
-        public async void CreateServerCFG(string hostname, string rcon_password, string port)
+        public async void CreateServerCFG()
         {
             //Download serverconfig.xml
             string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "serverconfig.xml");
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string configText = File.ReadAllText(configPath);
-                configText = configText.Replace("{{hostname}}", hostname);
-                configText = configText.Replace("{{rcon_password}}", rcon_password);
-                configText = configText.Replace("{{port}}", port);
-                configText = configText.Replace("{{telnetPort}}", (Int32.Parse(port) - Int32.Parse(this.port) + 8081).ToString());
+                configText = configText.Replace("{{hostname}}", _serverData.ServerName);
+                configText = configText.Replace("{{rcon_password}}", _serverData.GetRCONPassword());
+                configText = configText.Replace("{{port}}", _serverData.ServerPort);
+                configText = configText.Replace("{{telnetPort}}", (Int32.Parse(_serverData.ServerPort) - Int32.Parse(port) + 8081).ToString());
                 configText = configText.Replace("{{maxplayers}}", maxplayers);
                 File.WriteAllText(configPath, configText);
             }
@@ -97,25 +97,43 @@ namespace WindowsGSM.GameServer
                 firewall.AddRule();
             }
 
-            Process p = new Process
+            Process p;
+            if (ToggleConsole)
             {
-                StartInfo =
+                p = new Process
                 {
-                    FileName = exePath,
-                    Arguments = param,
-                    WindowStyle = ProcessWindowStyle.Minimized,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                },
-                EnableRaisingEvents = true
-            };
-            var serverConsole = new Functions.ServerConsole(_serverData.ServerID);
-            p.OutputDataReceived += serverConsole.AddOutput;
-            p.ErrorDataReceived += serverConsole.AddOutput;
-            p.Start();
-            p.BeginOutputReadLine();
-            p.BeginErrorReadLine();
+                    StartInfo =
+                    {
+                        FileName = exePath,
+                        Arguments = param,
+                        WindowStyle = ProcessWindowStyle.Minimized
+                    },
+                    EnableRaisingEvents = true
+                };
+                p.Start();
+            }
+            else
+            {
+                p = new Process
+                {
+                    StartInfo =
+                    {
+                        FileName = exePath,
+                        Arguments = param,
+                        WindowStyle = ProcessWindowStyle.Minimized,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
+                    },
+                    EnableRaisingEvents = true
+                };
+                var serverConsole = new Functions.ServerConsole(_serverData.ServerID);
+                p.OutputDataReceived += serverConsole.AddOutput;
+                p.ErrorDataReceived += serverConsole.AddOutput;
+                p.Start();
+                p.BeginOutputReadLine();
+                p.BeginErrorReadLine();
+            }
 
             return p;
         }

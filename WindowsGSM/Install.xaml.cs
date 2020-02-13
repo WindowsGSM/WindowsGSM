@@ -129,11 +129,11 @@ namespace WindowsGSM
 
             if (gameServer.IsInstallValid())
             {
-                var analytics = new Functions.GoogleAnalytics();
-                analytics.SendGameServerInstall(serverConfig.ServerID, servergame);
+                serverConfig.ServerIP = serverConfig.GetIPAddress();
+                serverConfig.ServerPort = serverConfig.GetAvailablePort(gameServer.port);
 
                 //Create WindowsGSM.cfg
-                serverConfig.CreateWindowsGSMConfig(servergame, servername, serverConfig.GetIPAddress(), serverConfig.GetAvailablePort(gameServer.port), gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional);
+                serverConfig.CreateWindowsGSMConfig(servergame, servername, serverConfig.ServerIP, serverConfig.ServerPort, gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional, gameServer.ToggleConsole);
 
                 //Create game server config
                 try
@@ -148,9 +148,15 @@ namespace WindowsGSM
 
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
-                    MainWindow WindowsGSM = (MainWindow)System.Windows.Application.Current.MainWindow;
+                    MainWindow WindowsGSM = (MainWindow)Application.Current.MainWindow;
                     WindowsGSM.LoadServerTable();
                     WindowsGSM.Log(serverConfig.ServerID, "Install: Success");
+
+                    if (WindowsGSM.MahAppSwitch_SendStatistics.IsChecked ?? false)
+                    {
+                        var analytics = new Functions.GoogleAnalytics();
+                        analytics.SendGameServerInstall(serverConfig.ServerID, servergame);
+                    }
 
                     Close();
                 });

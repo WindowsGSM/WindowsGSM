@@ -59,7 +59,7 @@ namespace WindowsGSM.GameServer
             param += String.Format("{0}", String.IsNullOrEmpty(_serverData.ServerParam) ? "" : $" {_serverData.ServerParam}");
             param += String.Format("{0}", String.IsNullOrEmpty(_serverData.ServerMap) ? "" : $" +map {_serverData.ServerMap}");
 
-            Valve.HLDS hlds = new Valve.HLDS(_serverData.ServerID);
+            Type.HLDS hlds = new Type.HLDS(_serverData.ServerID);
             Process p = await hlds.Start(param);
             Error = hlds.Error;
 
@@ -68,12 +68,12 @@ namespace WindowsGSM.GameServer
 
         public async Task Stop(Process p)
         {
-            await Valve.HLDS.Stop(p);
+            await Type.HLDS.Stop(p);
         }
 
         public async Task<Process> Install()
         {
-            Valve.HLDS hlds = new Valve.HLDS(_serverData.ServerID);
+            Type.HLDS hlds = new Type.HLDS(_serverData.ServerID);
             Process p = await hlds.Install("", "90");
             Error = hlds.Error;
 
@@ -82,7 +82,7 @@ namespace WindowsGSM.GameServer
 
         public async Task<bool> Update()
         {
-            Valve.HLDS hlds = new Valve.HLDS(_serverData.ServerID);
+            Type.HLDS hlds = new Type.HLDS(_serverData.ServerID);
             bool success = await hlds.Update("", "90");
             Error = hlds.Error;
 

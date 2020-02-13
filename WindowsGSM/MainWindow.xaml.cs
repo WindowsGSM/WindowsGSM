@@ -18,6 +18,8 @@ using MahApps.Metro.Controls.Dialogs;
 using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
 using NCrontab;
+using System.Collections.Generic;
+using System.Collections;
 
 namespace WindowsGSM
 {
@@ -61,7 +63,7 @@ namespace WindowsGSM
             Deleting = 12
         }
 
-        public static readonly string WGSM_VERSION = "v1.10.1";
+        public static readonly string WGSM_VERSION = "v1.11.0";
         public static readonly int MAX_SERVER = 100;
         public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
 
@@ -73,6 +75,7 @@ namespace WindowsGSM
         private static readonly ServerStatus[] g_iServerStatus = new ServerStatus[MAX_SERVER + 1];
 
         private static readonly Process[] g_Process = new Process[MAX_SERVER + 1];
+        private static readonly IntPtr[] g_MainWindow = new IntPtr[MAX_SERVER + 1];
 
         private static readonly bool[] g_bAutoRestart = new bool[MAX_SERVER + 1];
         private static readonly bool[] g_bAutoStart = new bool[MAX_SERVER + 1];
@@ -85,9 +88,11 @@ namespace WindowsGSM
         private static readonly bool[] g_bRestartCrontab = new bool[MAX_SERVER + 1];
         private static readonly string[] g_CrontabFormat = new string[MAX_SERVER + 1];
 
-        private static string g_DonorType = "";
+        private static readonly bool[] g_bEmbedConsole = new bool[MAX_SERVER + 1];
 
-        public static readonly Functions.ServerConsole[] g_ServerConsoles = new Functions.ServerConsole[MAX_SERVER + 1];
+        private string g_DonorType = "";
+
+        public static Functions.ServerConsole[] g_ServerConsoles = new Functions.ServerConsole[MAX_SERVER + 1];
 
         public MainWindow()
         {
@@ -102,49 +107,6 @@ namespace WindowsGSM
 
             Title = $"WindowsGSM {WGSM_VERSION}";
 
-            #region Install MahApps.Metro.dll
-            string mahappsPath = Path.Combine(WGSM_PATH, "MahApps.Metro.dll");
-            bool shouldInstall = false;
-
-            //Check file size
-            if (File.Exists(mahappsPath))
-            {
-                if (new FileInfo(mahappsPath).Length < 1097216)
-                {
-                    File.Delete(mahappsPath);
-                    shouldInstall = true;
-                }
-            }
-
-            if (!File.Exists(mahappsPath) || shouldInstall)
-            {
-                try
-                {
-                    using (WebClient webClient = new WebClient())
-                    {
-                        webClient.DownloadFile("https://github.com/WindowsGSM/WindowsGSM/raw/master/packages/MahApps.Metro.1.6.5/lib/net47/MahApps.Metro.dll", mahappsPath);
-                    }
-                }
-                catch
-                {
-                    File.Delete(mahappsPath);
-                    Close();
-                }
-
-                while (new FileInfo(mahappsPath).Length < 1097216) { }
-
-                //Restart WindowsGSM
-                ProcessStartInfo psi = new ProcessStartInfo
-                {
-                    FileName = Process.GetCurrentProcess().MainModule.FileName,
-                    Verb = "runas"
-                };
-                Process.Start(psi);
-
-                Close();
-            }
-            #endregion
-
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM");
             if (key == null)
             {
@@ -155,6 +117,7 @@ namespace WindowsGSM
                 key.SetValue("StartOnBoot", "False");
                 key.SetValue("DonorTheme", "False");
                 key.SetValue("DonorAuthKey", "");
+                key.SetValue("SendStatistics", "True");
                 key.SetValue("Height", "540");
                 key.SetValue("Width", "960");
 
@@ -163,19 +126,21 @@ namespace WindowsGSM
                 MahAppSwitch_DarkTheme.IsChecked = false;
                 MahAppSwitch_StartOnBoot.IsChecked = false;
                 MahAppSwitch_DonorTheme.IsChecked = false;
+                MahAppSwitch_SendStatistics.IsChecked = true;
             }
             else
             {
-                MahAppSwitch_HardWareAcceleration.IsChecked = ((key.GetValue("HardWareAcceleration") ?? false).ToString() == "True") ? true : false;
-                MahAppSwitch_UIAnimation.IsChecked = ((key.GetValue("UIAnimation") ?? false).ToString() == "True") ? true : false;
+                MahAppSwitch_HardWareAcceleration.IsChecked = ((key.GetValue("HardWareAcceleration") ?? true).ToString() == "True") ? true : false;
+                MahAppSwitch_UIAnimation.IsChecked = ((key.GetValue("UIAnimation") ?? true).ToString() == "True") ? true : false;
                 MahAppSwitch_DarkTheme.IsChecked = ((key.GetValue("DarkTheme") ?? false).ToString() == "True") ? true : false;
                 MahAppSwitch_StartOnBoot.IsChecked = ((key.GetValue("StartOnBoot") ?? false).ToString() == "True") ? true : false;
                 MahAppSwitch_DonorTheme.IsChecked = ((key.GetValue("DonorTheme") ?? false).ToString() == "True") ? true : false;
+                MahAppSwitch_SendStatistics.IsChecked = ((key.GetValue("SendStatistics") ?? true).ToString() == "True") ? true : false;
 
                 if (MahAppSwitch_DonorTheme.IsChecked ?? false)
                 {
                     string authKey = (key.GetValue("DonorAuthKey") == null) ? "" : key.GetValue("DonorAuthKey").ToString();
-                    if (!String.IsNullOrWhiteSpace(authKey))
+                    if (!string.IsNullOrWhiteSpace(authKey))
                     {
 #pragma warning disable 4014
                         ActivateDonorTheme(authKey);
@@ -210,6 +175,7 @@ namespace WindowsGSM
 
             notifyIcon.BalloonTipClicked += OnBalloonTipClick;
             notifyIcon.MouseClick += NotifyIcon_MouseClick;
+            notifyIcon.Visible = true;
 
             //Set All server status to stopped
             for (int i = 0; i <= MAX_SERVER; i++)
@@ -222,14 +188,14 @@ namespace WindowsGSM
             var processes = (from p in Process.GetProcesses()
                              where ((Predicate<Process>)(p_ =>
                              {
-                                try
-                                {
-                                    return p_.MainModule.FileName.Contains(Path.Combine(WGSM_PATH, "servers"));
-                                }
-                                catch
-                                {
-                                    return false;
-                                }
+                                 try
+                                 {
+                                     return p_.MainModule.FileName.Contains(Path.Combine(WGSM_PATH, "servers"));
+                                 }
+                                 catch
+                                 {
+                                     return false;
+                                 }
                              }))(p)
                              select p).ToList();
 
@@ -238,9 +204,16 @@ namespace WindowsGSM
             {
                 string path = process.MainModule.FileName.Replace(Path.Combine(WGSM_PATH, "servers"), "").Substring(1);
 
-                if (Int32.TryParse(path.Split(Path.DirectorySeparatorChar).First(), out int serverId))
+                if (int.TryParse(path.Split(Path.DirectorySeparatorChar).First(), out int serverId))
                 {
-                    process.Kill();
+                    try
+                    {
+                        process.Kill();
+                    }
+                    catch
+                    {
+                        //ignore
+                    }
                 }
             }
 
@@ -253,7 +226,10 @@ namespace WindowsGSM
 
             AutoStartServer();
 
-            SendGoogleAnalytics();
+            if (MahAppSwitch_SendStatistics.IsChecked ?? false)
+            {
+                SendGoogleAnalytics();
+            }
         }
 
         private void RefreshServerList_Click(object sender, RoutedEventArgs e)
@@ -264,12 +240,7 @@ namespace WindowsGSM
         public void LoadServerTable()
         {
             var selectedrow = (Functions.ServerTable)ServerGrid.SelectedItem;
-
-            int num_row = ServerGrid.Items.Count;
-            for (int i = 0; i < num_row; i++)
-            {
-                ServerGrid.Items.RemoveAt(0);
-            }
+            ServerGrid.Items.Clear();
 
             //Add server to datagrid
             for (int i = 1; i <= MAX_SERVER; i++)
@@ -329,7 +300,8 @@ namespace WindowsGSM
                         IP = serverConfig.ServerIP,
                         Port = serverConfig.ServerPort,
                         Defaultmap = serverConfig.ServerMap,
-                        Maxplayers = serverConfig.ServerMaxPlayer
+                        Maxplayers = serverConfig.ServerMaxPlayer,
+                        RamUsage = "0"
                     };
 
                     ServerGrid.Items.Add(server);
@@ -350,6 +322,7 @@ namespace WindowsGSM
                     g_DiscordWebhook[i] = serverConfig.DiscordWebhook;
                     g_bRestartCrontab[i] = serverConfig.RestartCrontab;
                     g_CrontabFormat[i] = serverConfig.CrontabFormat;
+                    g_bEmbedConsole[i] = serverConfig.EmbedConsole;
                 }
                 catch
                 {
@@ -360,15 +333,63 @@ namespace WindowsGSM
             grid_action.Visibility = (ServerGrid.Items.Count != 0) ? Visibility.Visible : Visibility.Hidden;
         }
 
+        public void LoadRamUsage(string serverId)
+        {
+            int Id = int.Parse(serverId);
+            var row = (Functions.ServerTable)ServerGrid.Items[Id-1];
+
+            if (g_Process[Id] == null || g_Process[Id].HasExited)
+            {
+                return;
+            }
+
+            //g_Process[Id].Refresh();
+            double ramUsage = g_Process[Id].WorkingSet64 / 1024.0;
+
+            int count = 0;
+            while (ramUsage > 1024.0)
+            {
+                ramUsage /= 1024.0;
+                count++;
+            }
+
+            string memory = ramUsage.ToString("0.#") + (count == 0 ? "KB" : count == 1 ? "MB" : "GB");
+
+            row.RamUsage = memory;
+
+            var selectedRow = (Functions.ServerTable)ServerGrid.SelectedItem;
+            ServerGrid.Items[Id-1] = row;
+            ServerGrid.SelectedItem = selectedRow;
+        }
+
+        public void ResetRamUsage(string serverId)
+        {
+            int Id = int.Parse(serverId);
+            var row = (Functions.ServerTable)ServerGrid.Items[Id - 1];
+            row.RamUsage = "0";
+            var selectedRow = (Functions.ServerTable)ServerGrid.SelectedItem;
+            ServerGrid.Items[Id - 1] = row;
+            ServerGrid.SelectedItem = selectedRow;
+        }
+
         private async void AutoStartServer()
         {
             int num_row = ServerGrid.Items.Count;
             for (int i = 0; i < num_row; i++)
             {
                 var server = (Functions.ServerTable)ServerGrid.Items[i];
-                if (g_bAutoStart[Int32.Parse(server.ID)])
+                if (g_bAutoStart[int.Parse(server.ID)])
                 {
                     await GameServer_Start(server, " | Auto Start");
+
+                    if (g_iServerStatus[int.Parse(server.ID)] == ServerStatus.Started)
+                    {
+                        if (g_bDiscordAlert[int.Parse(server.ID)])
+                        {
+                            var webhook = new Discord.Webhook(g_DiscordWebhook[int.Parse(server.ID)], g_DonorType);
+                            await webhook.Send(server.ID, server.Game, "Started | Auto Start", server.Name, server.IP, server.Port);
+                        }
+                    }    
                 }
             }
         }
@@ -379,6 +400,8 @@ namespace WindowsGSM
             analytics.SendWindowsOS();
             analytics.SendWindowsGSMVersion();
             analytics.SendProcessorName();
+            analytics.SendRAM();
+            analytics.SendDisk();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -426,15 +449,7 @@ namespace WindowsGSM
 
                 if (!g_Process[i].HasExited)
                 {
-                    SetForegroundWindow(g_Process[i].MainWindowHandle);
-                    SendKeys.SendWait("stop");
-                    SendKeys.SendWait("{ENTER}");
-                    SendKeys.SendWait("{ENTER}");
-
-                    if (!g_Process[i].HasExited)
-                    {
-                        g_Process[i].Kill();
-                    }
+                    g_Process[i].Kill();
                 }
             }
         }
@@ -462,7 +477,8 @@ namespace WindowsGSM
                     button_Start.IsEnabled = false;
                     button_Stop.IsEnabled = true;
                     button_Restart.IsEnabled = true;
-                    button_Console.IsEnabled = Functions.ServerConsole.IsToggleable(row.Game);
+                    Process p = g_Process[Int32.Parse(row.ID)];
+                    button_Console.IsEnabled = (p == null || p.HasExited) ? false : !p.StartInfo.RedirectStandardOutput;
                     button_Update.IsEnabled = false;
                     button_Backup.IsEnabled = false;
 
@@ -506,6 +522,9 @@ namespace WindowsGSM
                 textBox_restartcrontab.Text = g_CrontabFormat[Int32.Parse(row.ID)];
                 textBox_nextcrontab.Text = CrontabSchedule.TryParse(g_CrontabFormat[Int32.Parse(row.ID)])?.GetNextOccurrence(DateTime.Now).ToString("ddd, MM/dd/yyyy HH:mm:ss");
 
+                button_embedconsole.Content = (g_bEmbedConsole[Int32.Parse(row.ID)]) ? "TRUE" : "FALSE";
+                button_embedconsole.Background = (g_bEmbedConsole[Int32.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
+
                 Functions.ServerConsole.Refresh(row.ID);
             }
         }
@@ -518,17 +537,20 @@ namespace WindowsGSM
                 InstallWindow.Closed += (object s, EventArgs arg) => { InstallWindow = null; };
 
                 //Add games to ComboBox
-                int i = 0;
-                string servergame = "";
-                while (servergame != null)
+                SortedList sortedList = new SortedList();
+                List<DictionaryEntry> gameName = GameServer.Data.Icon.ResourceManager.GetResourceSet(System.Globalization.CultureInfo.CurrentUICulture, true, true).Cast<DictionaryEntry>().ToList();
+                gameName.ForEach(delegate (DictionaryEntry entry)
                 {
-                    servergame = GameServer.Data.List.ResourceManager.GetString((++i).ToString());
-                    if (servergame == null)
-                    {
-                        break;
-                    }
+                    sortedList.Add(entry.Key, entry.Value);
+                });
 
-                    var row = new Images.Row { Image = "/WindowsGSM;component/" + GameServer.Data.Icon.ResourceManager.GetString(servergame), Name = servergame };
+                for (int i = 0; i < sortedList.Count; i++)
+                {
+                    var row = new Images.Row
+                    {
+                        Image = "/WindowsGSM;component/" + sortedList.GetByIndex(i).ToString(),
+                        Name = sortedList.GetKey(i).ToString()
+                    };
                     InstallWindow.comboBox.Items.Add(row);
                 }
             }
@@ -555,17 +577,20 @@ namespace WindowsGSM
                 ImportWindow.Closed += (object s, EventArgs arg) => { ImportWindow = null; };
 
                 //Add games to ComboBox
-                int i = 0;
-                string servergame = "";
-                while (servergame != null)
+                SortedList sortedList = new SortedList();
+                List<DictionaryEntry> gameName = GameServer.Data.Icon.ResourceManager.GetResourceSet(System.Globalization.CultureInfo.CurrentUICulture, true, true).Cast<DictionaryEntry>().ToList();
+                gameName.ForEach(delegate (DictionaryEntry entry)
                 {
-                    servergame = GameServer.Data.List.ResourceManager.GetString((++i).ToString());
-                    if (servergame == null)
-                    {
-                        break;
-                    }
+                    sortedList.Add(entry.Key, entry.Value);
+                });
 
-                    var row = new Images.Row { Image = "/WindowsGSM;component/" + GameServer.Data.Icon.ResourceManager.GetString(servergame), Name = servergame };
+                for (int i = 0; i < sortedList.Count; i++)
+                {
+                    var row = new Images.Row
+                    {
+                        Image = "/WindowsGSM;component/" + sortedList.GetByIndex(i).ToString(),
+                        Name = sortedList.GetKey(i).ToString()
+                    };
                     ImportWindow.comboBox.Items.Add(row);
                 }
             }
@@ -716,9 +741,11 @@ namespace WindowsGSM
             if (p == null) { return; }
 
             //If console is useless, return
-            if (!Functions.ServerConsole.IsToggleable(server.Game)) { return; }
+            if (p.StartInfo.RedirectStandardOutput) { return; }
 
-            IntPtr hWnd = p.MainWindowHandle;
+            Debug.WriteLine("Toggle Console");
+
+            IntPtr hWnd = g_MainWindow[int.Parse(server.ID)];
             ShowWindow(hWnd, ShowWindow(hWnd, WindowShowStyle.Hide) ? WindowShowStyle.Hide : WindowShowStyle.ShowNormal);
         }
 
@@ -765,13 +792,23 @@ namespace WindowsGSM
         {
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped) { return; }
 
+            var ips = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().GetActiveUdpListeners();
+
+            foreach (var ip in ips)
+            {
+                if (ip.ToString().Contains(server.IP))
+                {
+                    Debug.WriteLine(ip);
+                }
+            }
+
             string error = "";
-            if (!IsValidIPAddress(server.IP))
+            if (!string.IsNullOrWhiteSpace(server.IP) && !IsValidIPAddress(server.IP))
             {
                 error += " IP address is not valid.";
             }
 
-            if (!IsValidPort(server.Port))
+            if (!string.IsNullOrWhiteSpace(server.Port) && !IsValidPort(server.Port))
             {
                 error += " Port number is not valid.";
             }
@@ -806,12 +843,6 @@ namespace WindowsGSM
                 Log(server.ID, "[Notice] " + gameServer.Notice);
             }
             SetServerStatus(server, "Started");
-
-            if (g_bDiscordAlert[Int32.Parse(server.ID)])
-            {
-                var webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)], g_DonorType);
-                await webhook.Send(server.ID, server.Game, "Started", server.Name, server.IP, server.Port);
-            }
         }
 
         private async void GameServer_Stop(Functions.ServerTable server)
@@ -835,12 +866,6 @@ namespace WindowsGSM
             }
             g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
             SetServerStatus(server, "Stopped");
-
-            if (g_bDiscordAlert[Int32.Parse(server.ID)])
-            {
-                var webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)], g_DonorType);
-                await webhook.Send(server.ID, server.Game, "Stopped", server.Name, server.IP, server.Port);
-            }
         }
 
         private async void GameServer_Restart(Functions.ServerTable server)
@@ -858,22 +883,24 @@ namespace WindowsGSM
             SetServerStatus(server, "Restarting");
 
             await Server_BeginStop(server, p);
-            var gameServer = await Server_BeginStart(server);
-            if (gameServer == null) { return; }
 
-            g_iServerStatus[Int32.Parse(server.ID)] = (int)ServerStatus.Started;
+            await Task.Delay(1000);
+
+            var gameServer = await Server_BeginStart(server);
+            if (gameServer == null)
+            {
+                g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
+                SetServerStatus(server, "Stopped");
+                return;
+            }
+
+            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Started;
             Log(server.ID, "Server: Restarted");
             if (!string.IsNullOrWhiteSpace(gameServer.Notice))
             {
                 Log(server.ID, "[Notice] " + gameServer.Notice);
             }
             SetServerStatus(server, "Started");
-
-            if (g_bDiscordAlert[Int32.Parse(server.ID)])
-            {
-                var webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)], g_DonorType);
-                await webhook.Send(server.ID, server.Game, "Restarted", server.Name, server.IP, server.Port);
-            }
         }
         
         private async Task<dynamic> Server_BeginStart(Functions.ServerTable server)
@@ -894,8 +921,9 @@ namespace WindowsGSM
                 {
                     firewall.AddRule();
                 }
-            }  
+            }
 
+            gameServer.ToggleConsole = !g_bEmbedConsole[int.Parse(server.ID)];
             Process p = await gameServer.Start();
 
             //Fail to start
@@ -922,7 +950,11 @@ namespace WindowsGSM
                         {
                             Debug.WriteLine("Try Setting ShowMinNoActivate Console Window");
                         }
+
                         Debug.WriteLine("Set ShowMinNoActivate Console Window");
+
+                        //Save MainWindow
+                        g_MainWindow[int.Parse(server.ID)] = p.MainWindowHandle;
                     }
 
                     p.WaitForInputIdle();
@@ -939,7 +971,7 @@ namespace WindowsGSM
             });
 
             //An error may occur on ShowWindow if not adding this 
-            if (p.HasExited)
+            if (p == null || p.HasExited)
             {
                 g_Process[Int32.Parse(server.ID)] = null;
 
@@ -959,31 +991,37 @@ namespace WindowsGSM
 
             StartRestartCrontabCheck(server);
 
-            var analytics = new Functions.GoogleAnalytics();
-            analytics.SendGameServerStart(server.ID, server.Game);
+            StartSendHeartBeat(server);
+
+            if (MahAppSwitch_SendStatistics.IsChecked ?? false)
+            {
+                var analytics = new Functions.GoogleAnalytics();
+                analytics.SendGameServerStart(server.ID, server.Game);
+            }
 
             return gameServer;
         }
 
         private async Task<bool> Server_BeginStop(Functions.ServerTable server, Process p)
         {
-            g_Process[Int32.Parse(server.ID)] = null;
+            g_Process[int.Parse(server.ID)] = null;
 
             dynamic gameServer = GameServer.ClassObject.Get(server.Game, null);
             await gameServer.Stop(p);
 
             for (int i = 0; i < 10; i++)
             {
-                if (p.HasExited) { break; }
+                if (p == null || p.HasExited) { break; }
                 await Task.Delay(1000);
             }
 
-            if (!p.HasExited)
+            g_ServerConsoles[int.Parse(server.ID)].Clear();
+
+            if (p != null && !p.HasExited)
             {
                 p.Kill();
+                return false;
             }
-
-            g_ServerConsoles[Int32.Parse(server.ID)].Clear();
 
             return true;
         }
@@ -1037,8 +1075,6 @@ namespace WindowsGSM
             SetServerStatus(server, "Updating");
 
             (bool updated, string remoteVersion, dynamic gameServer) = await Server_BeginUpdate(server, silenceCheck: false, forceUpdate: true);
-
-            Activate();
 
             if (updated)
             {
@@ -1245,8 +1281,12 @@ namespace WindowsGSM
 
         private async void OnGameServerExited(Functions.ServerTable server)
         {
+            if (System.Windows.Application.Current == null) { return; }
+
             await System.Windows.Application.Current.Dispatcher.Invoke(async () =>
             {
+                ResetRamUsage(server.ID);
+
                 int serverId = Int32.Parse(server.ID);
 
                 if (g_iServerStatus[serverId] == ServerStatus.Started)
@@ -1286,17 +1326,17 @@ namespace WindowsGSM
                         if (g_bDiscordAlert[Int32.Parse(server.ID)])
                         {
                             var webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)], g_DonorType);
-                            await webhook.Send(server.ID, server.Game, "Started", server.Name, server.IP, server.Port);
+                            await webhook.Send(server.ID, server.Game, "Restarted | Auto Restart", server.Name, server.IP, server.Port);
                         }
                     }
                 }
             });
         }
 
-        const int UPDATE_INTERVAL_MINUTE = 10;
+        const int UPDATE_INTERVAL_MINUTE = 30;
         private async void StartAutoUpdateCheck(Functions.ServerTable server)
         {
-            int serverId = Int32.Parse(server.ID);
+            int serverId = int.Parse(server.ID);
 
             //Save the process of game server
             Process p = g_Process[serverId];
@@ -1305,7 +1345,7 @@ namespace WindowsGSM
 
             string localVersion = gameServer.GetLocalBuild();
 
-            while (!p.HasExited)
+            while (p != null && !p.HasExited)
             {
                 if (!g_bAutoUpdate[serverId] || g_iServerStatus[serverId] == ServerStatus.Updating)
                 {
@@ -1346,7 +1386,7 @@ namespace WindowsGSM
                         //Stop the server
                         await Server_BeginStop(server, p);
 
-                        if (!p.HasExited)
+                        if (p != null && !p.HasExited)
                         {
                             p.Kill();
                         }
@@ -1360,6 +1400,12 @@ namespace WindowsGSM
                         if (updated)
                         {
                             Log(server.ID, $"Server: Updated ({remoteVersion})");
+
+                            if (g_bDiscordAlert[serverId])
+                            {
+                                var webhook = new Discord.Webhook(g_DiscordWebhook[serverId], g_DonorType);
+                                await webhook.Send(server.ID, server.Game, "Updated | Auto Update", server.Name, server.IP, server.Port);
+                            }
                         }
                         else
                         {
@@ -1398,8 +1444,11 @@ namespace WindowsGSM
             //Save the process of game server
             Process p = g_Process[serverId];
 
-            while (!p.HasExited)
+            while (p != null && !p.HasExited)
             {
+                //Load Ram Usage of server to ServerGrid
+                //LoadRamUsage(server.ID);
+
                 //If not enable return
                 if (!g_bRestartCrontab[serverId])
                 {
@@ -1427,7 +1476,7 @@ namespace WindowsGSM
                         textBox_nextcrontab.Text = CrontabSchedule.TryParse(g_CrontabFormat[serverId])?.GetNextOccurrence(DateTime.Now).ToString("ddd, MM/dd/yyyy HH:mm:ss");
                     }
 
-                    if (p.HasExited)
+                    if (p == null || p.HasExited)
                     {
                         break;
                     }
@@ -1446,7 +1495,7 @@ namespace WindowsGSM
                         var gameServer = await Server_BeginStart(server);
                         if (gameServer == null) { return; }
 
-                        g_iServerStatus[Int32.Parse(server.ID)] = (int)ServerStatus.Started;
+                        g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Started;
                         Log(server.ID, "Server: Restarted | Restart Crontab");
                         if (!string.IsNullOrWhiteSpace(gameServer.Notice))
                         {
@@ -1466,28 +1515,57 @@ namespace WindowsGSM
             }
         }
 
+        private async void StartSendHeartBeat(Functions.ServerTable server)
+        {
+            //Save the process of game server
+            Process p = g_Process[int.Parse(server.ID)];
+
+            while (p != null && !p.HasExited)
+            {
+                //await Task.Delay(600000);
+
+                if (MahAppSwitch_SendStatistics.IsChecked ?? false)
+                {
+                    var analytics = new Functions.GoogleAnalytics();
+                    analytics.SendGameServerHeartBeat(server.ID, server.Game);
+                }
+
+                await Task.Delay(600000);
+            }
+        }
+
         private async Task EndAllRunningProcess(string serverId)
         {
-            //LINQ query for windowsgsm old processes
-            var processes = (from p in Process.GetProcesses()
-                             where ((Predicate<Process>)(p_ =>
-                             {
-                                 try
-                                 {
-                                     return p_.MainModule.FileName.Contains(Path.Combine(WGSM_PATH, "servers", serverId));
-                                 }
-                                 catch
-                                 {
-                                     return false;
-                                 }
-                             }))(p)
-                             select p).ToList();
-
-            // Kill all processes
-            foreach (var process in processes)
+            await Task.Run(() =>
             {
-                process.Kill();
-            }
+                //LINQ query for windowsgsm old processes
+                var processes = (from p in Process.GetProcesses()
+                                 where ((Predicate<Process>)(p_ =>
+                                 {
+                                     try
+                                     {
+                                         return p_.MainModule.FileName.Contains(Path.Combine(WGSM_PATH, "servers", serverId));
+                                     }
+                                     catch
+                                     {
+                                         return false;
+                                     }
+                                 }))(p)
+                                 select p).ToList();
+
+                // Kill all processes
+                foreach (var process in processes)
+                {
+                    try
+                    {
+                        process.Kill();
+                    }
+                    catch
+                    {
+                        //ignore
+                    }
+                }
+            });
         }
 
         private void SetServerStatus(Functions.ServerTable server, string status)
@@ -1543,7 +1621,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_ServerConsoles[Int32.Parse(server.ID)].Clear();
+            g_ServerConsoles[int.Parse(server.ID)].Clear();
             console.Clear();
         }
 
@@ -1554,21 +1632,21 @@ namespace WindowsGSM
 
         private void SendCommand(Functions.ServerTable server, string command)
         {
-            Process p = g_Process[Int32.Parse(server.ID)];
+            Process p = g_Process[int.Parse(server.ID)];
             if (p == null) { return; }
 
             if (server.Game == GameServer._7DTD.FullName)
             {
-                g_ServerConsoles[Int32.Parse(server.ID)].InputFor7DTD(p, command);
+                g_ServerConsoles[int.Parse(server.ID)].InputFor7DTD(p, command, g_MainWindow[int.Parse(server.ID)]);
                 return;
             }
 
-            g_ServerConsoles[Int32.Parse(server.ID)].Input(p, command);
+            g_ServerConsoles[int.Parse(server.ID)].Input(p, command, g_MainWindow[int.Parse(server.ID)]);
         }
 
         private static bool IsValidIPAddress(string ip)
         {
-            if (String.IsNullOrWhiteSpace(ip))
+            if (string.IsNullOrWhiteSpace(ip))
             {
                 return false;
             }
@@ -1701,18 +1779,32 @@ namespace WindowsGSM
             SetStartOnBoot(MahAppSwitch_StartOnBoot.IsChecked ?? false);
         }
 
+        private void SendStatistics_IsCheckedChanged(object sender, EventArgs e)
+        {
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
+            if (key != null)
+            {
+                key.SetValue("SendStatistics", (MahAppSwitch_SendStatistics.IsChecked ?? false).ToString());
+                key.Close();
+            }
+        }
+
         private void SetStartOnBoot(bool enable)
         {
             string taskName = "WindowsGSM";
             string wgsmPath = Process.GetCurrentProcess().MainModule.FileName;
-            if (enable)
+
+            Process schtasks = new Process
             {
-                Process.Start("schtasks", $"/create /tn {taskName} /tr \"{wgsmPath}\" /sc onlogon /rl HIGHEST /f");
-            }
-            else
-            {
-                Process.Start("schtasks", $"/delete /tn {taskName} /f");
-            }
+                StartInfo =
+                {
+                    FileName = "schtasks",
+                    Arguments = enable ? $"/create /tn {taskName} /tr \"{wgsmPath}\" /sc onlogon /rl HIGHEST /f" : $"/delete /tn {taskName} /f",
+                    CreateNoWindow = true,
+                    UseShellExecute = false
+                }
+            };
+            schtasks.Start();
         }
 
         #region Donor Theme
@@ -1934,7 +2026,7 @@ namespace WindowsGSM
 
         private async Task<string> GetLatestVersion()
         {
-            var webRequest = System.Net.WebRequest.Create("https://api.github.com/repos/BattlefieldDuck/WindowsGSM/releases/latest") as HttpWebRequest;
+            var webRequest = WebRequest.Create("https://api.github.com/repos/BattlefieldDuck/WindowsGSM/releases/latest") as HttpWebRequest;
             if (webRequest != null)
             {
                 webRequest.Method = "GET";
@@ -1974,7 +2066,7 @@ namespace WindowsGSM
             }
             catch (Exception e)
             {
-                System.Diagnostics.Debug.WriteLine($"Github.WindowsGSM-Updater.exe {e}");
+                Debug.WriteLine($"Github.WindowsGSM-Updater.exe {e}");
             }
 
             return File.Exists(filePath);
@@ -2058,12 +2150,17 @@ namespace WindowsGSM
         {
         }
 
-        private void NotifyIcon_MouseClick(Object sender, System.Windows.Forms.MouseEventArgs e)
+        private void NotifyIcon_MouseClick(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            notifyIcon.Visible = false;
-
-            WindowState = WindowState.Normal;
-            Show();
+            if (IsVisible)
+            {
+                Hide();
+            }
+            else
+            {
+                WindowState = WindowState.Normal;
+                Show();
+            }
         }
 
         private void Button_Hide_Click(object sender, RoutedEventArgs e)
@@ -2084,6 +2181,16 @@ namespace WindowsGSM
             g_bRestartCrontab[Int32.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "restartcrontab");
             button_restartcrontab.Content = (g_bRestartCrontab[Int32.Parse(server.ID)]) ? "TRUE" : "FALSE";
             button_restartcrontab.Background = (g_bRestartCrontab[Int32.Parse(server.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
+        }
+
+        private void Button_EmbedConsole_Click(object sender, RoutedEventArgs e)
+        {
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
+
+            g_bEmbedConsole[Int32.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "embedconsole");
+            button_embedconsole.Content = (g_bEmbedConsole[Int32.Parse(server.ID)]) ? "TRUE" : "FALSE";
+            button_embedconsole.Background = (g_bEmbedConsole[Int32.Parse(server.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
         }
 
         private void Button_AutoRestart_Click(object sender, RoutedEventArgs e)

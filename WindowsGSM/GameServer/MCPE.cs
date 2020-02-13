@@ -4,11 +4,17 @@ using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
+using System.Runtime.InteropServices;
+using System;
 
 namespace WindowsGSM.GameServer
 {
     class MCPE
     {
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
         private readonly Functions.ServerConfig _serverData;
 
         public string Error;
@@ -37,7 +43,7 @@ namespace WindowsGSM.GameServer
                 string configText = File.ReadAllText(configPath);
                 configText = configText.Replace("{{hostname}}", _serverData.ServerName);
                 configText = configText.Replace("{{rcon_password}}", _serverData.GetRCONPassword());
-                configText = configText.Replace("{{port}}", _serverData.GetAvailablePort(port));
+                configText = configText.Replace("{{port}}", _serverData.ServerPort);
                 configText = configText.Replace("{{maxplayers}}", maxplayers);
                 File.WriteAllText(configPath, configText);
             }
@@ -68,28 +74,47 @@ namespace WindowsGSM.GameServer
                 return null;
             }
 
-            Process p = new Process
+            Process p;
+            if (ToggleConsole)
             {
-                StartInfo =
+                p = new Process
                 {
-                    WorkingDirectory = workingDir,
-                    FileName = phpPath,
-                    Arguments = @"-c bin\php PocketMine-MP.phar",
-                    WindowStyle = ProcessWindowStyle.Minimized,
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                },
-                EnableRaisingEvents = true
-            };
-            var serverConsole = new Functions.ServerConsole(_serverData.ServerID);
-            p.OutputDataReceived += serverConsole.AddOutput;
-            p.ErrorDataReceived += serverConsole.AddOutput;
-            p.Start();
-            p.BeginOutputReadLine();
-            p.BeginErrorReadLine();
+                    StartInfo =
+                    {
+                        WorkingDirectory = workingDir,
+                        FileName = phpPath,
+                        Arguments = @"-c bin\php PocketMine-MP.phar",
+                        WindowStyle = ProcessWindowStyle.Minimized,
+                    },
+                    EnableRaisingEvents = true
+                };
+                p.Start();
+            }
+            else
+            {
+                p = new Process
+                {
+                    StartInfo =
+                    {
+                        WorkingDirectory = workingDir,
+                        FileName = phpPath,
+                        Arguments = @"-c bin\php PocketMine-MP.phar",
+                        WindowStyle = ProcessWindowStyle.Minimized,
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        RedirectStandardInput = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
+                    },
+                    EnableRaisingEvents = true
+                };
+                var serverConsole = new Functions.ServerConsole(_serverData.ServerID);
+                p.OutputDataReceived += serverConsole.AddOutput;
+                p.ErrorDataReceived += serverConsole.AddOutput;
+                p.Start();
+                p.BeginOutputReadLine();
+                p.BeginErrorReadLine();
+            }
 
             return p;
         }
@@ -98,7 +123,17 @@ namespace WindowsGSM.GameServer
         {
             await Task.Run(() =>
             {
-                p.StandardInput.WriteLine("stop");
+                if (p.StartInfo.RedirectStandardInput)
+                {
+                    p.StandardInput.WriteLine("stop");
+                }
+                else
+                {
+                    SetForegroundWindow(p.MainWindowHandle);
+                    SendKeys.SendWait("stop");
+                    SendKeys.SendWait("{ENTER}");
+                    SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
+                }
             });
         }
 

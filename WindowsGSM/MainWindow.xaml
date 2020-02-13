@@ -8,11 +8,11 @@
         mc:Ignorable="d"
         Title="WindowsGSM" 
         Height="585" 
-        Width="960" 
+        Width="1040" 
         Icon="Images\WindowsGSM.ico"
         ResizeMode="CanResizeWithGrip"
         MinHeight="585"
-        MinWidth="960"
+        MinWidth="1040"
         Closing="Window_Closing"
         GlowBrush="{DynamicResource AccentColorBrush}"
         WindowStartupLocation="CenterScreen" StateChanged="Window_StateChanged">
@@ -36,6 +36,7 @@
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_DarkTheme" Header="Dark Theme" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="DarkTheme_IsCheckedChanged"/>
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_StartOnBoot" Header="Start WindowsGSM on Login" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="StartOnLogin_IsCheckedChanged"/>
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_DonorTheme" Header="Donor Theme (Patreon)" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="DonorTheme_IsCheckedChanged"/>
+                    <Controls:ToggleSwitch x:Name="MahAppSwitch_SendStatistics" Header="Send Statistics" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="SendStatistics_IsCheckedChanged"/>
                 </StackPanel>
             </Controls:Flyout>
         </Controls:FlyoutsControl>
@@ -114,11 +115,12 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
                     <DataGridTextColumn Header="Status" IsReadOnly="True" Binding="{Binding Path=Status}" Width="80" MinWidth="80" MaxWidth="80"/>
-                    <DataGridTextColumn Header="Server Name" IsReadOnly="True" Binding="{Binding Path=Name}" Width="400*"/>
-                    <DataGridTextColumn Header="IP Address" IsReadOnly="True" Binding="{Binding Path=IP}" Width="110*"/>
-                    <DataGridTextColumn Header="Port" IsReadOnly="True" Binding="{Binding Path=Port}" Width="70*"/>
-                    <DataGridTextColumn Header="Default Map" IsReadOnly="True" Binding="{Binding Path=Defaultmap}" Width="200*"/>
-                    <DataGridTextColumn Header="Maxplayers" IsReadOnly="True" Binding="{Binding Path=Maxplayers}" Width="130*"/>
+                    <DataGridTextColumn Header="Server Name" IsReadOnly="True" Binding="{Binding Path=Name}" Width="8*"/>
+                    <DataGridTextColumn Header="IP Address" IsReadOnly="True" Binding="{Binding Path=IP}" Width="3*"/>
+                    <DataGridTextColumn Header="Port" IsReadOnly="True" Binding="{Binding Path=Port}" Width="2*"/>
+                    <DataGridTextColumn Header="Default Map" IsReadOnly="True" Binding="{Binding Path=Defaultmap}" Width="8*"/>
+                    <DataGridTextColumn Header="Maxplayers" IsReadOnly="True" Binding="{Binding Path=Maxplayers}" Width="4*"/>
+                    <!--<DataGridTextColumn Header="RAM Usage" IsReadOnly="True" Binding="{Binding Path=RamUsage}" Width="4*"/>-->
                 </DataGrid.Columns>
             </DataGrid>
             <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch">
@@ -128,44 +130,47 @@
             </GridSplitter>
             <Grid Grid.Row="2">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="475"/>
+                    <ColumnDefinition Width="520" MaxWidth="520"/>
                     <ColumnDefinition Width="5"/>
-                    <ColumnDefinition Width="3*" MinWidth="480"/>
+                    <ColumnDefinition Width="1*"/>
                 </Grid.ColumnDefinitions>
 
                 <Grid>
 
                     <Label x:Name="label_serverdetails" Content="Server Details" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Top"/>
                     <Label x:Name="label_Status" Content="Server Status:" HorizontalAlignment="Left" Margin="14,21,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_Status" Content="" HorizontalAlignment="Left" Margin="100,22,0,0" Width="202" Height="11" Background="Orange" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
+                    <Button x:Name="button_Status" Content="" HorizontalAlignment="Left" Margin="100,22,0,0" Width="105" Height="11" Background="Orange" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
 
                     <Label x:Name="label_restartcrontab" Content="Restart Crontab:" HorizontalAlignment="Left" Margin="0,51,0,0" VerticalAlignment="Top" Height="26"/>
                     <Button x:Name="button_restartcrontab" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="100,52,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_RestartCrontab_Click"/>
-                    <Button x:Name="button_restartcrontabedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="155,52,0,0" VerticalAlignment="Top" Width="35" Height="25" Click="Button_CrontabEdit_Click"/>
-                    <TextBox x:Name="textBox_restartcrontab" Height="11" Margin="195,51,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="107"/>
-                    <TextBox x:Name="textBox_nextcrontab" Height="11" Margin="307,51,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="158"/>
+                    <Button x:Name="button_restartcrontabedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="155,52,0,0" VerticalAlignment="Top" Width="50" Height="25" Click="Button_CrontabEdit_Click"/>
+                    <TextBox x:Name="textBox_restartcrontab" Height="11" Margin="210,51,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="150"/>
+                    <TextBox x:Name="textBox_nextcrontab" Height="11" Margin="365,51,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="145"/>
 
                     <Label x:Name="label_autorestart" Content="Auto Restart:" HorizontalAlignment="Left" Margin="17,81,0,0" VerticalAlignment="Top"/>
                     <Button x:Name="button_autorestart" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="100,82,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_AutoRestart_Click"/>
 
-                    <Label x:Name="label_autostart" Content="Auto Start:" HorizontalAlignment="Left" Margin="181,81,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_autostart" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="252,82,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_AutoStart_Click"/>
+                    <Label x:Name="label_autostart" Content="Auto Start:" HorizontalAlignment="Left" Margin="389,81,0,0" VerticalAlignment="Top"/>
+                    <Button x:Name="button_autostart" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="460,81,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_AutoStart_Click"/>
 
-                    <Label x:Name="label_autoupdate" Content="Auto Update:" HorizontalAlignment="Left" Margin="330,84,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_autoupdate" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="415,85,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_AutoUpdate_Click"/>
+                    <Label x:Name="label_autoupdate" Content="Auto Update:" HorizontalAlignment="Left" Margin="375,110,0,0" VerticalAlignment="Top"/>
+                    <Button x:Name="button_autoupdate" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="460,112,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_AutoUpdate_Click"/>
 
-                    <Label x:Name="label_updateonstart" Content="Update on Start:" HorizontalAlignment="Left" Margin="314,114,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_updateonstart" Cursor="Hand" Content="" Margin="415,115,0,0" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_UpdateOnStart_Click" HorizontalAlignment="Left" Width="50"/>
+                    <Label x:Name="label_updateonstart" Content="Update on Start:" HorizontalAlignment="Left" Margin="209,81,0,0" VerticalAlignment="Top"/>
+                    <Button x:Name="button_updateonstart" Cursor="Hand" Content="" Margin="310,82,0,0" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_UpdateOnStart_Click" HorizontalAlignment="Left" Width="50"/>
 
                     <Label x:Name="label_discordalert" Content="Discord Alert:" HorizontalAlignment="Left" Margin="14,110,0,0" VerticalAlignment="Top"/>
                     <Button x:Name="button_discordalert" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="100,112,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_DiscordAlert_Click"/>
-                    <Button x:Name="button_discordedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="155,112,0,0" VerticalAlignment="Top" Width="35" Height="25" Click="Button_DiscordEdit_Click"/>
-                    <Button x:Name="button_discordtest" Cursor="Hand" Content="Send Test Alert" HorizontalAlignment="Left" Margin="195,112,0,0" VerticalAlignment="Top" Width="107" Height="25" Click="Button_DiscordWebhookTest_Click" IsEnabled="False"/>
+                    <Button x:Name="button_discordedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="155,112,0,0" VerticalAlignment="Top" Width="50" Height="25" Click="Button_DiscordEdit_Click"/>
+                    <Button x:Name="button_discordtest" Cursor="Hand" Content="Send Test Alert" HorizontalAlignment="Left" Margin="210,112,0,0" VerticalAlignment="Top" Width="150" Height="25" Click="Button_DiscordWebhookTest_Click" IsEnabled="False"/>
 
-                    <Button x:Name="button_clearServerConsole" Cursor="Hand" Content="CLEAR SERVER CONSOLE" Margin="307,22,0,0" VerticalAlignment="Top" Height="18" Click="Button_ClearServerConsole_Click" HorizontalAlignment="Left" Width="158"/>
-                    <TextBox x:Name="textBox_wgsmlog" Margin="82,145,10,10" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True"/>
-                    <Label x:Name="label_wgsmlog" Content="WGSM Log:" HorizontalAlignment="Left" Margin="5,145,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_clearwgsmlog" Cursor="Hand" Content="CLEAR LOG" Margin="10,183,0,0" VerticalAlignment="Top" Height="18" Click="Button_ClearWGSMLog_Click" HorizontalAlignment="Left" Width="65"/>
+                    <Button x:Name="button_clearServerConsole" Cursor="Hand" Content="CLEAR SERVER CONSOLE" Margin="365,22,0,0" VerticalAlignment="Top" Height="18" Click="Button_ClearServerConsole_Click" HorizontalAlignment="Left" Width="145"/>
+                    <TextBox x:Name="textBox_wgsmlog" Margin="100,145,10,10" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True"/>
+                    <Label x:Name="label_wgsmlog" Content="WGSM Log:" HorizontalAlignment="Left" Margin="23,141,0,0" VerticalAlignment="Top"/>
+                    <Button x:Name="button_clearwgsmlog" Cursor="Hand" Content="CLEAR LOG" Margin="10,206,0,0" VerticalAlignment="Top" Height="18" Click="Button_ClearWGSMLog_Click" HorizontalAlignment="Left" Width="85"/>
+
+                    <Label x:Name="label_embedconsole" Content="Embed Console:" HorizontalAlignment="Left" Margin="210,21,0,0" VerticalAlignment="Top"/>
+                    <Button x:Name="button_embedconsole" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="310,22,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_EmbedConsole_Click"/>
                 </Grid>
 
                 <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch">

@@ -49,7 +49,7 @@ namespace WindowsGSM.GameServer
             {
                 string configText = File.ReadAllText(configPath);
                 configText = configText.Replace("{{rcon_password}}", _serverData.GetRCONPassword());
-                configText = configText.Replace("{{port}}", _serverData.GetAvailablePort(port));
+                configText = configText.Replace("{{port}}", _serverData.ServerPort);
                 File.WriteAllText(configPath, configText);
             }
         }

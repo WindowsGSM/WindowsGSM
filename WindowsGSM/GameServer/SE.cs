@@ -84,36 +84,55 @@ namespace WindowsGSM.GameServer
             param += (string.IsNullOrEmpty(_serverData.ServerPort)) ? "" : $" -port {_serverData.ServerPort}";
             param += $" {_serverData.ServerParam}";
 
-            Process p = new Process
-            {
-                StartInfo =
-                {
-                    FileName = Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath),
-                    Arguments = param,
-                    WindowStyle = ProcessWindowStyle.Minimized,
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                },
-                EnableRaisingEvents = true
-            };
-            /*
-             * I had tried to change APPDATA value but fail... seems there is no way to change config dir...
-             */
-            //Environment.CurrentDirectory = Functions.Path.GetServerFiles(_serverData.ServerID, "Instance");
-            //Environment.SetEnvironmentVariable("APPDATA", Functions.Path.GetServerFiles(_serverData.ServerID, "Instance"), EnvironmentVariableTarget.User);
-            //Environment.appdata
-            //p.StartInfo.EnvironmentVariables["APPDATA"] = Functions.Path.GetServerFiles(_serverData.ServerID, "Instance");
-            //p.StartInfo.EnvironmentVariables.Add("AppData", Functions.Path.GetServerFiles(_serverData.ServerID, "Instance"));
-            //p.StartInfo.Environment["APPDATA"] = Functions.Path.GetServerFiles(_serverData.ServerID, "Config");
-            var serverConsole = new Functions.ServerConsole(_serverData.ServerID);
-            p.OutputDataReceived += serverConsole.AddOutput;
-            p.ErrorDataReceived += serverConsole.AddOutput;
-            p.Start();
-            p.BeginOutputReadLine();
-            p.BeginErrorReadLine();
 
+            Process p;
+            if (ToggleConsole)
+            {
+                p = new Process
+                {
+                    StartInfo =
+                    {
+                        FileName = Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath),
+                        Arguments = param,
+                        WindowStyle = ProcessWindowStyle.Minimized
+                    },
+                    EnableRaisingEvents = true
+                };
+                p.Start();
+            }
+            else
+            {
+                p = new Process
+                {
+                    StartInfo =
+                    {
+                        FileName = Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath),
+                        Arguments = param,
+                        WindowStyle = ProcessWindowStyle.Minimized,
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
+                    },
+                    EnableRaisingEvents = true
+                };
+                /*
+                 * I had tried to change APPDATA value but fail... seems there is no way to change config dir...
+                 */
+                //Environment.CurrentDirectory = Functions.Path.GetServerFiles(_serverData.ServerID, "Instance");
+                //Environment.SetEnvironmentVariable("APPDATA", Functions.Path.GetServerFiles(_serverData.ServerID, "Instance"), EnvironmentVariableTarget.User);
+                //Environment.appdata
+                //p.StartInfo.EnvironmentVariables["APPDATA"] = Functions.Path.GetServerFiles(_serverData.ServerID, "Instance");
+                //p.StartInfo.EnvironmentVariables.Add("AppData", Functions.Path.GetServerFiles(_serverData.ServerID, "Instance"));
+                //p.StartInfo.Environment["APPDATA"] = Functions.Path.GetServerFiles(_serverData.ServerID, "Config");
+                var serverConsole = new Functions.ServerConsole(_serverData.ServerID);
+                p.OutputDataReceived += serverConsole.AddOutput;
+                p.ErrorDataReceived += serverConsole.AddOutput;
+                p.Start();
+                p.BeginOutputReadLine();
+                p.BeginErrorReadLine();
+            }
+            
             return p;
         }
 
@@ -121,14 +140,7 @@ namespace WindowsGSM.GameServer
         {
             await Task.Run(() =>
             {
-                if (ToggleConsole)
-                {
-                    SetForegroundWindow(p.MainWindowHandle);
-                    SendKeys.SendWait("^(c)");
-                    SendKeys.SendWait("^(c)");
-                    SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
-                }
-                else
+                if (p.StartInfo.RedirectStandardInput)
                 {
                     /*  Base on https://www.spaceengineersgame.com/dedicated-servers.html
                      * 
@@ -153,6 +165,13 @@ namespace WindowsGSM.GameServer
                     */
 
                     p.Kill();
+                }
+                else
+                {
+                    SetForegroundWindow(p.MainWindowHandle);
+                    SendKeys.SendWait("^(c)");
+                    SendKeys.SendWait("^(c)");
+                    SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
                 }
             });
         }

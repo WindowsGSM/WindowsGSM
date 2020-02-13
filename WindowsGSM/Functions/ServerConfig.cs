@@ -24,6 +24,7 @@ namespace WindowsGSM.Functions
         public string DiscordWebhook;
         public bool RestartCrontab;
         public string CrontabFormat;
+        public bool EmbedConsole;
 
         public ServerConfig(string serverid)
         {
@@ -84,13 +85,14 @@ namespace WindowsGSM.Functions
                             case "discordwebhook": DiscordWebhook = keyvalue[1]; break;
                             case "restartcrontab": RestartCrontab = (keyvalue[1] == "1") ? true : false; break;
                             case "crontabformat": CrontabFormat = keyvalue[1]; break;
+                            case "embedconsole": EmbedConsole = (keyvalue[1] == "1") ? true : false; break;
                         }
                     }
                 }
             }
         }
 
-        public bool CreateWindowsGSMConfig(string servergame, string servername, string serverip, string serverport, string servermap, string servermaxplayer, string servergslt, string serverparam)
+        public bool CreateWindowsGSMConfig(string servergame, string servername, string serverip, string serverport, string servermap, string servermaxplayer, string servergslt, string serverparam, bool toggleConsole)
         {
             CreateServerDirectory();
 
@@ -113,7 +115,8 @@ namespace WindowsGSM.Functions
                 DiscordWebhook = "";
                 RestartCrontab = false;
                 CrontabFormat = "0 6 * * *";
-
+                EmbedConsole = !toggleConsole;
+                
                 File.Create(configpath).Dispose();
 
                 using (TextWriter textwriter = new StreamWriter(configpath))
@@ -137,6 +140,8 @@ namespace WindowsGSM.Functions
                     textwriter.WriteLine("");
                     textwriter.WriteLine("restartcrontab=\"0\"");
                     textwriter.WriteLine($"crontabformat=\"{CrontabFormat}\"");
+                    textwriter.WriteLine("");
+                    textwriter.WriteLine($"embedconsole=\"{(EmbedConsole ? "1" : "0")}\"");
                 }
 
                 return true;
@@ -208,22 +213,16 @@ namespace WindowsGSM.Functions
 
             for (int i = 0; i < WindowsGSM.ServerGrid.Items.Count; i++)
             {
-                Functions.ServerTable row = WindowsGSM.ServerGrid.Items[i] as Functions.ServerTable;
-                portlist[i] = Int32.Parse(string.IsNullOrWhiteSpace(row.Port) ? "0" : row.Port);
+                ServerTable row = WindowsGSM.ServerGrid.Items[i] as ServerTable;
+                portlist[i] = int.Parse(string.IsNullOrWhiteSpace(row.Port) ? "0" : row.Port);
             }
 
             Array.Sort(portlist);
 
-            int port = Int32.Parse(defaultport);
+            int port = int.Parse(defaultport);
             for (int i = 0; i < WindowsGSM.ServerGrid.Items.Count; i++)
             {
-                if (port == portlist[i])
-                {
-                    port++;
-                }
-
-                //SourceTV port 27020
-                if (port == 27020)
+                if (port == portlist[i] || port == 27020) //SourceTV port 27020
                 {
                     port++;
                 }

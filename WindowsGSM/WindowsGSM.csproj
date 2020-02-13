@@ -113,6 +113,7 @@
       <Private>False</Private>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="NCrontab.Signed, Version=3.3.2.0, Culture=neutral, PublicKeyToken=5247b4370afff365, processorArchitecture=MSIL">
       <HintPath>..\packages\NCrontab.Signed.3.3.2\lib\net35\NCrontab.Signed.dll</HintPath>
       <Private>False</Private>
@@ -157,17 +158,21 @@
     <Compile Include="GameServer\ClassObject.cs" />
     <Compile Include="GameServer\CS.cs" />
     <Compile Include="GameServer\CSCZ.cs" />
+    <Compile Include="GameServer\CSS.cs" />
     <Compile Include="GameServer\DAYZ.cs" />
     <Compile Include="GameServer\GTA5.cs" />
     <Compile Include="GameServer\HL2DM.cs" />
+    <Compile Include="GameServer\INS.cs" />
     <Compile Include="GameServer\L4D2.cs" />
     <Compile Include="GameServer\MC.cs" />
     <Compile Include="GameServer\MCBE.cs" />
     <Compile Include="GameServer\MORDHAU.cs" />
+    <Compile Include="GameServer\NMRIH.cs" />
     <Compile Include="GameServer\OLOW.cs" />
     <Compile Include="GameServer\SE.cs" />
-    <Compile Include="GameServer\Valve\HLDS.cs" />
-    <Compile Include="GameServer\Valve\SRCDS.cs" />
+    <Compile Include="GameServer\Type\HLDS.cs" />
+    <Compile Include="GameServer\Type\SRCDS.cs" />
+    <Compile Include="GameServer\Type\UE4.cs" />
     <Compile Include="Tools\GlobalServerList.cs" />
     <Compile Include="Tools\InstallMod.cs" />
     <Compile Include="WindowsFirewall.cs" />
@@ -199,11 +204,6 @@
       <DependentUpon>Install.xaml</DependentUpon>
     </Compile>
     <Compile Include="Functions\ServerConfig.cs" />
-    <Compile Include="GameServer\Data\List.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>List.resx</DependentUpon>
-    </Compile>
     <Compile Include="Images\Row.cs" />
     <Compile Include="GameServer\Data\Icon.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -234,10 +234,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <EmbeddedResource Include="GameServer\Data\List.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>List.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
     <EmbeddedResource Include="GameServer\Data\Icon.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Icon.Designer.cs</LastGenOutput>
@@ -287,9 +283,6 @@
   <ItemGroup>
     <EmbeddedResource Include="..\packages\ControlzEx.3.0.2.4\lib\net462\System.Windows.Interactivity.dll">
       <Link>ReferencesEx\System.Windows.Interactivity.dll</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="..\packages\MahApps.Metro.1.6.5\lib\net47\MahApps.Metro.dll">
-      <Link>ReferencesEx\MahApps.Metro.dll</Link>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -374,6 +367,15 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\SplashScreen.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\css.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\ins.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\nmrih.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

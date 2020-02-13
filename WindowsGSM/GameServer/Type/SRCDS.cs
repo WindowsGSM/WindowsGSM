@@ -20,7 +20,7 @@ using System.Windows.Forms;
 /// 
 /// </summary>
 
-namespace WindowsGSM.GameServer.Valve
+namespace WindowsGSM.GameServer.Type
 {
     class SRCDS
     {
@@ -40,8 +40,8 @@ namespace WindowsGSM.GameServer.Valve
         public virtual string maxplayers { get { return "24"; } }
         public virtual string additional { get { return ""; } }
 
-        public virtual string game { get { return ""; } }
-        public virtual string appId { get { return ""; } }
+        public virtual string Game { get { return ""; } }
+        public virtual string AppId { get { return ""; } }
 
         public SRCDS(Functions.ServerConfig serverData)
         {
@@ -59,14 +59,14 @@ namespace WindowsGSM.GameServer.Valve
                 return null;
             }
 
-            string configPath = Functions.ServerPath.GetServerFiles(serverData.ServerID, game, "cfg/server.cfg");
+            string configPath = Functions.ServerPath.GetServerFiles(serverData.ServerID, Game, "cfg/server.cfg");
             if (!File.Exists(configPath))
             {
                 Notice = $"server.cfg not found ({configPath})";
             }
 
             StringBuilder sb = new StringBuilder();
-            sb.Append($"-console -game {game}");
+            sb.Append($"-console -game {Game}");
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerIP) ? "" : $" -ip {serverData.ServerIP}");
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerPort) ? "" : $" -port {serverData.ServerPort}");
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerMaxPlayer) ? "" : $" -maxplayers {serverData.ServerMaxPlayer}");
@@ -75,25 +75,43 @@ namespace WindowsGSM.GameServer.Valve
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerMap) ? "" : $" +map {serverData.ServerMap}");
             string param = sb.ToString();
 
-            Process p = new Process
+            Process p;
+            if (ToggleConsole)
             {
-                StartInfo =
+                p = new Process
                 {
-                    FileName = srcdsPath,
-                    Arguments = param,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                },
-                EnableRaisingEvents = true
-            };
-            var serverConsole = new Functions.ServerConsole(serverData.ServerID);
-            p.OutputDataReceived += serverConsole.AddOutput;
-            p.ErrorDataReceived += serverConsole.AddOutput;
-            p.Start();
-            p.BeginOutputReadLine();
-            p.BeginErrorReadLine();
+                    StartInfo =
+                    {
+                        FileName = srcdsPath,
+                        Arguments = param,
+                        WindowStyle = ProcessWindowStyle.Minimized,
+                    },
+                    EnableRaisingEvents = true
+                };
+                p.Start();
+            }
+            else
+            {
+                p = new Process
+                {
+                    StartInfo =
+                    {
+                        FileName = srcdsPath,
+                        Arguments = param,
+                        WindowStyle = ProcessWindowStyle.Minimized,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
+                    },
+                    EnableRaisingEvents = true
+                };
+                var serverConsole = new Functions.ServerConsole(serverData.ServerID);
+                p.OutputDataReceived += serverConsole.AddOutput;
+                p.ErrorDataReceived += serverConsole.AddOutput;
+                p.Start();
+                p.BeginOutputReadLine();
+                p.BeginErrorReadLine();
+            }
 
             return p;
         }
@@ -112,7 +130,7 @@ namespace WindowsGSM.GameServer.Valve
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(Functions.ServerPath.GetServerFiles(serverData.ServerID), "", appId, true);
+            steamCMD.SetParameter(Functions.ServerPath.GetServerFiles(serverData.ServerID), "", AppId, true);
 
             Process p = await steamCMD.Run();
             Error = steamCMD.Error;
@@ -123,7 +141,7 @@ namespace WindowsGSM.GameServer.Valve
         public async void CreateServerCFG()
         {
             //Download server.cfg
-            string configPath = Functions.ServerPath.GetServerFiles(serverData.ServerID, game, "cfg/server.cfg");
+            string configPath = Functions.ServerPath.GetServerFiles(serverData.ServerID, Game, "cfg/server.cfg");
             if (await Functions.Github.DownloadGameServerConfig(configPath, serverData.ServerGame))
             {
                 string configText = File.ReadAllText(configPath);
@@ -136,7 +154,7 @@ namespace WindowsGSM.GameServer.Valve
         public async Task<bool> Update(bool validate = false)
         {
             var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(serverData.ServerID, "", appId, validate);
+            bool updateSuccess = await steamCMD.Update(serverData.ServerID, "", AppId, validate);
             Error = steamCMD.Error;
 
             return updateSuccess;
@@ -156,13 +174,13 @@ namespace WindowsGSM.GameServer.Valve
         public string GetLocalBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return steamCMD.GetLocalBuild(serverData.ServerID, appId);
+            return steamCMD.GetLocalBuild(serverData.ServerID, AppId);
         }
 
         public async Task<string> GetRemoteBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return await steamCMD.GetRemoteBuild(appId);
+            return await steamCMD.GetRemoteBuild(AppId);
         }
 
         public string GetQueryPort()

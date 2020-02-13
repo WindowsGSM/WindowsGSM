@@ -11,5 +11,6 @@
         public string Port { get; set; }
         public string Defaultmap { get; set; }
         public string Maxplayers { get; set; }
+        public string RamUsage { get; set; }
     }
 }
