@@ -9,7 +9,7 @@
 [![Discord Shield](https://discordapp.com/api/guilds/590590698907107340/widget.png?style=shield)](https://discord.gg/bGc7t2R)
 
 # What is WindowsGSM?
-WindowsGSM is powerful tool to manage game servers and gives server admins keep their game servers run and manage easily. It has a Graphical User Interface for server admins to install, import, start, stop, restart etc but just click click click done.
+WindowsGSM is a powerful tool to manage game servers and gives server admins keep their game servers run and manage easily. It has a Graphical User Interface for server admins to install, import, start, stop, restart etc but just click click click done.
 
 |               | 🎮 Game Server  | Supported |
 | ------------- | --------------- | --------- |
@@ -17,15 +17,18 @@ WindowsGSM is powerful tool to manage game servers and gives server admins keep 
 | ![logo](WindowsGSM/Images/Games/cs.png?raw=true)     | Counter-Strike: 1.6 Dedicated Server              |✅|
 | ![logo](WindowsGSM/Images/Games/cscz.png?raw=true)   | Counter-Strike: Condition Zero Dedicated Server   |✅|
 | ![logo](WindowsGSM/Images/Games/csgo.png?raw=true)   | Counter-Strike: Global Offensive Dedicated Server |✅|
+| ![logo](WindowsGSM/Images/Games/css.png?raw=true)    | Counter-Strike: Source Dedicated Server           |✅|
 | ![logo](WindowsGSM/Images/Games/dayz.png?raw=true)   | DayZ Dedicated Server                             |✅|
 | ![logo](WindowsGSM/Images/Games/gmod.png?raw=true)   | Garry's Mod Dedicated Server                      |✅|
 | ![logo](WindowsGSM/Images/Games/gta5.png?raw=true)   | Grand Theft Auto V Dedicated Server ([FiveM](https://github.com/citizenfx/fivem))|✅|
 | ![logo](WindowsGSM/Images/Games/hl2dm.png?raw=true)  | Half-Life 2: Deathmatch Dedicated Server          |✅|
+| ![logo](WindowsGSM/Images/Games/ins.png?raw=true)    | Insurgency Dedicated Server                       |✅|
 | ![logo](WindowsGSM/Images/Games/l4d2.png?raw=true)   | Left 4 Dead 2 Dedicated Server                    |✅|
 | ![logo](WindowsGSM/Images/Games/mcbe.png?raw=true)   | Minecraft: Bedrock Edition Server                 |✅|
 | ![logo](WindowsGSM/Images/Games/mc.png?raw=true)     | Minecraft: Java Edition Server                    |✅|
 | ![logo](WindowsGSM/Images/Games/mcpe.png?raw=true)   | Minecraft: Pocket Edition Server ([PocketMine-MP](https://github.com/pmmp/PocketMine-MP)) |✅|
 | ![logo](WindowsGSM/Images/Games/mordhau.png?raw=true)| Mordhau Dedicated Server                          |✅|
+| ![logo](WindowsGSM/Images/Games/nmrih.png?raw=true)  | No More Room in Hell Dedicated Server             |✅|
 | ![logo](WindowsGSM/Images/Games/olow.png?raw=true)   |Outlaws of the Old West Dedicated Server           |✅|
 | ![logo](WindowsGSM/Images/Games/rust.png?raw=true)   | Rust Dedicated Server                             |✅|
 | ![logo](WindowsGSM/Images/Games/se.png?raw=true)     | Space Engineers Dedicated Server                  |✅|
