@@ -145,7 +145,7 @@
                     <Button x:Name="button_restartcrontab" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="100,52,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_RestartCrontab_Click"/>
                     <Button x:Name="button_restartcrontabedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="155,52,0,0" VerticalAlignment="Top" Width="50" Height="25" Click="Button_CrontabEdit_Click"/>
                     <TextBox x:Name="textBox_restartcrontab" Height="11" Margin="210,51,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="150"/>
-                    <TextBox x:Name="textBox_nextcrontab" Height="11" Margin="365,51,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="145"/>
+                    <TextBox x:Name="textBox_nextcrontab" Height="11" Margin="360,51,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="150"/>
 
                     <Label x:Name="label_autorestart" Content="Auto Restart:" HorizontalAlignment="Left" Margin="17,81,0,0" VerticalAlignment="Top"/>
                     <Button x:Name="button_autorestart" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="100,82,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_AutoRestart_Click"/>

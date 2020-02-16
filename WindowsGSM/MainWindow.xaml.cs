@@ -63,7 +63,7 @@ namespace WindowsGSM
             Deleting = 12
         }
 
-        public static readonly string WGSM_VERSION = "v1.11.0";
+        public static readonly string WGSM_VERSION = "v1.11.1";
         public static readonly int MAX_SERVER = 100;
         public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
 
@@ -791,16 +791,6 @@ namespace WindowsGSM
         private async Task GameServer_Start(Functions.ServerTable server, string notes = "")
         {
             if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped) { return; }
-
-            var ips = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().GetActiveUdpListeners();
-
-            foreach (var ip in ips)
-            {
-                if (ip.ToString().Contains(server.IP))
-                {
-                    Debug.WriteLine(ip);
-                }
-            }
 
             string error = "";
             if (!string.IsNullOrWhiteSpace(server.IP) && !IsValidIPAddress(server.IP))

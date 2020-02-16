@@ -42,43 +42,9 @@ namespace WindowsGSM.GameServer
         }
 
         public async void CreateServerCFG()
-        {
-            string shipExePath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"Mordhau\Binaries\Win64\MordhauServer-Win64-Shipping.exe");
-            WindowsFirewall firewall = new WindowsFirewall("MordhauServer-Win64-Shipping.exe", shipExePath);
-            if (!await firewall.IsRuleExist())
-            {
-                firewall.AddRule();
-            }
-
-            //Run MordhauServer.exe to let it create the default files
-            Process p = new Process
-            {
-                StartInfo =
-                {
-                    WorkingDirectory = Functions.ServerPath.GetServerFiles(_serverData.ServerID),
-                    FileName = shipExePath,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    CreateNoWindow = true,
-                    UseShellExecute = false
-                }
-            };
-            p.Start();
-
+        {    
             string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"Mordhau\Saved\Config\WindowsServer\Game.ini");
-            await Task.Run(() =>
-            {
-                int tries = 0;
-                while (!File.Exists(configPath) && tries < 100)
-                {
-                    tries++;
-                    Task.Delay(500);
-                }
-            });
-
-            if (!p.HasExited)
-            {
-                p.Kill();
-            }
+            Directory.CreateDirectory(Path.GetDirectoryName(configPath));
 
             //Download Game.ini
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
