@@ -401,5 +401,15 @@
     <Resource Include="Images\Restart.ico" />
     <Resource Include="Images\Update.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Book.ico" />
+    <Resource Include="Images\Config.ico" />
+    <Resource Include="Images\Delete.ico" />
+    <Resource Include="Images\Files.ico" />
+    <Resource Include="Images\Issue.ico" />
+    <Resource Include="Images\Start.ico" />
+    <Resource Include="Images\Stop.ico" />
+    <Resource Include="Images\Zip.ico" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

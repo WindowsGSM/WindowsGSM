@@ -247,14 +247,9 @@ namespace WindowsGSM.GameServer
                 }
                 catch
                 {
-                    //ignore
+                    Error = "Fail to delete server.jar";
+                    return false;
                 }
-            }
-
-            if (File.Exists(serverJarPath))
-            {
-                Error = "Fail to delete server.jar";
-                return false;
             }
 
             try
@@ -398,7 +393,7 @@ namespace WindowsGSM.GameServer
             }
             catch
             {
-
+                //ignore
             }
 
             try
@@ -420,7 +415,7 @@ namespace WindowsGSM.GameServer
             }
             catch
             {
-
+                //ignore
             }
 
             return Java.NotInstall;

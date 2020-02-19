@@ -21,6 +21,7 @@ namespace WindowsGSM.Functions
         public bool AutoUpdate;
         public bool UpdateOnStart;
         public bool DiscordAlert;
+        public string DiscordMessage;
         public string DiscordWebhook;
         public bool RestartCrontab;
         public string CrontabFormat;
@@ -82,6 +83,7 @@ namespace WindowsGSM.Functions
                             case "autoupdate": AutoUpdate = (keyvalue[1] == "1") ? true : false; break;
                             case "updateonstart": UpdateOnStart = (keyvalue[1] == "1") ? true : false; break;
                             case "discordalert": DiscordAlert = (keyvalue[1] == "1") ? true : false; break;
+                            case "discordmessage": DiscordMessage = keyvalue[1]; break;
                             case "discordwebhook": DiscordWebhook = keyvalue[1]; break;
                             case "restartcrontab": RestartCrontab = (keyvalue[1] == "1") ? true : false; break;
                             case "crontabformat": CrontabFormat = keyvalue[1]; break;
@@ -112,6 +114,7 @@ namespace WindowsGSM.Functions
                 AutoUpdate = false;
                 UpdateOnStart = false;
                 DiscordAlert = false;
+                DiscordMessage = "";
                 DiscordWebhook = "";
                 RestartCrontab = false;
                 CrontabFormat = "0 6 * * *";
@@ -136,6 +139,7 @@ namespace WindowsGSM.Functions
                     textwriter.WriteLine("updateonstart=\"0\"");
                     textwriter.WriteLine("");
                     textwriter.WriteLine("discordalert=\"0\"");
+                    textwriter.WriteLine($"discordmessage=\"{DiscordMessage}\"");
                     textwriter.WriteLine($"discordwebhook=\"{DiscordWebhook}\"");
                     textwriter.WriteLine("");
                     textwriter.WriteLine("restartcrontab=\"0\"");

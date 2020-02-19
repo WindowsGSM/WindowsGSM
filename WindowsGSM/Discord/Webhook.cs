@@ -2,6 +2,7 @@
 using System.Text;
 using System.Threading.Tasks;
 using System.Net.Http;
+using System.Web;
 
 namespace WindowsGSM.Discord
 {
@@ -9,12 +10,14 @@ namespace WindowsGSM.Discord
     {
         private static readonly HttpClient _httpClient = new HttpClient();
         private readonly string _webhookUrl;
+        private readonly string _customMessage;
         private readonly string _donorType;
 
-        public Webhook(string webhookurl, string donorType = "")
+        public Webhook(string webhookurl, string customMessage, string donorType = "")
         {
-            _webhookUrl = webhookurl;
-            _donorType = donorType;
+            _webhookUrl = webhookurl ?? "";
+            _customMessage = customMessage ?? "";
+            _donorType = donorType ?? "";
         }
 
         public async Task<bool> Send(string serverid, string servergame, string serverstatus, string servername, string serverip, string serverport)
@@ -24,21 +27,18 @@ namespace WindowsGSM.Discord
                 return false;
             }
 
-            string color = GetColor(serverstatus);
-            string status = GetStatusWithEmoji(serverstatus);
-            string gameicon = GetServerGameIcon(servergame);
             string avatarUrl = GetAvatarUrl();
-            string time = DateTime.UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss.mssZ");
             string json = @"
             {
                 ""username"": ""WindowsGSM"",
                 ""avatar_url"": """ + avatarUrl  + @""",
+                ""content"": """ + HttpUtility.JavaScriptStringEncode(_customMessage) + @""",
                 ""embeds"": [
                 {
-                    ""title"": ""Status (ID: " + serverid + @")"",
+                    ""title"": ""Status"",
                     ""type"": ""rich"",
-                    ""description"": """ + status + @""",
-                    ""color"": " + color + @",
+                    ""description"": """ + GetStatusWithEmoji(serverstatus) + @""",
+                    ""color"": " + GetColor(serverstatus) + @",
                     ""fields"": [
                     {
                         ""name"": ""Game Server"",
@@ -51,16 +51,16 @@ namespace WindowsGSM.Discord
                         ""inline"": true
                     }],
                     ""author"": {
-                        ""name"": """ + servername + @""",
-                        ""icon_url"": """ + gameicon + @"""
+                        ""name"": ""ID: " + serverid + " | "+ HttpUtility.JavaScriptStringEncode(servername) + @""",
+                        ""icon_url"": """ + GetServerGameIcon(servergame) + @"""
                     },
                     ""footer"": {
-                        ""text"": ""WindowsGSM - Alert"",
+                        ""text"": """ + MainWindow.WGSM_VERSION + @" - Alert"",
                         ""icon_url"": """ + avatarUrl + @"""
                     },
-                    ""timestamp"": """ + time + @""",
+                    ""timestamp"": """ + DateTime.UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss.mssZ") + @""",
                     ""thumbnail"": {
-                        ""url"": ""https://windowsgsm.com/assets/images/warning.png""
+                        ""url"": """ + GetThumbnail(serverstatus) + @"""
                     }
                 }]
             }";
@@ -93,16 +93,16 @@ namespace WindowsGSM.Discord
             {
                 return "65535"; //Cyan
             }
-            else if(serverStatus.Contains("Crashed"))
+            else if (serverStatus.Contains("Crashed"))
             {
                 return "16711680"; //Red
             }
-            else if(serverStatus.Contains("Updated"))
+            else if (serverStatus.Contains("Updated"))
             {
                 return "16564292"; //Gold
             }
 
-            return "16777215";
+            return "16711679";
         }
 
         private static string GetStatusWithEmoji(string serverStatus)
@@ -125,6 +125,29 @@ namespace WindowsGSM.Discord
             }
 
             return serverStatus;
+        }
+
+        private static string GetThumbnail(string serverStatus)
+        {
+            string url = "https://windowsgsm.com/assets/images/";
+            if (serverStatus.Contains("Started"))
+            {
+                return $"{url}OK_t.png";
+            }
+            else if (serverStatus.Contains("Restarted"))
+            {
+                return $"{url}Restart_t.png";
+            }
+            else if (serverStatus.Contains("Crashed"))
+            {
+                return $"{url}warning.png";
+            }
+            else if (serverStatus.Contains("Updated"))
+            {
+                return $"{url}Update_t.png";
+            }
+
+            return $"{url}Config_t.png";
         }
 
         private static string GetServerGameIcon(string serverGame)

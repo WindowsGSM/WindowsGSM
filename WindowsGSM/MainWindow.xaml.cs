@@ -83,6 +83,7 @@ namespace WindowsGSM
         private static readonly bool[] g_bUpdateOnStart = new bool[MAX_SERVER + 1];
 
         private static readonly bool[] g_bDiscordAlert = new bool[MAX_SERVER + 1];
+        private static readonly string[] g_DiscordMessage = new string[MAX_SERVER + 1];
         private static readonly string[] g_DiscordWebhook = new string[MAX_SERVER + 1];
 
         private static readonly bool[] g_bRestartCrontab = new bool[MAX_SERVER + 1];
@@ -319,6 +320,7 @@ namespace WindowsGSM
                     g_bAutoUpdate[i] = serverConfig.AutoUpdate;
                     g_bUpdateOnStart[i] = serverConfig.UpdateOnStart;
                     g_bDiscordAlert[i] = serverConfig.DiscordAlert;
+                    g_DiscordMessage[i] = serverConfig.DiscordMessage;
                     g_DiscordWebhook[i] = serverConfig.DiscordWebhook;
                     g_bRestartCrontab[i] = serverConfig.RestartCrontab;
                     g_CrontabFormat[i] = serverConfig.CrontabFormat;
@@ -339,15 +341,17 @@ namespace WindowsGSM
             for (int i = 0; i < num_row; i++)
             {
                 var server = (Functions.ServerTable)ServerGrid.Items[i];
-                if (g_bAutoStart[int.Parse(server.ID)])
+                int serverId = int.Parse(server.ID);
+
+                if (g_bAutoStart[serverId])
                 {
                     await GameServer_Start(server, " | Auto Start");
 
-                    if (g_iServerStatus[int.Parse(server.ID)] == ServerStatus.Started)
+                    if (g_iServerStatus[serverId] == ServerStatus.Started)
                     {
-                        if (g_bDiscordAlert[int.Parse(server.ID)])
+                        if (g_bDiscordAlert[serverId])
                         {
-                            var webhook = new Discord.Webhook(g_DiscordWebhook[int.Parse(server.ID)], g_DonorType);
+                            var webhook = new Discord.Webhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
                             await webhook.Send(server.ID, server.Game, "Started | Auto Start", server.Name, server.IP, server.Port);
                         }
                     }    
@@ -610,15 +614,41 @@ namespace WindowsGSM
             Functions.ServerConfig.SetSetting(server.ID, "discordwebhook", webhookUrl);
         }
 
+        private async void Button_DiscordSetMessage_Click(object sender, RoutedEventArgs e)
+        {
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
+
+            string message = Functions.ServerConfig.GetSetting(server.ID, "discordmessage");
+
+            var settings = new MetroDialogSettings
+            {
+                AffirmativeButtonText = "Save",
+                DefaultText = message
+            };
+
+            message = await this.ShowInputAsync("Discord Custom Message", "Please enter the custom message.\n\nExample ping message <@discorduserid>:\n<@348921660361146380>", settings);
+
+            //If pressed cancel or key is null or whitespace
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
+
+            g_DiscordMessage[Int32.Parse(server.ID)] = message;
+            Functions.ServerConfig.SetSetting(server.ID, "discordmessage", message);
+        }
+
         private async void Button_DiscordWebhookTest_Click(object sender, RoutedEventArgs e)
         {
-            var row = (Functions.ServerTable)ServerGrid.SelectedItem;
-            if (row == null) { return; }
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
 
-            if (!g_bDiscordAlert[Int32.Parse(row.ID)]) { return; }
+            int serverId = int.Parse(server.ID);
+            if (!g_bDiscordAlert[serverId]) { return; }
 
-            var webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(row.ID)], g_DonorType);
-            await webhook.Send(row.ID, row.Game, "Webhook Test Alert", row.Name, row.IP, row.Port);
+            var webhook = new Discord.Webhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
+            await webhook.Send(server.ID, server.Game, "Webhook Test Alert", server.Name, server.IP, server.Port);
         }
 
         private void Button_ServerCommand_Click(object sender, RoutedEventArgs e)
@@ -1247,7 +1277,7 @@ namespace WindowsGSM
 
                     if (g_bDiscordAlert[serverId])
                     {
-                        var webhook = new Discord.Webhook(g_DiscordWebhook[serverId], g_DonorType);
+                        var webhook = new Discord.Webhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
                         await webhook.Send(server.ID, server.Game, "Crashed", server.Name, server.IP, server.Port);
                     }
 
@@ -1274,7 +1304,7 @@ namespace WindowsGSM
 
                         if (g_bDiscordAlert[serverId])
                         {
-                            var webhook = new Discord.Webhook(g_DiscordWebhook[serverId], g_DonorType);
+                            var webhook = new Discord.Webhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
                             await webhook.Send(server.ID, server.Game, "Restarted | Auto Restart", server.Name, server.IP, server.Port);
                         }
                     }
@@ -1304,6 +1334,8 @@ namespace WindowsGSM
                 }
 
                 await Task.Delay(60000 * UPDATE_INTERVAL_MINUTE);
+
+                if (p == null || p.HasExited) { break; }
 
                 //Try to get local build again if not found just now
                 if (string.IsNullOrWhiteSpace(localVersion))
@@ -1352,7 +1384,7 @@ namespace WindowsGSM
 
                             if (g_bDiscordAlert[serverId])
                             {
-                                var webhook = new Discord.Webhook(g_DiscordWebhook[serverId], g_DonorType);
+                                var webhook = new Discord.Webhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
                                 await webhook.Send(server.ID, server.Game, "Updated | Auto Update", server.Name, server.IP, server.Port);
                             }
                         }
@@ -1388,16 +1420,13 @@ namespace WindowsGSM
 
         private async void StartRestartCrontabCheck(Functions.ServerTable server)
         {
-            int serverId = Int32.Parse(server.ID);
+            int serverId = int.Parse(server.ID);
 
             //Save the process of game server
             Process p = g_Process[serverId];
 
             while (p != null && !p.HasExited)
             {
-                //Load Ram Usage of server to ServerGrid
-                //LoadRamUsage(server.ID);
-
                 //If not enable return
                 if (!g_bRestartCrontab[serverId])
                 {
@@ -1433,10 +1462,10 @@ namespace WindowsGSM
                     //Restart the server
                     if (g_iServerStatus[serverId] == ServerStatus.Started)
                     {
-                        g_Process[Int32.Parse(server.ID)] = null;
+                        g_Process[serverId] = null;
 
                         //Begin Restart
-                        g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Restarting;
+                        g_iServerStatus[serverId] = ServerStatus.Restarting;
                         Log(server.ID, "Action: Restart");
                         SetServerStatus(server, "Restarting");
 
@@ -1444,7 +1473,7 @@ namespace WindowsGSM
                         var gameServer = await Server_BeginStart(server);
                         if (gameServer == null) { return; }
 
-                        g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Started;
+                        g_iServerStatus[serverId] = ServerStatus.Started;
                         Log(server.ID, "Server: Restarted | Restart Crontab");
                         if (!string.IsNullOrWhiteSpace(gameServer.Notice))
                         {
@@ -1452,9 +1481,9 @@ namespace WindowsGSM
                         }
                         SetServerStatus(server, "Started");
 
-                        if (g_bDiscordAlert[Int32.Parse(server.ID)])
+                        if (g_bDiscordAlert[serverId])
                         {
-                            var webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)], g_DonorType);
+                            var webhook = new Discord.Webhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
                             await webhook.Send(server.ID, server.Game, "Restarted | Restart Crontab", server.Name, server.IP, server.Port);
                         }
 
