@@ -27,7 +27,7 @@ namespace WindowsGSM.GameServer
     /// The second one is used.
     /// 
     /// </summary>
-    class _7DTD
+    class SDTD
     {
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -40,13 +40,14 @@ namespace WindowsGSM.GameServer
         public const string FullName = "7 Days to Die Dedicated Server";
         public string StartPath = "7DaysToDieServer.exe";
         public bool ToggleConsole = true;
+        public int PortIncrements = 1;
 
-        public string port = "26900";
-        public string defaultmap = "Navezgane";
-        public string maxplayers = "8";
-        public string additional = "";
+        public string Port = "26900";
+        public string Defaultmap = "Navezgane";
+        public string Maxplayers = "8";
+        public string Additional = "";
 
-        public _7DTD(Functions.ServerConfig serverData)
+        public SDTD(Functions.ServerConfig serverData)
         {
             _serverData = serverData;
         }
@@ -61,8 +62,8 @@ namespace WindowsGSM.GameServer
                 configText = configText.Replace("{{hostname}}", _serverData.ServerName);
                 configText = configText.Replace("{{rcon_password}}", _serverData.GetRCONPassword());
                 configText = configText.Replace("{{port}}", _serverData.ServerPort);
-                configText = configText.Replace("{{telnetPort}}", (Int32.Parse(_serverData.ServerPort) - Int32.Parse(port) + 8081).ToString());
-                configText = configText.Replace("{{maxplayers}}", maxplayers);
+                configText = configText.Replace("{{telnetPort}}", (int.Parse(_serverData.ServerPort) - int.Parse(Port) + 8081).ToString());
+                configText = configText.Replace("{{maxplayers}}", Maxplayers);
                 File.WriteAllText(configPath, configText);
             }
 
@@ -145,7 +146,6 @@ namespace WindowsGSM.GameServer
                 SetForegroundWindow(p.MainWindowHandle);
                 p.CloseMainWindow();
                 SendKeys.SendWait("{ENTER}");
-                SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
             });
         }
 

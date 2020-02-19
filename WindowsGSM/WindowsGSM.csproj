@@ -154,7 +154,10 @@
     <Compile Include="Functions\Github.cs" />
     <Compile Include="Functions\GoogleAnalytics.cs" />
     <Compile Include="Functions\ServerConsole.cs" />
-    <Compile Include="GameServer\7DTD.cs" />
+    <Compile Include="GameServer\ARKSE.cs" />
+    <Compile Include="GameServer\DODS.cs" />
+    <Compile Include="GameServer\Engine\UnrealEngine.cs" />
+    <Compile Include="GameServer\SDTD.cs" />
     <Compile Include="GameServer\ClassObject.cs" />
     <Compile Include="GameServer\CS.cs" />
     <Compile Include="GameServer\CSCZ.cs" />
@@ -170,9 +173,10 @@
     <Compile Include="GameServer\NMRIH.cs" />
     <Compile Include="GameServer\OLOW.cs" />
     <Compile Include="GameServer\SE.cs" />
-    <Compile Include="GameServer\Type\HLDS.cs" />
-    <Compile Include="GameServer\Type\SRCDS.cs" />
-    <Compile Include="GameServer\Type\UE4.cs" />
+    <Compile Include="GameServer\Engine\GoldSource.cs" />
+    <Compile Include="GameServer\Engine\Source.cs" />
+    <Compile Include="GameServer\SW.cs" />
+    <Compile Include="GameServer\ZPS.cs" />
     <Compile Include="Tools\GlobalServerList.cs" />
     <Compile Include="Tools\InstallMod.cs" />
     <Compile Include="WindowsFirewall.cs" />
@@ -376,6 +380,26 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Games\nmrih.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\arkse.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\zps.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\dods.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\sw.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Install.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Backup.ico" />
+    <Resource Include="Images\Restart.ico" />
+    <Resource Include="Images\Update.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

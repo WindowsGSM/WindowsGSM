@@ -4,8 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using System.Collections;
-using System.Linq;
+using System.IO.Compression;
 
 namespace WindowsGSM.GameServer
 {
@@ -29,11 +28,12 @@ namespace WindowsGSM.GameServer
         public const string FullName = "Space Engineers Dedicated Server";
         public string StartPath = @"DedicatedServer64\SpaceEngineersDedicated.exe";
         public bool ToggleConsole = false;
+        public int PortIncrements = 1;
 
-        public string port = "27016";
-        public string defaultmap = "WindowsGSM_World";
-        public string maxplayers = "4";
-        public string additional = "";
+        public string Port = "27016";
+        public string Defaultmap = "world";
+        public string Maxplayers = "4";
+        public string Additional = "";
 
         public SE(Functions.ServerConfig serverData)
         {
@@ -42,48 +42,54 @@ namespace WindowsGSM.GameServer
 
         public async void CreateServerCFG()
         {
-            /*
-             * The configs is created under %APPDATA% points to C:\Users\(Username)\AppData\Roaming\  Environment.GetEnvironmentVariable("APPDATA")
-             */
+            //Download SpaceEngineersDedicated-WindowsGSM.bat
+            string batPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"DedicatedServer64\SpaceEngineersDedicated-WindowsGSM.bat");
+            await Functions.Github.DownloadGameServerConfig(batPath, _serverData.ServerGame);
 
-            /*
-            string serverFilePath = Functions.Path.GetServerFiles(_serverData.ServerID);
-            Directory.CreateDirectory(Path.Combine(serverFilePath, "Instance"));
-            Directory.CreateDirectory(Path.Combine(serverFilePath, "Instance", "cache"));
-            Directory.CreateDirectory(Path.Combine(serverFilePath, "Instance", "Mods"));
-            Directory.CreateDirectory(Path.Combine(serverFilePath, "Instance", "Saves"));
+            //Download world and extract
+            string zipPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"AppData\Roaming\SpaceEngineersDedicated\Saves\world.zip");
+            if (await Functions.Github.DownloadGameServerConfig(zipPath, _serverData.ServerGame))
+            {
+                await Task.Run(() =>
+                {
+                    try
+                    {
+                        ZipFile.ExtractToDirectory(zipPath, Path.GetDirectoryName(zipPath));
+                    }
+                    catch
+                    {
+                        //ignore
+                    }
+                });
+                await Task.Run(() => File.Delete(zipPath));
+            }
 
-            string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, "Instance", "SpaceEngineers-Dedicated.cfg");
-            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
+            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"AppData\Roaming\SpaceEngineersDedicated", "SpaceEngineers-Dedicated.cfg");
+            if (await Functions.Github.DownloadGameServerConfig(configPath, _serverData.ServerGame))
             {
                 string configText = File.ReadAllText(configPath);
-                configText = configText.Replace("{{maxplayers}}", maxplayers);
-                configText = configText.Replace("{{LoadWorld}}", Path.Combine(serverFilePath, "Instance", "Saves", defaultmap));
+                configText = configText.Replace("{{maxplayers}}", _serverData.ServerMaxPlayer);
+                configText = configText.Replace("{{LoadWorld}}", Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"AppData\Roaming\SpaceEngineersDedicated\Saves", Defaultmap));
                 configText = configText.Replace("{{ip}}", _serverData.ServerIP);
-                configText = configText.Replace("{{port}}", _serverData.GetAvailablePort(port));
+                configText = configText.Replace("{{port}}", _serverData.ServerPort);
                 configText = configText.Replace("{{ServerName}}", _serverData.ServerName);
-                configText = configText.Replace("{{WorldName}}", defaultmap);
+                configText = configText.Replace("{{WorldName}}", Defaultmap);
                 File.WriteAllText(configPath, configText);
             }
-            */
         }
 
         public async Task<Process> Start()
         {
-            /*
-            string configFile = "SpaceEngineers-Dedicated.cfg";
-            string configPath = Functions.Path.GetServerFiles(_serverData.ServerID, "Config", configFile);
+            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"AppData\Roaming\SpaceEngineersDedicated", "SpaceEngineers-Dedicated.cfg");
             if (!File.Exists(configPath))
             {
-                Notice = $"{configFile} not found ({configPath})";
+                Notice = $"{Path.GetFileName(configPath)} not found ({configPath})";
             }
-            */
 
             string param = (ToggleConsole ? "-console" : "-noconsole") + " -ignorelastsession";
-            param += (string.IsNullOrEmpty(_serverData.ServerIP)) ? "" : $" -ip {_serverData.ServerIP}";
-            param += (string.IsNullOrEmpty(_serverData.ServerPort)) ? "" : $" -port {_serverData.ServerPort}";
+            param += string.IsNullOrEmpty(_serverData.ServerIP) ? "" : $" -ip {_serverData.ServerIP}";
+            param += string.IsNullOrEmpty(_serverData.ServerPort) ? "" : $" -port {_serverData.ServerPort}";
             param += $" {_serverData.ServerParam}";
-
 
             Process p;
             if (ToggleConsole)
@@ -92,12 +98,14 @@ namespace WindowsGSM.GameServer
                 {
                     StartInfo =
                     {
+                        WorkingDirectory = Path.GetDirectoryName(Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath)),
                         FileName = Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath),
                         Arguments = param,
                         WindowStyle = ProcessWindowStyle.Minimized
                     },
                     EnableRaisingEvents = true
                 };
+                p.StartInfo.EnvironmentVariables["USERPROFILE"] = Functions.ServerPath.GetServerFiles(_serverData.ServerID);
                 p.Start();
             }
             else
@@ -106,6 +114,7 @@ namespace WindowsGSM.GameServer
                 {
                     StartInfo =
                     {
+                        WorkingDirectory = Path.GetDirectoryName(Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath)),
                         FileName = Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath),
                         Arguments = param,
                         WindowStyle = ProcessWindowStyle.Minimized,
@@ -116,15 +125,7 @@ namespace WindowsGSM.GameServer
                     },
                     EnableRaisingEvents = true
                 };
-                /*
-                 * I had tried to change APPDATA value but fail... seems there is no way to change config dir...
-                 */
-                //Environment.CurrentDirectory = Functions.Path.GetServerFiles(_serverData.ServerID, "Instance");
-                //Environment.SetEnvironmentVariable("APPDATA", Functions.Path.GetServerFiles(_serverData.ServerID, "Instance"), EnvironmentVariableTarget.User);
-                //Environment.appdata
-                //p.StartInfo.EnvironmentVariables["APPDATA"] = Functions.Path.GetServerFiles(_serverData.ServerID, "Instance");
-                //p.StartInfo.EnvironmentVariables.Add("AppData", Functions.Path.GetServerFiles(_serverData.ServerID, "Instance"));
-                //p.StartInfo.Environment["APPDATA"] = Functions.Path.GetServerFiles(_serverData.ServerID, "Config");
+                p.StartInfo.EnvironmentVariables["USERPROFILE"] = Functions.ServerPath.GetServerFiles(_serverData.ServerID);
                 var serverConsole = new Functions.ServerConsole(_serverData.ServerID);
                 p.OutputDataReceived += serverConsole.AddOutput;
                 p.ErrorDataReceived += serverConsole.AddOutput;
@@ -140,14 +141,14 @@ namespace WindowsGSM.GameServer
         {
             await Task.Run(() =>
             {
-                if (p.StartInfo.RedirectStandardInput)
+                if (p.StartInfo.RedirectStandardOutput)
                 {
                     /*  Base on https://www.spaceengineersgame.com/dedicated-servers.html
                      * 
                      *  C:\WINDOWS\system32 > TASKKILL /pid 26500
                      *  SUCCESS: Sent termination signal to the process with PID 26500.
                      * 
-                     *  But the process still exist.... Therefore, p.Kill(); is used
+                     *  But the process still exist... Therefore, p.Kill(); is used
                      * 
 
                     Process taskkill = new Process
@@ -171,7 +172,6 @@ namespace WindowsGSM.GameServer
                     SetForegroundWindow(p.MainWindowHandle);
                     SendKeys.SendWait("^(c)");
                     SendKeys.SendWait("^(c)");
-                    SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
                 }
             });
         }

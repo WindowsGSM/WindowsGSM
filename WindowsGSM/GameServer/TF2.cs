@@ -1,9 +1,9 @@
 ﻿namespace WindowsGSM.GameServer
 {
-    class TF2 : Type.SRCDS
+    class TF2 : Engine.Source
     {
         public const string FullName = "Team Fortress 2 Dedicated Server";
-        public override string defaultmap { get { return "cp_badlands"; } }
+        public override string Defaultmap { get { return "cp_badlands"; } }
         public override string Game { get { return "tf"; } }
         public override string AppId { get { return "232250"; } }
 

@@ -24,11 +24,12 @@ namespace WindowsGSM.GameServer
         public const string FullName = "Minecraft: Bedrock Edition Server";
         public string StartPath = "bedrock_server.exe";
         public bool ToggleConsole = false;
+        public int PortIncrements = 1;
 
-        public string port = "19132";
-        public string defaultmap = "Bedrock level";
-        public string maxplayers = "10";
-        public string additional = "";
+        public string Port = "19132";
+        public string Defaultmap = "Bedrock level";
+        public string Maxplayers = "10";
+        public string Additional = "";
 
         public MCBE(Functions.ServerConfig serverData)
         {
@@ -43,11 +44,11 @@ namespace WindowsGSM.GameServer
             {
                 string configText = File.ReadAllText(configPath);
                 configText = configText.Replace("{{server-name}}", _serverData.ServerName);
-                configText = configText.Replace("{{max-players}}", maxplayers);
+                configText = configText.Replace("{{max-players}}", Maxplayers);
                 string tempPort = _serverData.ServerPort;
                 configText = configText.Replace("{{server-port}}", tempPort);
                 configText = configText.Replace("{{server-portv6}}", (System.Int32.Parse(tempPort)+1).ToString());
-                configText = configText.Replace("{{level-name}}", defaultmap);
+                configText = configText.Replace("{{level-name}}", Defaultmap);
                 File.WriteAllText(configPath, configText);
             }
         }
@@ -126,7 +127,6 @@ namespace WindowsGSM.GameServer
                     SetForegroundWindow(p.MainWindowHandle);
                     SendKeys.SendWait("stop");
                     SendKeys.SendWait("{ENTER}");
-                    SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
                 }
             });
         }

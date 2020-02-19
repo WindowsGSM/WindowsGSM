@@ -24,11 +24,12 @@ namespace WindowsGSM.GameServer
         public const string FullName = "Minecraft: Java Edition Server";
         public string StartPath = "";
         public bool ToggleConsole = false;
+        public int PortIncrements = 1;
 
-        public string port = "25565";
-        public string defaultmap = "world";
-        public string maxplayers = "20";
-        public string additional = "-Xmx1024M -Xms1024M -XX:+UseG1GC";
+        public string Port = "25565";
+        public string Defaultmap = "world";
+        public string Maxplayers = "20";
+        public string Additional = "-Xmx1024M -Xms1024M -XX:+UseG1GC";
 
         private enum Java : int
         {
@@ -48,13 +49,12 @@ namespace WindowsGSM.GameServer
             string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "server.properties");
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
-                string serverPort = _serverData.ServerPort;
                 string configText = File.ReadAllText(configPath);
-                configText = configText.Replace("{{serverPort}}", serverPort);
-                configText = configText.Replace("{{maxplayers}}", maxplayers);
-                configText = configText.Replace("{{rconPort}}", (Int32.Parse(serverPort) + 10).ToString());
+                configText = configText.Replace("{{serverPort}}", _serverData.ServerPort);
+                configText = configText.Replace("{{maxplayers}}", Maxplayers);
+                configText = configText.Replace("{{rconPort}}", (int.Parse(_serverData.ServerPort) + 10).ToString());
                 configText = configText.Replace("{{serverIP}}", _serverData.ServerIP);
-                configText = configText.Replace("{{defaultmap}}", defaultmap);
+                configText = configText.Replace("{{defaultmap}}", Defaultmap);
                 configText = configText.Replace("{{rcon_password}}", _serverData.GetRCONPassword());
                 configText = configText.Replace("{{serverName}}", _serverData.ServerName);
                 File.WriteAllText(configPath, configText);
@@ -154,7 +154,6 @@ namespace WindowsGSM.GameServer
                     SetForegroundWindow(p.MainWindowHandle);
                     SendKeys.SendWait("stop");
                     SendKeys.SendWait("{ENTER}");
-                    SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
                 }
             });
         }

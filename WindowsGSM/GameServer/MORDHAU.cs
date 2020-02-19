@@ -20,7 +20,7 @@ namespace WindowsGSM.GameServer
     /// The issue can reproduce by change ToggleConsole=false. Then start a server and join the server, type ChangeMap <custommap> command in the terminal in Mordhau, the freeze issue occur.
     /// 
     /// </summary>
-    class MORDHAU
+    class MORDHAU : Engine.UnrealEngine
     {
         private readonly Functions.ServerConfig _serverData;
 
@@ -30,11 +30,12 @@ namespace WindowsGSM.GameServer
         public const string FullName = "Mordhau Dedicated Server";
         public string StartPath = @"Mordhau\Binaries\Win64\MordhauServer-Win64-Shipping.exe";
         public bool ToggleConsole = true;
+        public int PortIncrements = 2;
 
-        public string port = "7777";
-        public string defaultmap = "FFA_ThePit";
-        public string maxplayers = "16";
-        public string additional = "-BeaconPort={{beaconport}} -QueryPort={{queryport}}";
+        public string Port = "7777";
+        public string Defaultmap = "FFA_ThePit";
+        public string Maxplayers = "16";
+        public string Additional = "-BeaconPort={{beaconport}} -QueryPort={{queryport}}";
 
         public MORDHAU(Functions.ServerConfig serverData)
         {
@@ -68,39 +69,23 @@ namespace WindowsGSM.GameServer
 
         public async Task<Process> Start()
         {
-            string exeFile = "MordhauServer.exe";
-            string exePath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, exeFile);
-            if (!File.Exists(exePath))
-            {
-                Error = $"{exeFile} not found ({exePath})";
-                return null;
-            }
-
-            string shipExeFile = "MordhauServer-Win64-Shipping.exe";
-            string shipExePath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"Mordhau\Binaries\Win64", shipExeFile);
-            WindowsFirewall firewall = new WindowsFirewall(shipExeFile, shipExePath);
-            if (!await firewall.IsRuleExist())
-            {
-                firewall.AddRule();
-            }
-
+            string shipExePath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath);
             if (!File.Exists(shipExePath))
             {
-                Error = $"{shipExeFile} not found ({shipExePath})";
+                Error = $"{Path.GetFileName(shipExePath)} not found ({shipExePath})";
                 return null;
             }
 
-            string configFile = "Game.ini";
-            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"Mordhau\Saved\Config\WindowsServer", configFile);
+            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"Mordhau\Saved\Config\WindowsServer\Game.ini");
             if (!File.Exists(configPath))
             {
-                Notice = $"{configFile} not found ({configPath})";
+                Notice = $"{Path.GetFileName(configPath)} not found ({configPath})";
             }
 
-            string param = string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : $"{_serverData.ServerMap}";
+            string param = string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : _serverData.ServerMap;
             param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? "" : $" -MultiHome={_serverData.ServerIP}";
             param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" -Port={_serverData.ServerPort}";
-            param += $" {_serverData.ServerParam}" + ((ToggleConsole) ? " -log" : "");
+            param += $" {_serverData.ServerParam}" + (ToggleConsole ? " -log" : "");
 
             Process p;
             if (ToggleConsole)
@@ -112,6 +97,7 @@ namespace WindowsGSM.GameServer
                         FileName = shipExePath,
                         Arguments = param,
                         WindowStyle = ProcessWindowStyle.Minimized,
+                        UseShellExecute = false
                     },
                     EnableRaisingEvents = true
                 };
@@ -148,7 +134,14 @@ namespace WindowsGSM.GameServer
         {
             await Task.Run(() =>
             {
-                p.Kill();
+                if (p.StartInfo.CreateNoWindow)
+                {
+                    p.Kill();
+                }
+                else
+                {
+                    p.CloseMainWindow();
+                }
             });
         }
 
@@ -172,18 +165,13 @@ namespace WindowsGSM.GameServer
 
         public bool IsInstallValid()
         {
-            string exeFile = "MordhauServer.exe";
-            string exePath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, exeFile);
-
-            return File.Exists(exePath);
+            return File.Exists(Functions.ServerPath.GetServerFiles(_serverData.ServerID, "MordhauServer.exe"));
         }
 
         public bool IsImportValid(string path)
         {
-            string exeFile = "MordhauServer.exe";
-            string exePath = Path.Combine(path, exeFile);
-
-            Error = $"Invalid Path! Fail to find {exeFile}";
+            string exePath = Path.Combine(path, "MordhauServer.exe");
+            Error = $"Invalid Path! Fail to find {Path.GetFileName(exePath)}";
             return File.Exists(exePath);
         }
 
@@ -210,8 +198,6 @@ namespace WindowsGSM.GameServer
 
                 foreach (string line in lines)
                 {
-                    Debug.WriteLine(line);
-
                     string[] keyvalue = line.Split(new char[] { '=' }, 2);
                     if (keyvalue.Length == 2)
                     {

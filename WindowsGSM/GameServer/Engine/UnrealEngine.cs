@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WindowsGSM.GameServer.Type
+namespace WindowsGSM.GameServer.Engine
 {
-    class UE4
+    class UnrealEngine
     {
     }
 }

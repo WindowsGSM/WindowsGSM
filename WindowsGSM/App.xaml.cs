@@ -3,6 +3,7 @@ using System.Windows;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Linq;
+using System.IO;
 
 namespace WindowsGSM
 {
@@ -43,8 +44,20 @@ namespace WindowsGSM
                 }
             }
 
-            AppDomain.CurrentDomain.UnhandledException += (s, args) => {
+            AppDomain.CurrentDomain.UnhandledException += (s, args) =>
+            {
                 MessageBox.Show("Unhandled Exception: " + args.ExceptionObject, "Crash - Please screenshot this", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                string logPath = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "logs");
+                Directory.CreateDirectory(logPath);
+
+                string logFile = Path.Combine(logPath, $"CRASH_{DateTime.Now.ToString("yyyyMMdd")}.log");
+                if (!File.Exists(logFile))
+                {
+                    File.Create(logFile).Dispose();
+                }
+
+                File.AppendAllText(logFile, args.ExceptionObject.ToString());
             };
 
             MainWindow mainwindow = new MainWindow();

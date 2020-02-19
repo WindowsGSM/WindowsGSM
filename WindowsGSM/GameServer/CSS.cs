@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WindowsGSM.GameServer
+﻿namespace WindowsGSM.GameServer
 {
-    class CSS : Type.SRCDS
+    class CSS : Engine.Source
     {
         public const string FullName = "Counter-Strike: Source Dedicated Server";
-        public override string defaultmap { get { return "de_dust2"; } }
-        public override string additional { get { return "-tickrate 64"; } }
+        public override string Defaultmap { get { return "de_dust2"; } }
+        public override string Additional { get { return "-tickrate 64"; } }
         public override string Game { get { return "cstrike"; } }
         public override string AppId { get { return "232330"; } }
 

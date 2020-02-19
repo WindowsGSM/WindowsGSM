@@ -23,11 +23,12 @@ namespace WindowsGSM.GameServer
         public const string FullName = "Grand Theft Auto V Dedicated Server (FiveM)";
         public string StartPath = @"server\FXServer.exe";
         public bool ToggleConsole = false;
+        public int PortIncrements = 1;
 
-        public string port = "30120";
-        public string defaultmap = "fivem-map-skater";
-        public string maxplayers = "32";
-        public string additional = "+exec server.cfg";
+        public string Port = "30120";
+        public string Defaultmap = "fivem-map-skater";
+        public string Maxplayers = "32";
+        public string Additional = "+exec server.cfg";
 
         public GTA5(Functions.ServerConfig serverData)
         {
@@ -45,7 +46,7 @@ namespace WindowsGSM.GameServer
                 configText = configText.Replace("{{rcon_password}}", _serverData.GetRCONPassword());
                 configText = configText.Replace("{{ip}}", _serverData.GetIPAddress());
                 configText = configText.Replace("{{port}}", _serverData.ServerPort);
-                configText = configText.Replace("{{maxplayers}}", maxplayers);
+                configText = configText.Replace("{{maxplayers}}", Maxplayers);
                 File.WriteAllText(configPath, configText);
             }
 
@@ -141,7 +142,6 @@ namespace WindowsGSM.GameServer
                     SetForegroundWindow(p.MainWindowHandle);
                     SendKeys.SendWait("quit");
                     SendKeys.SendWait("{ENTER}");
-                    SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
                 }
             });
         }

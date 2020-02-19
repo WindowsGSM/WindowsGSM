@@ -70,6 +70,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/arkse.png.
+        /// </summary>
+        public static string ARK__Survival_Evolved_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("ARK: Survival Evolved Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/cs.png.
         /// </summary>
         public static string Counter_Strike__1_6_Dedicated_Server {
@@ -102,6 +111,15 @@ namespace WindowsGSM.GameServer.Data {
         public static string Counter_Strike__Source_Dedicated_Server {
             get {
                 return ResourceManager.GetString("Counter-Strike: Source Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/dods.png.
+        /// </summary>
+        public static string Day_of_Defeat__Source_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Day of Defeat: Source Dedicated Server", resourceCulture);
             }
         }
         
@@ -232,11 +250,29 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/sw.png.
+        /// </summary>
+        public static string Stormworks_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Stormworks Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/tf2.png.
         /// </summary>
         public static string Team_Fortress_2_Dedicated_Server {
             get {
                 return ResourceManager.GetString("Team Fortress 2 Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/zps.png.
+        /// </summary>
+        public static string Zombie_Panic_Source_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Zombie Panic Source Dedicated Server", resourceCulture);
             }
         }
     }

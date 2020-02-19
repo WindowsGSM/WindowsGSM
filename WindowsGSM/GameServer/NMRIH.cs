@@ -1,9 +1,9 @@
 ﻿namespace WindowsGSM.GameServer
 {
-    class NMRIH : Type.SRCDS
+    class NMRIH : Engine.Source
     {
         public const string FullName = "No More Room in Hell Dedicated Server";
-        public override string defaultmap { get { return "nmo_broadway"; } }
+        public override string Defaultmap { get { return "nmo_broadway"; } }
         public override string Game { get { return "nmrih"; } }
         public override string AppId { get { return "317670"; } }
 

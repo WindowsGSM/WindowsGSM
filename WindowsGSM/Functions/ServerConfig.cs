@@ -205,7 +205,7 @@ namespace WindowsGSM.Functions
             }
         }
 
-        public string GetAvailablePort(string defaultport)
+        public string GetAvailablePort(string defaultport, int increment)
         {
             MainWindow WindowsGSM = (MainWindow)System.Windows.Application.Current.MainWindow;
 
@@ -224,7 +224,7 @@ namespace WindowsGSM.Functions
             {
                 if (port == portlist[i] || port == 27020) //SourceTV port 27020
                 {
-                    port++;
+                    port += increment;
                 }
             }
 

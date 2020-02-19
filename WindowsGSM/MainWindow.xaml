@@ -45,7 +45,11 @@
     <DockPanel Name="dp">
         <Menu x:Name="menu" Height="30" DockPanel.Dock="Top">
             <MenuItem Header="Servers" Height="30">
-                <MenuItem Header="Install GameServer" Click="Install_Click"/>
+                <MenuItem Header="Install GameServer" Click="Install_Click">
+                    <MenuItem.Icon>
+                        <Image Source="/WindowsGSM;component/Images/Install.ico" Width="23" Margin="3"/>
+                    </MenuItem.Icon>
+                </MenuItem>
                 <MenuItem Header="Import GameServer" Click="Import_Click"/>
                 <Separator/>
                 <MenuItem Header="Delete GameServer" Click="Delete_Click"/>
@@ -53,13 +57,25 @@
             <MenuItem Header="Actions" Height="30">
                 <MenuItem Header="Start" Click="Actions_Start_Click"/>
                 <MenuItem Header="Stop" Click="Actions_Stop_Click"/>
-                <MenuItem Header="Restart" Click="Actions_Restart_Click"/>
+                <MenuItem Header="Restart" Click="Actions_Restart_Click">
+                    <MenuItem.Icon>
+                        <Image Source="/WindowsGSM;component/Images/Restart.ico" Width="23" Margin="3"/>
+                    </MenuItem.Icon>
+                </MenuItem>
                 <Separator/>
                 <MenuItem Header="Toggle Console" Click="Actions_ToggleConsole_Click"/>
                 <Separator/>
-                <MenuItem Header="Update" Click="Actions_Update_Click"/>
+                <MenuItem Header="Update" Click="Actions_Update_Click">
+                    <MenuItem.Icon>
+                        <Image Source="/WindowsGSM;component/Images/Update.ico" Width="23" Margin="3"/>
+                    </MenuItem.Icon>
+                </MenuItem>
                 <Separator/>
-                <MenuItem Header="Backup" Click="Actions_Backup_Click"/>
+                <MenuItem Header="Backup" Click="Actions_Backup_Click">
+                    <MenuItem.Icon>
+                        <Image Source="/WindowsGSM;component/Images/Backup.ico" Width="23" Margin="3"/>
+                    </MenuItem.Icon>
+                </MenuItem>
                 <MenuItem Header="Restore Backup" Click="Actions_RestoreBackup_Click"/>
             </MenuItem>
             <MenuItem Header="Browse" Height="30">
@@ -74,7 +90,11 @@
             <MenuItem Header="Help" Height="30">
                 <MenuItem Header="Online Documentation" Click="Help_OnlineDocumentation_Click"/>
                 <MenuItem Header="Report an issue" Click="Help_ReportIssue_Click"/>
-                <MenuItem Header="Software Updates" Click="Help_SoftwareUpdates_Click"/>
+                <MenuItem Header="Software Updates" Click="Help_SoftwareUpdates_Click">
+                    <MenuItem.Icon>
+                        <Image Source="/WindowsGSM;component/Images/Update.ico" Width="23" Margin="3"/>
+                    </MenuItem.Icon>
+                </MenuItem>
                 <Separator/>
                 <MenuItem Header="About WindowsGSM" Click="Help_AboutWindowsGSM_Click">
                     <MenuItem.Icon>
@@ -144,8 +164,8 @@
                     <Label x:Name="label_restartcrontab" Content="Restart Crontab:" HorizontalAlignment="Left" Margin="0,51,0,0" VerticalAlignment="Top" Height="26"/>
                     <Button x:Name="button_restartcrontab" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="100,52,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_RestartCrontab_Click"/>
                     <Button x:Name="button_restartcrontabedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="155,52,0,0" VerticalAlignment="Top" Width="50" Height="25" Click="Button_CrontabEdit_Click"/>
-                    <TextBox x:Name="textBox_restartcrontab" Height="11" Margin="210,51,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="150"/>
-                    <TextBox x:Name="textBox_nextcrontab" Height="11" Margin="360,51,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="150"/>
+                    <TextBox x:Name="textBox_restartcrontab" Height="11" Margin="210,51,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="95"/>
+                    <TextBox x:Name="textBox_nextcrontab" Height="11" Margin="310,51,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="200" FontFamily="Consolas"/>
 
                     <Label x:Name="label_autorestart" Content="Auto Restart:" HorizontalAlignment="Left" Margin="17,81,0,0" VerticalAlignment="Top"/>
                     <Button x:Name="button_autorestart" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="100,82,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_AutoRestart_Click"/>
@@ -167,7 +187,7 @@
                     <Button x:Name="button_clearServerConsole" Cursor="Hand" Content="CLEAR SERVER CONSOLE" Margin="365,22,0,0" VerticalAlignment="Top" Height="18" Click="Button_ClearServerConsole_Click" HorizontalAlignment="Left" Width="145"/>
                     <TextBox x:Name="textBox_wgsmlog" Margin="100,145,10,10" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True"/>
                     <Label x:Name="label_wgsmlog" Content="WGSM Log:" HorizontalAlignment="Left" Margin="23,141,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_clearwgsmlog" Cursor="Hand" Content="CLEAR LOG" Margin="10,206,0,0" VerticalAlignment="Top" Height="18" Click="Button_ClearWGSMLog_Click" HorizontalAlignment="Left" Width="85"/>
+                    <Button x:Name="button_clearwgsmlog" Cursor="Hand" Content="CLEAR LOG" Margin="10,0,0,10" Height="18" Click="Button_ClearWGSMLog_Click" HorizontalAlignment="Left" Width="85" VerticalAlignment="Bottom"/>
 
                     <Label x:Name="label_embedconsole" Content="Embed Console:" HorizontalAlignment="Left" Margin="210,21,0,0" VerticalAlignment="Top"/>
                     <Button x:Name="button_embedconsole" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="310,22,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_EmbedConsole_Click"/>

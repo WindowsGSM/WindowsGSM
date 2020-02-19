@@ -30,11 +30,12 @@ namespace WindowsGSM.GameServer
         public const string FullName = "Rust Dedicated Server";
         public string StartPath = "RustDedicated.exe";
         public bool ToggleConsole = true;
+        public int PortIncrements = 1;
 
-        public string port = "28015";
-        public string defaultmap = "Procedural Map";
-        public string maxplayers = "50";
-        public string additional = "";
+        public string Port = "28015";
+        public string Defaultmap = "Procedural Map";
+        public string Maxplayers = "50";
+        public string Additional = "";
 
         public RUST(Functions.ServerConfig serverData)
         {
@@ -77,7 +78,7 @@ namespace WindowsGSM.GameServer
                 param += $" {line}";
             }
 
-            param += $" {additional}";
+            param += $" {_serverData.ServerParam}";
 
             Process p = new Process
             {

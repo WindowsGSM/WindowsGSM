@@ -11,6 +11,8 @@ namespace WindowsGSM.Functions
     {
         public static async Task<bool> DownloadGameServerConfig(string filePath, string gameFullName)
         {
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);

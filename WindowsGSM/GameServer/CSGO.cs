@@ -1,10 +1,10 @@
 ﻿namespace WindowsGSM.GameServer
 {
-    class CSGO : Type.SRCDS
+    class CSGO : Engine.Source
     {
         public const string FullName = "Counter-Strike: Global Offensive Dedicated Server";
-        public override string defaultmap { get { return "de_dust2"; } }
-        public override string additional { get { return "-tickrate 64 -usercon +game_type 0 +game_mode 0 +mapgroup mg_active"; } }
+        public override string Defaultmap { get { return "de_dust2"; } }
+        public override string Additional { get { return "-tickrate 64 -usercon +game_type 0 +game_mode 0 +mapgroup mg_active"; } }
         public override string Game { get { return "csgo"; } }
         public override string AppId { get { return "740"; } }
 

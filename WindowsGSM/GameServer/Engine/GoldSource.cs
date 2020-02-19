@@ -2,27 +2,13 @@
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
 
-/// <summary>
-/// 
-/// Notes:
-/// srcds.exe works almost perfect on WindowsGSM.
-/// The one that cause it not perfect is RedirectStandardInput=true will cause an Engine Error - CTextConsoleWin32::GetLine: !GetNumberOfConsoleInputEvents
-/// Therefore, SendKeys Input Method is used.
-/// 
-/// RedirectStandardInput:  NO WORKING
-/// RedirectStandardOutput: YES (Used)
-/// RedirectStandardError:  YES (Used)
-/// SendKeys Input Method:  YES (Used)
-/// 
-/// </summary>
-
-namespace WindowsGSM.GameServer.Type
+namespace WindowsGSM.GameServer.Engine
 {
-    class SRCDS
+    class GoldSource
     {
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -32,34 +18,33 @@ namespace WindowsGSM.GameServer.Type
         public string Error;
         public string Notice;
 
-        public string StartPath = "srcds.exe";
+        public string StartPath = "hlds.exe";
         public bool ToggleConsole = false;
+        public int PortIncrements = 1;
 
-        public virtual string port { get { return "27015"; } }
-        public virtual string defaultmap { get { return ""; } }
-        public virtual string maxplayers { get { return "24"; } }
-        public virtual string additional { get { return ""; } }
+        public virtual string Port { get { return "27015"; } }
+        public virtual string Defaultmap { get { return ""; } }
+        public virtual string Maxplayers { get { return "24"; } }
+        public virtual string Additional { get { return ""; } }
 
         public virtual string Game { get { return ""; } }
         public virtual string AppId { get { return ""; } }
 
-        public SRCDS(Functions.ServerConfig serverData)
+        public GoldSource(Functions.ServerConfig serverData)
         {
             this.serverData = serverData;
         }
 
         public async Task<Process> Start()
         {
-            string workingDir = Functions.ServerPath.GetServerFiles(serverData.ServerID);
-
-            string srcdsPath = Path.Combine(workingDir, StartPath);
-            if (!File.Exists(srcdsPath))
+            string hldsPath = Functions.ServerPath.GetServerFiles(serverData.ServerID, StartPath);
+            if (!File.Exists(hldsPath))
             {
-                Error = $"{StartPath} not found ({srcdsPath})";
+                Error = $"{StartPath} not found ({hldsPath})";
                 return null;
             }
 
-            string configPath = Functions.ServerPath.GetServerFiles(serverData.ServerID, Game, "cfg/server.cfg");
+            string configPath = Functions.ServerPath.GetServerFiles(serverData.ServerID, Game, "server.cfg");
             if (!File.Exists(configPath))
             {
                 Notice = $"server.cfg not found ({configPath})";
@@ -82,7 +67,8 @@ namespace WindowsGSM.GameServer.Type
                 {
                     StartInfo =
                     {
-                        FileName = srcdsPath,
+                        WorkingDirectory = Functions.ServerPath.GetServerFiles(serverData.ServerID),
+                        FileName = hldsPath,
                         Arguments = param,
                         WindowStyle = ProcessWindowStyle.Minimized,
                     },
@@ -96,7 +82,8 @@ namespace WindowsGSM.GameServer.Type
                 {
                     StartInfo =
                     {
-                        FileName = srcdsPath,
+                        WorkingDirectory = Functions.ServerPath.GetServerFiles(serverData.ServerID),
+                        FileName = hldsPath,
                         Arguments = param,
                         WindowStyle = ProcessWindowStyle.Minimized,
                         UseShellExecute = false,
@@ -123,25 +110,13 @@ namespace WindowsGSM.GameServer.Type
                 SetForegroundWindow(p.MainWindowHandle);
                 SendKeys.SendWait("quit");
                 SendKeys.SendWait("{ENTER}");
-                SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
             });
-        }
-
-        public async Task<Process> Install()
-        {
-            var steamCMD = new Installer.SteamCMD();
-            steamCMD.SetParameter(Functions.ServerPath.GetServerFiles(serverData.ServerID), "", AppId, true);
-
-            Process p = await steamCMD.Run();
-            Error = steamCMD.Error;
-
-            return p;
         }
 
         public async void CreateServerCFG()
         {
             //Download server.cfg
-            string configPath = Functions.ServerPath.GetServerFiles(serverData.ServerID, Game, "cfg/server.cfg");
+            string configPath = Functions.ServerPath.GetServerFiles(serverData.ServerID, Game, "server.cfg");
             if (await Functions.Github.DownloadGameServerConfig(configPath, serverData.ServerGame))
             {
                 string configText = File.ReadAllText(configPath);
@@ -149,12 +124,25 @@ namespace WindowsGSM.GameServer.Type
                 configText = configText.Replace("{{rcon_password}}", serverData.GetRCONPassword());
                 File.WriteAllText(configPath, configText);
             }
+
+            //Create steam_appid.txt
+            string txtPath = Functions.ServerPath.GetServerFiles(serverData.ServerID, "steam_appid.txt");
+            File.WriteAllText(txtPath, AppId);
+        }
+
+        public async Task<Process> Install()
+        {
+            var steamCMD = new Installer.SteamCMD();
+            Process p = await steamCMD.Install(serverData.ServerID, Game, "90", true);
+            Error = steamCMD.Error;
+
+            return p;
         }
 
         public async Task<bool> Update(bool validate = false)
         {
             var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(serverData.ServerID, "", AppId, validate);
+            bool updateSuccess = await steamCMD.Update(serverData.ServerID, Game, "90", validate, true);
             Error = steamCMD.Error;
 
             return updateSuccess;
@@ -167,8 +155,9 @@ namespace WindowsGSM.GameServer.Type
 
         public bool IsImportValid(string path)
         {
+            string hldsPath = Path.Combine(path, StartPath);
             Error = $"Invalid Path! Fail to find {StartPath}";
-            return File.Exists(Path.Combine(path, StartPath));
+            return File.Exists(hldsPath);
         }
 
         public string GetLocalBuild()

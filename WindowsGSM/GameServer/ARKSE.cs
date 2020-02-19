@@ -1,51 +1,42 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
 
 namespace WindowsGSM.GameServer
 {
-    /// <summary>
-    /// 
-    /// Note:
-    /// The server format is similar to MORDHAU server
-    /// 
-    /// </summary>
-    class OLOW : Engine.UnrealEngine
+    class ARKSE : Engine.UnrealEngine
     {
         private readonly Functions.ServerConfig _serverData;
 
         public string Error;
         public string Notice;
 
-        public const string FullName = "Outlaws of the Old West Dedicated Server";
-        public string StartPath = @"Outlaws\Binaries\Win64\OutlawsServer-Win64-Shipping.exe";
-        public bool ToggleConsole = false;
+        public const string FullName = "ARK: Survival Evolved Dedicated Server";
+        public string StartPath = @"ShooterGame\Binaries\Win64\ShooterGameServer.exe";
+        public bool ToggleConsole = true;
         public int PortIncrements = 2;
 
-        public string Port = "27374";
-        public string Defaultmap = "/Game/Maps/MainMap/MainMap";
-        public string Maxplayers = "24";
-        public string Additional = "-Type=PVP -queryport={{queryport}} -ServerPassword=\"\" -AdminPassword=\"\"";
+        public string Port = "7777";
+        public string Defaultmap = "TheIsland";
+        public string Maxplayers = "16";
+        public string Additional = "?QueryPort={{queryport}}";
 
-        public OLOW(Functions.ServerConfig serverData)
+        public ARKSE(Functions.ServerConfig serverData)
         {
             _serverData = serverData;
         }
 
         public async void CreateServerCFG()
         {
-            //No server config
+            //No config file seems
 
             //Edit WindowsGSM.cfg
             string configFile = Functions.ServerPath.GetConfigs(_serverData.ServerID, "WindowsGSM.cfg");
             if (File.Exists(configFile))
             {
                 string configText = File.ReadAllText(configFile);
-                configText = configText.Replace("{{queryport}}", (Int32.Parse(_serverData.ServerPort) - 359).ToString());
+                configText = configText.Replace("{{queryport}}", (int.Parse(_serverData.ServerPort) + 19238).ToString());
                 File.WriteAllText(configFile, configText);
             }
         }
@@ -59,50 +50,26 @@ namespace WindowsGSM.GameServer
                 return null;
             }
 
-            string param = string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : $"{_serverData.ServerMap}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" -port {_serverData.ServerPort}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? "" : $" -servername {_serverData.ServerName}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? "" : $" -PlayerCount {_serverData.ServerMaxPlayer}";
-            param += $" {_serverData.ServerParam}" + ((ToggleConsole) ? " -log" : "");
+            string param = string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : _serverData.ServerMap;
+            param += "?listen";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? "" : $"?SessionName=\"{_serverData.ServerName}\"";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? "" : $"?MultiHome={_serverData.ServerIP}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $"?Port={_serverData.ServerPort}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? "" : $"?MaxPlayers={_serverData.ServerMaxPlayer}";
+            param += $"{_serverData.ServerParam} -server -log";
 
-            Process p;
-            if (ToggleConsole)
+            Process p = new Process
             {
-                p = new Process
+                StartInfo =
                 {
-                    StartInfo =
-                    {
-                        FileName = shipExePath,
-                        Arguments = param,
-                        WindowStyle = ProcessWindowStyle.Minimized,
-                    },
-                    EnableRaisingEvents = true
-                };
-                p.Start();
-            }
-            else
-            {
-                p = new Process
-                {
-                    StartInfo =
-                    {
-                        FileName = shipExePath,
-                        Arguments = param,
-                        WindowStyle = ProcessWindowStyle.Hidden,
-                        CreateNoWindow = true,
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true
-                    },
-                    EnableRaisingEvents = true
-                };
-                var serverConsole = new Functions.ServerConsole(_serverData.ServerID);
-                p.OutputDataReceived += serverConsole.AddOutput;
-                p.ErrorDataReceived += serverConsole.AddOutput;
-                p.Start();
-                p.BeginOutputReadLine();
-                p.BeginErrorReadLine();
-            }
+                    FileName = shipExePath,
+                    Arguments = param,
+                    WindowStyle = ProcessWindowStyle.Minimized,
+                    UseShellExecute = false
+                },
+                EnableRaisingEvents = true
+            };
+            p.Start();
 
             return p;
         }
@@ -118,7 +85,7 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", "915070");
+            Process p = await steamCMD.Install(_serverData.ServerID, "", "376030");
             Error = steamCMD.Error;
 
             return p;
@@ -127,7 +94,7 @@ namespace WindowsGSM.GameServer
         public async Task<bool> Update(bool validate = false)
         {
             var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "915070", validate);
+            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "376030", validate);
             Error = steamCMD.Error;
 
             return updateSuccess;
@@ -140,7 +107,7 @@ namespace WindowsGSM.GameServer
 
         public bool IsImportValid(string path)
         {
-            string exePath = Path.Combine(path, StartPath);
+            string exePath = Path.Combine(path, "PackageInfo.bin");
             Error = $"Invalid Path! Fail to find {Path.GetFileName(exePath)}";
             return File.Exists(exePath);
         }
@@ -148,42 +115,40 @@ namespace WindowsGSM.GameServer
         public string GetLocalBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return steamCMD.GetLocalBuild(_serverData.ServerID, "915070");
+            return steamCMD.GetLocalBuild(_serverData.ServerID, "376030");
         }
 
         public async Task<string> GetRemoteBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return await steamCMD.GetRemoteBuild("915070");
+            return await steamCMD.GetRemoteBuild("376030");
         }
 
         public string GetQueryPort()
         {
             string configFile = Functions.ServerPath.GetConfigs(_serverData.ServerID, "WindowsGSM.cfg");
 
-            //Get -QueryPort value in serverparam
+            //Get ?QueryPort value in serverparam
             if (File.Exists(configFile))
             {
                 string[] lines = File.ReadAllLines(configFile);
 
                 foreach (string line in lines)
                 {
-                    Debug.WriteLine(line);
-
                     string[] keyvalue = line.Split(new char[] { '=' }, 2);
                     if (keyvalue.Length == 2)
                     {
                         if ("serverparam" == keyvalue[0])
                         {
                             string param = keyvalue[1].Trim('\"');
-                            string[] settings = param.Split(' ');
+                            string[] settings = param.Split('?');
 
                             foreach (string setting in settings)
                             {
                                 string[] key = setting.Split(new char[] { '=' }, 2);
                                 if (key.Length == 2)
                                 {
-                                    if ("-queryport" == key[0])
+                                    if ("QueryPort" == key[0])
                                     {
                                         return key[1];
                                     }

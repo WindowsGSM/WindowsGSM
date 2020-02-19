@@ -120,6 +120,9 @@
   <data name="7 Days to Die Dedicated Server" xml:space="preserve">
     <value>Images/Games/7dtd.png</value>
   </data>
+  <data name="ARK: Survival Evolved Dedicated Server" xml:space="preserve">
+    <value>Images/Games/arkse.png</value>
+  </data>
   <data name="Counter-Strike: 1.6 Dedicated Server" xml:space="preserve">
     <value>Images/Games/cs.png</value>
   </data>
@@ -131,6 +134,9 @@
   </data>
   <data name="Counter-Strike: Source Dedicated Server" xml:space="preserve">
     <value>Images/Games/css.png</value>
+  </data>
+  <data name="Day of Defeat: Source Dedicated Server" xml:space="preserve">
+    <value>Images/Games/dods.png</value>
   </data>
   <data name="DayZ Dedicated Server" xml:space="preserve">
     <value>Images/Games/dayz.png</value>
@@ -174,7 +180,13 @@
   <data name="Space Engineers Dedicated Server" xml:space="preserve">
     <value>Images/Games/se.png</value>
   </data>
+  <data name="Stormworks Dedicated Server" xml:space="preserve">
+    <value>Images/Games/sw.png</value>
+  </data>
   <data name="Team Fortress 2 Dedicated Server" xml:space="preserve">
     <value>Images/Games/tf2.png</value>
+  </data>
+  <data name="Zombie Panic Source Dedicated Server" xml:space="preserve">
+    <value>Images/Games/zps.png</value>
   </data>
 </root>

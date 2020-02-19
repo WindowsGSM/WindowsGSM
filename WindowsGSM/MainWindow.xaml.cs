@@ -63,7 +63,7 @@ namespace WindowsGSM
             Deleting = 12
         }
 
-        public static readonly string WGSM_VERSION = "v1.11.1";
+        public static readonly string WGSM_VERSION = "v" + string.Concat(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString().Reverse().Skip(2).Reverse());
         public static readonly int MAX_SERVER = 100;
         public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
 
@@ -333,45 +333,6 @@ namespace WindowsGSM
             grid_action.Visibility = (ServerGrid.Items.Count != 0) ? Visibility.Visible : Visibility.Hidden;
         }
 
-        public void LoadRamUsage(string serverId)
-        {
-            int Id = int.Parse(serverId);
-            var row = (Functions.ServerTable)ServerGrid.Items[Id-1];
-
-            if (g_Process[Id] == null || g_Process[Id].HasExited)
-            {
-                return;
-            }
-
-            //g_Process[Id].Refresh();
-            double ramUsage = g_Process[Id].WorkingSet64 / 1024.0;
-
-            int count = 0;
-            while (ramUsage > 1024.0)
-            {
-                ramUsage /= 1024.0;
-                count++;
-            }
-
-            string memory = ramUsage.ToString("0.#") + (count == 0 ? "KB" : count == 1 ? "MB" : "GB");
-
-            row.RamUsage = memory;
-
-            var selectedRow = (Functions.ServerTable)ServerGrid.SelectedItem;
-            ServerGrid.Items[Id-1] = row;
-            ServerGrid.SelectedItem = selectedRow;
-        }
-
-        public void ResetRamUsage(string serverId)
-        {
-            int Id = int.Parse(serverId);
-            var row = (Functions.ServerTable)ServerGrid.Items[Id - 1];
-            row.RamUsage = "0";
-            var selectedRow = (Functions.ServerTable)ServerGrid.SelectedItem;
-            ServerGrid.Items[Id - 1] = row;
-            ServerGrid.SelectedItem = selectedRow;
-        }
-
         private async void AutoStartServer()
         {
             int num_row = ServerGrid.Items.Count;
@@ -449,7 +410,9 @@ namespace WindowsGSM
 
                 if (!g_Process[i].HasExited)
                 {
-                    g_Process[i].Kill();
+                    Process p = g_Process[i];
+                    g_Process[i] = null;
+                    p.Kill();
                 }
             }
         }
@@ -743,8 +706,6 @@ namespace WindowsGSM
             //If console is useless, return
             if (p.StartInfo.RedirectStandardOutput) { return; }
 
-            Debug.WriteLine("Toggle Console");
-
             IntPtr hWnd = g_MainWindow[int.Parse(server.ID)];
             ShowWindow(hWnd, ShowWindow(hWnd, WindowShowStyle.Hide) ? WindowShowStyle.Hide : WindowShowStyle.ShowNormal);
         }
@@ -938,7 +899,7 @@ namespace WindowsGSM
                     {
                         while (!p.HasExited && !ShowWindow(p.MainWindowHandle, WindowShowStyle.Minimize))
                         {
-                            Debug.WriteLine("Try Setting ShowMinNoActivate Console Window");
+                            //Debug.WriteLine("Try Setting ShowMinNoActivate Console Window");
                         }
 
                         Debug.WriteLine("Set ShowMinNoActivate Console Window");
@@ -1275,9 +1236,7 @@ namespace WindowsGSM
 
             await System.Windows.Application.Current.Dispatcher.Invoke(async () =>
             {
-                ResetRamUsage(server.ID);
-
-                int serverId = Int32.Parse(server.ID);
+                int serverId = int.Parse(server.ID);
 
                 if (g_iServerStatus[serverId] == ServerStatus.Started)
                 {
@@ -1305,7 +1264,7 @@ namespace WindowsGSM
                             return;
                         }
 
-                        g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Started;
+                        g_iServerStatus[serverId] = ServerStatus.Started;
                         Log(server.ID, "Server: Started | Auto Restart");
                         if (!string.IsNullOrWhiteSpace(gameServer.Notice))
                         {
@@ -1313,9 +1272,9 @@ namespace WindowsGSM
                         }
                         SetServerStatus(server, "Started");
 
-                        if (g_bDiscordAlert[Int32.Parse(server.ID)])
+                        if (g_bDiscordAlert[serverId])
                         {
-                            var webhook = new Discord.Webhook(g_DiscordWebhook[Int32.Parse(server.ID)], g_DonorType);
+                            var webhook = new Discord.Webhook(g_DiscordWebhook[serverId], g_DonorType);
                             await webhook.Send(server.ID, server.Game, "Restarted | Auto Restart", server.Name, server.IP, server.Port);
                         }
                     }
@@ -1512,15 +1471,13 @@ namespace WindowsGSM
 
             while (p != null && !p.HasExited)
             {
-                //await Task.Delay(600000);
-
                 if (MahAppSwitch_SendStatistics.IsChecked ?? false)
                 {
                     var analytics = new Functions.GoogleAnalytics();
                     analytics.SendGameServerHeartBeat(server.ID, server.Game);
                 }
 
-                await Task.Delay(600000);
+                await Task.Delay(300000);
             }
         }
 
@@ -1625,7 +1582,7 @@ namespace WindowsGSM
             Process p = g_Process[int.Parse(server.ID)];
             if (p == null) { return; }
 
-            if (server.Game == GameServer._7DTD.FullName)
+            if (server.Game == GameServer.SDTD.FullName)
             {
                 g_ServerConsoles[int.Parse(server.ID)].InputFor7DTD(p, command, g_MainWindow[int.Parse(server.ID)]);
                 return;

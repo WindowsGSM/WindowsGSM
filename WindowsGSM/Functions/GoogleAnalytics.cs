@@ -47,7 +47,8 @@ namespace WindowsGSM.Functions
                 }
 
                 string osName = new Microsoft.VisualBasic.Devices.ComputerInfo().OSFullName;
-                SendHit("OSVersion", osName, $"{osName} - {osBit}");
+                osBit = new string(osBit.Where(char.IsDigit).ToArray());
+                SendHit("OSVersion", osName, $"{osName} - {osBit}-bit");
             });
         }
 
@@ -159,19 +160,19 @@ namespace WindowsGSM.Functions
             post += string.IsNullOrWhiteSpace(label) ? "" : $"&el={Uri.EscapeDataString(label)}";
             post += string.IsNullOrWhiteSpace(value) ? "" : $"&ev={Uri.EscapeDataString(value)}";
 
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://www.google-analytics.com/collect");
-            request.Method = "POST";
-            request.ContentType = "application/x-www-form-urlencoded";
-            request.ContentLength = Encoding.UTF8.GetByteCount(post);
-
-            // write the request body to the request
-            using (var writer = new StreamWriter(await request.GetRequestStreamAsync()))
-            {
-                writer.Write(post);
-            }
-
             try
             {
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://www.google-analytics.com/collect");
+                request.Method = "POST";
+                request.ContentType = "application/x-www-form-urlencoded";
+                request.ContentLength = Encoding.UTF8.GetByteCount(post);
+
+                // write the request body to the request
+                using (var writer = new StreamWriter(await request.GetRequestStreamAsync()))
+                {
+                    writer.Write(post);
+                }
+
                 using (var webResponse = (HttpWebResponse)await request.GetResponseAsync())
                 {
                     if (webResponse.StatusCode != HttpStatusCode.OK)

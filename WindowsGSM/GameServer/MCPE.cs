@@ -23,11 +23,12 @@ namespace WindowsGSM.GameServer
         public const string FullName = "Minecraft: Pocket Edition Server (PocketMine-MP)";
         public string StartPath = @"bin\php\php.exe";
         public bool ToggleConsole = false;
+        public int PortIncrements = 1;
 
-        public string port = "19132";
-        public string defaultmap = "world";
-        public string maxplayers = "20";
-        public string additional = "";
+        public string Port = "19132";
+        public string Defaultmap = "world";
+        public string Maxplayers = "20";
+        public string Additional = "";
 
         public MCPE(Functions.ServerConfig serverData)
         {
@@ -44,7 +45,7 @@ namespace WindowsGSM.GameServer
                 configText = configText.Replace("{{hostname}}", _serverData.ServerName);
                 configText = configText.Replace("{{rcon_password}}", _serverData.GetRCONPassword());
                 configText = configText.Replace("{{port}}", _serverData.ServerPort);
-                configText = configText.Replace("{{maxplayers}}", maxplayers);
+                configText = configText.Replace("{{maxplayers}}", Maxplayers);
                 File.WriteAllText(configPath, configText);
             }
         }
@@ -132,7 +133,6 @@ namespace WindowsGSM.GameServer
                     SetForegroundWindow(p.MainWindowHandle);
                     SendKeys.SendWait("stop");
                     SendKeys.SendWait("{ENTER}");
-                    SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
                 }
             });
         }

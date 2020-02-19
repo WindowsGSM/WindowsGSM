@@ -130,10 +130,10 @@ namespace WindowsGSM
             if (gameServer.IsInstallValid())
             {
                 serverConfig.ServerIP = serverConfig.GetIPAddress();
-                serverConfig.ServerPort = serverConfig.GetAvailablePort(gameServer.port);
+                serverConfig.ServerPort = serverConfig.GetAvailablePort(gameServer.Port, gameServer.PortIncrements);
 
                 //Create WindowsGSM.cfg
-                serverConfig.CreateWindowsGSMConfig(servergame, servername, serverConfig.ServerIP, serverConfig.ServerPort, gameServer.defaultmap, gameServer.maxplayers, "", gameServer.additional, gameServer.ToggleConsole);
+                serverConfig.CreateWindowsGSMConfig(servergame, servername, serverConfig.ServerIP, serverConfig.ServerPort, gameServer.Defaultmap, gameServer.Maxplayers, "", gameServer.Additional, gameServer.ToggleConsole);
 
                 //Create game server config
                 try

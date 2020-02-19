@@ -50,7 +50,7 @@ namespace WindowsGSM.Installer
             return true;
         }
 
-        public void SetParameter(string installDir, string set_config, string appId, bool validate, bool loginAnonymous = true)
+        public void SetParameter(string installDir, string modName, string appId, bool validate, bool loginAnonymous = true)
         {
             if (loginAnonymous)
             {
@@ -96,7 +96,7 @@ namespace WindowsGSM.Installer
                 _param = $"+login \"{steamUser}\" \"{steamPass}\"";
             }
 
-            _param += $" +force_install_dir \"{installDir}\"" + (String.IsNullOrWhiteSpace(set_config) ? "" : $" {set_config}") + $" +app_update {appId}" + (validate ? " validate" : "");
+            _param += $" +force_install_dir \"{installDir}\"" + (string.IsNullOrWhiteSpace(modName) ? "" : $" +app_set_config 90 mod {modName}") + $" +app_update {appId}" + (validate ? " validate" : "");
             
             if (appId == "90")
             {
@@ -158,15 +158,15 @@ namespace WindowsGSM.Installer
             return p;
         }
 
-        public async Task<Process> Install(string serverId, string set_config, string appId, bool validate = true, bool loginAnonymous = true)
+        public async Task<Process> Install(string serverId, string modName, string appId, bool validate = true, bool loginAnonymous = true)
         {
-            SetParameter(Functions.ServerPath.GetServerFiles(serverId), set_config, appId, validate, loginAnonymous);
+            SetParameter(Functions.ServerPath.GetServerFiles(serverId), modName, appId, validate, loginAnonymous);
             return await Run();
         }
 
-        public async Task<bool> Update(string serverId, string set_config, string appId, bool validate, bool loginAnonymous = true)
+        public async Task<bool> Update(string serverId, string modName, string appId, bool validate, bool loginAnonymous = true)
         {
-            SetParameter(Functions.ServerPath.GetServerFiles(serverId), set_config, appId, validate, loginAnonymous);
+            SetParameter(Functions.ServerPath.GetServerFiles(serverId), modName, appId, validate, loginAnonymous);
 
             Process p = await Run();
             if (p == null)
@@ -233,52 +233,6 @@ namespace WindowsGSM.Installer
                 StartInfo =
                 {
                     FileName = exePath,
-                    Arguments = $"+login anonymous +app_info_update 1 +app_info_print {appId} +quit",
-                    WindowStyle = ProcessWindowStyle.Minimized,
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true
-                }
-            };
-            p.Start();
-
-            string output = await p.StandardOutput.ReadToEndAsync();
-            Regex regex = new Regex("\"public\"\r\n.{0,}{\r\n.{0,}\"buildid\".{1,}\"(.*?)\"");
-            var matches = regex.Matches(output);
-
-            if (matches.Count != 1 || matches[0].Groups.Count != 2)
-            {
-                Error = $"Fail to get remote build";
-                return "";
-            }
-
-            return matches[0].Groups[1].Value;
-        }
-
-        public async Task<string> GetRemoteBuildHLDS(string appId)
-        {
-            string exePath = Path.Combine(_installPath, "steamcmd.exe");
-            if (!File.Exists(exePath))
-            {
-                //If steamcmd.exe not exists, download steamcmd.exe
-                if (!await Download())
-                {
-                    Error = "Fail to download steamcmd.exe";
-                    return "";
-                }
-            }
-
-            WindowsFirewall firewall = new WindowsFirewall("steamcmd.exe", exePath);
-            if (!await firewall.IsRuleExist())
-            {
-                firewall.AddRule();
-            }
-
-            Process p = new Process
-            {
-                StartInfo =
-                {
-                    FileName = exePath,
                     //Sometimes it fails to get if appID < 90
                     Arguments = $"+login anonymous +app_info_update 1 +app_info_print {appId} +app_info_print {appId} +app_info_print {appId} +app_info_print {appId} +quit",
                     WindowStyle = ProcessWindowStyle.Minimized,
@@ -301,7 +255,7 @@ namespace WindowsGSM.Installer
 
             return matches[0].Groups[1].Value;
         }
-        
+
         public void CreateUserDataTxtIfNotExist()
         {
             if (!File.Exists(_userDataPath))

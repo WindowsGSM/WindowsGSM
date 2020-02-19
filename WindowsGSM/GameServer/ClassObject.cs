@@ -17,7 +17,7 @@
                 case L4D2.FullName: return new L4D2(serverData);
                 case MC.FullName: return new MC(serverData);
                 case GTA5.FullName: return new GTA5(serverData);
-                case _7DTD.FullName: return new _7DTD(serverData);
+                case SDTD.FullName: return new SDTD(serverData);
                 case MORDHAU.FullName: return new MORDHAU(serverData);
                 case SE.FullName: return new SE(serverData);
                 case DAYZ.FullName: return new DAYZ(serverData);
@@ -26,6 +26,10 @@
                 case CSS.FullName: return new CSS(serverData);
                 case INS.FullName: return new INS(serverData);
                 case NMRIH.FullName: return new NMRIH(serverData);
+                case ARKSE.FullName: return new ARKSE(serverData);
+                case ZPS.FullName: return new ZPS(serverData);
+                case DODS.FullName: return new DODS(serverData);
+                case SW.FullName: return new SW(serverData);
                 default: return null;
             }
         }
