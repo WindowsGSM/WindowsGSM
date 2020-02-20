@@ -36,6 +36,7 @@ WindowsGSM is a powerful tool to manage game servers. Equipped with a GUI for se
 | ![logo](WindowsGSM/Images/Games/se.png?raw=true)     | Space Engineers Dedicated Server                  |✅|
 | ![logo](WindowsGSM/Images/Games/sw.png?raw=true)     | Stormworks Dedicated Server                       |✅|
 | ![logo](WindowsGSM/Images/Games/tf2.png?raw=true)    | Team Fortress 2 Dedicated Server                  |✅|
+| ![logo](WindowsGSM/Images/Games/zps.png?raw=true)    | Zombie Panic Source Dedicated Server              |✅|
 
 ### Features
   * **Easy Install** - No installation knowledge is required, download any game server by one-click install.
