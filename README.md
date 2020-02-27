@@ -1,4 +1,4 @@
-![Screenshot](https://windowsgsm.com/assets/images/WindowsGSM-v1.12.0.png)
+![Screenshot](https://windowsgsm.com/assets/images/WindowsGSM-v1.13.0.png)
 
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/BattlefieldDuck/WindowsGSM/)
 [![Build status](https://ci.appveyor.com/api/projects/status/ttaomnayo3gidf2g?svg=true)](https://ci.appveyor.com/project/BattlefieldDuck/windowsgsm)
@@ -24,6 +24,7 @@ WindowsGSM is a powerful tool to manage game servers. Equipped with a GUI for se
 | ![logo](WindowsGSM/Images/Games/gmod.png?raw=true)   | Garry's Mod Dedicated Server                      |✅|
 | ![logo](WindowsGSM/Images/Games/gta5.png?raw=true)   | Grand Theft Auto V Dedicated Server ([FiveM](https://github.com/citizenfx/fivem))|✅|
 | ![logo](WindowsGSM/Images/Games/hl2dm.png?raw=true)  | Half-Life 2: Deathmatch Dedicated Server          |✅|
+| ![logo](WindowsGSM/Images/Games/heat.png?raw=true)   | Heat Dedicated Server                             |✅|
 | ![logo](WindowsGSM/Images/Games/ins.png?raw=true)    | Insurgency Dedicated Server                       |✅|
 | ![logo](WindowsGSM/Images/Games/l4d2.png?raw=true)   | Left 4 Dead 2 Dedicated Server                    |✅|
 | ![logo](WindowsGSM/Images/Games/mcbe.png?raw=true)   | Minecraft: Bedrock Edition Server                 |✅|
@@ -32,6 +33,7 @@ WindowsGSM is a powerful tool to manage game servers. Equipped with a GUI for se
 | ![logo](WindowsGSM/Images/Games/mordhau.png?raw=true)| Mordhau Dedicated Server                          |✅|
 | ![logo](WindowsGSM/Images/Games/nmrih.png?raw=true)  | No More Room in Hell Dedicated Server             |✅|
 | ![logo](WindowsGSM/Images/Games/olow.png?raw=true)   | Outlaws of the Old West Dedicated Server          |✅|
+| ![logo](WindowsGSM/Images/Games/rok.png?raw=true)    | Reign Of Kings Dedicated Server                   |✅|
 | ![logo](WindowsGSM/Images/Games/rust.png?raw=true)   | Rust Dedicated Server                             |✅|
 | ![logo](WindowsGSM/Images/Games/se.png?raw=true)     | Space Engineers Dedicated Server                  |✅|
 | ![logo](WindowsGSM/Images/Games/sw.png?raw=true)     | Stormworks Dedicated Server                       |✅|
