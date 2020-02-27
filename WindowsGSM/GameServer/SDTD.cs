@@ -145,7 +145,7 @@ namespace WindowsGSM.GameServer
             {
                 SetForegroundWindow(p.MainWindowHandle);
                 p.CloseMainWindow();
-                SendKeys.SendWait("{ENTER}");
+                Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
             });
         }
 

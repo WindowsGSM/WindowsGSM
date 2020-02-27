@@ -61,7 +61,7 @@ namespace WindowsGSM.GameServer
 
             string param = string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : $"{_serverData.ServerMap}";
             param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" -port {_serverData.ServerPort}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? "" : $" -servername {_serverData.ServerName}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? "" : $" -servername \"{_serverData.ServerName}\"";
             param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? "" : $" -PlayerCount {_serverData.ServerMaxPlayer}";
             param += $" {_serverData.ServerParam}" + ((ToggleConsole) ? " -log" : "");
 

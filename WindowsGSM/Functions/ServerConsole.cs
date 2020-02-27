@@ -48,8 +48,8 @@ namespace WindowsGSM.Functions
                     else
                     {
                         SetForegroundWindow(mainWindow);
-                        SendKeys.SendWait(text);
-                        SendKeys.SendWait("{ENTER}");
+                        SendWaitToMainWindow(text);
+                        SendWaitToMainWindow("{ENTER}");
                         SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
                     }
                 }
@@ -61,11 +61,11 @@ namespace WindowsGSM.Functions
             if (!process.HasExited)
             {
                 SetForegroundWindow(process.MainWindowHandle);
-                SendKeys.SendWait("{TAB}");
-                SendKeys.SendWait(text);
-                SendKeys.SendWait("{TAB}");
-                SendKeys.SendWait(text);
-                SendKeys.SendWait("{ENTER}");
+                SendWaitToMainWindow("{TAB}");
+                SendWaitToMainWindow(text);
+                SendWaitToMainWindow("{TAB}");
+                SendWaitToMainWindow(text);
+                SendWaitToMainWindow("{ENTER}");
                 SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
             }
         }
@@ -160,6 +160,27 @@ namespace WindowsGSM.Functions
                     WindowsGSM.console.ScrollToEnd();
                 }
             });
+        }
+
+        public static void SendWaitToMainWindow(string keys)
+        {
+            try
+            {
+                SendKeys.SendWait(keys);
+            }
+            catch
+            {
+                /*
+                    System.ComponentModel.Win32Exception (0x80004005): Access is denied
+                    at System.Windows.Forms.SendKeys.SendInput(Byte[] oldKeyboardState, Queue previousEvents)
+                    at System.Windows.Forms.SendKeys.Send(String keys, Control control, Boolean wait)
+                    at System.Windows.Forms.SendKeys.SendWait(String keys)
+
+                    This error may happen in Windows Server R2, UAC problem, not sure how to fix
+
+                    https://github.com/WindowsGSM/WindowsGSM/issues/14
+                */
+            }
         }
     }
 }

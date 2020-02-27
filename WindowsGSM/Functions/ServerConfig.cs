@@ -26,6 +26,11 @@ namespace WindowsGSM.Functions
         public bool RestartCrontab;
         public string CrontabFormat;
         public bool EmbedConsole;
+        public bool AutoStartAlert;
+        public bool AutoRestartAlert;
+        public bool AutoUpdateAlert;
+        public bool RestartCrontabAlert;
+        public bool CrashAlert;
 
         public ServerConfig(string serverid)
         {
@@ -88,6 +93,11 @@ namespace WindowsGSM.Functions
                             case "restartcrontab": RestartCrontab = (keyvalue[1] == "1") ? true : false; break;
                             case "crontabformat": CrontabFormat = keyvalue[1]; break;
                             case "embedconsole": EmbedConsole = (keyvalue[1] == "1") ? true : false; break;
+                            case "autostartalert": AutoStartAlert = (keyvalue[1] == "1") ? true : false; break;
+                            case "autorestartalert": AutoRestartAlert = (keyvalue[1] == "1") ? true : false; break;
+                            case "autoupdatealert": AutoUpdateAlert = (keyvalue[1] == "1") ? true : false; break;
+                            case "restartcrontabalert": RestartCrontabAlert = (keyvalue[1] == "1") ? true : false; break;
+                            case "crashalert": CrashAlert = (keyvalue[1] == "1") ? true : false; break;
                         }
                     }
                 }
@@ -98,7 +108,7 @@ namespace WindowsGSM.Functions
         {
             CreateServerDirectory();
 
-            string configpath = Functions.ServerPath.GetConfigs(ServerID, "WindowsGSM.cfg");
+            string configpath = ServerPath.GetConfigs(ServerID, "WindowsGSM.cfg");
             if (!File.Exists(configpath))
             {
                 ServerGame = servergame;
@@ -119,7 +129,12 @@ namespace WindowsGSM.Functions
                 RestartCrontab = false;
                 CrontabFormat = "0 6 * * *";
                 EmbedConsole = !toggleConsole;
-                
+                AutoStartAlert = true;
+                AutoRestartAlert = true;
+                AutoUpdateAlert = true;
+                RestartCrontabAlert = true;
+                CrashAlert = true;
+
                 File.Create(configpath).Dispose();
 
                 using (TextWriter textwriter = new StreamWriter(configpath))
@@ -146,6 +161,12 @@ namespace WindowsGSM.Functions
                     textwriter.WriteLine($"crontabformat=\"{CrontabFormat}\"");
                     textwriter.WriteLine("");
                     textwriter.WriteLine($"embedconsole=\"{(EmbedConsole ? "1" : "0")}\"");
+                    textwriter.WriteLine("");
+                    textwriter.WriteLine("autostartalert=\"1\"");
+                    textwriter.WriteLine("autorestartalert=\"1\"");
+                    textwriter.WriteLine("autoupdatealert=\"1\"");
+                    textwriter.WriteLine("restartcrontabalert=\"1\"");
+                    textwriter.WriteLine("crashalert=\"1\"");
                 }
 
                 return true;

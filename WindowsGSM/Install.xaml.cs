@@ -100,7 +100,7 @@ namespace WindowsGSM
 
             serverConfig.CreateServerDirectory();
 
-            dynamic gameServer = GameServer.ClassObject.Get(servergame, serverConfig);
+            dynamic gameServer = GameServer.Data.Class.Get(servergame, serverConfig);
             pInstaller = await gameServer.Install();
 
             if (pInstaller != null)
@@ -138,7 +138,7 @@ namespace WindowsGSM
                 //Create game server config
                 try
                 { 
-                    gameServer = GameServer.ClassObject.Get(servergame, serverConfig);
+                    gameServer = GameServer.Data.Class.Get(servergame, serverConfig);
                     gameServer.CreateServerCFG();
                 }
                 catch

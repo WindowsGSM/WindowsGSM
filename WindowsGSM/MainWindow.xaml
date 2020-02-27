@@ -9,7 +9,7 @@
         Title="WindowsGSM" 
         Height="585" 
         Width="1040" 
-        Icon="Images\WindowsGSM.ico"
+        Icon="Images\WindowsGSM-Icon.ico"
         ResizeMode="CanResizeWithGrip"
         MinHeight="585"
         MinWidth="1040"
@@ -29,7 +29,7 @@
 
     <Controls:MetroWindow.Flyouts>
         <Controls:FlyoutsControl>
-            <Controls:Flyout x:Name="MahAppFlyout" Header="Settings" Position="Right" Width="250" Theme="Accent">
+            <Controls:Flyout x:Name="MahAppFlyout_Settings" Header="Settings" Position="Right" Width="250" Theme="Accent">
                 <StackPanel>
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_HardWareAcceleration" Header="Hardware Acceleration" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="HardWareAcceleration_IsCheckedChanged"/>
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_UIAnimation" Header="UI Animation" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="UIAnimation_IsCheckedChanged"/>
@@ -37,6 +37,15 @@
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_StartOnBoot" Header="Start WindowsGSM on Login" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="StartOnLogin_IsCheckedChanged"/>
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_DonorTheme" Header="Donor Theme (Patreon)" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="DonorTheme_IsCheckedChanged"/>
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_SendStatistics" Header="Send Statistics" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="SendStatistics_IsCheckedChanged"/>
+                </StackPanel>
+            </Controls:Flyout>
+            <Controls:Flyout x:Name="MahAppFlyout_AutoUpdate" Header="Discord Alert Settings" Position="Bottom" Theme="Accent">
+                <StackPanel Orientation="Horizontal">
+                    <Controls:ToggleSwitch x:Name="MahAppSwitch_AutoStartAlert" Header="Auto Start Alert" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Click="Switch_AutoStartAlert_Click"/>
+                    <Controls:ToggleSwitch x:Name="MahAppSwitch_AutoRestartAlert" Header="Auto Restart Alert" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Click="Switch_AutoRestartAlert_Click"/>
+                    <Controls:ToggleSwitch x:Name="MahAppSwitch_AutoUpdateAlert" Header="Auto Update Alert" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Click="Switch_AutoUpdateAlert_Click"/>
+                    <Controls:ToggleSwitch x:Name="MahAppSwitch_RestartCrontabAlert" Header="Restart Crontab Alert" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Click="Switch_RestartCrontabAlert_Click"/>
+                    <Controls:ToggleSwitch x:Name="MahAppSwitch_CrashAlert" Header="Crash Alert" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Click="Switch_CrashAlert_Click"/>
                 </StackPanel>
             </Controls:Flyout>
         </Controls:FlyoutsControl>
@@ -77,10 +86,12 @@
                 <Separator/>
                 <MenuItem Header="Toggle Console" Click="Actions_ToggleConsole_Click"/>
                 <Separator/>
-                <MenuItem Header="Update" Click="Actions_Update_Click">
+                <MenuItem Header="Update">
                     <MenuItem.Icon>
                         <Image Source="/WindowsGSM;component/Images/Update.ico" Width="23" Margin="3"/>
                     </MenuItem.Icon>
+                    <MenuItem Header="Update" Height="30" Click="Actions_Update_Click"/>
+                    <MenuItem Header="Update Validate" Height="30" Click="Actions_UpdateValidate_Click"/>
                 </MenuItem>
                 <Separator/>
                 <MenuItem Header="Backup" Click="Actions_Backup_Click">
@@ -130,7 +141,7 @@
                 <Separator/>
                 <MenuItem Header="About WindowsGSM" Click="Help_AboutWindowsGSM_Click">
                     <MenuItem.Icon>
-                        <Image Source="/WindowsGSM;component/Images/WindowsGSM.ico" Width="23" Margin="3"/>
+                        <Image Source="/WindowsGSM;component/Images/WindowsGSM-Icon.ico" Width="23" Margin="3"/>
                     </MenuItem.Icon>
                 </MenuItem>
             </MenuItem>
@@ -188,42 +199,34 @@
                 </Grid.ColumnDefinitions>
 
                 <Grid>
+                    <Label x:Name="label_Status" Content="Server Status:" HorizontalAlignment="Left" Margin="24,9,0,0" VerticalAlignment="Top"/>
+                    <Button x:Name="button_Status" Content="" HorizontalAlignment="Left" Margin="110,10,0,0" Width="105" Height="11" Background="Orange" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
 
-                    <Label x:Name="label_serverdetails" Content="Server Details" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Top"/>
-                    <Label x:Name="label_Status" Content="Server Status:" HorizontalAlignment="Left" Margin="14,21,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_Status" Content="" HorizontalAlignment="Left" Margin="100,22,0,0" Width="105" Height="11" Background="Orange" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
+                    <Label x:Name="label_restartcrontab" Content="Restart Crontab:" HorizontalAlignment="Left" Margin="10,39,0,0" VerticalAlignment="Top" Height="26"/>
+                    <Button x:Name="button_restartcrontab" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="110,40,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_RestartCrontab_Click"/>
+                    <Button x:Name="button_restartcrontabedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="165,40,0,0" VerticalAlignment="Top" Width="50" Height="25" Click="Button_CrontabEdit_Click"/>
+                    <TextBox x:Name="textBox_restartcrontab" Height="11" Margin="220,40,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="100"/>
+                    <TextBox x:Name="textBox_nextcrontab" Height="11" Margin="325,40,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="185" FontFamily="Consolas"/>
 
-                    <Label x:Name="label_restartcrontab" Content="Restart Crontab:" HorizontalAlignment="Left" Margin="0,51,0,0" VerticalAlignment="Top" Height="26"/>
-                    <Button x:Name="button_restartcrontab" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="100,52,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_RestartCrontab_Click"/>
-                    <Button x:Name="button_restartcrontabedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="155,52,0,0" VerticalAlignment="Top" Width="50" Height="25" Click="Button_CrontabEdit_Click"/>
-                    <TextBox x:Name="textBox_restartcrontab" Height="11" Margin="210,51,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="110"/>
-                    <TextBox x:Name="textBox_nextcrontab" Height="11" Margin="325,51,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="185" FontFamily="Consolas"/>
+                    <Controls:ToggleSwitch x:Name="switch_autorestart" Header="Auto Restart" Margin="148,101,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_AutoRestart_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="110"/>
+                    <Controls:ToggleSwitch x:Name="switch_autostart" Header="Auto Start" Margin="24,101,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_AutoStart_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="110"/>
+                    <Controls:ToggleSwitch x:Name="switch_autoupdate" Header="Auto Update" Margin="275,101,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_AutoUpdate_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="110"/>
+                    <Controls:ToggleSwitch x:Name="switch_updateonstart" Header="Update on Start" Margin="400,101,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_UpdateOnStart_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="110"/>
 
-                    <Label x:Name="label_autorestart" Content="Auto Restart:" HorizontalAlignment="Left" Margin="17,81,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_autorestart" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="100,82,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_AutoRestart_Click"/>
+                    <Label x:Name="label_discordalert" Content="Discord Alert:" HorizontalAlignment="Left" Margin="24,69,0,0" VerticalAlignment="Top"/>
+                    <Button x:Name="button_discordalert" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="110,70,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_DiscordAlert_Click"/>
+                    <Button x:Name="button_discordedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="165,70,0,0" VerticalAlignment="Top" Width="50" Height="25" Click="Button_DiscordEdit_Click"/>
+                    <Button x:Name="button_discordset" Cursor="Hand" Content="Set Message" HorizontalAlignment="Left" Margin="220,70,0,0" VerticalAlignment="Top" Width="100" Height="25" Click="Button_DiscordSetMessage_Click"/>
+                    <Button x:Name="button_discordtest" Cursor="Hand" Content="Send Test Alert" HorizontalAlignment="Left" Margin="325,70,0,0" VerticalAlignment="Top" Width="100" Height="25" Click="Button_DiscordWebhookTest_Click" IsEnabled="False"/>
+                    <Button x:Name="button_discordsettings" Content="Settings" HorizontalAlignment="Left" Margin="430,70,0,0" VerticalAlignment="Top" Width="80" Height="24" Click="Button_AutoUpdateSettings_Click"/>
+                    
+                    <Button x:Name="button_clearServerConsole" Cursor="Hand" Content="CLEAR SERVER CONSOLE" Margin="380,10,0,0" VerticalAlignment="Top" Height="18" Click="Button_ClearServerConsole_Click" HorizontalAlignment="Left" Width="130"/>
+                    <TextBox x:Name="textBox_wgsmlog" Margin="61,154,10,10" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True"/>
+                    <Label x:Name="label_wgsmlog" Content="Log:" HorizontalAlignment="Left" Margin="24,151,0,0" VerticalAlignment="Top"/>
+                    <Button x:Name="button_clearwgsmlog" Cursor="Hand" Content="CLEAR" Margin="10,0,0,10" Height="18" Click="Button_ClearWGSMLog_Click" HorizontalAlignment="Left" Width="45" VerticalAlignment="Bottom"/>
 
-                    <Label x:Name="label_autostart" Content="Auto Start:" HorizontalAlignment="Left" Margin="389,110,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_autostart" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="460,112,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_AutoStart_Click"/>
-
-                    <Label x:Name="label_autoupdate" Content="Auto Update:" HorizontalAlignment="Left" Margin="185,81,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_autoupdate" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="270,82,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_AutoUpdate_Click"/>
-
-                    <Label x:Name="label_updateonstart" Content="Update on Start:" HorizontalAlignment="Left" Margin="359,80,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_updateonstart" Cursor="Hand" Content="" Margin="460,82,0,0" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_UpdateOnStart_Click" HorizontalAlignment="Left" Width="50"/>
-
-                    <Label x:Name="label_discordalert" Content="Discord Alert:" HorizontalAlignment="Left" Margin="14,110,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_discordalert" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="100,112,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_DiscordAlert_Click"/>
-                    <Button x:Name="button_discordedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="155,112,0,0" VerticalAlignment="Top" Width="50" Height="25" Click="Button_DiscordEdit_Click"/>
-                    <Button x:Name="button_discordset" Cursor="Hand" Content="Set Message" HorizontalAlignment="Left" Margin="210,112,0,0" VerticalAlignment="Top" Width="78" Height="25" Click="Button_DiscordSetMessage_Click"/>
-                    <Button x:Name="button_discordtest" Cursor="Hand" Content="Send Test Alert" HorizontalAlignment="Left" Margin="293,112,0,0" VerticalAlignment="Top" Width="96" Height="25" Click="Button_DiscordWebhookTest_Click" IsEnabled="False"/>
-
-                    <Button x:Name="button_clearServerConsole" Cursor="Hand" Content="CLEAR SERVER CONSOLE" Margin="380,22,0,0" VerticalAlignment="Top" Height="18" Click="Button_ClearServerConsole_Click" HorizontalAlignment="Left" Width="130"/>
-                    <TextBox x:Name="textBox_wgsmlog" Margin="100,142,10,10" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True"/>
-                    <Label x:Name="label_wgsmlog" Content="Log:" HorizontalAlignment="Left" Margin="63,141,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_clearwgsmlog" Cursor="Hand" Content="CLEAR LOG" Margin="10,0,0,10" Height="18" Click="Button_ClearWGSMLog_Click" HorizontalAlignment="Left" Width="85" VerticalAlignment="Bottom"/>
-
-                    <Label x:Name="label_embedconsole" Content="Embed Console:" HorizontalAlignment="Left" Margin="225,21,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_embedconsole" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="325,22,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_EmbedConsole_Click"/>
+                    <Label x:Name="label_embedconsole" Content="Embed Console:" HorizontalAlignment="Left" Margin="225,9,0,0" VerticalAlignment="Top"/>
+                    <Button x:Name="button_embedconsole" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="325,10,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_EmbedConsole_Click"/>
                 </Grid>
 
                 <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch">

@@ -150,6 +150,9 @@
   <data name="Half-Life 2: Deathmatch Dedicated Server" xml:space="preserve">
     <value>Images/Games/hl2dm.png</value>
   </data>
+  <data name="Heat Dedicated Server" xml:space="preserve">
+    <value>Images/Games/heat.png</value>
+  </data>
   <data name="Insurgency Dedicated Server" xml:space="preserve">
     <value>Images/Games/ins.png</value>
   </data>
@@ -173,6 +176,9 @@
   </data>
   <data name="Outlaws of the Old West Dedicated Server" xml:space="preserve">
     <value>Images/Games/olow.png</value>
+  </data>
+  <data name="Reign Of Kings Dedicated Server" xml:space="preserve">
+    <value>Images/Games/rok.png</value>
   </data>
   <data name="Rust Dedicated Server" xml:space="preserve">
     <value>Images/Games/rust.png</value>

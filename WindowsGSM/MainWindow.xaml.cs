@@ -85,6 +85,11 @@ namespace WindowsGSM
         private static readonly bool[] g_bDiscordAlert = new bool[MAX_SERVER + 1];
         private static readonly string[] g_DiscordMessage = new string[MAX_SERVER + 1];
         private static readonly string[] g_DiscordWebhook = new string[MAX_SERVER + 1];
+        private static readonly bool[] g_bAutoRestartAlert = new bool[MAX_SERVER + 1];
+        private static readonly bool[] g_bAutoStartAlert = new bool[MAX_SERVER + 1];
+        private static readonly bool[] g_bAutoUpdateAlert = new bool[MAX_SERVER + 1];
+        private static readonly bool[] g_bRestartCrontabAlert = new bool[MAX_SERVER + 1];
+        private static readonly bool[] g_bCrashAlert = new bool[MAX_SERVER + 1];
 
         private static readonly bool[] g_bRestartCrontab = new bool[MAX_SERVER + 1];
         private static readonly string[] g_CrontabFormat = new string[MAX_SERVER + 1];
@@ -260,7 +265,7 @@ namespace WindowsGSM
                 }
 
                 //If Game server not exist return
-                if (GameServer.ClassObject.Get(serverConfig.ServerGame, null) == null)
+                if (GameServer.Data.Class.Get(serverConfig.ServerGame, null) == null)
                 {
                     continue;
                 }
@@ -325,6 +330,11 @@ namespace WindowsGSM
                     g_bRestartCrontab[i] = serverConfig.RestartCrontab;
                     g_CrontabFormat[i] = serverConfig.CrontabFormat;
                     g_bEmbedConsole[i] = serverConfig.EmbedConsole;
+                    g_bAutoStartAlert[i] = serverConfig.AutoStartAlert;
+                    g_bAutoRestartAlert[i] = serverConfig.AutoRestartAlert;
+                    g_bAutoUpdateAlert[i] = serverConfig.AutoUpdateAlert;
+                    g_bRestartCrontabAlert[i] = serverConfig.RestartCrontabAlert;
+                    g_bCrashAlert[i] = serverConfig.CrashAlert;
                 }
                 catch
                 {
@@ -349,9 +359,9 @@ namespace WindowsGSM
 
                     if (g_iServerStatus[serverId] == ServerStatus.Started)
                     {
-                        if (g_bDiscordAlert[serverId])
+                        if (g_bDiscordAlert[serverId] && g_bAutoStartAlert[serverId])
                         {
-                            var webhook = new Discord.Webhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
+                            var webhook = new Functions.DiscordWebhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
                             await webhook.Send(server.ID, server.Game, "Started | Auto Start", server.Name, server.IP, server.Port);
                         }
                     }    
@@ -468,29 +478,28 @@ namespace WindowsGSM
                 button_Status.Content = row.Status.ToUpper();
                 button_Status.Background = (g_iServerStatus[Int32.Parse(row.ID)] == ServerStatus.Started) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Orange;
                
-                button_autorestart.Content = (g_bAutoRestart[Int32.Parse(row.ID)]) ? "TRUE" : "FALSE";
-                button_autorestart.Background = (g_bAutoRestart[Int32.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
-
-                button_autostart.Content = (g_bAutoStart[Int32.Parse(row.ID)]) ? "TRUE" : "FALSE";
-                button_autostart.Background = (g_bAutoStart[Int32.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
-
-                button_autoupdate.Content = (g_bAutoUpdate[Int32.Parse(row.ID)]) ? "TRUE" : "FALSE";
-                button_autoupdate.Background = (g_bAutoUpdate[Int32.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
-
-                button_updateonstart.Content = (g_bUpdateOnStart[Int32.Parse(row.ID)]) ? "TRUE" : "FALSE";
-                button_updateonstart.Background = (g_bUpdateOnStart[Int32.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
-
-                button_discordalert.Content = (g_bDiscordAlert[Int32.Parse(row.ID)]) ? "TRUE" : "FALSE";
+                switch_autorestart.IsChecked = g_bAutoRestart[int.Parse(row.ID)];
+                switch_autostart.IsChecked = g_bAutoStart[int.Parse(row.ID)];
+                switch_autoupdate.IsChecked = g_bAutoUpdate[int.Parse(row.ID)];
+                switch_updateonstart.IsChecked = g_bUpdateOnStart[int.Parse(row.ID)];
+  
+                button_discordalert.Content = (g_bDiscordAlert[Int32.Parse(row.ID)]) ? "ON" : "OFF";
                 button_discordalert.Background = (g_bDiscordAlert[Int32.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
                 button_discordtest.IsEnabled = (g_bDiscordAlert[Int32.Parse(row.ID)]) ? true : false;
 
-                button_restartcrontab.Content = (g_bRestartCrontab[Int32.Parse(row.ID)]) ? "TRUE" : "FALSE";
+                button_restartcrontab.Content = (g_bRestartCrontab[Int32.Parse(row.ID)]) ? "ON" : "OFF";
                 button_restartcrontab.Background = (g_bRestartCrontab[Int32.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
                 textBox_restartcrontab.Text = g_CrontabFormat[Int32.Parse(row.ID)];
                 textBox_nextcrontab.Text = CrontabSchedule.TryParse(g_CrontabFormat[Int32.Parse(row.ID)])?.GetNextOccurrence(DateTime.Now).ToString("ddd, MM/dd/yyyy HH:mm:ss");
 
-                button_embedconsole.Content = (g_bEmbedConsole[Int32.Parse(row.ID)]) ? "TRUE" : "FALSE";
+                button_embedconsole.Content = (g_bEmbedConsole[Int32.Parse(row.ID)]) ? "ON" : "OFF";
                 button_embedconsole.Background = (g_bEmbedConsole[Int32.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
+
+                MahAppSwitch_AutoStartAlert.IsChecked = g_bAutoStartAlert[int.Parse(row.ID)];
+                MahAppSwitch_AutoRestartAlert.IsChecked = g_bAutoRestartAlert[int.Parse(row.ID)];
+                MahAppSwitch_AutoUpdateAlert.IsChecked = g_bAutoUpdateAlert[int.Parse(row.ID)];
+                MahAppSwitch_RestartCrontabAlert.IsChecked = g_bRestartCrontabAlert[int.Parse(row.ID)];
+                MahAppSwitch_CrashAlert.IsChecked = g_bCrashAlert[int.Parse(row.ID)];
 
                 Functions.ServerConsole.Refresh(row.ID);
             }
@@ -603,12 +612,7 @@ namespace WindowsGSM
             };
 
             webhookUrl = await this.ShowInputAsync("Discord Webhook URL", "Please enter the discord webhook url.", settings);
-
-            //If pressed cancel or key is null or whitespace
-            if (string.IsNullOrWhiteSpace(webhookUrl))
-            {
-                return;
-            }
+            if (webhookUrl == null) { return; } //If pressed cancel
 
             g_DiscordWebhook[Int32.Parse(server.ID)] = webhookUrl;
             Functions.ServerConfig.SetSetting(server.ID, "discordwebhook", webhookUrl);
@@ -628,12 +632,7 @@ namespace WindowsGSM
             };
 
             message = await this.ShowInputAsync("Discord Custom Message", "Please enter the custom message.\n\nExample ping message <@discorduserid>:\n<@348921660361146380>", settings);
-
-            //If pressed cancel or key is null or whitespace
-            if (string.IsNullOrWhiteSpace(message))
-            {
-                return;
-            }
+            if (message == null) { return; } //If pressed cancel
 
             g_DiscordMessage[Int32.Parse(server.ID)] = message;
             Functions.ServerConfig.SetSetting(server.ID, "discordmessage", message);
@@ -647,7 +646,7 @@ namespace WindowsGSM
             int serverId = int.Parse(server.ID);
             if (!g_bDiscordAlert[serverId]) { return; }
 
-            var webhook = new Discord.Webhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
+            var webhook = new Functions.DiscordWebhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
             await webhook.Send(server.ID, server.Game, "Webhook Test Alert", server.Name, server.IP, server.Port);
         }
 
@@ -697,14 +696,23 @@ namespace WindowsGSM
             if (server == null) { return; }
 
             //Reload WindowsGSM.cfg on start
-            int i = Int32.Parse(server.ID);
+            int i = int.Parse(server.ID);
             var serverConfig = new Functions.ServerConfig(i.ToString());
             g_bAutoRestart[i] = serverConfig.AutoRestart;
             g_bAutoStart[i] = serverConfig.AutoStart;
             g_bAutoUpdate[i] = serverConfig.AutoUpdate;
             g_bUpdateOnStart[i] = serverConfig.UpdateOnStart;
             g_bDiscordAlert[i] = serverConfig.DiscordAlert;
+            g_DiscordMessage[i] = serverConfig.DiscordMessage;
             g_DiscordWebhook[i] = serverConfig.DiscordWebhook;
+            g_bRestartCrontab[i] = serverConfig.RestartCrontab;
+            g_CrontabFormat[i] = serverConfig.CrontabFormat;
+            g_bEmbedConsole[i] = serverConfig.EmbedConsole;
+            g_bAutoStartAlert[i] = serverConfig.AutoStartAlert;
+            g_bAutoRestartAlert[i] = serverConfig.AutoRestartAlert;
+            g_bAutoUpdateAlert[i] = serverConfig.AutoUpdateAlert;
+            g_bRestartCrontabAlert[i] = serverConfig.RestartCrontabAlert;
+            g_bCrashAlert[i] = serverConfig.CrashAlert;
 
             await GameServer_Start(server);
         }
@@ -745,12 +753,25 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped) { return; }
+            if (g_iServerStatus[int.Parse(server.ID)] != ServerStatus.Stopped) { return; }
 
             MessageBoxResult result = System.Windows.MessageBox.Show("Do you want to update this server?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result != MessageBoxResult.Yes) { return; }
 
             await GameServer_Update(server);
+        }
+
+        private async void Actions_UpdateValidate_Click(object sender, RoutedEventArgs e)
+        {
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
+
+            if (g_iServerStatus[int.Parse(server.ID)] != ServerStatus.Stopped) { return; }
+
+            MessageBoxResult result = System.Windows.MessageBox.Show("Do you want to validate this server?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result != MessageBoxResult.Yes) { return; }
+
+            await GameServer_Update(server, notes: " | Validate", validate: true);
         }
 
         private async void Actions_Backup_Click(object sender, RoutedEventArgs e)
@@ -886,7 +907,7 @@ namespace WindowsGSM
         
         private async Task<dynamic> Server_BeginStart(Functions.ServerTable server)
         {
-            dynamic gameServer = GameServer.ClassObject.Get(server.Game, new Functions.ServerConfig(server.ID));
+            dynamic gameServer = GameServer.Data.Class.Get(server.Game, new Functions.ServerConfig(server.ID));
             if (gameServer == null) { return null; }
 
             //End All Running Process
@@ -987,7 +1008,7 @@ namespace WindowsGSM
         {
             g_Process[int.Parse(server.ID)] = null;
 
-            dynamic gameServer = GameServer.ClassObject.Get(server.Game, null);
+            dynamic gameServer = GameServer.Data.Class.Get(server.Game, null);
             await gameServer.Stop(p);
 
             for (int i = 0; i < 10; i++)
@@ -1014,9 +1035,9 @@ namespace WindowsGSM
         /// <param name="silenceCheck"></param>
         /// <param name="forceUpdate"></param>
         /// <returns> (IsUpdateSuccess, RemoteBuild, gameServer)</returns>
-        private async Task<(bool, string, dynamic)> Server_BeginUpdate(Functions.ServerTable server, bool silenceCheck, bool forceUpdate)
+        private async Task<(bool, string, dynamic)> Server_BeginUpdate(Functions.ServerTable server, bool silenceCheck, bool forceUpdate, bool validate = false)
         {
-            dynamic gameServer = GameServer.ClassObject.Get(server.Game, new Functions.ServerConfig(server.ID));
+            dynamic gameServer = GameServer.Data.Class.Get(server.Game, new Functions.ServerConfig(server.ID));
 
             string localVersion = gameServer.GetLocalBuild();
             if (string.IsNullOrWhiteSpace(localVersion) && !silenceCheck)
@@ -1037,29 +1058,36 @@ namespace WindowsGSM
 
             if ((!string.IsNullOrWhiteSpace(localVersion) && !string.IsNullOrWhiteSpace(remoteVersion) && localVersion != remoteVersion) || forceUpdate)
             {
-                return (await gameServer.Update(), remoteVersion, gameServer);
+                try
+                {
+                    return (await gameServer.Update(validate), remoteVersion, gameServer);
+                }
+                catch
+                {
+                    return (await gameServer.Update(), remoteVersion, gameServer);
+                }
             }
 
             return (true, remoteVersion, gameServer);
         }
 
-        private async Task<bool> GameServer_Update(Functions.ServerTable server, string notes = "")
+        private async Task<bool> GameServer_Update(Functions.ServerTable server, string notes = "", bool validate = false)
         {
-            if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped)
+            if (g_iServerStatus[int.Parse(server.ID)] != ServerStatus.Stopped)
             {
                 return false;
             }
 
             //Begin Update
-            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Updating;
+            g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Updating;
             Log(server.ID, "Action: Update" + notes);
             SetServerStatus(server, "Updating");
 
-            (bool updated, string remoteVersion, dynamic gameServer) = await Server_BeginUpdate(server, silenceCheck: false, forceUpdate: true);
+            (bool updated, string remoteVersion, dynamic gameServer) = await Server_BeginUpdate(server, silenceCheck: validate, forceUpdate: true, validate: validate);
 
             if (updated)
             {
-                Log(server.ID, $"Server: Updated ({remoteVersion})");
+                Log(server.ID, $"Server: Updated {(validate ? "Validate " : "")}({remoteVersion})");
             }
             else
             {
@@ -1067,7 +1095,7 @@ namespace WindowsGSM
                 Log(server.ID, "[ERROR] " + gameServer.Error);
             }
 
-            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
+            g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
             SetServerStatus(server, "Stopped");
 
             return true;
@@ -1275,9 +1303,9 @@ namespace WindowsGSM
                     Log(server.ID, "Server: Crashed");
                     SetServerStatus(server, autoRestart ? "Restarting" : "Stopped");
 
-                    if (g_bDiscordAlert[serverId])
+                    if (g_bDiscordAlert[serverId] && g_bCrashAlert[serverId])
                     {
-                        var webhook = new Discord.Webhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
+                        var webhook = new Functions.DiscordWebhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
                         await webhook.Send(server.ID, server.Game, "Crashed", server.Name, server.IP, server.Port);
                     }
 
@@ -1302,9 +1330,9 @@ namespace WindowsGSM
                         }
                         SetServerStatus(server, "Started");
 
-                        if (g_bDiscordAlert[serverId])
+                        if (g_bDiscordAlert[serverId] && g_bAutoRestartAlert[serverId])
                         {
-                            var webhook = new Discord.Webhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
+                            var webhook = new Functions.DiscordWebhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
                             await webhook.Send(server.ID, server.Game, "Restarted | Auto Restart", server.Name, server.IP, server.Port);
                         }
                     }
@@ -1320,7 +1348,7 @@ namespace WindowsGSM
             //Save the process of game server
             Process p = g_Process[serverId];
 
-            dynamic gameServer = GameServer.ClassObject.Get(server.Game, new Functions.ServerConfig(server.ID));
+            dynamic gameServer = GameServer.Data.Class.Get(server.Game, new Functions.ServerConfig(server.ID));
 
             string localVersion = gameServer.GetLocalBuild();
 
@@ -1382,9 +1410,9 @@ namespace WindowsGSM
                         {
                             Log(server.ID, $"Server: Updated ({remoteVersion})");
 
-                            if (g_bDiscordAlert[serverId])
+                            if (g_bDiscordAlert[serverId] && g_bAutoUpdateAlert[serverId])
                             {
-                                var webhook = new Discord.Webhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
+                                var webhook = new Functions.DiscordWebhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
                                 await webhook.Send(server.ID, server.Game, "Updated | Auto Update", server.Name, server.IP, server.Port);
                             }
                         }
@@ -1481,9 +1509,9 @@ namespace WindowsGSM
                         }
                         SetServerStatus(server, "Started");
 
-                        if (g_bDiscordAlert[serverId])
+                        if (g_bDiscordAlert[serverId] && g_bRestartCrontabAlert[serverId])
                         {
-                            var webhook = new Discord.Webhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
+                            var webhook = new Functions.DiscordWebhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
                             await webhook.Send(server.ID, server.Game, "Restarted | Restart Crontab", server.Name, server.IP, server.Port);
                         }
 
@@ -1704,7 +1732,7 @@ namespace WindowsGSM
             RightWindowCommandsOverlayBehavior = WindowCommandsOverlayBehavior.HiddenTitleBar;
             WindowButtonCommandsOverlayBehavior = WindowCommandsOverlayBehavior.HiddenTitleBar;
 
-            MahAppFlyout.IsOpen = !MahAppFlyout.IsOpen;
+            MahAppFlyout_Settings.IsOpen = !MahAppFlyout_Settings.IsOpen;
         }
 
         private void HardWareAcceleration_IsCheckedChanged(object sender, EventArgs e)
@@ -2077,7 +2105,7 @@ namespace WindowsGSM
                 return;
             }
 
-            dynamic gameServer = GameServer.ClassObject.Get(row.Game, new Functions.ServerConfig(row.ID));
+            dynamic gameServer = GameServer.Data.Class.Get(row.Game, new Functions.ServerConfig(row.ID));
             string queryPort = gameServer.GetQueryPort();
 
             string publicIP = GetPublicIP();
@@ -2155,7 +2183,7 @@ namespace WindowsGSM
             if (server == null) { return; }
 
             g_bRestartCrontab[Int32.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "restartcrontab");
-            button_restartcrontab.Content = (g_bRestartCrontab[Int32.Parse(server.ID)]) ? "TRUE" : "FALSE";
+            button_restartcrontab.Content = (g_bRestartCrontab[Int32.Parse(server.ID)]) ? "ON" : "OFF";
             button_restartcrontab.Background = (g_bRestartCrontab[Int32.Parse(server.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
         }
 
@@ -2165,7 +2193,7 @@ namespace WindowsGSM
             if (server == null) { return; }
 
             g_bEmbedConsole[Int32.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "embedconsole");
-            button_embedconsole.Content = (g_bEmbedConsole[Int32.Parse(server.ID)]) ? "TRUE" : "FALSE";
+            button_embedconsole.Content = (g_bEmbedConsole[Int32.Parse(server.ID)]) ? "ON" : "OFF";
             button_embedconsole.Background = (g_bEmbedConsole[Int32.Parse(server.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
         }
 
@@ -2174,9 +2202,8 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bAutoRestart[Int32.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "autorestart");
-            button_autorestart.Content = (g_bAutoRestart[Int32.Parse(server.ID)]) ? "TRUE" : "FALSE";
-            button_autorestart.Background = (g_bAutoRestart[Int32.Parse(server.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
+            g_bAutoRestart[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "autorestart");
+            switch_autorestart.IsChecked = g_bAutoRestart[int.Parse(server.ID)];
         }
 
         private void Button_AutoStart_Click(object sender, RoutedEventArgs e)
@@ -2184,9 +2211,8 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bAutoStart[Int32.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "autostart");
-            button_autostart.Content = (g_bAutoStart[Int32.Parse(server.ID)]) ? "TRUE" : "FALSE";
-            button_autostart.Background = (g_bAutoStart[Int32.Parse(server.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
+            g_bAutoStart[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "autostart");
+            switch_autostart.IsChecked = g_bAutoStart[int.Parse(server.ID)];
         }
 
         private void Button_AutoUpdate_Click(object sender, RoutedEventArgs e)
@@ -2194,9 +2220,19 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bAutoUpdate[Int32.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "autoupdate");
-            button_autoupdate.Content = (g_bAutoUpdate[Int32.Parse(server.ID)]) ? "TRUE" : "FALSE";
-            button_autoupdate.Background = (g_bAutoUpdate[Int32.Parse(server.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
+            g_bAutoUpdate[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "autoupdate");
+            switch_autoupdate.IsChecked = g_bAutoUpdate[int.Parse(server.ID)];
+        }
+
+        private async void Button_AutoUpdateSettings_Click(object sender, RoutedEventArgs e)
+        {
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
+
+            RightWindowCommandsOverlayBehavior = WindowCommandsOverlayBehavior.HiddenTitleBar;
+            WindowButtonCommandsOverlayBehavior = WindowCommandsOverlayBehavior.HiddenTitleBar;
+
+            MahAppFlyout_AutoUpdate.IsOpen = !MahAppFlyout_AutoUpdate.IsOpen;
         }
 
         private void Button_UpdateOnStart_Click(object sender, RoutedEventArgs e)
@@ -2205,8 +2241,7 @@ namespace WindowsGSM
             if (server == null) { return; }
 
             g_bUpdateOnStart[Int32.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "updateonstart");
-            button_updateonstart.Content = (g_bUpdateOnStart[Int32.Parse(server.ID)]) ? "TRUE" : "FALSE";
-            button_updateonstart.Background = (g_bUpdateOnStart[Int32.Parse(server.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
+            switch_updateonstart.IsChecked = g_bUpdateOnStart[Int32.Parse(server.ID)];
         }
 
         private void Button_DiscordAlert_Click(object sender, RoutedEventArgs e)
@@ -2215,7 +2250,7 @@ namespace WindowsGSM
             if (server == null) { return; }
 
             g_bDiscordAlert[Int32.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "discordalert");
-            button_discordalert.Content = (g_bDiscordAlert[Int32.Parse(server.ID)]) ? "TRUE" : "FALSE";
+            button_discordalert.Content = (g_bDiscordAlert[Int32.Parse(server.ID)]) ? "ON" : "OFF";
             button_discordalert.Background = (g_bDiscordAlert[Int32.Parse(server.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
             button_discordtest.IsEnabled = (g_bDiscordAlert[Int32.Parse(server.ID)]) ? true : false;
         }
@@ -2234,12 +2269,7 @@ namespace WindowsGSM
             };
 
             crontabFormat = await this.ShowInputAsync("Crontab Format", "Please enter the crontab expressions", settings);
-
-            //If pressed cancel or key is null or whitespace
-            if (string.IsNullOrWhiteSpace(crontabFormat))
-            {
-                return;
-            }
+            if (crontabFormat == null) { return; } //If pressed cancel
 
             g_CrontabFormat[Int32.Parse(server.ID)] = crontabFormat;
             Functions.ServerConfig.SetSetting(server.ID, "crontabformat", crontabFormat);
@@ -2248,5 +2278,49 @@ namespace WindowsGSM
             textBox_nextcrontab.Text = CrontabSchedule.TryParse(crontabFormat)?.GetNextOccurrence(DateTime.Now).ToString("ddd, MM/dd/yyyy HH:mm:ss");
         }
         #endregion
+        private void Switch_AutoStartAlert_Click(object sender, RoutedEventArgs e)
+        {
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
+
+            g_bAutoStartAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "autostartalert");
+            MahAppSwitch_AutoStartAlert.IsChecked = g_bAutoStartAlert[int.Parse(server.ID)];
+        }
+
+        private void Switch_AutoRestartAlert_Click(object sender, RoutedEventArgs e)
+        {
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
+
+            g_bAutoRestartAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "autorestartalert");
+            MahAppSwitch_AutoRestartAlert.IsChecked = g_bAutoRestartAlert[int.Parse(server.ID)];
+        }
+
+        private void Switch_AutoUpdateAlert_Click(object sender, RoutedEventArgs e)
+        {
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
+
+            g_bAutoUpdateAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "autoupdatealert");
+            MahAppSwitch_AutoUpdateAlert.IsChecked = g_bAutoUpdateAlert[int.Parse(server.ID)];
+        }
+
+        private void Switch_RestartCrontabAlert_Click(object sender, RoutedEventArgs e)
+        {
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
+
+            g_bRestartCrontabAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "restartcrontabalert");
+            MahAppSwitch_RestartCrontabAlert.IsChecked = g_bRestartCrontabAlert[int.Parse(server.ID)];
+        }
+
+        private void Switch_CrashAlert_Click(object sender, RoutedEventArgs e)
+        {
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
+
+            g_bCrashAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "crashalert");
+            MahAppSwitch_CrashAlert.IsChecked = g_bCrashAlert[int.Parse(server.ID)];
+        }
     }
 }

@@ -130,6 +130,8 @@ namespace WindowsGSM.Installer
                 return null;
             }
 
+            Console.WriteLine($"SteamCMD Param: {_param}");
+
             WindowsFirewall firewall = new WindowsFirewall(exeFile, exePath);
             if (!await firewall.IsRuleExist())
             {
@@ -227,6 +229,24 @@ namespace WindowsGSM.Installer
             {
                 firewall.AddRule();
             }
+
+            // Removes appinfo.vdf as a fix for not always getting up to date version info from SteamCMD.
+            await Task.Run(() =>
+            {
+                string vdfPath = Path.Combine(_installPath, "appcache", "appinfo.vdf");
+                try
+                {
+                    if (File.Exists(vdfPath))
+                    {
+                        File.Delete(vdfPath);
+                        Debug.WriteLine($"Deleted appinfo.vdf ({vdfPath})");
+                    }
+                }
+                catch
+                {
+                    Debug.WriteLine($"File to delete appinfo.vdf ({vdfPath})");
+                }
+            });
 
             Process p = new Process
             {

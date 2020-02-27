@@ -100,9 +100,8 @@ namespace WindowsGSM.GameServer
             await Task.Run(() =>
             {
                 SetForegroundWindow(p.MainWindowHandle);
-                SendKeys.SendWait("quit");
-                SendKeys.SendWait("{ENTER}");
-                SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
+                Functions.ServerConsole.SendWaitToMainWindow("quit");
+                Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
             });
         }
 

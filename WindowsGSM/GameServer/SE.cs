@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
 using System.IO.Compression;
 
 namespace WindowsGSM.GameServer
@@ -170,8 +169,8 @@ namespace WindowsGSM.GameServer
                 else
                 {
                     SetForegroundWindow(p.MainWindowHandle);
-                    SendKeys.SendWait("^(c)");
-                    SendKeys.SendWait("^(c)");
+                    Functions.ServerConsole.SendWaitToMainWindow("^(c)");
+                    Functions.ServerConsole.SendWaitToMainWindow("^(c)");
                 }
             });
         }

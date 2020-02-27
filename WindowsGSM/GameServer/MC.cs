@@ -7,7 +7,6 @@ using System.Windows;
 using System.Net;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
 
 namespace WindowsGSM.GameServer
 {
@@ -152,8 +151,8 @@ namespace WindowsGSM.GameServer
                 else
                 {
                     SetForegroundWindow(p.MainWindowHandle);
-                    SendKeys.SendWait("stop");
-                    SendKeys.SendWait("{ENTER}");
+                    Functions.ServerConsole.SendWaitToMainWindow("stop");
+                    Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
                 }
             });
         }

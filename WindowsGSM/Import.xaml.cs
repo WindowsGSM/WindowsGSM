@@ -76,7 +76,7 @@ namespace WindowsGSM
             string servername = textbox_name.Text;
             string servergame = selectedgame.Name;
 
-            dynamic gameServer = GameServer.ClassObject.Get(servergame, serverConfig);
+            dynamic gameServer = GameServer.Data.Class.Get(servergame, serverConfig);
 
             if (!gameServer.IsImportValid(textbox_ServerDir.Text))
             {

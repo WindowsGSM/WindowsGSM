@@ -5,7 +5,6 @@ using System.IO.Compression;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Windows;
-using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System;
 
@@ -125,8 +124,8 @@ namespace WindowsGSM.GameServer
                 else
                 {
                     SetForegroundWindow(p.MainWindowHandle);
-                    SendKeys.SendWait("stop");
-                    SendKeys.SendWait("{ENTER}");
+                    Functions.ServerConsole.SendWaitToMainWindow("stop");
+                    Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
                 }
             });
         }

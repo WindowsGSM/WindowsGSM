@@ -160,6 +160,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/heat.png.
+        /// </summary>
+        public static string Heat_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Heat Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/ins.png.
         /// </summary>
         public static string Insurgency_Dedicated_Server {
@@ -228,6 +237,15 @@ namespace WindowsGSM.GameServer.Data {
         public static string Outlaws_of_the_Old_West_Dedicated_Server {
             get {
                 return ResourceManager.GetString("Outlaws of the Old West Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/rok.png.
+        /// </summary>
+        public static string Reign_Of_Kings_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Reign Of Kings Dedicated Server", resourceCulture);
             }
         }
         
