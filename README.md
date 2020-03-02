@@ -67,3 +67,7 @@ WindowsGSM is a powerful tool to manage game servers. Equipped with a GUI for se
 
 ### License
 This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/BattlefieldDuck/WindowsGSM/blob/master/LICENSE) file for details
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/WindowsGSM/WindowsGSM.svg)](https://starchart.cc/WindowsGSM/WindowsGSM)
