@@ -15,6 +15,7 @@ WindowsGSM is a powerful tool to manage game servers. Equipped with a GUI for se
 | ------------- | --------------- | --------- |
 | ![logo](WindowsGSM/Images/Games/7dtd.png?raw=true)   | 7 Days to Die Dedicated Server                    |✅|
 | ![logo](WindowsGSM/Images/Games/arkse.png?raw=true)  | ARK: Survival Evolved Dedicated Server            |✅|
+| ![logo](WindowsGSM/Images/Games/bw.png?raw=true)     | BlackWake Dedicated Server                        |✅|
 | ![logo](WindowsGSM/Images/Games/cs.png?raw=true)     | Counter-Strike: 1.6 Dedicated Server              |✅|
 | ![logo](WindowsGSM/Images/Games/cscz.png?raw=true)   | Counter-Strike: Condition Zero Dedicated Server   |✅|
 | ![logo](WindowsGSM/Images/Games/csgo.png?raw=true)   | Counter-Strike: Global Offensive Dedicated Server |✅|
@@ -50,6 +51,7 @@ WindowsGSM is a powerful tool to manage game servers. Equipped with a GUI for se
   * **Auto Update** - Checks for updates every 30 minutes, making sure your game servers are up to date!
   * **Restart Crontab** - Schedule your game servers to restart at any time, very useful for servers that require restarts to run smoothly.
   * **Start on Login** - Auto start WindowsGSM and game servers on user login.
+  * **Mod Manager** - Manage your server custom mods with WindowsGSM!
 
 ### Documentation
   * Website: <https://docs.windowsgsm.com/>
