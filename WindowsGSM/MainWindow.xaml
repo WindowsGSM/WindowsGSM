@@ -9,13 +9,13 @@
         Title="WindowsGSM" 
         Height="585" 
         Width="1040" 
-        Icon="Images\WindowsGSM-Icon.ico"
+        Icon="Images\WindowsGSM-Icon-Border.ico"
         ResizeMode="CanResizeWithGrip"
         MinHeight="585"
         MinWidth="1040"
         Closing="Window_Closing"
         GlowBrush="{DynamicResource AccentColorBrush}"
-        WindowStartupLocation="CenterScreen" StateChanged="Window_StateChanged">
+        WindowStartupLocation="CenterScreen" Activated="Window_Activated">
 
     <Controls:MetroWindow.RightWindowCommands>
         <Controls:WindowCommands>
@@ -29,7 +29,7 @@
 
     <Controls:MetroWindow.Flyouts>
         <Controls:FlyoutsControl>
-            <Controls:Flyout x:Name="MahAppFlyout_Settings" Header="Settings" Position="Right" Width="250" Theme="Accent">
+            <Controls:Flyout x:Name="MahAppFlyout_Settings" Header="Settings" Position="Right" Width="250" Theme="Accent" IsModal="True">
                 <StackPanel>
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_HardWareAcceleration" Header="Hardware Acceleration" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="HardWareAcceleration_IsCheckedChanged"/>
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_UIAnimation" Header="UI Animation" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="UIAnimation_IsCheckedChanged"/>
@@ -39,7 +39,7 @@
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_SendStatistics" Header="Send Statistics" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="SendStatistics_IsCheckedChanged"/>
                 </StackPanel>
             </Controls:Flyout>
-            <Controls:Flyout x:Name="MahAppFlyout_AutoUpdate" Header="Discord Alert Settings" Position="Bottom" Theme="Accent">
+            <Controls:Flyout x:Name="MahAppFlyout_DiscordAlert" Header="Discord Alert Settings" Position="Bottom" Theme="Accent">
                 <StackPanel Orientation="Horizontal">
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_AutoStartAlert" Header="Auto Start Alert" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Click="Switch_AutoStartAlert_Click"/>
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_AutoRestartAlert" Header="Auto Restart Alert" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Click="Switch_AutoRestartAlert_Click"/>
@@ -47,6 +47,34 @@
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_RestartCrontabAlert" Header="Restart Crontab Alert" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Click="Switch_RestartCrontabAlert_Click"/>
                     <Controls:ToggleSwitch x:Name="MahAppSwitch_CrashAlert" Header="Crash Alert" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Click="Switch_CrashAlert_Click"/>
                 </StackPanel>
+            </Controls:Flyout>
+            <Controls:Flyout x:Name="MahAppFlyout_ManageAddons" Header="Manage Addons" Position="Right" Theme="Adapt" IsModal="True">
+                <DockPanel VerticalAlignment="Stretch" Height="Auto">
+                    <DockPanel Margin="20,0,0,0">
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+                            <Label Content="Name: " FontFamily="Consolas"></Label>
+                            <Label x:Name="label_ManageAddonsName" FontFamily="Consolas"></Label>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+                            <Label Content="Game: " FontFamily="Consolas"></Label>
+                            <Label x:Name="label_ManageAddonsGame" FontFamily="Consolas"></Label>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+                            <Label Content="Type: " FontFamily="Consolas"></Label>
+                            <Label x:Name="label_ManageAddonsType" FontFamily="Consolas"></Label>
+                        </StackPanel>
+                        <DockPanel Margin="0,5,0,0">
+                            <DockPanel>
+                                <Label Content="Disabled - Double click item to activate" DockPanel.Dock="Top"></Label>
+                                <ListBox x:Name="listBox_ManageAddonsLeft" Margin="0,0,0,20" BorderThickness="1" DockPanel.Dock="Top" Width="300" MinHeight="300" MouseDoubleClick="ListBox_ManageAddonsLeft_DoubleClick"/>
+                            </DockPanel>
+                            <DockPanel Margin="10,0,20,0">
+                                <Label Content="Activated - Double click item to disable" DockPanel.Dock="Top"></Label>
+                                <ListBox x:Name="listBox_ManageAddonsRight" Margin="0,0,0,20" BorderThickness="1" DockPanel.Dock="Top" Width="300" MinHeight="300" MouseDoubleClick="ListBox_ManageAddonsRight_DoubleClick"/>
+                            </DockPanel>
+                        </DockPanel>
+                    </DockPanel>
+                </DockPanel>
             </Controls:Flyout>
         </Controls:FlyoutsControl>
     </Controls:MetroWindow.Flyouts>
@@ -82,6 +110,23 @@
                     <MenuItem.Icon>
                         <Image Source="/WindowsGSM;component/Images/Restart.ico" Width="23" Margin="3"/>
                     </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="More...">
+                    <MenuItem Header="Start All Servers" Click="Actions_StartAllServers_Click">
+                        <MenuItem.Icon>
+                            <Image Source="/WindowsGSM;component/Images/Start.ico" Width="23" Margin="3"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Stop All Servers" Click="Actions_StopAllServers_Click">
+                        <MenuItem.Icon>
+                            <Image Source="/WindowsGSM;component/Images/Stop.ico" Width="23" Margin="3"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Restart All Servers" Click="Actions_RestartAllServers_Click">
+                        <MenuItem.Icon>
+                            <Image Source="/WindowsGSM;component/Images/Restart.ico" Width="23" Margin="3"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
                 <Separator/>
                 <MenuItem Header="Toggle Console" Click="Actions_ToggleConsole_Click"/>
@@ -120,7 +165,18 @@
             </MenuItem>
             <MenuItem Header="Tools" Height="30">
                 <MenuItem Header="Global Server List Check" Click="Tools_GlobalServerListCheck_Click"/>
-                <!--<MenuItem Header="Install Sourcemod+Metamod" Click="Tools_InstallSourcemodMetamod_Click"/>-->
+                <MenuItem Header="Install Addons">
+                    <MenuItem Header="SourceMod + MetaMod" Click="Tools_InstallSourcemodMetamod_Click">
+                        <MenuItem.Icon>
+                            <Image Source="/WindowsGSM;component/Images/Tools/SourceMod.ico" Width="23" Margin="3"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="DayZSAL Mod Server" Click="Tools_InstallDayZSALModServer_Click">
+                        <MenuItem.Icon>
+                            <Image Source="/WindowsGSM;component/Images/Tools/DayZSAL.ico" Width="23" Margin="3"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </MenuItem>
             </MenuItem>
             <MenuItem Header="Help" Height="30">
                 <MenuItem Header="Online Documentation" Click="Help_OnlineDocumentation_Click">
@@ -156,6 +212,7 @@
                 <Button x:Name="button_Console" Cursor="Hand" Content="TOGGLE CONSOLE" HorizontalAlignment="Left" Margin="355,5,0,5" Width="110" Height="20" Click="Actions_ToggleConsole_Click"/>
                 <Button x:Name="button_Update" Cursor="Hand" Content="UPDATE" HorizontalAlignment="Left" Margin="470,5,0,5" Width="110" Height="20" Click="Actions_Update_Click"/>
                 <Button x:Name="button_Backup" Cursor="Hand" Content="BACKUP" HorizontalAlignment="Left" Margin="585,5,0,5" Width="110" Height="20" Click="Actions_Backup_Click"/>
+                <Button x:Name="button_ManageAddons" Cursor="Hand" Content="MANAGE ADDONS" HorizontalAlignment="Left" Margin="700,5,0,5" Width="110" Height="20" Click="Actions_ManageAddons_Click"/>
             </Grid>
             <Button x:Name="button_Refresh" Cursor="Hand" Content="REFRESH SERVER LIST" Margin="0,5,10,5" Height="20" Click="RefreshServerList_Click" HorizontalAlignment="Right" Width="150"/>
         </Grid>
@@ -218,8 +275,8 @@
                     <Button x:Name="button_discordedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="165,70,0,0" VerticalAlignment="Top" Width="50" Height="25" Click="Button_DiscordEdit_Click"/>
                     <Button x:Name="button_discordset" Cursor="Hand" Content="Set Message" HorizontalAlignment="Left" Margin="220,70,0,0" VerticalAlignment="Top" Width="100" Height="25" Click="Button_DiscordSetMessage_Click"/>
                     <Button x:Name="button_discordtest" Cursor="Hand" Content="Send Test Alert" HorizontalAlignment="Left" Margin="325,70,0,0" VerticalAlignment="Top" Width="100" Height="25" Click="Button_DiscordWebhookTest_Click" IsEnabled="False"/>
-                    <Button x:Name="button_discordsettings" Content="Settings" HorizontalAlignment="Left" Margin="430,70,0,0" VerticalAlignment="Top" Width="80" Height="24" Click="Button_AutoUpdateSettings_Click"/>
-                    
+                    <Button x:Name="button_discordsettings" Content="Settings" HorizontalAlignment="Left" Margin="430,70,0,0" VerticalAlignment="Top" Width="80" Height="24" Click="Button_DiscordAlertSettings_Click"/>
+
                     <Button x:Name="button_clearServerConsole" Cursor="Hand" Content="CLEAR SERVER CONSOLE" Margin="380,10,0,0" VerticalAlignment="Top" Height="18" Click="Button_ClearServerConsole_Click" HorizontalAlignment="Left" Width="130"/>
                     <TextBox x:Name="textBox_wgsmlog" Margin="61,154,10,10" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True"/>
                     <Label x:Name="label_wgsmlog" Content="Log:" HorizontalAlignment="Left" Margin="24,151,0,0" VerticalAlignment="Top"/>

@@ -141,11 +141,11 @@ namespace WindowsGSM.Functions
             });
         }
 
-        public async void SendGameServerHeartBeat(string serverId, string serverGame)
+        public async void SendGameServerHeartBeat(string serverGame, string serverName)
         {
             await Task.Run(() =>
             {
-                SendHit("HeartBeat", serverGame, $"{serverGame} #{serverId}");
+                SendHit("HeartBeat", serverGame, serverName);
             });
         }
 

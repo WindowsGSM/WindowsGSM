@@ -79,6 +79,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/bw.png.
+        /// </summary>
+        public static string BlackWake_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("BlackWake Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/cs.png.
         /// </summary>
         public static string Counter_Strike__1_6_Dedicated_Server {

@@ -196,7 +196,7 @@ namespace WindowsGSM.Functions
 
         public bool DeleteServerDirectory()
         {
-            string serverid_dir = Functions.ServerPath.Get(ServerID);
+            string serverid_dir = ServerPath.Get(ServerID);
             if (Directory.Exists(serverid_dir) && ServerID != null && ServerID != "")
             {
                 try

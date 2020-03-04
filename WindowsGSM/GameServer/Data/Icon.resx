@@ -123,6 +123,9 @@
   <data name="ARK: Survival Evolved Dedicated Server" xml:space="preserve">
     <value>Images/Games/arkse.png</value>
   </data>
+  <data name="BlackWake Dedicated Server" xml:space="preserve">
+    <value>Images/Games/bw.png</value>
+  </data>
   <data name="Counter-Strike: 1.6 Dedicated Server" xml:space="preserve">
     <value>Images/Games/cs.png</value>
   </data>

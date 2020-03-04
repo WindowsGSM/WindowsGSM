@@ -32,6 +32,7 @@
                 case SW.FullName: return new SW(serverData);
                 case ROK.FullName: return new ROK(serverData);
                 case HEAT.FullName: return new HEAT(serverData);
+                case BW.FullName: return new BW(serverData);
                 default: return null;
             }
         }

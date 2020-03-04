@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
 
 /// <summary>
 /// 
@@ -39,7 +38,7 @@ namespace WindowsGSM.GameServer.Engine
         public virtual string Port { get { return "27015"; } }
         public virtual string Defaultmap { get { return ""; } }
         public virtual string Maxplayers { get { return "24"; } }
-        public virtual string Additional { get { return "-nocrashdialog"; } }
+        public virtual string Additional { get { return "-nocrashdialog +clientport {{clientport}}"; } }
 
         public virtual string Game { get { return ""; } }
         public virtual string AppId { get { return ""; } }
@@ -135,6 +134,15 @@ namespace WindowsGSM.GameServer.Engine
                 configText = configText.Replace("{{hostname}}", serverData.ServerName);
                 configText = configText.Replace("{{rcon_password}}", serverData.GetRCONPassword());
                 File.WriteAllText(configPath, configText);
+            }
+
+            //Edit WindowsGSM.cfg
+            string configFile = Functions.ServerPath.GetConfigs(serverData.ServerID, "WindowsGSM.cfg");
+            if (File.Exists(configFile))
+            {
+                string configText = File.ReadAllText(configFile);
+                configText = configText.Replace("{{clientport}}", (int.Parse(serverData.ServerPort) - 10).ToString());
+                File.WriteAllText(configFile, configText);
             }
         }
 

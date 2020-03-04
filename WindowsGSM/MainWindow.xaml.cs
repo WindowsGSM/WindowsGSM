@@ -173,7 +173,7 @@ namespace WindowsGSM
                 BalloonTipIcon = ToolTipIcon.Info
             };
 
-            Stream iconStream = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/Images/WindowsGSM.ico")).Stream;
+            Stream iconStream = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/Images/WindowsGSM-Icon.ico")).Stream;
             if (iconStream != null)
             {
                 notifyIcon.Icon = new System.Drawing.Icon(iconStream);
@@ -437,7 +437,7 @@ namespace WindowsGSM
 
             if (row != null)
             {
-                if (g_iServerStatus[Int32.Parse(row.ID)] == ServerStatus.Stopped)
+                if (g_iServerStatus[int.Parse(row.ID)] == ServerStatus.Stopped)
                 {
                     button_Start.IsEnabled = true;
                     button_Stop.IsEnabled = false;
@@ -449,13 +449,13 @@ namespace WindowsGSM
                     textbox_servercommand.IsEnabled = false;
                     button_servercommand.IsEnabled = false;
                 }
-                else if (g_iServerStatus[Int32.Parse(row.ID)] == ServerStatus.Started)
+                else if (g_iServerStatus[int.Parse(row.ID)] == ServerStatus.Started)
                 {
                     button_Start.IsEnabled = false;
                     button_Stop.IsEnabled = true;
                     button_Restart.IsEnabled = true;
-                    Process p = g_Process[Int32.Parse(row.ID)];
-                    button_Console.IsEnabled = (p == null || p.HasExited) ? false : !p.StartInfo.RedirectStandardOutput;
+                    Process p = g_Process[int.Parse(row.ID)];
+                    button_Console.IsEnabled = (p == null || p.HasExited) ? false : p.StartInfo.CreateNoWindow ? false : !p.StartInfo.RedirectStandardOutput;
                     button_Update.IsEnabled = false;
                     button_Backup.IsEnabled = false;
 
@@ -475,25 +475,31 @@ namespace WindowsGSM
                     button_servercommand.IsEnabled = false;
                 }
 
+                button_ManageAddons.IsEnabled = Functions.ServerAddon.IsGameSupportManageAddons(row.Game);
+                if (g_iServerStatus[int.Parse(row.ID)] == ServerStatus.Deleting || g_iServerStatus[int.Parse(row.ID)] == ServerStatus.Restoring)
+                {
+                    button_ManageAddons.IsEnabled = false;
+                }
+
                 button_Status.Content = row.Status.ToUpper();
-                button_Status.Background = (g_iServerStatus[Int32.Parse(row.ID)] == ServerStatus.Started) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Orange;
+                button_Status.Background = (g_iServerStatus[int.Parse(row.ID)] == ServerStatus.Started) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Orange;
                
                 switch_autorestart.IsChecked = g_bAutoRestart[int.Parse(row.ID)];
                 switch_autostart.IsChecked = g_bAutoStart[int.Parse(row.ID)];
                 switch_autoupdate.IsChecked = g_bAutoUpdate[int.Parse(row.ID)];
                 switch_updateonstart.IsChecked = g_bUpdateOnStart[int.Parse(row.ID)];
   
-                button_discordalert.Content = (g_bDiscordAlert[Int32.Parse(row.ID)]) ? "ON" : "OFF";
-                button_discordalert.Background = (g_bDiscordAlert[Int32.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
-                button_discordtest.IsEnabled = (g_bDiscordAlert[Int32.Parse(row.ID)]) ? true : false;
+                button_discordalert.Content = (g_bDiscordAlert[int.Parse(row.ID)]) ? "ON" : "OFF";
+                button_discordalert.Background = (g_bDiscordAlert[int.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
+                button_discordtest.IsEnabled = (g_bDiscordAlert[int.Parse(row.ID)]) ? true : false;
 
-                button_restartcrontab.Content = (g_bRestartCrontab[Int32.Parse(row.ID)]) ? "ON" : "OFF";
-                button_restartcrontab.Background = (g_bRestartCrontab[Int32.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
-                textBox_restartcrontab.Text = g_CrontabFormat[Int32.Parse(row.ID)];
-                textBox_nextcrontab.Text = CrontabSchedule.TryParse(g_CrontabFormat[Int32.Parse(row.ID)])?.GetNextOccurrence(DateTime.Now).ToString("ddd, MM/dd/yyyy HH:mm:ss");
+                button_restartcrontab.Content = (g_bRestartCrontab[int.Parse(row.ID)]) ? "ON" : "OFF";
+                button_restartcrontab.Background = (g_bRestartCrontab[int.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
+                textBox_restartcrontab.Text = g_CrontabFormat[int.Parse(row.ID)];
+                textBox_nextcrontab.Text = CrontabSchedule.TryParse(g_CrontabFormat[int.Parse(row.ID)])?.GetNextOccurrence(DateTime.Now).ToString("ddd, MM/dd/yyyy HH:mm:ss");
 
-                button_embedconsole.Content = (g_bEmbedConsole[Int32.Parse(row.ID)]) ? "ON" : "OFF";
-                button_embedconsole.Background = (g_bEmbedConsole[Int32.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
+                button_embedconsole.Content = (g_bEmbedConsole[int.Parse(row.ID)]) ? "ON" : "OFF";
+                button_embedconsole.Background = (g_bEmbedConsole[int.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
 
                 MahAppSwitch_AutoStartAlert.IsChecked = g_bAutoStartAlert[int.Parse(row.ID)];
                 MahAppSwitch_AutoRestartAlert.IsChecked = g_bAutoRestartAlert[int.Parse(row.ID)];
@@ -690,6 +696,7 @@ namespace WindowsGSM
             }
         }
 
+        #region Actions - Button Click
         private async void Actions_Start_Click(object sender, RoutedEventArgs e)
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
@@ -748,6 +755,51 @@ namespace WindowsGSM
             ShowWindow(hWnd, ShowWindow(hWnd, WindowShowStyle.Hide) ? WindowShowStyle.Hide : WindowShowStyle.ShowNormal);
         }
 
+        private void Actions_StartAllServers_Click(object sender, RoutedEventArgs e)
+        {
+            int num_row = ServerGrid.Items.Count;
+            for (int i = 0; i < num_row; i++)
+            {
+                var server = (Functions.ServerTable)ServerGrid.Items[i];
+                int serverId = int.Parse(server.ID);
+
+                if (g_iServerStatus[serverId] == ServerStatus.Stopped)
+                {
+                    GameServer_Start(server);
+                }
+            }
+        }
+
+        private void Actions_StopAllServers_Click(object sender, RoutedEventArgs e)
+        {
+            int num_row = ServerGrid.Items.Count;
+            for (int i = 0; i < num_row; i++)
+            {
+                var server = (Functions.ServerTable)ServerGrid.Items[i];
+                int serverId = int.Parse(server.ID);
+
+                if (g_iServerStatus[serverId] == ServerStatus.Started)
+                {
+                    GameServer_Stop(server);
+                }
+            }
+        }
+
+        private void Actions_RestartAllServers_Click(object sender, RoutedEventArgs e)
+        {
+            int num_row = ServerGrid.Items.Count;
+            for (int i = 0; i < num_row; i++)
+            {
+                var server = (Functions.ServerTable)ServerGrid.Items[i];
+                int serverId = int.Parse(server.ID);
+
+                if (g_iServerStatus[serverId] == ServerStatus.Started)
+                {
+                    GameServer_Restart(server);
+                }
+            }
+        }
+
         private async void Actions_Update_Click(object sender, RoutedEventArgs e)
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
@@ -779,7 +831,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped) { return; }
+            if (g_iServerStatus[int.Parse(server.ID)] != ServerStatus.Stopped) { return; }
 
             MessageBoxResult result = System.Windows.MessageBox.Show("Do you want to backup on this server?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result != MessageBoxResult.Yes) { return; }
@@ -792,7 +844,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped) { return; }
+            if (g_iServerStatus[int.Parse(server.ID)] != ServerStatus.Stopped) { return; }
 
             MessageBoxResult result = System.Windows.MessageBox.Show("Do you want to restore backup on this server?\n(All server files will be overwritten)", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result != MessageBoxResult.Yes) { return; }
@@ -800,111 +852,91 @@ namespace WindowsGSM
             await GameServer_RestoreBackup(server);
         }
 
-        private async Task GameServer_Start(Functions.ServerTable server, string notes = "")
+        private void Actions_ManageAddons_Click(object sender, RoutedEventArgs e)
         {
-            if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped) { return; }
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
 
-            string error = "";
-            if (!string.IsNullOrWhiteSpace(server.IP) && !IsValidIPAddress(server.IP))
-            {
-                error += " IP address is not valid.";
+            ListBox_ManageAddons_Refresh();
+
+            MahAppFlyout_DiscordAlert.IsOpen = false;
+            MahAppFlyout_ManageAddons.IsOpen = !MahAppFlyout_ManageAddons.IsOpen;
+        }
+        #endregion
+
+        private void ListBox_ManageAddonsLeft_DoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (listBox_ManageAddonsLeft.SelectedItem != null)
+            { 
+                var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+                if (server == null) { return; }
+
+                string item = listBox_ManageAddonsLeft.SelectedItem.ToString();
+                listBox_ManageAddonsLeft.Items.Remove(listBox_ManageAddonsLeft.Items[listBox_ManageAddonsLeft.SelectedIndex]);
+                listBox_ManageAddonsRight.Items.Add(item);
+                var serverAddon = new Functions.ServerAddon(server.ID, server.Game);
+                serverAddon.AddToRight(listBox_ManageAddonsRight.Items.OfType<string>().ToList(), item);
+
+                ListBox_ManageAddons_Refresh();
+
+                foreach (var selected in listBox_ManageAddonsRight.Items)
+                {
+                    if (selected.ToString() == item)
+                    {
+                        listBox_ManageAddonsRight.SelectedItem = selected;
+                    }
+                }
             }
-
-            if (!string.IsNullOrWhiteSpace(server.Port) && !IsValidPort(server.Port))
-            {
-                error += " Port number is not valid.";
-            }
-
-            if (error != "")
-            {
-                Log(server.ID, "Server: Fail to start");
-                Log(server.ID, "[ERROR]" + error);
-
-                return;
-            }
-
-            Process p = g_Process[Int32.Parse(server.ID)];
-            if (p != null) { return; }
-
-            if (g_bUpdateOnStart[Int32.Parse(server.ID)])
-            {
-                await GameServer_Update(server, " | Update on Start");
-            }
-
-            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Starting;
-            Log(server.ID, "Action: Start" + notes);
-            SetServerStatus(server, "Starting");
-
-            var gameServer = await Server_BeginStart(server);
-            if (gameServer == null) { return; }
-
-            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Started;
-            Log(server.ID, "Server: Started");
-            if (!string.IsNullOrWhiteSpace(gameServer.Notice))
-            {
-                Log(server.ID, "[Notice] " + gameServer.Notice);
-            }
-            SetServerStatus(server, "Started");
         }
 
-        private async void GameServer_Stop(Functions.ServerTable server)
+        private void ListBox_ManageAddonsRight_DoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Started) { return; }
-
-            Process p = g_Process[Int32.Parse(server.ID)];
-            if (p == null) { return; }
-
-            //Begin stop
-            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopping;
-            Log(server.ID, "Action: Stop");
-            SetServerStatus(server, "Stopping");
-
-            bool stopGracefully = await Server_BeginStop(server, p);
-
-            Log(server.ID, "Server: Stopped");
-            if (!stopGracefully)
+            if (listBox_ManageAddonsRight.SelectedItem != null)
             {
-                Log(server.ID, "[NOTICE] Server fail to stop gracefully");
+                var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+                if (server == null) { return; }
+
+                string item = listBox_ManageAddonsRight.SelectedItem.ToString();
+                listBox_ManageAddonsRight.Items.Remove(listBox_ManageAddonsRight.Items[listBox_ManageAddonsRight.SelectedIndex]);
+                listBox_ManageAddonsLeft.Items.Add(item);
+                var serverAddon = new Functions.ServerAddon(server.ID, server.Game);
+                serverAddon.AddToLeft(listBox_ManageAddonsRight.Items.OfType<string>().ToList(), item);
+
+                ListBox_ManageAddons_Refresh();
+
+                foreach (var selected in listBox_ManageAddonsLeft.Items)
+                {
+                    if (selected.ToString() == item)
+                    {
+                        listBox_ManageAddonsLeft.SelectedItem = selected;
+                    }
+                }
             }
-            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
-            SetServerStatus(server, "Stopped");
         }
 
-        private async void GameServer_Restart(Functions.ServerTable server)
+        private void ListBox_ManageAddons_Refresh()
         {
-            if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Started) { return; }
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
 
-            Process p = g_Process[Int32.Parse(server.ID)];
-            if (p == null) { return; }
+            var serverAddon = new Functions.ServerAddon(server.ID, server.Game);
+            label_ManageAddonsName.Content = server.Name;
+            label_ManageAddonsGame.Content = server.Game;
+            label_ManageAddonsType.Content = serverAddon.GetModsName();
 
-            g_Process[Int32.Parse(server.ID)] = null;
-
-            //Begin Restart
-            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Restarting;
-            Log(server.ID, "Action: Restart");
-            SetServerStatus(server, "Restarting");
-
-            await Server_BeginStop(server, p);
-
-            await Task.Delay(1000);
-
-            var gameServer = await Server_BeginStart(server);
-            if (gameServer == null)
+            listBox_ManageAddonsLeft.Items.Clear();
+            foreach (string item in serverAddon.GetLeftListBox())
             {
-                g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
-                SetServerStatus(server, "Stopped");
-                return;
+                listBox_ManageAddonsLeft.Items.Add(item);
             }
 
-            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Started;
-            Log(server.ID, "Server: Restarted");
-            if (!string.IsNullOrWhiteSpace(gameServer.Notice))
+            listBox_ManageAddonsRight.Items.Clear();
+            foreach (string item in serverAddon.GetRightListBox())
             {
-                Log(server.ID, "[Notice] " + gameServer.Notice);
+                listBox_ManageAddonsRight.Items.Add(item);
             }
-            SetServerStatus(server, "Started");
         }
-        
+
         private async Task<dynamic> Server_BeginStart(Functions.ServerTable server)
         {
             dynamic gameServer = GameServer.Data.Class.Get(server.Game, new Functions.ServerConfig(server.ID));
@@ -1028,13 +1060,6 @@ namespace WindowsGSM
             return true;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="server"></param>
-        /// <param name="silenceCheck"></param>
-        /// <param name="forceUpdate"></param>
-        /// <returns> (IsUpdateSuccess, RemoteBuild, gameServer)</returns>
         private async Task<(bool, string, dynamic)> Server_BeginUpdate(Functions.ServerTable server, bool silenceCheck, bool forceUpdate, bool validate = false)
         {
             dynamic gameServer = GameServer.Data.Class.Get(server.Game, new Functions.ServerConfig(server.ID));
@@ -1071,6 +1096,112 @@ namespace WindowsGSM
             return (true, remoteVersion, gameServer);
         }
 
+        #region Actions - Game Server
+        private async Task GameServer_Start(Functions.ServerTable server, string notes = "")
+        {
+            if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped) { return; }
+
+            string error = "";
+            if (!string.IsNullOrWhiteSpace(server.IP) && !IsValidIPAddress(server.IP))
+            {
+                error += " IP address is not valid.";
+            }
+
+            if (!string.IsNullOrWhiteSpace(server.Port) && !IsValidPort(server.Port))
+            {
+                error += " Port number is not valid.";
+            }
+
+            if (error != "")
+            {
+                Log(server.ID, "Server: Fail to start");
+                Log(server.ID, "[ERROR]" + error);
+
+                return;
+            }
+
+            Process p = g_Process[Int32.Parse(server.ID)];
+            if (p != null) { return; }
+
+            if (g_bUpdateOnStart[Int32.Parse(server.ID)])
+            {
+                await GameServer_Update(server, " | Update on Start");
+            }
+
+            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Starting;
+            Log(server.ID, "Action: Start" + notes);
+            SetServerStatus(server, "Starting");
+
+            var gameServer = await Server_BeginStart(server);
+            if (gameServer == null) { return; }
+
+            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Started;
+            Log(server.ID, "Server: Started");
+            if (!string.IsNullOrWhiteSpace(gameServer.Notice))
+            {
+                Log(server.ID, "[Notice] " + gameServer.Notice);
+            }
+            SetServerStatus(server, "Started");
+        }
+
+        private async void GameServer_Stop(Functions.ServerTable server)
+        {
+            if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Started) { return; }
+
+            Process p = g_Process[Int32.Parse(server.ID)];
+            if (p == null) { return; }
+
+            //Begin stop
+            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopping;
+            Log(server.ID, "Action: Stop");
+            SetServerStatus(server, "Stopping");
+
+            bool stopGracefully = await Server_BeginStop(server, p);
+
+            Log(server.ID, "Server: Stopped");
+            if (!stopGracefully)
+            {
+                Log(server.ID, "[NOTICE] Server fail to stop gracefully");
+            }
+            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
+            SetServerStatus(server, "Stopped");
+        }
+
+        private async void GameServer_Restart(Functions.ServerTable server)
+        {
+            if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Started) { return; }
+
+            Process p = g_Process[Int32.Parse(server.ID)];
+            if (p == null) { return; }
+
+            g_Process[Int32.Parse(server.ID)] = null;
+
+            //Begin Restart
+            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Restarting;
+            Log(server.ID, "Action: Restart");
+            SetServerStatus(server, "Restarting");
+
+            await Server_BeginStop(server, p);
+
+            await Task.Delay(1000);
+
+            var gameServer = await Server_BeginStart(server);
+            if (gameServer == null)
+            {
+                g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
+                SetServerStatus(server, "Stopped");
+                return;
+            }
+
+            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Started;
+            Log(server.ID, "Server: Restarted");
+            if (!string.IsNullOrWhiteSpace(gameServer.Notice))
+            {
+                Log(server.ID, "[Notice] " + gameServer.Notice);
+            }
+            SetServerStatus(server, "Started");
+        }
+       
         private async Task<bool> GameServer_Update(Functions.ServerTable server, string notes = "", bool validate = false)
         {
             if (g_iServerStatus[int.Parse(server.ID)] != ServerStatus.Stopped)
@@ -1230,13 +1361,13 @@ namespace WindowsGSM
 
         private async Task<bool> GameServer_Delete(Functions.ServerTable server)
         {
-            if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped)
+            if (g_iServerStatus[int.Parse(server.ID)] != ServerStatus.Stopped)
             {
                 return false;
             }
 
             //Begin delete
-            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Deleting;
+            g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Deleting;
             Log(server.ID, "Action: Delete");
             SetServerStatus(server, "Deleting");
 
@@ -1269,24 +1400,29 @@ namespace WindowsGSM
 
             if (Directory.Exists(serverPath))
             {
-                Log(server.ID, "Server: Fail to delete server");
-                Log(server.ID, "[ERROR] Directory is not accessible");
+                string wgsmCfgPath = Functions.ServerPath.GetConfigs(server.ID, "WindowsGSM.cfg");
+                if (File.Exists(wgsmCfgPath))
+                {
+                    Log(server.ID, "Server: Fail to delete server");
+                    Log(server.ID, "[ERROR] Directory is not accessible");
 
-                g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
-                SetServerStatus(server, "Stopped");
+                    g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
+                    SetServerStatus(server, "Stopped");
 
-                return false;
+                    return false;
+                }
             }
 
             Log(server.ID, "Server: Deleted server");
 
-            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
+            g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
             SetServerStatus(server, "Stopped");
 
             LoadServerTable();
 
             return true;
         }
+        #endregion
 
         private async void OnGameServerExited(Functions.ServerTable server)
         {
@@ -1531,7 +1667,7 @@ namespace WindowsGSM
                 if (MahAppSwitch_SendStatistics.IsChecked ?? false)
                 {
                     var analytics = new Functions.GoogleAnalytics();
-                    analytics.SendGameServerHeartBeat(server.ID, server.Game);
+                    analytics.SendGameServerHeartBeat(server.Game, server.Name);
                 }
 
                 await Task.Delay(300000);
@@ -1548,7 +1684,7 @@ namespace WindowsGSM
                                  {
                                      try
                                      {
-                                         return p_.MainModule.FileName.Contains(Path.Combine(WGSM_PATH, "servers", serverId));
+                                         return p_.MainModule.FileName.Contains(Path.Combine(WGSM_PATH, "servers", serverId) + "\\");
                                      }
                                      catch
                                      {
@@ -1674,6 +1810,7 @@ namespace WindowsGSM
             return portnum > 1 && portnum < 65535;
         }
 
+        #region Menu - Browse
         private void Browse_ServerBackups_Click(object sender, RoutedEventArgs e)
         {
             var row = (Functions.ServerTable)ServerGrid.SelectedItem;
@@ -1711,7 +1848,9 @@ namespace WindowsGSM
                 Process.Start(path);
             }
         }
+        #endregion
 
+        #region Top Bar Button
         private void Button_Website_Click(object sender, RoutedEventArgs e)
         {
             Process.Start("https://windowsgsm.com/");
@@ -1729,12 +1868,21 @@ namespace WindowsGSM
 
         private void Button_Settings_Click(object sender, RoutedEventArgs e)
         {
-            RightWindowCommandsOverlayBehavior = WindowCommandsOverlayBehavior.HiddenTitleBar;
-            WindowButtonCommandsOverlayBehavior = WindowCommandsOverlayBehavior.HiddenTitleBar;
-
+            MahAppFlyout_DiscordAlert.IsOpen = false;
             MahAppFlyout_Settings.IsOpen = !MahAppFlyout_Settings.IsOpen;
         }
 
+        private void Button_Hide_Click(object sender, RoutedEventArgs e)
+        {
+            Hide();
+            notifyIcon.Visible = true;
+            notifyIcon.ShowBalloonTip(0);
+            notifyIcon.Visible = false;
+            notifyIcon.Visible = true;
+        }
+        #endregion
+
+        #region Settings Flyout
         private void HardWareAcceleration_IsCheckedChanged(object sender, EventArgs e)
         {
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
@@ -1810,6 +1958,7 @@ namespace WindowsGSM
             };
             schtasks.Start();
         }
+        #endregion
 
         #region Donor Theme
         private async void DonorTheme_IsCheckedChanged(object sender, EventArgs e)
@@ -2094,6 +2243,7 @@ namespace WindowsGSM
         }
         #endregion
 
+        #region Menu - Tools
         private void Tools_GlobalServerListCheck_Click(object sender, RoutedEventArgs e)
         {
             var row = (Functions.ServerTable)ServerGrid.SelectedItem;
@@ -2126,10 +2276,68 @@ namespace WindowsGSM
             }
         }
 
-        private void Tools_InstallSourcemodMetamod_Click(object sender, RoutedEventArgs e)
+        private async void Tools_InstallSourcemodMetamod_Click(object sender, RoutedEventArgs e)
         {
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
 
+            bool? existed = Tools.InstallAddons.IsSourceModAndMetaModExists(server);
+            if (existed == null)
+            {
+                await this.ShowMessageAsync("Tools - Install SourceMod & MetaMod", $"Doesn't support on {server.Game} (ID: {server.ID})");
+                return;
+            }
+
+            if (existed == true)
+            {
+                await this.ShowMessageAsync("Tools - Install SourceMod & MetaMod", $"Already Installed (ID: {server.ID})");
+                return;
+            }
+
+            var result = await this.ShowMessageAsync("Tools - Install SourceMod & MetaMod", $"Are you sure to install? (ID: {server.ID})", MessageDialogStyle.AffirmativeAndNegative);
+            if (result == MessageDialogResult.Affirmative)
+            {
+                ProgressDialogController controller = await this.ShowProgressAsync("Installing...", "Please wait...");
+                controller.SetIndeterminate();
+                bool installed = await Tools.InstallAddons.SourceModAndMetaMod(server);
+                await controller.CloseAsync();
+
+                string message = installed ? $"Installed successfully" : $"Fail to install";
+                await this.ShowMessageAsync("Tools - Install SourceMod & MetaMod", $"{message} (ID: {server.ID})");
+            }
         }
+
+        private async void Tools_InstallDayZSALModServer_Click(object sender, RoutedEventArgs e)
+        {
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
+
+            bool? existed = Tools.InstallAddons.IsDayZSALModServerExists(server);
+            if (existed == null)
+            {
+                await this.ShowMessageAsync("Tools - Install DayZSAL Mod Server", $"Doesn't support on {server.Game} (ID: {server.ID})");
+                return;
+            }
+
+            if (existed == true)
+            {
+                await this.ShowMessageAsync("Tools - Install DayZSAL Mod Server", $"Already Installed (ID: {server.ID})");
+                return;
+            }
+
+            var result = await this.ShowMessageAsync("Tools - Install DayZSAL Mod Server", $"Are you sure to install? (ID: {server.ID})", MessageDialogStyle.AffirmativeAndNegative);
+            if (result == MessageDialogResult.Affirmative)
+            {
+                ProgressDialogController controller = await this.ShowProgressAsync("Installing...", "Please wait...");
+                controller.SetIndeterminate();
+                bool installed = await Tools.InstallAddons.DayZSALModServer(server);
+                await controller.CloseAsync();
+
+                string message = installed ? $"Installed successfully" : $"Fail to install";
+                await this.ShowMessageAsync("Tools - Install DayZSAL Mod Server", $"{message} (ID: {server.ID})");
+            }
+        }
+        #endregion
 
         private string GetPublicIP()
         {
@@ -2144,10 +2352,6 @@ namespace WindowsGSM
             {
                 return null;
             }
-        }
-
-        private void Window_StateChanged(object sender, EventArgs e)
-        {
         }
 
         private void OnBalloonTipClick(object sender, EventArgs e)
@@ -2165,15 +2369,6 @@ namespace WindowsGSM
                 WindowState = WindowState.Normal;
                 Show();
             }
-        }
-
-        private void Button_Hide_Click(object sender, RoutedEventArgs e)
-        {
-            Hide();
-            notifyIcon.Visible = true;
-            notifyIcon.ShowBalloonTip(0);
-            notifyIcon.Visible = false;
-            notifyIcon.Visible = true;
         }
 
         #region Left Buttom Grid
@@ -2224,15 +2419,12 @@ namespace WindowsGSM
             switch_autoupdate.IsChecked = g_bAutoUpdate[int.Parse(server.ID)];
         }
 
-        private async void Button_AutoUpdateSettings_Click(object sender, RoutedEventArgs e)
+        private async void Button_DiscordAlertSettings_Click(object sender, RoutedEventArgs e)
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            RightWindowCommandsOverlayBehavior = WindowCommandsOverlayBehavior.HiddenTitleBar;
-            WindowButtonCommandsOverlayBehavior = WindowCommandsOverlayBehavior.HiddenTitleBar;
-
-            MahAppFlyout_AutoUpdate.IsOpen = !MahAppFlyout_AutoUpdate.IsOpen;
+            MahAppFlyout_DiscordAlert.IsOpen = !MahAppFlyout_DiscordAlert.IsOpen;
         }
 
         private void Button_UpdateOnStart_Click(object sender, RoutedEventArgs e)
@@ -2278,6 +2470,8 @@ namespace WindowsGSM
             textBox_nextcrontab.Text = CrontabSchedule.TryParse(crontabFormat)?.GetNextOccurrence(DateTime.Now).ToString("ddd, MM/dd/yyyy HH:mm:ss");
         }
         #endregion
+
+        #region Switches
         private void Switch_AutoStartAlert_Click(object sender, RoutedEventArgs e)
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
@@ -2321,6 +2515,15 @@ namespace WindowsGSM
 
             g_bCrashAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "crashalert");
             MahAppSwitch_CrashAlert.IsChecked = g_bCrashAlert[int.Parse(server.ID)];
+        }
+        #endregion
+
+        private void Window_Activated(object sender, EventArgs e)
+        {
+            if (MahAppFlyout_ManageAddons.IsOpen)
+            {
+                ListBox_ManageAddons_Refresh();
+            }
         }
     }
 }

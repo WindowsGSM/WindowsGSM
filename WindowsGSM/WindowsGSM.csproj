@@ -188,8 +188,12 @@
     </ApplicationDefinition>
     <Compile Include="Functions\Github.cs" />
     <Compile Include="Functions\GoogleAnalytics.cs" />
+    <Compile Include="Functions\ServerAddon.cs" />
     <Compile Include="Functions\ServerConsole.cs" />
+    <Compile Include="GameServer\Addon\MetaMod.cs" />
+    <Compile Include="GameServer\Addon\SourceMod.cs" />
     <Compile Include="GameServer\ARKSE.cs" />
+    <Compile Include="GameServer\BW.cs" />
     <Compile Include="GameServer\DODS.cs" />
     <Compile Include="GameServer\Engine\Unity.cs" />
     <Compile Include="GameServer\Engine\UnrealEngine.cs" />
@@ -216,7 +220,7 @@
     <Compile Include="GameServer\SW.cs" />
     <Compile Include="GameServer\ZPS.cs" />
     <Compile Include="Tools\GlobalServerList.cs" />
-    <Compile Include="Tools\InstallMod.cs" />
+    <Compile Include="Tools\InstallAddons.cs" />
     <Compile Include="WindowsFirewall.cs" />
     <Page Include="Import.xaml">
       <SubType>Designer</SubType>
@@ -450,16 +454,25 @@
     <Resource Include="Images\Zip.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Discord\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\WindowsGSM-Icon.ico" />
+    <Resource Include="Images\WindowsGSM-Icon-Border.ico" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Games\rok.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Games\heat.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Tools\SourceMod.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Tools\DayZSAL.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\bw.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\WindowsGSM-Icon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

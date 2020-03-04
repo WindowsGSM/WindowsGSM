@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
+using System.IO.Compression;
 
 namespace WindowsGSM.GameServer
 {
@@ -32,7 +34,7 @@ namespace WindowsGSM.GameServer
         public string Port = "2302";
         public string Defaultmap = "dayzOffline.chernarusplus";
         public string Maxplayers = "60";
-        public string Additional = "-doLogs -adminLog -netLog";
+        public string Additional = "-config=serverDZ.cfg -doLogs -adminLog -netLog";
 
         public DAYZ(Functions.ServerConfig serverData)
         {
@@ -54,16 +56,54 @@ namespace WindowsGSM.GameServer
 
         public async Task<Process> Start()
         {
+            // Use DZSALModServer.exe if the exe exist, otherwise use original
+            string dzsaPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "DZSALModServer.exe");
+            if (File.Exists(dzsaPath))
+            {
+                StartPath = "DZSALModServer.exe";
+
+                WindowsFirewall firewall = new WindowsFirewall(StartPath, dzsaPath);
+                if (!await firewall.IsRuleExist())
+                {
+                    firewall.AddRule();
+                }
+            }
+            else
+            {
+                string serverPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath);
+                if (!File.Exists(serverPath))
+                {
+                    Error = $"{StartPath} not found ({serverPath})";
+                    return null;
+                }
+            }
+
             string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "serverDZ.cfg");
             if (!File.Exists(configPath))
             {
-                Error = $"{Path.GetFileName(configPath)} not found ({configPath})";
-                return null;
+                Notice = $"{Path.GetFileName(configPath)} not found ({configPath})";
             }
 
-            string param = $"DayZServer_x64.exe -config=serverDZ.cfg";
-            param += string.IsNullOrEmpty(_serverData.ServerPort) ? "" : $" -port {_serverData.ServerPort}";
-            param += $" {_serverData.ServerParam}";
+            string param = $" {_serverData.ServerParam}";
+            param += string.IsNullOrEmpty(_serverData.ServerIP) ? "" : $" -ip={_serverData.ServerIP}";
+            param += string.IsNullOrEmpty(_serverData.ServerPort) ? "" : $" -port={_serverData.ServerPort}";
+
+            string modPath = Functions.ServerPath.GetConfigs(_serverData.ServerID, "DayZActivatedMods.cfg");
+            if (File.Exists(modPath))
+            {
+                string modParam = "";
+                foreach (string modName in File.ReadLines(modPath))
+                {
+                    modParam += $"{modName.Trim()};";
+                }
+
+                if (!string.IsNullOrWhiteSpace(modParam))
+                {
+                    param += $" \"-mod={modParam}\"";
+                }
+            }
+
+            Debug.WriteLine(param);
 
             Process p = new Process
             {
