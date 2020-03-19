@@ -1,4 +1,4 @@
-![Screenshot](https://windowsgsm.com/assets/images/WindowsGSM-v1.14.0.png)
+![Screenshot](https://windowsgsm.com/assets/images/WindowsGSM-v1.15.0.png)
 
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/BattlefieldDuck/WindowsGSM/)
 [![Build status](https://ci.appveyor.com/api/projects/status/ttaomnayo3gidf2g?svg=true)](https://ci.appveyor.com/project/BattlefieldDuck/windowsgsm)
