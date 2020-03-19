@@ -25,11 +25,13 @@ namespace WindowsGSM.GameServer
         public string StartPath = @"Outlaws\Binaries\Win64\OutlawsServer-Win64-Shipping.exe";
         public bool ToggleConsole = false;
         public int PortIncrements = 2;
+        public dynamic QueryMethod = null;
 
         public string Port = "27374";
+        public string QueryPort = "27015";
         public string Defaultmap = "/Game/Maps/MainMap/MainMap";
         public string Maxplayers = "24";
-        public string Additional = "-Type=PVP -queryport={{queryport}} -ServerPassword=\"\" -AdminPassword=\"\"";
+        public string Additional = "-Type=PVP -ServerPassword=\"\" -AdminPassword=\"\"";
 
         public OLOW(Functions.ServerConfig serverData)
         {
@@ -39,20 +41,11 @@ namespace WindowsGSM.GameServer
         public async void CreateServerCFG()
         {
             //No server config
-
-            //Edit WindowsGSM.cfg
-            string configFile = Functions.ServerPath.GetConfigs(_serverData.ServerID, "WindowsGSM.cfg");
-            if (File.Exists(configFile))
-            {
-                string configText = File.ReadAllText(configFile);
-                configText = configText.Replace("{{queryport}}", (Int32.Parse(_serverData.ServerPort) - 359).ToString());
-                File.WriteAllText(configFile, configText);
-            }
         }
 
         public async Task<Process> Start()
         {
-            string shipExePath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath);
+            string shipExePath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath);
             if (!File.Exists(shipExePath))
             {
                 Error = $"{Path.GetFileName(shipExePath)} not found ({shipExePath})";
@@ -60,9 +53,10 @@ namespace WindowsGSM.GameServer
             }
 
             string param = string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : $"{_serverData.ServerMap}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" -port {_serverData.ServerPort}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? "" : $" -servername \"{_serverData.ServerName}\"";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? "" : $" -PlayerCount {_serverData.ServerMaxPlayer}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" -port={_serverData.ServerPort}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? "" : $" -servername=\"{_serverData.ServerName}\"";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? "" : $" -PlayerCount={_serverData.ServerMaxPlayer}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? "" : $" -queryport={_serverData.ServerQueryPort}";
             param += $" {_serverData.ServerParam}" + ((ToggleConsole) ? " -log" : "");
 
             Process p;
@@ -135,7 +129,7 @@ namespace WindowsGSM.GameServer
 
         public bool IsInstallValid()
         {
-            return File.Exists(Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath));
+            return File.Exists(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath));
         }
 
         public bool IsImportValid(string path)
@@ -155,46 +149,6 @@ namespace WindowsGSM.GameServer
         {
             var steamCMD = new Installer.SteamCMD();
             return await steamCMD.GetRemoteBuild("915070");
-        }
-
-        public string GetQueryPort()
-        {
-            string configFile = Functions.ServerPath.GetConfigs(_serverData.ServerID, "WindowsGSM.cfg");
-
-            //Get -QueryPort value in serverparam
-            if (File.Exists(configFile))
-            {
-                string[] lines = File.ReadAllLines(configFile);
-
-                foreach (string line in lines)
-                {
-                    Debug.WriteLine(line);
-
-                    string[] keyvalue = line.Split(new char[] { '=' }, 2);
-                    if (keyvalue.Length == 2)
-                    {
-                        if ("serverparam" == keyvalue[0])
-                        {
-                            string param = keyvalue[1].Trim('\"');
-                            string[] settings = param.Split(' ');
-
-                            foreach (string setting in settings)
-                            {
-                                string[] key = setting.Split(new char[] { '=' }, 2);
-                                if (key.Length == 2)
-                                {
-                                    if ("-queryport" == key[0])
-                                    {
-                                        return key[1];
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            return null;
         }
     }
 }

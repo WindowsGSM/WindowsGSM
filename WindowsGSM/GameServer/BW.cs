@@ -20,11 +20,15 @@ namespace WindowsGSM.GameServer
         public string StartPath = "BlackwakeServer.exe";
         public bool ToggleConsole = true;
         public int PortIncrements = 3;
+        public dynamic QueryMethod = null;
 
         public string Port = "25001";
+        public string QueryPort = "27015";
         public string Defaultmap = "Island";
         public string Maxplayers = "6";
         public string Additional = "";
+
+        public string AppId = "376030";
 
         public BW(Functions.ServerConfig serverData)
         {
@@ -33,28 +37,28 @@ namespace WindowsGSM.GameServer
 
         public async void CreateServerCFG()
         {
-            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "Server.cfg");
+            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "Server.cfg");
             if (await Functions.Github.DownloadGameServerConfig(configPath, _serverData.ServerGame))
             {
                 string configText = File.ReadAllText(configPath);
                 configText = configText.Replace("{{serverName}}", _serverData.ServerName);
                 configText = configText.Replace("{{serverIP}}", _serverData.ServerIP);
                 configText = configText.Replace("{{serverPort}}", _serverData.ServerPort);
-                configText = configText.Replace("{{steamPort}}", (int.Parse(_serverData.ServerPort) + 2014).ToString());
+                configText = configText.Replace("{{steamPort}}", _serverData.ServerQueryPort);
                 File.WriteAllText(configPath, configText);
             }
         }
 
         public async Task<Process> Start()
         {
-            string exePath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath);
+            string exePath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath);
             if (!File.Exists(exePath))
             {
                 Error = $"{Path.GetFileName(exePath)} not found ({exePath})";
                 return null;
             }
 
-            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "Server.cfg");
+            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "Server.cfg");
             if (!File.Exists(configPath))
             {
                 Notice = $"{Path.GetFileName(configPath)} not found ({configPath})";
@@ -66,7 +70,7 @@ namespace WindowsGSM.GameServer
             {
                 StartInfo =
                 {
-                    WorkingDirectory = Functions.ServerPath.GetServerFiles(_serverData.ServerID),
+                    WorkingDirectory = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID),
                     FileName = exePath,
                     Arguments = param,
                     WindowStyle = ProcessWindowStyle.Minimized,
@@ -108,7 +112,7 @@ namespace WindowsGSM.GameServer
 
         public bool IsInstallValid()
         {
-            return File.Exists(Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath));
+            return File.Exists(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath));
         }
 
         public bool IsImportValid(string path)
@@ -127,11 +131,6 @@ namespace WindowsGSM.GameServer
         {
             var steamCMD = new Installer.SteamCMD();
             return await steamCMD.GetRemoteBuild("423410");
-        }
-
-        public string GetQueryPort()
-        {
-            return _serverData.ServerPort;
         }
     }
 }

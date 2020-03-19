@@ -31,8 +31,10 @@ namespace WindowsGSM.GameServer
         public string StartPath = "RustDedicated.exe";
         public bool ToggleConsole = true;
         public int PortIncrements = 1;
+        public dynamic QueryMethod = new Query.A2S();
 
         public string Port = "28015";
+        public string QueryPort = "28015";
         public string Defaultmap = "Procedural Map";
         public string Maxplayers = "50";
         public string Additional = "";
@@ -45,7 +47,7 @@ namespace WindowsGSM.GameServer
         public async void CreateServerCFG()
         {
             //Download server.cfg
-            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "server.cfg");
+            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "server.cfg");
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string configText = File.ReadAllText(configPath);
@@ -57,13 +59,13 @@ namespace WindowsGSM.GameServer
 
         public async Task<Process> Start()
         {
-            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "server.cfg");
+            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "server.cfg");
             if (!File.Exists(configPath))
             {
                 Notice = $"server.cfg not found ({configPath})";
             }
 
-            string workingDir = Functions.ServerPath.GetServerFiles(_serverData.ServerID);
+            string workingDir = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
             string srcdsPath = Path.Combine(workingDir, "RustDedicated.exe");
 
             string param = $"-nographics -batchmode -silent-crashes";
@@ -125,7 +127,7 @@ namespace WindowsGSM.GameServer
 
         public bool IsInstallValid()
         {
-            return File.Exists(Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath));
+            return File.Exists(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath));
         }
 
         public bool IsImportValid(string path)
@@ -144,11 +146,6 @@ namespace WindowsGSM.GameServer
         {
             var steamCMD = new Installer.SteamCMD();
             return await steamCMD.GetRemoteBuild("258550");
-        }
-
-        public string GetQueryPort()
-        {
-            return _serverData.ServerPort;
         }
     }
 }

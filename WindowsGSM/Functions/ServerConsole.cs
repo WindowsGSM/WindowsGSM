@@ -4,16 +4,20 @@ using System.Collections;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace WindowsGSM.Functions
 {
     public class ServerConsole
     {
         [DllImport("user32.dll")]
+        static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
 
-        private static readonly int MAX_LINE = 50;
-        private readonly ArrayList _arrayList = new ArrayList(MAX_LINE);
+        private static readonly int MAX_LINE = 200;
+        private readonly List<string> _consoleList = new List<string>();
         private readonly string _serverId;
         private int _lineNumber = 0;
 
@@ -24,7 +28,7 @@ namespace WindowsGSM.Functions
 
         public void AddOutput(object sender, DataReceivedEventArgs args)
         {
-            MainWindow.g_ServerConsoles[Int32.Parse(_serverId)].Add(args.Data);
+            MainWindow.g_ServerConsoles[int.Parse(_serverId)].Add(args.Data);
         }
 
         public async void Input(Process process, string text, IntPtr mainWindow)
@@ -48,9 +52,14 @@ namespace WindowsGSM.Functions
                     else
                     {
                         SetForegroundWindow(mainWindow);
-                        SendWaitToMainWindow(text);
-                        SendWaitToMainWindow("{ENTER}");
-                        SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
+                        var current = GetForegroundWindow();
+                        var wgsmWindow = Process.GetCurrentProcess().MainWindowHandle;
+                        if (current != wgsmWindow)
+                        {
+                            SendWaitToMainWindow(text);
+                            SendWaitToMainWindow("{ENTER}");
+                            SetForegroundWindow(wgsmWindow);
+                        }
                     }
                 }
             });
@@ -60,51 +69,41 @@ namespace WindowsGSM.Functions
         {
             if (!process.HasExited)
             {
-                SetForegroundWindow(process.MainWindowHandle);
-                SendWaitToMainWindow("{TAB}");
-                SendWaitToMainWindow(text);
-                SendWaitToMainWindow("{TAB}");
-                SendWaitToMainWindow(text);
-                SendWaitToMainWindow("{ENTER}");
-                SetForegroundWindow(Process.GetCurrentProcess().MainWindowHandle);
+                SetForegroundWindow(mainWindow);
+                var current = GetForegroundWindow();
+                var wgsmWindow = Process.GetCurrentProcess().MainWindowHandle;
+                if (current != wgsmWindow)
+                {
+                    SendWaitToMainWindow("{TAB}");
+                    SendWaitToMainWindow(text);
+                    SendWaitToMainWindow("{TAB}");
+                    SendWaitToMainWindow(text);
+                    SendWaitToMainWindow("{ENTER}");
+                    SetForegroundWindow(wgsmWindow);
+                }
             }
         }
 
         public void Clear()
         {
-            _arrayList.Clear();
+            _consoleList.Clear();
         }
 
         public string Get()
         {
-            /*
-                Note:
-                Don't use foreach loop, StringBUilder
-                It will cause error
-            */
-
-            string output = "";
-            for (int i = 0; i < _arrayList.Count; i++)
-            {
-                if (_arrayList[i] != null)
-                {
-                    output += _arrayList[i] + Environment.NewLine;
-                }
-            }
-
-            return output;
+            return string.Join(Environment.NewLine, _consoleList.ToArray());
         }
 
         public string GetPreviousCommand()
         {
             --_lineNumber;
-            return (_arrayList.Count == 0) ? "" : _arrayList[GetLineNumber()].ToString();
+            return (_consoleList.Count == 0) ? "" : _consoleList[GetLineNumber()].ToString();
         }
 
         public string GetNextCommand()
         {
             ++_lineNumber;
-            return (_arrayList.Count == 0) ? "" : _arrayList[GetLineNumber()].ToString();
+            return (_consoleList.Count == 0) ? "" : _consoleList[GetLineNumber()].ToString();
         }
 
         private int GetLineNumber()
@@ -113,9 +112,9 @@ namespace WindowsGSM.Functions
             {
                 _lineNumber = 0;
             }
-            else if (_lineNumber >= _arrayList.Count)
+            else if (_lineNumber >= _consoleList.Count)
             {
-                _lineNumber = (_arrayList.Count <= 0) ? 0 : _arrayList.Count - 1;
+                _lineNumber = (_consoleList.Count <= 0) ? 0 : _consoleList.Count - 1;
             }
 
             return _lineNumber;
@@ -125,19 +124,18 @@ namespace WindowsGSM.Functions
         {
             if (_serverId == "0")
             {
-                _lineNumber = _arrayList.Count + 1;
+                _lineNumber = _consoleList.Count + 1;
 
-                if (_arrayList.Count > 0 && text == _arrayList[_arrayList.Count - 1].ToString())
+                if (_consoleList.Count > 0 && text == _consoleList[_consoleList.Count - 1].ToString())
                 {
                     return;
                 }
             }
 
-            _arrayList.Add(text);
-
-            if (_arrayList.Count > MAX_LINE)
+            _consoleList.Add(text);
+            if (_consoleList.Count > MAX_LINE)
             {
-                _arrayList.RemoveAt(0);
+                _consoleList.RemoveAt(0);
             }
 
             if (_serverId != "0")
@@ -146,19 +144,16 @@ namespace WindowsGSM.Functions
             }
         }
 
-        public static void Refresh(string serverId)
+        private void Refresh(string serverId)
         {
+            if (System.Windows.Application.Current == null) { return; }
+
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 var WindowsGSM = (MainWindow)System.Windows.Application.Current.MainWindow;
                 if (WindowsGSM == null) { return; }
-                var selectedRow = (ServerTable)WindowsGSM.ServerGrid.SelectedItem;
 
-                if (selectedRow.ID == serverId)
-                {
-                    WindowsGSM.console.Text = MainWindow.g_ServerConsoles[Int32.Parse(serverId)].Get();
-                    WindowsGSM.console.ScrollToEnd();
-                }
+                WindowsGSM.RefreshConsoleList(serverId);
             });
         }
 

@@ -12,6 +12,7 @@ namespace WindowsGSM.Functions
         public string ServerName;
         public string ServerIP;
         public string ServerPort;
+        public string ServerQueryPort;
         public string ServerMap;
         public string ServerMaxPlayer;
         public string ServerGSLT;
@@ -62,7 +63,7 @@ namespace WindowsGSM.Functions
             ServerID = serverid;
 
             //Get values from configpath
-            string configpath = Functions.ServerPath.GetConfigs(serverid, "WindowsGSM.cfg");
+            string configpath = ServerPath.GetServersConfigs(serverid, "WindowsGSM.cfg");
             if (File.Exists(configpath))
             {
                 foreach (string line in File.ReadLines(configpath))
@@ -79,6 +80,7 @@ namespace WindowsGSM.Functions
                             case "servername": ServerName = keyvalue[1]; break;
                             case "serverip": ServerIP = keyvalue[1]; break;
                             case "serverport": ServerPort = keyvalue[1]; break;
+                            case "serverqueryport": ServerQueryPort = keyvalue[1]; break;
                             case "servermap": ServerMap = keyvalue[1]; break;
                             case "servermaxplayer": ServerMaxPlayer = keyvalue[1]; break;
                             case "servergslt": ServerGSLT = keyvalue[1]; break;
@@ -104,37 +106,42 @@ namespace WindowsGSM.Functions
             }
         }
 
-        public bool CreateWindowsGSMConfig(string servergame, string servername, string serverip, string serverport, string servermap, string servermaxplayer, string servergslt, string serverparam, bool toggleConsole)
+        public void SetData(string serverGame, string serverName, dynamic gameServer)
+        {
+            ServerGame = serverGame;
+            ServerName = serverName;
+            ServerIP = GetIPAddress();
+            ServerPort = GetAvailablePort(gameServer.Port, gameServer.PortIncrements);
+            ServerQueryPort = (int.Parse(ServerPort) - int.Parse(gameServer.Port) + int.Parse(gameServer.QueryPort)).ToString(); // Magic
+            ServerMap = gameServer.Defaultmap;
+            ServerMaxPlayer = gameServer.Maxplayers;
+            ServerGSLT = "";
+            ServerParam = gameServer.Additional;
+            EmbedConsole = !gameServer.ToggleConsole;
+
+            AutoRestart = false;
+            AutoStart = false;
+            AutoUpdate = false;
+            UpdateOnStart = false;
+            DiscordAlert = false;
+            DiscordMessage = "";
+            DiscordWebhook = "";
+            RestartCrontab = false;
+            CrontabFormat = "0 6 * * *";
+            AutoStartAlert = true;
+            AutoRestartAlert = true;
+            AutoUpdateAlert = true;
+            RestartCrontabAlert = true;
+            CrashAlert = true;
+        }
+
+        public bool CreateWindowsGSMConfig()
         {
             CreateServerDirectory();
 
-            string configpath = ServerPath.GetConfigs(ServerID, "WindowsGSM.cfg");
+            string configpath = ServerPath.GetServersConfigs(ServerID, "WindowsGSM.cfg");
             if (!File.Exists(configpath))
             {
-                ServerGame = servergame;
-                ServerName = servername;
-                ServerIP = serverip;
-                ServerPort = serverport;
-                ServerMap = servermap;
-                ServerMaxPlayer = servermaxplayer;
-                ServerGSLT = servergslt;
-                ServerParam = serverparam;
-                AutoRestart = false;
-                AutoStart = false;
-                AutoUpdate = false;
-                UpdateOnStart = false;
-                DiscordAlert = false;
-                DiscordMessage = "";
-                DiscordWebhook = "";
-                RestartCrontab = false;
-                CrontabFormat = "0 6 * * *";
-                EmbedConsole = !toggleConsole;
-                AutoStartAlert = true;
-                AutoRestartAlert = true;
-                AutoUpdateAlert = true;
-                RestartCrontabAlert = true;
-                CrashAlert = true;
-
                 File.Create(configpath).Dispose();
 
                 using (TextWriter textwriter = new StreamWriter(configpath))
@@ -143,6 +150,7 @@ namespace WindowsGSM.Functions
                     textwriter.WriteLine($"servername=\"{ServerName}\"");
                     textwriter.WriteLine($"serverip=\"{ServerIP}\"");
                     textwriter.WriteLine($"serverport=\"{ServerPort}\"");
+                    textwriter.WriteLine($"serverqueryport=\"{ServerQueryPort}\"");
                     textwriter.WriteLine($"servermap=\"{ServerMap}\"");
                     textwriter.WriteLine($"servermaxplayer=\"{ServerMaxPlayer}\"");
                     textwriter.WriteLine($"servergslt=\"{ServerGSLT}\"");
@@ -177,26 +185,14 @@ namespace WindowsGSM.Functions
 
         public void CreateServerDirectory()
         {
-            string serverid_dir = Functions.ServerPath.Get(ServerID);
-            if (!Directory.Exists(serverid_dir))
-            {
-                Directory.CreateDirectory(serverid_dir);
-            }
-
-            if (!Directory.Exists(serverid_dir + @"\configs"))
-            {
-                Directory.CreateDirectory(serverid_dir + @"\configs");
-            }
-
-            if (!Directory.Exists(serverid_dir + @"\serverfiles"))
-            {
-                Directory.CreateDirectory(serverid_dir + @"\serverfiles");
-            }
+            Directory.CreateDirectory(ServerPath.GetServers(ServerID));
+            Directory.CreateDirectory(ServerPath.GetServersConfigs(ServerID));
+            Directory.CreateDirectory(ServerPath.GetServersServerFiles(ServerID));
         }
 
         public bool DeleteServerDirectory()
         {
-            string serverid_dir = ServerPath.Get(ServerID);
+            string serverid_dir = ServerPath.GetServers(ServerID);
             if (Directory.Exists(serverid_dir) && ServerID != null && ServerID != "")
             {
                 try
@@ -216,7 +212,7 @@ namespace WindowsGSM.Functions
 
         public bool IsWindowsGSMConfigExist()
         {
-            string configpath = ServerPath.GetConfigs(ServerID, "WindowsGSM.cfg");
+            string configpath = ServerPath.GetServersConfigs(ServerID, "WindowsGSM.cfg");
             return File.Exists(configpath);
         }
 
@@ -272,7 +268,7 @@ namespace WindowsGSM.Functions
 
         public static bool ToggleSetting(string serverId, string settingName)
         {
-            string configFile = ServerPath.GetConfigs(serverId, "WindowsGSM.cfg");
+            string configFile = ServerPath.GetServersConfigs(serverId, "WindowsGSM.cfg");
 
             if (File.Exists(configFile))
             {
@@ -319,7 +315,7 @@ namespace WindowsGSM.Functions
 
         public static string GetSetting(string serverId, string settingName)
         {
-            string configFile = ServerPath.GetConfigs(serverId, "WindowsGSM.cfg");
+            string configFile = ServerPath.GetServersConfigs(serverId, "WindowsGSM.cfg");
 
             if (File.Exists(configFile))
             {
@@ -345,7 +341,7 @@ namespace WindowsGSM.Functions
 
         public static void SetSetting(string serverId, string settingName, string data)
         {
-            string configFile = ServerPath.GetConfigs(serverId, "WindowsGSM.cfg");
+            string configFile = ServerPath.GetServersConfigs(serverId, "WindowsGSM.cfg");
 
             if (File.Exists(configFile))
             {

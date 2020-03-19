@@ -48,7 +48,7 @@ namespace WindowsGSM
             {
                 MessageBox.Show("Unhandled Exception: " + args.ExceptionObject, "Crash - Please screenshot this", MessageBoxButton.OK, MessageBoxImage.Error);
 
-                string logPath = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "logs");
+                string logPath = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Logs");
                 Directory.CreateDirectory(logPath);
 
                 string logFile = Path.Combine(logPath, $"CRASH_{DateTime.Now.ToString("yyyyMMdd")}.log");

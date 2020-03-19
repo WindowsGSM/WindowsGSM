@@ -1,36 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 
 namespace WindowsGSM.Functions
 {
     static class ServerPath
     {
-        public static string Get(string serverid)
+        public static string Get(string path = "")
         {
-            return System.IO.Path.Combine(MainWindow.WGSM_PATH, "servers", serverid);
+            return Path.Combine(MainWindow.WGSM_PATH, path);
         }
 
-        public static string GetConfigs(string serverid, string path1 = "")
+        public static string GetBackups(string serverid)
         {
-            return System.IO.Path.Combine(Get(serverid), "configs", path1);
+            return Path.Combine(MainWindow.WGSM_PATH, "Backups", serverid);
         }
 
-        public static string GetServerFiles(string serverid)
+        public static string GetInstaller(string path = "")
         {
-            return System.IO.Path.Combine(Get(serverid), "serverfiles");
+            return Path.Combine(MainWindow.WGSM_PATH, "Installer", path);
         }
 
-        public static string GetServerFiles(string serverid, string path1)
+        public static string GetLogs()
         {
-            return System.IO.Path.Combine(Get(serverid), "serverfiles", path1);
+            return Path.Combine(MainWindow.WGSM_PATH, "Logs");
         }
 
-        public static string GetServerFiles(string serverid, string path1, string path2)
+        public static string GetServers(string serverid)
         {
-            return System.IO.Path.Combine(Get(serverid), "serverfiles", path1, path2);
+            return Path.Combine(MainWindow.WGSM_PATH, "servers", serverid);
+        }
+
+        public static string GetServersConfigs(string serverid, string path1 = "", string path2 = "")
+        {
+            return Path.Combine(GetServers(serverid), "configs", path1, path2);
+        }
+
+        public static string GetServersServerFiles(string serverid, string path1 = "", string path2 = "")
+        {
+            return Path.Combine(GetServers(serverid), "serverfiles", path1, path2);
         }
     }
 }

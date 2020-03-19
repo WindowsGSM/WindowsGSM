@@ -24,8 +24,10 @@ namespace WindowsGSM.GameServer
         public string StartPath = "ROK.exe";
         public bool ToggleConsole = true;
         public int PortIncrements = 1;
+        public dynamic QueryMethod = null;
 
         public string Port = "7350";
+        public string QueryPort = "7350";
         public string Defaultmap = "CrownLand";
         public string Maxplayers = "30";
         public string Additional = "";
@@ -38,7 +40,7 @@ namespace WindowsGSM.GameServer
         public async void CreateServerCFG()
         {
             //Download ServerSettings.cfg
-            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "Configuration", "ServerSettings.cfg");
+            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "Configuration", "ServerSettings.cfg");
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string configText = File.ReadAllText(configPath);
@@ -52,14 +54,14 @@ namespace WindowsGSM.GameServer
 
         public async Task<Process> Start()
         {
-            string exePath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath);
+            string exePath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath);
             if (!File.Exists(exePath))
             {
                 Error = $"{Path.GetFileName(exePath)} not found ({exePath})";
                 return null;
             }
 
-            string serverPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "Server.exe");
+            string serverPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "Server.exe");
             if (!File.Exists(serverPath))
             {
                 Error = $"{Path.GetFileName(serverPath)} not found ({serverPath})";
@@ -72,7 +74,7 @@ namespace WindowsGSM.GameServer
             {
                 StartInfo =
                 {
-                    WorkingDirectory = Functions.ServerPath.GetServerFiles(_serverData.ServerID),
+                    WorkingDirectory = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID),
                     FileName = serverPath,
                     Arguments = param,
                     WindowStyle = ProcessWindowStyle.Minimized
@@ -115,7 +117,7 @@ namespace WindowsGSM.GameServer
 
         public bool IsInstallValid()
         {
-            return File.Exists(Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath));
+            return File.Exists(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath));
         }
 
         public bool IsImportValid(string path)
@@ -134,11 +136,6 @@ namespace WindowsGSM.GameServer
         {
             var steamCMD = new Installer.SteamCMD();
             return await steamCMD.GetRemoteBuild("381690");
-        }
-
-        public string GetQueryPort()
-        {
-            return _serverData.ServerPort;
         }
     }
 }

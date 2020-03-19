@@ -7,6 +7,32 @@ namespace WindowsGSM.Tools
 {
     class InstallAddons
     {
+        public static bool? IsAMXModXAndMetaModPExists(Functions.ServerTable server)
+        {
+            dynamic gameServer = GameServer.Data.Class.Get(server.Game, null);
+            if (!(gameServer is GameServer.Engine.GoldSource))
+            {
+                // Game Type not supported
+                return null;
+            }
+
+            string MMPath = Functions.ServerPath.GetServersServerFiles(server.ID, gameServer.Game, "addons\\metamod.dll");
+            return Directory.Exists(MMPath);
+        }
+
+        public static async Task<bool> AMXModXAndMetaModP(Functions.ServerTable server)
+        {
+            try
+            {
+                dynamic gameServer = GameServer.Data.Class.Get(server.Game, null);
+                return await GameServer.Addon.AMXModX.Install(server.ID, modFolder: gameServer.Game);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public static bool? IsSourceModAndMetaModExists(Functions.ServerTable server)
         {
             dynamic gameServer = GameServer.Data.Class.Get(server.Game, null);
@@ -16,7 +42,7 @@ namespace WindowsGSM.Tools
                 return null;
             }
 
-            string SMPath = Functions.ServerPath.GetServerFiles(server.ID, gameServer.Game, "addons\\sourcemod");
+            string SMPath = Functions.ServerPath.GetServersServerFiles(server.ID, gameServer.Game, "addons\\sourcemod");
             return Directory.Exists(SMPath);
         }
 
@@ -25,11 +51,7 @@ namespace WindowsGSM.Tools
             try
             {
                 dynamic gameServer = GameServer.Data.Class.Get(server.Game, null);
-                string modFolder = gameServer.Game;
-                bool sourcemod = await GameServer.Addon.SourceMod.Install(server.ID, modFolder);
-                bool metamod = await GameServer.Addon.MetaMod.Install(server.ID, modFolder);
-
-                return sourcemod && metamod;
+                return await GameServer.Addon.SourceMod.Install(server.ID, modFolder: gameServer.Game);
             }
             catch
             {
@@ -45,7 +67,7 @@ namespace WindowsGSM.Tools
                 return null;
             }
 
-            string exePath = Functions.ServerPath.GetServerFiles(server.ID, "DZSALModServer.exe");
+            string exePath = Functions.ServerPath.GetServersServerFiles(server.ID, "DZSALModServer.exe");
             return File.Exists(exePath);
         }
 
@@ -53,11 +75,11 @@ namespace WindowsGSM.Tools
         {
             try
             {
-                string zipPath = Functions.ServerPath.GetServerFiles(server.ID, "dzsalmodserver.zip");
+                string zipPath = Functions.ServerPath.GetServersServerFiles(server.ID, "dzsalmodserver.zip");
 
                 WebClient webClient = new WebClient();
                 await webClient.DownloadFileTaskAsync("http://dayzsalauncher.com/releases/dzsalmodserver.zip", zipPath);
-                await Task.Run(() => { try { ZipFile.ExtractToDirectory(zipPath, Functions.ServerPath.GetServerFiles(server.ID)); } catch { } });
+                await Task.Run(() => { try { ZipFile.ExtractToDirectory(zipPath, Functions.ServerPath.GetServersServerFiles(server.ID)); } catch { } });
                 await Task.Run(() => { try { File.Delete(zipPath); } catch { } });
 
                 return true;

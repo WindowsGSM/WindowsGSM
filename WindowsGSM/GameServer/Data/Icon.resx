@@ -144,6 +144,9 @@
   <data name="DayZ Dedicated Server" xml:space="preserve">
     <value>Images/Games/dayz.png</value>
   </data>
+  <data name="Empyrion - Galactic Survival Dedicated Server" xml:space="preserve">
+    <value>Images/Games/egs.png</value>
+  </data>
   <data name="Garry's Mod Dedicated Server" xml:space="preserve">
     <value>Images/Games/gmod.png</value>
   </data>
@@ -177,6 +180,9 @@
   <data name="No More Room in Hell Dedicated Server" xml:space="preserve">
     <value>Images/Games/nmrih.png</value>
   </data>
+  <data name="Onset Dedicated Server" xml:space="preserve">
+    <value>Images/Games/onset.png</value>
+  </data>
   <data name="Outlaws of the Old West Dedicated Server" xml:space="preserve">
     <value>Images/Games/olow.png</value>
   </data>
@@ -194,6 +200,9 @@
   </data>
   <data name="Team Fortress 2 Dedicated Server" xml:space="preserve">
     <value>Images/Games/tf2.png</value>
+  </data>
+  <data name="Unturned Dedicated Server" xml:space="preserve">
+    <value>Images/Games/unt.png</value>
   </data>
   <data name="Zombie Panic Source Dedicated Server" xml:space="preserve">
     <value>Images/Games/zps.png</value>

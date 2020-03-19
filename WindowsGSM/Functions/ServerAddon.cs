@@ -26,9 +26,9 @@ namespace WindowsGSM.Functions
 
             if (_serverGame == GameServer.DAYZ.FullName)
             {
-                string modPath = ServerPath.GetConfigs(_serverId, "DayZActivatedMods.cfg");
+                string modPath = ServerPath.GetServersConfigs(_serverId, "DayZActivatedMods.cfg");
                 string activatedMods = File.Exists(modPath) ? File.ReadAllText(modPath) : "";
-                string[] folders = Directory.GetDirectories(ServerPath.GetServerFiles(_serverId), "@*", SearchOption.TopDirectoryOnly);
+                string[] folders = Directory.GetDirectories(ServerPath.GetServersServerFiles(_serverId), "@*", SearchOption.TopDirectoryOnly);
 
                 foreach (string folder in folders)
                 {
@@ -51,7 +51,7 @@ namespace WindowsGSM.Functions
             dynamic gameServer = GameServer.Data.Class.Get(_serverGame, null);
             if (gameServer is GameServer.Engine.Source)
             {
-                string dpluginPath = ServerPath.GetServerFiles(_serverId, gameServer.Game, @"addons\sourcemod\plugins\disabled");
+                string dpluginPath = ServerPath.GetServersServerFiles(_serverId, gameServer.Game, @"addons\sourcemod\plugins\disabled");
                 if (Directory.Exists(dpluginPath))
                 {
                     string[] smxFiles = Directory.GetFiles(dpluginPath, "*.smx", SearchOption.TopDirectoryOnly);
@@ -73,12 +73,12 @@ namespace WindowsGSM.Functions
 
             if (_serverGame == GameServer.DAYZ.FullName)
             {
-                string modPath = ServerPath.GetConfigs(_serverId, "DayZActivatedMods.cfg");
+                string modPath = ServerPath.GetServersConfigs(_serverId, "DayZActivatedMods.cfg");
                 if (File.Exists(modPath))
                 {
                     foreach (string folderName in File.ReadLines(modPath))
                     {
-                        string metaPath = ServerPath.GetServerFiles(_serverId, folderName.Trim());
+                        string metaPath = ServerPath.GetServersServerFiles(_serverId, folderName.Trim());
                         if (Directory.Exists(metaPath))
                         {
                             if (File.Exists(Path.Combine(metaPath, "meta.cpp")))
@@ -95,7 +95,7 @@ namespace WindowsGSM.Functions
             dynamic gameServer = GameServer.Data.Class.Get(_serverGame, null);
             if (gameServer is GameServer.Engine.Source)
             {
-                string pluginPath = ServerPath.GetServerFiles(_serverId, gameServer.Game, @"addons\sourcemod\plugins");
+                string pluginPath = ServerPath.GetServersServerFiles(_serverId, gameServer.Game, @"addons\sourcemod\plugins");
                 if (Directory.Exists(pluginPath))
                 {
                     string[] smxFiles = Directory.GetFiles(pluginPath, "*.smx", SearchOption.TopDirectoryOnly);
@@ -115,7 +115,7 @@ namespace WindowsGSM.Functions
         {
             if (_serverGame == GameServer.DAYZ.FullName)
             {
-                string modPath = ServerPath.GetConfigs(_serverId, "DayZActivatedMods.cfg");
+                string modPath = ServerPath.GetServersConfigs(_serverId, "DayZActivatedMods.cfg");
                 string text = string.Join("\n", rItems.ToArray());
                 File.WriteAllText(modPath, text);
                 return true;
@@ -124,8 +124,8 @@ namespace WindowsGSM.Functions
             dynamic gameServer = GameServer.Data.Class.Get(_serverGame, null);
             if (gameServer is GameServer.Engine.Source)
             {
-                string pluginPath = ServerPath.GetServerFiles(_serverId, gameServer.Game, @"addons\sourcemod\plugins");
-                string dpluginPath = ServerPath.GetServerFiles(_serverId, gameServer.Game, @"addons\sourcemod\plugins\disabled");
+                string pluginPath = ServerPath.GetServersServerFiles(_serverId, gameServer.Game, @"addons\sourcemod\plugins");
+                string dpluginPath = ServerPath.GetServersServerFiles(_serverId, gameServer.Game, @"addons\sourcemod\plugins\disabled");
                 if (Directory.Exists(pluginPath) && Directory.Exists(dpluginPath))
                 {
                     try
@@ -147,7 +147,7 @@ namespace WindowsGSM.Functions
         {
             if (_serverGame == GameServer.DAYZ.FullName)
             {
-                string modPath = ServerPath.GetConfigs(_serverId, "DayZActivatedMods.cfg");
+                string modPath = ServerPath.GetServersConfigs(_serverId, "DayZActivatedMods.cfg");
                 string text = string.Join("\n", rItems.ToArray());
                 File.WriteAllText(modPath, text);
                 return true;
@@ -156,8 +156,8 @@ namespace WindowsGSM.Functions
             dynamic gameServer = GameServer.Data.Class.Get(_serverGame, null);
             if (gameServer is GameServer.Engine.Source)
             {
-                string pluginPath = ServerPath.GetServerFiles(_serverId, gameServer.Game, @"addons\sourcemod\plugins");
-                string dpluginPath = ServerPath.GetServerFiles(_serverId, gameServer.Game, @"addons\sourcemod\plugins\disabled");
+                string pluginPath = ServerPath.GetServersServerFiles(_serverId, gameServer.Game, @"addons\sourcemod\plugins");
+                string dpluginPath = ServerPath.GetServersServerFiles(_serverId, gameServer.Game, @"addons\sourcemod\plugins\disabled");
                 if (Directory.Exists(pluginPath) && Directory.Exists(dpluginPath))
                 {
                     try

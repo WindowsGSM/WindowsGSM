@@ -142,6 +142,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/egs.png.
+        /// </summary>
+        public static string Empyrion___Galactic_Survival_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Empyrion - Galactic Survival Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/gmod.png.
         /// </summary>
         public static string Garry_s_Mod_Dedicated_Server {
@@ -241,6 +250,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/onset.png.
+        /// </summary>
+        public static string Onset_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Onset Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/olow.png.
         /// </summary>
         public static string Outlaws_of_the_Old_West_Dedicated_Server {
@@ -291,6 +309,15 @@ namespace WindowsGSM.GameServer.Data {
         public static string Team_Fortress_2_Dedicated_Server {
             get {
                 return ResourceManager.GetString("Team Fortress 2 Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/unt.png.
+        /// </summary>
+        public static string Unturned_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Unturned Dedicated Server", resourceCulture);
             }
         }
         

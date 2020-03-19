@@ -33,6 +33,9 @@
                 case ROK.FullName: return new ROK(serverData);
                 case HEAT.FullName: return new HEAT(serverData);
                 case BW.FullName: return new BW(serverData);
+                case ONSET.FullName: return new ONSET(serverData);
+                case EGS.FullName: return new EGS(serverData);
+                case UNT.FullName: return new UNT(serverData);
                 default: return null;
             }
         }

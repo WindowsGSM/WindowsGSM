@@ -24,8 +24,10 @@ namespace WindowsGSM.GameServer
         public string StartPath = "bedrock_server.exe";
         public bool ToggleConsole = false;
         public int PortIncrements = 1;
+        public dynamic QueryMethod = null;
 
         public string Port = "19132";
+        public string QueryPort = "19132";
         public string Defaultmap = "Bedrock level";
         public string Maxplayers = "10";
         public string Additional = "";
@@ -38,7 +40,7 @@ namespace WindowsGSM.GameServer
         public async void CreateServerCFG()
         {
             //Download server.properties
-            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "server.properties");
+            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "server.properties");
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string configText = File.ReadAllText(configPath);
@@ -54,7 +56,7 @@ namespace WindowsGSM.GameServer
 
         public async Task<Process> Start()
         {
-            string workingDir = Functions.ServerPath.GetServerFiles(_serverData.ServerID);
+            string workingDir = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
 
             string exePath = Path.Combine(workingDir, StartPath);
             if (!File.Exists(exePath))
@@ -158,13 +160,13 @@ namespace WindowsGSM.GameServer
                     string version = matches[0].Groups[2].Value; //1.14.21.0
 
                     //Download zip and extract then delete zip
-                    string zipPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, fileName);
+                    string zipPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, fileName);
                     await webClient.DownloadFileTaskAsync(downloadUrl, zipPath);
-                    await Task.Run(() => ZipFile.ExtractToDirectory(zipPath, Functions.ServerPath.GetServerFiles(_serverData.ServerID)));
+                    await Task.Run(() => ZipFile.ExtractToDirectory(zipPath, Functions.ServerPath.GetServersServerFiles(_serverData.ServerID)));
                     await Task.Run(() => File.Delete(zipPath));
 
                     //Create MCBE-version.txt and write the version
-                    File.WriteAllText(Functions.ServerPath.GetServerFiles(_serverData.ServerID, "MCBE-version.txt"), version);
+                    File.WriteAllText(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "MCBE-version.txt"), version);
                 }
             }
             catch
@@ -196,7 +198,7 @@ namespace WindowsGSM.GameServer
                     string fileName = matches[0].Groups[1].Value; //bedrock-server-1.14.21.0.zip
                     string version = matches[0].Groups[2].Value; //1.14.21.0
 
-                    string tempPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "__temp");
+                    string tempPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "__temp");
 
                     //Delete old __temp folder
                     if (Directory.Exists(tempPath))
@@ -212,7 +214,7 @@ namespace WindowsGSM.GameServer
                     await Task.Run(() => ZipFile.ExtractToDirectory(zipPath, tempPath));
                     await Task.Run(() => File.Delete(zipPath));
 
-                    string serverFilesPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID);
+                    string serverFilesPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
 
                     //Delete old folder and files
                     await Task.Run(() =>
@@ -242,26 +244,21 @@ namespace WindowsGSM.GameServer
                     await Task.Run(() => Directory.Delete(tempPath, true));
 
                     //Create MCBE-version.txt and write the version
-                    File.WriteAllText(Functions.ServerPath.GetServerFiles(_serverData.ServerID, "MCBE-version.txt"), version);
+                    File.WriteAllText(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "MCBE-version.txt"), version);
                 }
 
                 return true;
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 Error = e.ToString();
                 return false;
             }
         }
 
-        public string GetQueryPort()
-        {
-            return _serverData.ServerPort;
-        }
-
         public bool IsInstallValid()
         {
-            return File.Exists(Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath));
+            return File.Exists(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath));
         }
 
         public bool IsImportValid(string path)
@@ -272,7 +269,7 @@ namespace WindowsGSM.GameServer
 
         public string GetLocalBuild()
         {
-            string versionPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "MCBE-version.txt");
+            string versionPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "MCBE-version.txt");
             Error = $"Fail to get local build";
             return File.Exists(versionPath) ? File.ReadAllText(versionPath) : "";
         }

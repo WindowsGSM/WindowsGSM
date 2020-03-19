@@ -27,9 +27,11 @@ namespace WindowsGSM.GameServer
         public const string FullName = "Space Engineers Dedicated Server";
         public string StartPath = @"DedicatedServer64\SpaceEngineersDedicated.exe";
         public bool ToggleConsole = false;
-        public int PortIncrements = 1;
+        public int PortIncrements = 2;
+        public dynamic QueryMethod = new Query.A2S();
 
         public string Port = "27016";
+        public string QueryPort = "27017";
         public string Defaultmap = "world";
         public string Maxplayers = "4";
         public string Additional = "";
@@ -42,11 +44,11 @@ namespace WindowsGSM.GameServer
         public async void CreateServerCFG()
         {
             //Download SpaceEngineersDedicated-WindowsGSM.bat
-            string batPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"DedicatedServer64\SpaceEngineersDedicated-WindowsGSM.bat");
+            string batPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, @"DedicatedServer64\SpaceEngineersDedicated-WindowsGSM.bat");
             await Functions.Github.DownloadGameServerConfig(batPath, _serverData.ServerGame);
 
             //Download world and extract
-            string zipPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"AppData\Roaming\SpaceEngineersDedicated\Saves\world.zip");
+            string zipPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, @"AppData\Roaming\SpaceEngineersDedicated\Saves\world.zip");
             if (await Functions.Github.DownloadGameServerConfig(zipPath, _serverData.ServerGame))
             {
                 await Task.Run(() =>
@@ -63,12 +65,12 @@ namespace WindowsGSM.GameServer
                 await Task.Run(() => File.Delete(zipPath));
             }
 
-            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"AppData\Roaming\SpaceEngineersDedicated", "SpaceEngineers-Dedicated.cfg");
+            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, @"AppData\Roaming\SpaceEngineersDedicated", "SpaceEngineers-Dedicated.cfg");
             if (await Functions.Github.DownloadGameServerConfig(configPath, _serverData.ServerGame))
             {
                 string configText = File.ReadAllText(configPath);
                 configText = configText.Replace("{{maxplayers}}", _serverData.ServerMaxPlayer);
-                configText = configText.Replace("{{LoadWorld}}", Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"AppData\Roaming\SpaceEngineersDedicated\Saves", Defaultmap));
+                configText = configText.Replace("{{LoadWorld}}", Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, @"AppData\Roaming\SpaceEngineersDedicated\Saves", Defaultmap));
                 configText = configText.Replace("{{ip}}", _serverData.ServerIP);
                 configText = configText.Replace("{{port}}", _serverData.ServerPort);
                 configText = configText.Replace("{{ServerName}}", _serverData.ServerName);
@@ -79,7 +81,7 @@ namespace WindowsGSM.GameServer
 
         public async Task<Process> Start()
         {
-            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"AppData\Roaming\SpaceEngineersDedicated", "SpaceEngineers-Dedicated.cfg");
+            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, @"AppData\Roaming\SpaceEngineersDedicated", "SpaceEngineers-Dedicated.cfg");
             if (!File.Exists(configPath))
             {
                 Notice = $"{Path.GetFileName(configPath)} not found ({configPath})";
@@ -97,14 +99,14 @@ namespace WindowsGSM.GameServer
                 {
                     StartInfo =
                     {
-                        WorkingDirectory = Path.GetDirectoryName(Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath)),
-                        FileName = Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath),
+                        WorkingDirectory = Path.GetDirectoryName(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath)),
+                        FileName = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath),
                         Arguments = param,
                         WindowStyle = ProcessWindowStyle.Minimized
                     },
                     EnableRaisingEvents = true
                 };
-                p.StartInfo.EnvironmentVariables["USERPROFILE"] = Functions.ServerPath.GetServerFiles(_serverData.ServerID);
+                p.StartInfo.EnvironmentVariables["USERPROFILE"] = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
                 p.Start();
             }
             else
@@ -113,8 +115,8 @@ namespace WindowsGSM.GameServer
                 {
                     StartInfo =
                     {
-                        WorkingDirectory = Path.GetDirectoryName(Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath)),
-                        FileName = Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath),
+                        WorkingDirectory = Path.GetDirectoryName(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath)),
+                        FileName = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath),
                         Arguments = param,
                         WindowStyle = ProcessWindowStyle.Minimized,
                         CreateNoWindow = true,
@@ -124,7 +126,7 @@ namespace WindowsGSM.GameServer
                     },
                     EnableRaisingEvents = true
                 };
-                p.StartInfo.EnvironmentVariables["USERPROFILE"] = Functions.ServerPath.GetServerFiles(_serverData.ServerID);
+                p.StartInfo.EnvironmentVariables["USERPROFILE"] = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
                 var serverConsole = new Functions.ServerConsole(_serverData.ServerID);
                 p.OutputDataReceived += serverConsole.AddOutput;
                 p.ErrorDataReceived += serverConsole.AddOutput;
@@ -195,7 +197,7 @@ namespace WindowsGSM.GameServer
 
         public bool IsInstallValid()
         {
-            return File.Exists(Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath));
+            return File.Exists(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath));
         }
 
         public bool IsImportValid(string path)
@@ -215,11 +217,6 @@ namespace WindowsGSM.GameServer
         {
             var steamCMD = new Installer.SteamCMD();
             return await steamCMD.GetRemoteBuild("298740");
-        }
-
-        public string GetQueryPort()
-        {
-            return _serverData.ServerPort;
         }
     }
 }

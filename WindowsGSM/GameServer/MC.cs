@@ -24,8 +24,10 @@ namespace WindowsGSM.GameServer
         public string StartPath = "";
         public bool ToggleConsole = false;
         public int PortIncrements = 1;
+        public dynamic QueryMethod = null;
 
         public string Port = "25565";
+        public string QueryPort = "25565";
         public string Defaultmap = "world";
         public string Maxplayers = "20";
         public string Additional = "-Xmx1024M -Xms1024M -XX:+UseG1GC";
@@ -45,7 +47,7 @@ namespace WindowsGSM.GameServer
         public async void CreateServerCFG()
         {
             //Create server.properties
-            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "server.properties");
+            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "server.properties");
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string configText = File.ReadAllText(configPath);
@@ -69,7 +71,7 @@ namespace WindowsGSM.GameServer
                 return null;
             }
 
-            string workingDir = Functions.ServerPath.GetServerFiles(_serverData.ServerID);
+            string workingDir = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
 
             string serverJarPath = Path.Combine(workingDir, "server.jar");
             if (!File.Exists(serverJarPath))
@@ -215,7 +217,7 @@ namespace WindowsGSM.GameServer
                 string serverJarUrl = JObject.Parse(packageJson)["downloads"]["server"]["url"].ToString();
 
                 webClient.DownloadFileCompleted += InitiateServerJar;
-                webClient.DownloadFileAsync(new Uri(serverJarUrl), Functions.ServerPath.GetServerFiles(_serverData.ServerID, "server.jar"));
+                webClient.DownloadFileAsync(new Uri(serverJarUrl), Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "server.jar"));
             }
             catch
             {
@@ -237,7 +239,7 @@ namespace WindowsGSM.GameServer
                 }
             }
 
-            string serverJarPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "server.jar");
+            string serverJarPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "server.jar");
             if (File.Exists(serverJarPath))
             {
                 try
@@ -296,7 +298,7 @@ namespace WindowsGSM.GameServer
         public bool IsInstallValid()
         {
             string jarFile = "server.jar";
-            string jarPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, jarFile);
+            string jarPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, jarFile);
 
             return File.Exists(jarPath);
         }
@@ -313,7 +315,7 @@ namespace WindowsGSM.GameServer
         public string GetLocalBuild()
         {
             string logFile = "latest.log";
-            string logPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "logs", logFile);
+            string logPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "logs", logFile);
 
             if (!File.Exists(logPath))
             {
@@ -364,11 +366,6 @@ namespace WindowsGSM.GameServer
 
             Error = $"Fail to get remote build";
             return "";
-        }
-
-        public string GetQueryPort()
-        {
-            return _serverData.ServerPort;
         }
 
         private static Java IsJavaJREInstalled()
@@ -422,7 +419,7 @@ namespace WindowsGSM.GameServer
 
         private async Task<bool> DownloadJavaJRE()
         {
-            string serverFilesPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID);
+            string serverFilesPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
             string filename = "jre-8u231-windows-i586-iftw.exe";
             string installer = "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=240725_5b13a193868b4bf28bcb45c792fce896";
 
@@ -434,7 +431,7 @@ namespace WindowsGSM.GameServer
 
                 //Run jre-8u231-windows-i586-iftw.exe to install Java
                 await webClient.DownloadFileTaskAsync(installer, jrePath);
-                string installPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID);
+                string installPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
                 string javaPath = @"C:\Program Files (x86)\Java\jre1.8.0_231";
                 ProcessStartInfo psi = new ProcessStartInfo(jrePath);
                 psi.WorkingDirectory = installPath;
@@ -470,7 +467,7 @@ namespace WindowsGSM.GameServer
         private void InitiateServerJar(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
         {
             //Create eula.txt
-            string eulaPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "eula.txt");
+            string eulaPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "eula.txt");
             File.Create(eulaPath).Dispose();
 
             using (TextWriter textwriter = new StreamWriter(eulaPath))

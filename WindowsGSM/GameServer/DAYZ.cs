@@ -1,8 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
-using System.Net;
-using System.IO.Compression;
 
 namespace WindowsGSM.GameServer
 {
@@ -29,9 +27,11 @@ namespace WindowsGSM.GameServer
         public const string FullName = "DayZ Dedicated Server";
         public string StartPath = "DayZServer_x64.exe";
         public bool ToggleConsole = true;
-        public int PortIncrements = 1;
+        public int PortIncrements = 2;
+        public dynamic QueryMethod = null;
 
         public string Port = "2302";
+        public string QueryPort = "2303";
         public string Defaultmap = "dayzOffline.chernarusplus";
         public string Maxplayers = "60";
         public string Additional = "-config=serverDZ.cfg -doLogs -adminLog -netLog";
@@ -44,7 +44,7 @@ namespace WindowsGSM.GameServer
         public async void CreateServerCFG()
         {
             //Download serverDZ.cfg
-            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "serverDZ.cfg");
+            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "serverDZ.cfg");
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string configText = File.ReadAllText(configPath);
@@ -57,7 +57,7 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Start()
         {
             // Use DZSALModServer.exe if the exe exist, otherwise use original
-            string dzsaPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "DZSALModServer.exe");
+            string dzsaPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "DZSALModServer.exe");
             if (File.Exists(dzsaPath))
             {
                 StartPath = "DZSALModServer.exe";
@@ -70,7 +70,7 @@ namespace WindowsGSM.GameServer
             }
             else
             {
-                string serverPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath);
+                string serverPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath);
                 if (!File.Exists(serverPath))
                 {
                     Error = $"{StartPath} not found ({serverPath})";
@@ -78,7 +78,7 @@ namespace WindowsGSM.GameServer
                 }
             }
 
-            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "serverDZ.cfg");
+            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "serverDZ.cfg");
             if (!File.Exists(configPath))
             {
                 Notice = $"{Path.GetFileName(configPath)} not found ({configPath})";
@@ -88,7 +88,7 @@ namespace WindowsGSM.GameServer
             param += string.IsNullOrEmpty(_serverData.ServerIP) ? "" : $" -ip={_serverData.ServerIP}";
             param += string.IsNullOrEmpty(_serverData.ServerPort) ? "" : $" -port={_serverData.ServerPort}";
 
-            string modPath = Functions.ServerPath.GetConfigs(_serverData.ServerID, "DayZActivatedMods.cfg");
+            string modPath = Functions.ServerPath.GetServersConfigs(_serverData.ServerID, "DayZActivatedMods.cfg");
             if (File.Exists(modPath))
             {
                 string modParam = "";
@@ -103,14 +103,12 @@ namespace WindowsGSM.GameServer
                 }
             }
 
-            Debug.WriteLine(param);
-
             Process p = new Process
             {
                 StartInfo =
                 {
-                    WorkingDirectory = Functions.ServerPath.GetServerFiles(_serverData.ServerID),
-                    FileName = Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath),
+                    WorkingDirectory = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID),
+                    FileName = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath),
                     Arguments = param,
                     WindowStyle = ProcessWindowStyle.Minimized
                 },
@@ -149,7 +147,7 @@ namespace WindowsGSM.GameServer
 
         public bool IsInstallValid()
         {
-            return File.Exists(Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath));
+            return File.Exists(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath));
         }
 
         public bool IsImportValid(string path)
@@ -169,11 +167,6 @@ namespace WindowsGSM.GameServer
         {
             var steamCMD = new Installer.SteamCMD();
             return await steamCMD.GetRemoteBuild("223350");
-        }
-
-        public string GetQueryPort()
-        {
-            return _serverData.ServerPort;
         }
     }
 }

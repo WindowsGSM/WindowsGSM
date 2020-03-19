@@ -20,8 +20,10 @@ namespace WindowsGSM.GameServer
         public string StartPath = "server.exe";
         public bool ToggleConsole = true;
         public int PortIncrements = 3;
+        public dynamic QueryMethod = null;
 
         public string Port = "25564";
+        public string QueryPort = "25564";
         public string Defaultmap = "data/tiles/island12.xml";
         public string Maxplayers = "32";
         public string Additional = "";
@@ -33,7 +35,7 @@ namespace WindowsGSM.GameServer
 
         public async void CreateServerCFG()
         {
-            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"AppData\Roaming\Stormworks", "server_config.xml");
+            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, @"AppData\Roaming\Stormworks", "server_config.xml");
             if (await Functions.Github.DownloadGameServerConfig(configPath, _serverData.ServerGame))
             {
                 string configText = File.ReadAllText(configPath);
@@ -46,7 +48,7 @@ namespace WindowsGSM.GameServer
 
         public async Task<Process> Start()
         {
-            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"AppData\Roaming\Stormworks", "server_config.xml");
+            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, @"AppData\Roaming\Stormworks", "server_config.xml");
             if (!File.Exists(configPath))
             {
                 Notice = $"{Path.GetFileName(configPath)} not found ({configPath})";
@@ -58,8 +60,8 @@ namespace WindowsGSM.GameServer
             {
                 StartInfo =
                 {
-                    WorkingDirectory = Functions.ServerPath.GetServerFiles(_serverData.ServerID),
-                    FileName = Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath),
+                    WorkingDirectory = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID),
+                    FileName = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath),
                     Arguments = param,
                     WindowStyle = ProcessWindowStyle.Minimized,
                     UseShellExecute = false
@@ -67,8 +69,8 @@ namespace WindowsGSM.GameServer
                 EnableRaisingEvents = true,  
             };
             //Change APPDATA directory
-            p.StartInfo.EnvironmentVariables["USERPROFILE"] = Functions.ServerPath.GetServerFiles(_serverData.ServerID);
-            p.StartInfo.EnvironmentVariables["APPDATA"] = Functions.ServerPath.GetServerFiles(_serverData.ServerID);
+            p.StartInfo.EnvironmentVariables["USERPROFILE"] = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
+            p.StartInfo.EnvironmentVariables["APPDATA"] = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
             p.Start();
 
             return p;
@@ -102,7 +104,7 @@ namespace WindowsGSM.GameServer
 
         public bool IsInstallValid()
         {
-            return File.Exists(Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath));
+            return File.Exists(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath));
         }
 
         public bool IsImportValid(string path)
@@ -121,11 +123,6 @@ namespace WindowsGSM.GameServer
         {
             var steamCMD = new Installer.SteamCMD();
             return await steamCMD.GetRemoteBuild("1247090");
-        }
-
-        public string GetQueryPort()
-        {
-            return _serverData.ServerPort;
         }
     }
 }

@@ -21,8 +21,10 @@ namespace WindowsGSM.GameServer.Engine
         public string StartPath = "hlds.exe";
         public bool ToggleConsole = false;
         public int PortIncrements = 1;
+        public dynamic QueryMethod = new Query.A2S();
 
         public virtual string Port { get { return "27015"; } }
+        public virtual string QueryPort { get { return "27015"; } }
         public virtual string Defaultmap { get { return ""; } }
         public virtual string Maxplayers { get { return "24"; } }
         public virtual string Additional { get { return ""; } }
@@ -37,14 +39,14 @@ namespace WindowsGSM.GameServer.Engine
 
         public async Task<Process> Start()
         {
-            string hldsPath = Functions.ServerPath.GetServerFiles(serverData.ServerID, StartPath);
+            string hldsPath = Functions.ServerPath.GetServersServerFiles(serverData.ServerID, StartPath);
             if (!File.Exists(hldsPath))
             {
                 Error = $"{StartPath} not found ({hldsPath})";
                 return null;
             }
 
-            string configPath = Functions.ServerPath.GetServerFiles(serverData.ServerID, Game, "server.cfg");
+            string configPath = Functions.ServerPath.GetServersServerFiles(serverData.ServerID, Game, "server.cfg");
             if (!File.Exists(configPath))
             {
                 Notice = $"server.cfg not found ({configPath})";
@@ -67,7 +69,7 @@ namespace WindowsGSM.GameServer.Engine
                 {
                     StartInfo =
                     {
-                        WorkingDirectory = Functions.ServerPath.GetServerFiles(serverData.ServerID),
+                        WorkingDirectory = Functions.ServerPath.GetServersServerFiles(serverData.ServerID),
                         FileName = hldsPath,
                         Arguments = param,
                         WindowStyle = ProcessWindowStyle.Minimized,
@@ -82,7 +84,7 @@ namespace WindowsGSM.GameServer.Engine
                 {
                     StartInfo =
                     {
-                        WorkingDirectory = Functions.ServerPath.GetServerFiles(serverData.ServerID),
+                        WorkingDirectory = Functions.ServerPath.GetServersServerFiles(serverData.ServerID),
                         FileName = hldsPath,
                         Arguments = param,
                         WindowStyle = ProcessWindowStyle.Minimized,
@@ -116,7 +118,7 @@ namespace WindowsGSM.GameServer.Engine
         public async void CreateServerCFG()
         {
             //Download server.cfg
-            string configPath = Functions.ServerPath.GetServerFiles(serverData.ServerID, Game, "server.cfg");
+            string configPath = Functions.ServerPath.GetServersServerFiles(serverData.ServerID, Game, "server.cfg");
             if (await Functions.Github.DownloadGameServerConfig(configPath, serverData.ServerGame))
             {
                 string configText = File.ReadAllText(configPath);
@@ -126,7 +128,7 @@ namespace WindowsGSM.GameServer.Engine
             }
 
             //Create steam_appid.txt
-            string txtPath = Functions.ServerPath.GetServerFiles(serverData.ServerID, "steam_appid.txt");
+            string txtPath = Functions.ServerPath.GetServersServerFiles(serverData.ServerID, "steam_appid.txt");
             File.WriteAllText(txtPath, AppId);
         }
 
@@ -150,7 +152,7 @@ namespace WindowsGSM.GameServer.Engine
 
         public bool IsInstallValid()
         {
-            return File.Exists(Functions.ServerPath.GetServerFiles(serverData.ServerID, StartPath));
+            return File.Exists(Functions.ServerPath.GetServersServerFiles(serverData.ServerID, StartPath));
         }
 
         public bool IsImportValid(string path)
@@ -170,11 +172,6 @@ namespace WindowsGSM.GameServer.Engine
         {
             var steamCMD = new Installer.SteamCMD();
             return await steamCMD.GetRemoteBuild(AppId);
-        }
-
-        public string GetQueryPort()
-        {
-            return serverData.ServerPort;
         }
     }
 }

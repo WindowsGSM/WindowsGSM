@@ -132,10 +132,11 @@ namespace WindowsGSM
                 serverConfig.ServerIP = serverConfig.GetIPAddress();
                 serverConfig.ServerPort = serverConfig.GetAvailablePort(gameServer.Port, gameServer.PortIncrements);
 
-                //Create WindowsGSM.cfg
-                serverConfig.CreateWindowsGSMConfig(servergame, servername, serverConfig.ServerIP, serverConfig.ServerPort, gameServer.Defaultmap, gameServer.Maxplayers, "", gameServer.Additional, gameServer.ToggleConsole);
+                // Create WindowsGSM.cfg
+                serverConfig.SetData(servergame, servername, gameServer);
+                serverConfig.CreateWindowsGSMConfig();
 
-                //Create game server config
+                // Create WindowsGSM.cfg and game server config
                 try
                 { 
                     gameServer = GameServer.Data.Class.Get(servergame, serverConfig);
@@ -143,10 +144,10 @@ namespace WindowsGSM
                 }
                 catch
                 {
-
+                    // ignore
                 }
 
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                Application.Current.Dispatcher.Invoke(() =>
                 {
                     MainWindow WindowsGSM = (MainWindow)Application.Current.MainWindow;
                     WindowsGSM.LoadServerTable();

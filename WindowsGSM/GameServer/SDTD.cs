@@ -41,8 +41,10 @@ namespace WindowsGSM.GameServer
         public string StartPath = "7DaysToDieServer.exe";
         public bool ToggleConsole = true;
         public int PortIncrements = 1;
+        public dynamic QueryMethod = null;
 
         public string Port = "26900";
+        public string QueryPort = "26900";
         public string Defaultmap = "Navezgane";
         public string Maxplayers = "8";
         public string Additional = "";
@@ -55,7 +57,7 @@ namespace WindowsGSM.GameServer
         public async void CreateServerCFG()
         {
             //Download serverconfig.xml
-            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "serverconfig.xml");
+            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "serverconfig.xml");
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string configText = File.ReadAllText(configPath);
@@ -68,14 +70,14 @@ namespace WindowsGSM.GameServer
             }
 
             //Create steam_appid.txt
-            string txtPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "steam_appid.txt");
+            string txtPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "steam_appid.txt");
             File.WriteAllText(txtPath, "251570");
         }
 
         public async Task<Process> Start()
         {
             string exeName = "7DaysToDieServer.exe";
-            string workingDir = Functions.ServerPath.GetServerFiles(_serverData.ServerID);
+            string workingDir = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
             string exePath = Path.Combine(workingDir, exeName);
 
             if (!File.Exists(exePath))
@@ -84,7 +86,7 @@ namespace WindowsGSM.GameServer
                 return null;
             }
 
-            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "serverconfig.xml");
+            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "serverconfig.xml");
             if (!File.Exists(configPath))
             {
                 Notice = $"serverconfig.xml not found ({configPath})";
@@ -170,7 +172,7 @@ namespace WindowsGSM.GameServer
         public bool IsInstallValid()
         {
             string exeFile = "7DaysToDieServer.exe";
-            string exePath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, exeFile);
+            string exePath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, exeFile);
 
             return File.Exists(exePath);
         }
@@ -194,11 +196,6 @@ namespace WindowsGSM.GameServer
         {
             var steamCMD = new Installer.SteamCMD();
             return await steamCMD.GetRemoteBuild("294420");
-        }
-
-        public string GetQueryPort()
-        {
-            return _serverData.ServerPort;
         }
     }
 }

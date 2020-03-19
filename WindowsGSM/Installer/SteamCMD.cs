@@ -11,7 +11,7 @@ namespace WindowsGSM.Installer
 {
     class SteamCMD
     {
-        private static readonly string _installPath = Path.Combine(MainWindow.WGSM_PATH, @"installer\steamcmd");
+        private static readonly string _installPath = Functions.ServerPath.GetInstaller("steamcmd");
         private static readonly string _userDataPath = Path.Combine(_installPath, "userData.txt");
         private string _param;
         public string Error;
@@ -162,19 +162,23 @@ namespace WindowsGSM.Installer
 
         public async Task<Process> Install(string serverId, string modName, string appId, bool validate = true, bool loginAnonymous = true)
         {
-            SetParameter(Functions.ServerPath.GetServerFiles(serverId), modName, appId, validate, loginAnonymous);
-            return await Run();
+            SetParameter(Functions.ServerPath.GetServersServerFiles(serverId), modName, appId, validate, loginAnonymous);
+            Process p = await Run();
+            SendEnterPreventFreeze(p);
+            return p;
         }
 
         public async Task<bool> Update(string serverId, string modName, string appId, bool validate, bool loginAnonymous = true)
         {
-            SetParameter(Functions.ServerPath.GetServerFiles(serverId), modName, appId, validate, loginAnonymous);
+            SetParameter(Functions.ServerPath.GetServersServerFiles(serverId), modName, appId, validate, loginAnonymous);
 
             Process p = await Run();
             if (p == null)
             {
                 return false;
             }
+
+            SendEnterPreventFreeze(p);
 
             await Task.Run(() => p.WaitForExit());
 
@@ -187,10 +191,28 @@ namespace WindowsGSM.Installer
             return true;
         }
 
+        private async void SendEnterPreventFreeze(Process p)
+        {
+            try
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    await Task.Delay(60000);
+
+                    if (p == null || p.HasExited) { break; }
+                    p.StandardInput.WriteLine("");
+                }
+            }
+            catch
+            {
+
+            }
+        }
+
         public string GetLocalBuild(string serverId, string appId)
         {
             string manifestFile = $"appmanifest_{appId}.acf";
-            string manifestPath = Path.Combine(Functions.ServerPath.GetServerFiles(serverId), "steamapps", manifestFile);
+            string manifestPath = Path.Combine(Functions.ServerPath.GetServersServerFiles(serverId), "steamapps", manifestFile);
 
             if (!File.Exists(manifestPath))
             {

@@ -23,8 +23,10 @@ namespace WindowsGSM.GameServer
         public string StartPath = @"bin\php\php.exe";
         public bool ToggleConsole = false;
         public int PortIncrements = 1;
+        public dynamic QueryMethod = null;
 
         public string Port = "19132";
+        public string QueryPort = "19132";
         public string Defaultmap = "world";
         public string Maxplayers = "20";
         public string Additional = "";
@@ -37,7 +39,7 @@ namespace WindowsGSM.GameServer
         public async void CreateServerCFG()
         {
             //Download server.properties
-            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "server.properties");
+            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "server.properties");
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string configText = File.ReadAllText(configPath);
@@ -51,7 +53,7 @@ namespace WindowsGSM.GameServer
 
         public async Task<Process> Start()
         {
-            string workingDir = Functions.ServerPath.GetServerFiles(_serverData.ServerID);
+            string workingDir = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
 
             string phpPath = Path.Combine(workingDir, @"bin\php\php.exe");
             if (!File.Exists(phpPath))
@@ -138,7 +140,7 @@ namespace WindowsGSM.GameServer
 
         public async Task<Process> Install()
         {
-            string serverFilesPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID);
+            string serverFilesPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
 
             //Download PHP-7.3-Windows-x64.zip
             string fileName = "PHP-7.3-Windows-x64.zip";
@@ -180,7 +182,7 @@ namespace WindowsGSM.GameServer
         {
             //Delete PocketMine-MP.phar
             string fileName = "PocketMine-MP.phar";
-            string PMMPPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, fileName);
+            string PMMPPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, fileName);
             try
             {
                 if (File.Exists(PMMPPath))
@@ -210,15 +212,10 @@ namespace WindowsGSM.GameServer
             return true;
         }
 
-        public string GetQueryPort()
-        {
-            return _serverData.ServerPort;
-        }
-
         public bool IsInstallValid()
         {
-            string PHPPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"bin\php\php.exe");
-            string PMMPPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, "PocketMine-MP.phar");
+            string PHPPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, @"bin\php\php.exe");
+            string PMMPPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "PocketMine-MP.phar");
             return File.Exists(PHPPath) && File.Exists(PMMPPath);
         }
 
@@ -234,7 +231,7 @@ namespace WindowsGSM.GameServer
         public string GetLocalBuild()
         {
             string PMMPFile = "PocketMine-MP.phar";
-            string PMMPPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, PMMPFile);
+            string PMMPPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, PMMPFile);
 
             if (!File.Exists(PMMPPath))
             {

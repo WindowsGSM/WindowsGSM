@@ -9,6 +9,7 @@
         public string Name { get; set; }
         public string IP { get; set; }
         public string Port { get; set; }
+        public string QueryPort { get; set; }
         public string Defaultmap { get; set; }
         public string Maxplayers { get; set; }
         public string RamUsage { get; set; }

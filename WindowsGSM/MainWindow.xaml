@@ -76,132 +76,179 @@
                     </DockPanel>
                 </DockPanel>
             </Controls:Flyout>
+            <Controls:Flyout x:Name="MahAppFlyout_DiscordBot" Header="Discord Bot Settings" Position="Right" Theme="Adapt" IsModal="True">
+                <DockPanel VerticalAlignment="Stretch" Height="Auto">
+                    <DockPanel Margin="20,0,20,0">
+                        <DockPanel Margin="0,0,0,0" DockPanel.Dock="Top">
+                            <DockPanel Margin="0,0,0,10" DockPanel.Dock="Top">
+                                <Label Content="Usage: Remote control your game servers with Discord" DockPanel.Dock="Top"/>
+                                <Label Content="Available commands:" DockPanel.Dock="Top"/>
+                                <Label x:Name="label_DiscordBotCommands" Content="" FontFamily="Consolas" DockPanel.Dock="Top"/>
+                            </DockPanel>
+                            <DockPanel Margin="0,0,0,15" DockPanel.Dock="Top">
+                                <Controls:ToggleSwitch x:Name="MahAppSwitch_DiscordBotAutoStart" Margin="5,5,0,0" Header="Auto Start" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Click="Switch_DiscordBotAutoStart_Click"/>
+                                <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Right">
+                                    <DockPanel DockPanel.Dock="Top">
+                                        <Label Content="Bot Prefix"/>
+                                        <Button x:Name="button_DiscordBotPrefixEdit" Content="Edit" Margin="0,0,0,5" HorizontalAlignment="Right" Width="70" Height="23" Click="Button_DiscordBotPrefixEdit_Click"/>
+                                    </DockPanel>
+                                    <TextBox x:Name="textBox_DiscordBotPrefix" Height="11" DockPanel.Dock="Top" Text="" Margin="0,0,0,0" Width="150" IsEnabled="False" FontFamily="Consolas"/>
+                                </DockPanel>
+                            </DockPanel>
+                            <DockPanel DockPanel.Dock="Top">
+                                <Label Content="Bot Token"/>
+                                <Button x:Name="button_DiscordBotTokenEdit" Content="Edit" Margin="0,0,0,5" HorizontalAlignment="Right" Width="70" Height="23" Click="Button_DiscordBotTokenEdit_Click"/>
+                            </DockPanel>
+                            <TextBox x:Name="textBox_DiscordBotToken" Height="11" DockPanel.Dock="Top" Text="" Margin="0,0,0,20" Width="300" IsEnabled="False" FontFamily="Consolas"/>
+                            <DockPanel DockPanel.Dock="Top">
+                                <Label Content="Admin IDs"/>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <Button x:Name="button_DiscordBotAddID" Content="Add" Margin="0,0,5,5" HorizontalAlignment="Right" Width="70" Height="23" Click="Button_DiscordBotAddID_Click"/>
+                                    <Button x:Name="button_DiscordBotRemoveID" Content="Remove" Margin="0,0,0,5" HorizontalAlignment="Right" Width="70" Height="23" Click="Button_DiscordBotRemoveID_Click"/>
+                                </StackPanel>
+                            </DockPanel>
+                            <ListBox x:Name="listBox_DiscordBotAdminIDs" Margin="0,0,0,20" BorderThickness="1" DockPanel.Dock="Top" MinHeight="100"/>
+                        </DockPanel>
+                    </DockPanel>
+                </DockPanel>
+            </Controls:Flyout>
         </Controls:FlyoutsControl>
     </Controls:MetroWindow.Flyouts>
 
     <DockPanel Name="dp">
-        <Menu x:Name="menu" Height="30" DockPanel.Dock="Top">
-            <MenuItem Header="Servers" Height="30">
-                <MenuItem Header="Install GameServer" Click="Install_Click">
-                    <MenuItem.Icon>
-                        <Image Source="/WindowsGSM;component/Images/Install.ico" Width="23" Margin="3"/>
-                    </MenuItem.Icon>
+        <Grid DockPanel.Dock="Top">
+            <Menu x:Name="menu" Height="30" DockPanel.Dock="Top" Margin="0,0,532,0">
+                <MenuItem Header="Servers" Height="30">
+                    <MenuItem Header="Install GameServer" Click="Install_Click">
+                        <MenuItem.Icon>
+                            <Image Source="/WindowsGSM;component/Images/Install.ico" Width="23" Margin="3"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Import GameServer" Click="Import_Click"/>
+                    <Separator/>
+                    <MenuItem Header="Delete GameServer" Click="Delete_Click">
+                        <MenuItem.Icon>
+                            <Image Source="/WindowsGSM;component/Images/Delete.ico" Width="23" Margin="3"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
-                <MenuItem Header="Import GameServer" Click="Import_Click"/>
-                <Separator/>
-                <MenuItem Header="Delete GameServer" Click="Delete_Click">
-                    <MenuItem.Icon>
-                        <Image Source="/WindowsGSM;component/Images/Delete.ico" Width="23" Margin="3"/>
-                    </MenuItem.Icon>
-                </MenuItem>
-            </MenuItem>
-            <MenuItem Header="Actions" Height="30">
-                <MenuItem Header="Start" Click="Actions_Start_Click">
-                    <MenuItem.Icon>
-                        <Image Source="/WindowsGSM;component/Images/Start.ico" Width="23" Margin="3"/>
-                    </MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="Stop" Click="Actions_Stop_Click">
-                    <MenuItem.Icon>
-                        <Image Source="/WindowsGSM;component/Images/Stop.ico" Width="23" Margin="3"/>
-                    </MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="Restart" Click="Actions_Restart_Click">
-                    <MenuItem.Icon>
-                        <Image Source="/WindowsGSM;component/Images/Restart.ico" Width="23" Margin="3"/>
-                    </MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="More...">
-                    <MenuItem Header="Start All Servers" Click="Actions_StartAllServers_Click">
+                <MenuItem Header="Actions" Height="30">
+                    <MenuItem Header="Start" Click="Actions_Start_Click">
                         <MenuItem.Icon>
                             <Image Source="/WindowsGSM;component/Images/Start.ico" Width="23" Margin="3"/>
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Header="Stop All Servers" Click="Actions_StopAllServers_Click">
+                    <MenuItem Header="Stop" Click="Actions_Stop_Click">
                         <MenuItem.Icon>
                             <Image Source="/WindowsGSM;component/Images/Stop.ico" Width="23" Margin="3"/>
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Header="Restart All Servers" Click="Actions_RestartAllServers_Click">
+                    <MenuItem Header="Restart" Click="Actions_Restart_Click">
                         <MenuItem.Icon>
                             <Image Source="/WindowsGSM;component/Images/Restart.ico" Width="23" Margin="3"/>
                         </MenuItem.Icon>
                     </MenuItem>
-                </MenuItem>
-                <Separator/>
-                <MenuItem Header="Toggle Console" Click="Actions_ToggleConsole_Click"/>
-                <Separator/>
-                <MenuItem Header="Update">
-                    <MenuItem.Icon>
-                        <Image Source="/WindowsGSM;component/Images/Update.ico" Width="23" Margin="3"/>
-                    </MenuItem.Icon>
-                    <MenuItem Header="Update" Height="30" Click="Actions_Update_Click"/>
-                    <MenuItem Header="Update Validate" Height="30" Click="Actions_UpdateValidate_Click"/>
-                </MenuItem>
-                <Separator/>
-                <MenuItem Header="Backup" Click="Actions_Backup_Click">
-                    <MenuItem.Icon>
-                        <Image Source="/WindowsGSM;component/Images/Backup.ico" Width="23" Margin="3"/>
-                    </MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="Restore Backup" Click="Actions_RestoreBackup_Click"/>
-            </MenuItem>
-            <MenuItem Header="Browse" Height="30">
-                <MenuItem Header="Server Backups" Click="Browse_ServerBackups_Click">
-                    <MenuItem.Icon>
-                        <Image Source="/WindowsGSM;component/Images/Zip.ico" Width="23" Margin="3"/>
-                    </MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="Server Configs" Click="Browse_ServerConfigs_Click">
-                    <MenuItem.Icon>
-                        <Image Source="/WindowsGSM;component/Images/Config.ico" Width="23" Margin="3"/>
-                    </MenuItem.Icon>
-                </MenuItem>
-                <MenuItem Header="Server Files" Click="Browse_ServerFiles_Click">
-                    <MenuItem.Icon>
-                        <Image Source="/WindowsGSM;component/Images/Files.ico" Width="23" Margin="3"/>
-                    </MenuItem.Icon>
-                </MenuItem>
-            </MenuItem>
-            <MenuItem Header="Tools" Height="30">
-                <MenuItem Header="Global Server List Check" Click="Tools_GlobalServerListCheck_Click"/>
-                <MenuItem Header="Install Addons">
-                    <MenuItem Header="SourceMod + MetaMod" Click="Tools_InstallSourcemodMetamod_Click">
+                    <MenuItem Header="More...">
+                        <MenuItem Header="Start All Servers" Click="Actions_StartAllServers_Click">
+                            <MenuItem.Icon>
+                                <Image Source="/WindowsGSM;component/Images/Start.ico" Width="23" Margin="3"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Stop All Servers" Click="Actions_StopAllServers_Click">
+                            <MenuItem.Icon>
+                                <Image Source="/WindowsGSM;component/Images/Stop.ico" Width="23" Margin="3"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Restart All Servers" Click="Actions_RestartAllServers_Click">
+                            <MenuItem.Icon>
+                                <Image Source="/WindowsGSM;component/Images/Restart.ico" Width="23" Margin="3"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </MenuItem>
+                    <Separator/>
+                    <MenuItem Header="Toggle Console" Click="Actions_ToggleConsole_Click"/>
+                    <Separator/>
+                    <MenuItem Header="Update">
                         <MenuItem.Icon>
-                            <Image Source="/WindowsGSM;component/Images/Tools/SourceMod.ico" Width="23" Margin="3"/>
+                            <Image Source="/WindowsGSM;component/Images/Update.ico" Width="23" Margin="3"/>
+                        </MenuItem.Icon>
+                        <MenuItem Header="Update" Height="30" Click="Actions_Update_Click"/>
+                        <MenuItem Header="Update Validate" Height="30" Click="Actions_UpdateValidate_Click"/>
+                    </MenuItem>
+                    <Separator/>
+                    <MenuItem Header="Backup" Click="Actions_Backup_Click">
+                        <MenuItem.Icon>
+                            <Image Source="/WindowsGSM;component/Images/Backup.ico" Width="23" Margin="3"/>
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Header="DayZSAL Mod Server" Click="Tools_InstallDayZSALModServer_Click">
+                    <MenuItem Header="Restore Backup" Click="Actions_RestoreBackup_Click"/>
+                </MenuItem>
+                <MenuItem Header="Browse" Height="30">
+                    <MenuItem Header="Server Backups" Click="Browse_ServerBackups_Click">
                         <MenuItem.Icon>
-                            <Image Source="/WindowsGSM;component/Images/Tools/DayZSAL.ico" Width="23" Margin="3"/>
+                            <Image Source="/WindowsGSM;component/Images/Zip.ico" Width="23" Margin="3"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Server Configs" Click="Browse_ServerConfigs_Click">
+                        <MenuItem.Icon>
+                            <Image Source="/WindowsGSM;component/Images/Config.ico" Width="23" Margin="3"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Server Files" Click="Browse_ServerFiles_Click">
+                        <MenuItem.Icon>
+                            <Image Source="/WindowsGSM;component/Images/Files.ico" Width="23" Margin="3"/>
                         </MenuItem.Icon>
                     </MenuItem>
                 </MenuItem>
-            </MenuItem>
-            <MenuItem Header="Help" Height="30">
-                <MenuItem Header="Online Documentation" Click="Help_OnlineDocumentation_Click">
-                    <MenuItem.Icon>
-                        <Image Source="/WindowsGSM;component/Images/Book.ico" Width="23" Margin="3"/>
-                    </MenuItem.Icon>
+                <MenuItem Header="Tools" Height="30">
+                    <MenuItem Header="Global Server List Check" Click="Tools_GlobalServerListCheck_Click"/>
+                    <MenuItem Header="Install Addons">
+                        <MenuItem Header="AMX Mod X + MetaMod-P" Click="Tool_InstallAMXModXMetamodP_Click">
+                            <MenuItem.Icon>
+                                <Image Source="/WindowsGSM;component/Images/Tools/AMXModX.ico" Width="23" Margin="3"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="SourceMod + MetaMod" Click="Tools_InstallSourcemodMetamod_Click">
+                            <MenuItem.Icon>
+                                <Image Source="/WindowsGSM;component/Images/Tools/SourceMod.ico" Width="23" Margin="3"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="DayZSAL Mod Server" Click="Tools_InstallDayZSALModServer_Click">
+                            <MenuItem.Icon>
+                                <Image Source="/WindowsGSM;component/Images/Tools/DayZSAL.ico" Width="23" Margin="3"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </MenuItem>
                 </MenuItem>
-                <MenuItem Header="Report an issue" Click="Help_ReportIssue_Click">
-                    <MenuItem.Icon>
-                        <Image Source="/WindowsGSM;component/Images/Issue.ico" Width="23" Margin="3"/>
-                    </MenuItem.Icon>
+                <MenuItem Header="Help" Height="30">
+                    <MenuItem Header="Online Documentation" Click="Help_OnlineDocumentation_Click">
+                        <MenuItem.Icon>
+                            <Image Source="/WindowsGSM;component/Images/Book.ico" Width="23" Margin="3"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Report an issue" Click="Help_ReportIssue_Click">
+                        <MenuItem.Icon>
+                            <Image Source="/WindowsGSM;component/Images/Issue.ico" Width="23" Margin="3"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Software Updates" Click="Help_SoftwareUpdates_Click">
+                        <MenuItem.Icon>
+                            <Image Source="/WindowsGSM;component/Images/Update.ico" Width="23" Margin="3"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator/>
+                    <MenuItem Header="About WindowsGSM" Click="Help_AboutWindowsGSM_Click">
+                        <MenuItem.Icon>
+                            <Image Source="/WindowsGSM;component/Images/WindowsGSM-Icon.ico" Width="23" Margin="3"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
-                <MenuItem Header="Software Updates" Click="Help_SoftwareUpdates_Click">
-                    <MenuItem.Icon>
-                        <Image Source="/WindowsGSM;component/Images/Update.ico" Width="23" Margin="3"/>
-                    </MenuItem.Icon>
-                </MenuItem>
-                <Separator/>
-                <MenuItem Header="About WindowsGSM" Click="Help_AboutWindowsGSM_Click">
-                    <MenuItem.Icon>
-                        <Image Source="/WindowsGSM;component/Images/WindowsGSM-Icon.ico" Width="23" Margin="3"/>
-                    </MenuItem.Icon>
-                </MenuItem>
-            </MenuItem>
-        </Menu>
+            </Menu>
+            <Label x:Name="label" Content="Discord Bot:" Margin="0,3,249,2" HorizontalAlignment="Right" Width="74"/>
+            <Controls:ToggleSwitch x:Name="switch_DiscordBot" Margin="0,6,169,6" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" HorizontalAlignment="Right" Width="74" Click="Switch_DiscordBot_Click"/>
+            <Button x:Name="button_DiscordBotSettings" Content="Settings" Margin="0,3,90,4" HorizontalAlignment="Right" Width="70" Click="Button_DiscordBotSettings_Click" Height="23"/>
+            <Button x:Name="button_DiscordBotInvite" Content="Invite" Margin="0,3,10,4" HorizontalAlignment="Right" Width="70" Height="23" Click="Button_DiscordBotInvite_Click"/>
+        </Grid>
         <Grid Height="1" Background="Black" DockPanel.Dock="Top"/>
         <Grid Height="35" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="0,0,0,0">
             <Label x:Name="label_select" Content="Select a server" HorizontalAlignment="Left" Margin="10,2,0,0" VerticalAlignment="Top" Height="33"/>
@@ -214,7 +261,6 @@
                 <Button x:Name="button_Backup" Cursor="Hand" Content="BACKUP" HorizontalAlignment="Left" Margin="585,5,0,5" Width="110" Height="20" Click="Actions_Backup_Click"/>
                 <Button x:Name="button_ManageAddons" Cursor="Hand" Content="MANAGE ADDONS" HorizontalAlignment="Left" Margin="700,5,0,5" Width="110" Height="20" Click="Actions_ManageAddons_Click"/>
             </Grid>
-            <Button x:Name="button_Refresh" Cursor="Hand" Content="REFRESH SERVER LIST" Margin="0,5,10,5" Height="20" Click="RefreshServerList_Click" HorizontalAlignment="Right" Width="150"/>
         </Grid>
         <Grid Height="1" Background="Black" DockPanel.Dock="Top"/>
         <Grid DockPanel.Dock="Top">
@@ -226,7 +272,7 @@
 
             <DataGrid x:Name="ServerGrid" SelectionMode="Single" SelectionUnit="FullRow" RowHeaderWidth="0" HeadersVisibility="Column" GridLinesVisibility="None" DockPanel.Dock="Top" SelectionChanged="DataGrid_SelectionChanged" IsSynchronizedWithCurrentItem="True">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding Path=ID}" Width="45" MinWidth="45" MaxWidth="45"/>
+                    <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding Path=ID}" Width="35" MinWidth="35" MaxWidth="35"/>
                     <DataGridTemplateColumn Header="MOD" IsReadOnly="True" Width="53" MinWidth="53" MaxWidth="53">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -235,11 +281,12 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
                     <DataGridTextColumn Header="Status" IsReadOnly="True" Binding="{Binding Path=Status}" Width="80" MinWidth="80" MaxWidth="80"/>
-                    <DataGridTextColumn Header="Server Name" IsReadOnly="True" Binding="{Binding Path=Name}" Width="8*"/>
-                    <DataGridTextColumn Header="IP Address" IsReadOnly="True" Binding="{Binding Path=IP}" Width="3*"/>
-                    <DataGridTextColumn Header="Port" IsReadOnly="True" Binding="{Binding Path=Port}" Width="2*"/>
-                    <DataGridTextColumn Header="Default Map" IsReadOnly="True" Binding="{Binding Path=Defaultmap}" Width="8*"/>
-                    <DataGridTextColumn Header="Maxplayers" IsReadOnly="True" Binding="{Binding Path=Maxplayers}" Width="4*"/>
+                    <DataGridTextColumn Header="Server Name" IsReadOnly="True" Binding="{Binding Path=Name}" Width="10*"/>
+                    <DataGridTextColumn Header="IP Address" IsReadOnly="True" Binding="{Binding Path=IP}" Width="4*"/>
+                    <DataGridTextColumn Header="Port" IsReadOnly="True" Binding="{Binding Path=Port}" Width="4*"/>
+                    <DataGridTextColumn Header="Query Port" IsReadOnly="True" Binding="{Binding Path=QueryPort}" Width="4*"/>
+                    <DataGridTextColumn Header="Map" IsReadOnly="True" Binding="{Binding Path=Defaultmap}" Width="7*"/>
+                    <DataGridTextColumn Header="Players" IsReadOnly="True" Binding="{Binding Path=Maxplayers}" Width="3*"/>
                     <!--<DataGridTextColumn Header="RAM Usage" IsReadOnly="True" Binding="{Binding Path=RamUsage}" Width="4*"/>-->
                 </DataGrid.Columns>
             </DataGrid>

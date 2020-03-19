@@ -16,11 +16,15 @@ namespace WindowsGSM.GameServer
         public string StartPath = @"ShooterGame\Binaries\Win64\ShooterGameServer.exe";
         public bool ToggleConsole = true;
         public int PortIncrements = 2;
+        public dynamic QueryMethod = new Query.A2S();
 
         public string Port = "7777";
+        public string QueryPort = "27015";
         public string Defaultmap = "TheIsland";
         public string Maxplayers = "16";
-        public string Additional = "?QueryPort={{queryport}}";
+        public string Additional = "";
+
+        public string AppId = "376030";
 
         public ARKSE(Functions.ServerConfig serverData)
         {
@@ -30,20 +34,11 @@ namespace WindowsGSM.GameServer
         public async void CreateServerCFG()
         {
             //No config file seems
-
-            //Edit WindowsGSM.cfg
-            string configFile = Functions.ServerPath.GetConfigs(_serverData.ServerID, "WindowsGSM.cfg");
-            if (File.Exists(configFile))
-            {
-                string configText = File.ReadAllText(configFile);
-                configText = configText.Replace("{{queryport}}", (int.Parse(_serverData.ServerPort) + 19238).ToString());
-                File.WriteAllText(configFile, configText);
-            }
         }
 
         public async Task<Process> Start()
         {
-            string shipExePath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath);
+            string shipExePath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath);
             if (!File.Exists(shipExePath))
             {
                 Error = $"{Path.GetFileName(shipExePath)} not found ({shipExePath})";
@@ -56,6 +51,7 @@ namespace WindowsGSM.GameServer
             param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? "" : $"?MultiHome={_serverData.ServerIP}";
             param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $"?Port={_serverData.ServerPort}";
             param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? "" : $"?MaxPlayers={_serverData.ServerMaxPlayer}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? "" : $"?QueryPort={_serverData.ServerQueryPort}";
             param += $"{_serverData.ServerParam} -server -log";
 
             Process p = new Process
@@ -85,7 +81,7 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", "376030");
+            Process p = await steamCMD.Install(_serverData.ServerID, "", AppId);
             Error = steamCMD.Error;
 
             return p;
@@ -94,7 +90,7 @@ namespace WindowsGSM.GameServer
         public async Task<bool> Update(bool validate = false)
         {
             var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "376030", validate);
+            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", AppId, validate);
             Error = steamCMD.Error;
 
             return updateSuccess;
@@ -102,7 +98,7 @@ namespace WindowsGSM.GameServer
 
         public bool IsInstallValid()
         {
-            return File.Exists(Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath));
+            return File.Exists(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath));
         }
 
         public bool IsImportValid(string path)
@@ -115,51 +111,13 @@ namespace WindowsGSM.GameServer
         public string GetLocalBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return steamCMD.GetLocalBuild(_serverData.ServerID, "376030");
+            return steamCMD.GetLocalBuild(_serverData.ServerID, AppId);
         }
 
         public async Task<string> GetRemoteBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return await steamCMD.GetRemoteBuild("376030");
-        }
-
-        public string GetQueryPort()
-        {
-            string configFile = Functions.ServerPath.GetConfigs(_serverData.ServerID, "WindowsGSM.cfg");
-
-            //Get ?QueryPort value in serverparam
-            if (File.Exists(configFile))
-            {
-                string[] lines = File.ReadAllLines(configFile);
-
-                foreach (string line in lines)
-                {
-                    string[] keyvalue = line.Split(new char[] { '=' }, 2);
-                    if (keyvalue.Length == 2)
-                    {
-                        if ("serverparam" == keyvalue[0])
-                        {
-                            string param = keyvalue[1].Trim('\"');
-                            string[] settings = param.Split('?');
-
-                            foreach (string setting in settings)
-                            {
-                                string[] key = setting.Split(new char[] { '=' }, 2);
-                                if (key.Length == 2)
-                                {
-                                    if ("QueryPort" == key[0])
-                                    {
-                                        return key[1];
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            return null;
+            return await steamCMD.GetRemoteBuild(AppId);
         }
     }
 }

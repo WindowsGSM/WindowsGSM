@@ -31,11 +31,15 @@ namespace WindowsGSM.GameServer
         public string StartPath = @"Mordhau\Binaries\Win64\MordhauServer-Win64-Shipping.exe";
         public bool ToggleConsole = true;
         public int PortIncrements = 2;
+        public dynamic QueryMethod = new Query.A2S();
 
         public string Port = "7777";
+        public string QueryPort = "27015";
         public string Defaultmap = "FFA_ThePit";
         public string Maxplayers = "16";
-        public string Additional = "-BeaconPort={{beaconport}} -QueryPort={{queryport}}";
+        public string Additional = "-BeaconPort={{beaconport}}";
+
+        public string AppId = "629800";
 
         public MORDHAU(Functions.ServerConfig serverData)
         {
@@ -44,7 +48,7 @@ namespace WindowsGSM.GameServer
 
         public async void CreateServerCFG()
         {    
-            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"Mordhau\Saved\Config\WindowsServer\Game.ini");
+            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, @"Mordhau\Saved\Config\WindowsServer\Game.ini");
             Directory.CreateDirectory(Path.GetDirectoryName(configPath));
 
             //Download Game.ini
@@ -57,26 +61,25 @@ namespace WindowsGSM.GameServer
             }
 
             //Edit WindowsGSM.cfg
-            string configFile = Functions.ServerPath.GetConfigs(_serverData.ServerID, "WindowsGSM.cfg");
+            string configFile = Functions.ServerPath.GetServersConfigs(_serverData.ServerID, "WindowsGSM.cfg");
             if (File.Exists(configFile))
             {
                 string configText = File.ReadAllText(configFile);
-                configText = configText.Replace("{{beaconport}}", (Int32.Parse(_serverData.ServerPort) + 7223).ToString());
-                configText = configText.Replace("{{queryport}}", (Int32.Parse(_serverData.ServerPort) + 19238).ToString());
+                configText = configText.Replace("{{beaconport}}", (int.Parse(_serverData.ServerPort) + 7223).ToString());
                 File.WriteAllText(configFile, configText);
             }
         }
 
         public async Task<Process> Start()
         {
-            string shipExePath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, StartPath);
+            string shipExePath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath);
             if (!File.Exists(shipExePath))
             {
                 Error = $"{Path.GetFileName(shipExePath)} not found ({shipExePath})";
                 return null;
             }
 
-            string configPath = Functions.ServerPath.GetServerFiles(_serverData.ServerID, @"Mordhau\Saved\Config\WindowsServer\Game.ini");
+            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, @"Mordhau\Saved\Config\WindowsServer\Game.ini");
             if (!File.Exists(configPath))
             {
                 Notice = $"{Path.GetFileName(configPath)} not found ({configPath})";
@@ -85,6 +88,7 @@ namespace WindowsGSM.GameServer
             string param = string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : _serverData.ServerMap;
             param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? "" : $" -MultiHome={_serverData.ServerIP}";
             param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" -Port={_serverData.ServerPort}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? "" : $" -QueryPort={_serverData.ServerQueryPort}";
             param += $" {_serverData.ServerParam}" + (ToggleConsole ? " -log" : "");
 
             Process p;
@@ -148,7 +152,7 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", "629800");
+            Process p = await steamCMD.Install(_serverData.ServerID, "", AppId);
             Error = steamCMD.Error;
 
             return p;
@@ -157,7 +161,7 @@ namespace WindowsGSM.GameServer
         public async Task<bool> Update(bool validate = false)
         {
             var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "629800", validate);
+            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", AppId, validate);
             Error = steamCMD.Error;
 
             return updateSuccess;
@@ -165,7 +169,7 @@ namespace WindowsGSM.GameServer
 
         public bool IsInstallValid()
         {
-            return File.Exists(Functions.ServerPath.GetServerFiles(_serverData.ServerID, "MordhauServer.exe"));
+            return File.Exists(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "MordhauServer.exe"));
         }
 
         public bool IsImportValid(string path)
@@ -178,51 +182,13 @@ namespace WindowsGSM.GameServer
         public string GetLocalBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return steamCMD.GetLocalBuild(_serverData.ServerID, "629800");
+            return steamCMD.GetLocalBuild(_serverData.ServerID, AppId);
         }
 
         public async Task<string> GetRemoteBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return await steamCMD.GetRemoteBuild("629800");
-        }
-
-        public string GetQueryPort()
-        {
-            string configFile = Functions.ServerPath.GetConfigs(_serverData.ServerID, "WindowsGSM.cfg");
-
-            //Get -QueryPort value in serverparam
-            if (File.Exists(configFile))
-            {
-                string[] lines = File.ReadAllLines(configFile);
-
-                foreach (string line in lines)
-                {
-                    string[] keyvalue = line.Split(new char[] { '=' }, 2);
-                    if (keyvalue.Length == 2)
-                    {
-                        if ("serverparam" == keyvalue[0])
-                        {
-                            string param = keyvalue[1].Trim('\"');
-                            string[] settings = param.Split(' ');
-
-                            foreach (string setting in settings)
-                            {
-                                string[] key = setting.Split(new char[] { '=' }, 2);
-                                if (key.Length == 2)
-                                {
-                                    if ("-QueryPort" == key[0])
-                                    {
-                                        return key[1];
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            return null;
+            return await steamCMD.GetRemoteBuild(AppId);
         }
     }
 }
