@@ -22,6 +22,7 @@ WindowsGSM is a powerful tool to manage game servers. Equipped with a GUI for se
 | ![logo](WindowsGSM/Images/Games/css.png?raw=true)    | Counter-Strike: Source Dedicated Server           |✅|
 | ![logo](WindowsGSM/Images/Games/dods.png?raw=true)   | Day of Defeat: Source Dedicated Server            |✅|
 | ![logo](WindowsGSM/Images/Games/dayz.png?raw=true)   | DayZ Dedicated Server                             |✅|
+| ![logo](WindowsGSM/Images/Games/egs.png?raw=true)    | Empyrion - Galactic Survival Dedicated Server     |✅|
 | ![logo](WindowsGSM/Images/Games/gmod.png?raw=true)   | Garry's Mod Dedicated Server                      |✅|
 | ![logo](WindowsGSM/Images/Games/gta5.png?raw=true)   | Grand Theft Auto V Dedicated Server ([FiveM](https://github.com/citizenfx/fivem))|✅|
 | ![logo](WindowsGSM/Images/Games/hl2dm.png?raw=true)  | Half-Life 2: Deathmatch Dedicated Server          |✅|
@@ -33,12 +34,14 @@ WindowsGSM is a powerful tool to manage game servers. Equipped with a GUI for se
 | ![logo](WindowsGSM/Images/Games/mcpe.png?raw=true)   | Minecraft: Pocket Edition Server ([PocketMine-MP](https://github.com/pmmp/PocketMine-MP)) |✅|
 | ![logo](WindowsGSM/Images/Games/mordhau.png?raw=true)| Mordhau Dedicated Server                          |✅|
 | ![logo](WindowsGSM/Images/Games/nmrih.png?raw=true)  | No More Room in Hell Dedicated Server             |✅|
+| ![logo](WindowsGSM/Images/Games/onset.png?raw=true)  | Onset Dedicated Server                            |✅|
 | ![logo](WindowsGSM/Images/Games/olow.png?raw=true)   | Outlaws of the Old West Dedicated Server          |✅|
 | ![logo](WindowsGSM/Images/Games/rok.png?raw=true)    | Reign Of Kings Dedicated Server                   |✅|
 | ![logo](WindowsGSM/Images/Games/rust.png?raw=true)   | Rust Dedicated Server                             |✅|
 | ![logo](WindowsGSM/Images/Games/se.png?raw=true)     | Space Engineers Dedicated Server                  |✅|
 | ![logo](WindowsGSM/Images/Games/sw.png?raw=true)     | Stormworks Dedicated Server                       |✅|
 | ![logo](WindowsGSM/Images/Games/tf2.png?raw=true)    | Team Fortress 2 Dedicated Server                  |✅|
+| ![logo](WindowsGSM/Images/Games/unt.png?raw=true)    | Unturned Dedicated Server                         |✅|
 | ![logo](WindowsGSM/Images/Games/zps.png?raw=true)    | Zombie Panic Source Dedicated Server              |✅|
 
 ### Features
@@ -52,6 +55,7 @@ WindowsGSM is a powerful tool to manage game servers. Equipped with a GUI for se
   * **Restart Crontab** - Schedule your game servers to restart at any time, very useful for servers that require restarts to run smoothly.
   * **Start on Login** - Auto start WindowsGSM and game servers on user login.
   * **Mod Manager** - Manage your server custom mods with WindowsGSM!
+  * **Remote Control** - Remote control your game servers with Discord!
 
 ### Documentation
   * Website: <https://docs.windowsgsm.com/>
