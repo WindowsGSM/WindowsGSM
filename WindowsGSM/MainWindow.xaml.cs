@@ -2284,7 +2284,7 @@ namespace WindowsGSM
 
         private async Task<bool> DownloadWindowsGSMUpdater()
         {
-            string filePath = Path.Combine(MainWindow.WGSM_PATH, "installer", "WindowsGSM-Updater.exe");
+            string filePath = Path.Combine(WGSM_PATH, "installer", "WindowsGSM-Updater.exe");
 
             try
             {
@@ -2622,14 +2622,20 @@ namespace WindowsGSM
         }
         #endregion
 
-        private void Window_Activated(object sender, EventArgs e)
+        private async void Window_Activated(object sender, EventArgs e)
         {
             if (MahAppFlyout_ManageAddons.IsOpen)
             {
                 ListBox_ManageAddons_Refresh();
             }
 
-            LoadServerTable();
+            // Fix the windows cannot toggle issue because of LoadServerTable
+            await Task.Delay(1);
+
+            if (ShowActivated)
+            {
+                LoadServerTable();
+            }
         }
 
         #region Discord Bot

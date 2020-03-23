@@ -19,14 +19,21 @@ namespace WindowsGSM
         {
             return await Task.Run(() =>
             {
-                INetFwMgr netFwMgr = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
-
-                foreach (INetFwAuthorizedApplication app in netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications)
+                try
                 {
-                    if (app.ProcessImageFileName.ToLower() == Path.ToLower())
+                    INetFwMgr netFwMgr = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
+
+                    foreach (INetFwAuthorizedApplication app in netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications)
                     {
-                        return true;
+                        if (app.ProcessImageFileName.ToLower() == Path.ToLower())
+                        {
+                            return true;
+                        }
                     }
+                }
+                catch
+                {
+                    return false;
                 }
 
                 return false;
@@ -35,20 +42,34 @@ namespace WindowsGSM
 
         public void AddRule()
         {
-            INetFwMgr netFwMgr = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
-            INetFwAuthorizedApplication app = (INetFwAuthorizedApplication)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwAuthorizedApplication"));
+            try
+            {
+                INetFwMgr netFwMgr = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
+                INetFwAuthorizedApplication app = (INetFwAuthorizedApplication)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwAuthorizedApplication"));
 
-            app.Name = Name;
-            app.ProcessImageFileName = Path;
-            app.Enabled = true;
+                app.Name = Name;
+                app.ProcessImageFileName = Path;
+                app.Enabled = true;
 
-            netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications.Add(app);
+                netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications.Add(app);
+            }
+            catch
+            {
+                // ignore
+            }
         }
 
         public void RemoveRule()
         {
-            INetFwMgr netFwMgr = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
-            netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications.Remove(Path);
+            try
+            {
+                INetFwMgr netFwMgr = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
+                netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications.Remove(Path);
+            }
+            catch
+            {
+                // ignore
+            }
         }
 
         //Remove the firewall rule by similar path
@@ -56,15 +77,22 @@ namespace WindowsGSM
         {
             await Task.Run(() =>
             {
-                INetFwMgr netFwMgr = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
-
-                foreach (INetFwAuthorizedApplication app in netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications)
+                try
                 {
-                    string filename = app.ProcessImageFileName.ToLower();
-                    if (filename.Contains(Path.ToLower()))
+                    INetFwMgr netFwMgr = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
+
+                    foreach (INetFwAuthorizedApplication app in netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications)
                     {
-                        netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications.Remove(app.ProcessImageFileName);
+                        string filename = app.ProcessImageFileName.ToLower();
+                        if (filename.Contains(Path.ToLower()))
+                        {
+                            netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications.Remove(app.ProcessImageFileName);
+                        }
                     }
+                }
+                catch
+                {
+                    // ignore
                 }
             });
         }

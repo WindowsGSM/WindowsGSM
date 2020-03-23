@@ -641,13 +641,13 @@
     <Resource Include="Images\Games\egs.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\Games\onset.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Images\WindowsGSM.ico" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\WindowsGSM.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\onset.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

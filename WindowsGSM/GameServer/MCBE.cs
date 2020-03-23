@@ -23,7 +23,7 @@ namespace WindowsGSM.GameServer
         public const string FullName = "Minecraft: Bedrock Edition Server";
         public string StartPath = "bedrock_server.exe";
         public bool ToggleConsole = false;
-        public int PortIncrements = 1;
+        public int PortIncrements = 2;
         public dynamic QueryMethod = null;
 
         public string Port = "19132";
