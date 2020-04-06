@@ -129,42 +129,42 @@ namespace WindowsGSM.Functions
 
         private static string GetThumbnail(string serverStatus)
         {
-            string url = "https://windowsgsm.com/assets/images/";
+            string url = "https://github.com/WindowsGSM/Discord-Alert-Icons/raw/master/";
             if (serverStatus.Contains("Started"))
             {
-                return $"{url}OK_t.png";
+                return $"{url}Started.png";
             }
             else if (serverStatus.Contains("Restarted"))
             {
-                return $"{url}Restart_t.png";
+                return $"{url}Restarted.png";
             }
             else if (serverStatus.Contains("Crashed"))
             {
-                return $"{url}warning.png";
+                return $"{url}Crashed.png";
             }
             else if (serverStatus.Contains("Updated"))
             {
-                return $"{url}Update_t.png";
+                return $"{url}Updated.png";
             }
 
-            return $"{url}Config_t.png";
+            return $"{url}Test.png";
         }
 
         private static string GetServerGameIcon(string serverGame)
         {
             try
             {
-                return @"https://github.com/BattlefieldDuck/WindowsGSM/raw/master/WindowsGSM/" + GameServer.Data.Icon.ResourceManager.GetString(serverGame);
+                return @"https://github.com/WindowsGSM/WindowsGSM/raw/master/WindowsGSM/" + GameServer.Data.Icon.ResourceManager.GetString(serverGame);
             }
             catch
             {
-                return @"https://github.com/BattlefieldDuck/WindowsGSM/raw/master/WindowsGSM/Images/WindowsGSM.png";
+                return @"https://github.com/WindowsGSM/WindowsGSM/raw/master/WindowsGSM/Images/WindowsGSM.png";
             }
         }
 
         private string GetAvatarUrl()
         {
-            return "https://github.com/BattlefieldDuck/WindowsGSM/raw/master/WindowsGSM/Images/WindowsGSM" + (string.IsNullOrWhiteSpace(_donorType) ? "" : $"-{_donorType}") + ".png";
+            return "https://github.com/WindowsGSM/WindowsGSM/raw/master/WindowsGSM/Images/WindowsGSM" + (string.IsNullOrWhiteSpace(_donorType) ? "" : $"-{_donorType}") + ".png";
         }
     }
 }

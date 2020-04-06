@@ -4,69 +4,35 @@ using System.IO;
 
 namespace WindowsGSM.GameServer
 {
-    /// <summary>
-    /// 
-    /// Note:
-    /// Mordhau Dedicated Server is very special, the console doesn't allow any input, only output.
-    /// Server owner are required to port forward three ports which is unique.
-    /// 
-    /// RedirectStandardOutput works, but there is a problem figure out by ! AssaultLine who is a server owner of Mordhau community.
-    /// when changing a map to a custom map, the redirect output is stucked in p.OutputDataReceived and the whole WindowsGSM and Mordhau freeze.
-    /// Therefore, I give up to use RedirectStandardOutput and use the traditional method to handle this server which is ToggleConsole=true.
-    /// Although this may not cool as the server output is not within WindowsGSM, but that is the only choice to keep Mordhau stable.
-    /// 
-    /// The freezing issue is cause by heavy loading of custom map and output deadlocked, I think there is no fix for this until Mordhau developer fix the between output and load.
-    /// The issue can reproduce by change ToggleConsole=false. Then start a server and join the server, type ChangeMap <custommap> command in the terminal in Mordhau, the freeze issue occur.
-    /// 
-    /// </summary>
-    class MORDHAU : Engine.UnrealEngine
+    class INSS
     {
         private readonly Functions.ServerConfig _serverData;
 
         public string Error;
         public string Notice;
 
-        public const string FullName = "Mordhau Dedicated Server";
-        public string StartPath = @"Mordhau\Binaries\Win64\MordhauServer-Win64-Shipping.exe";
+        public const string FullName = "Insurgency: Sandstorm Dedicated Server";
+        public string StartPath = @"Insurgency\Binaries\Win64\InsurgencyServer-Win64-Shipping.exe";
         public bool ToggleConsole = false;
         public int PortIncrements = 2;
-        public dynamic QueryMethod = new Query.A2S();
+        public dynamic QueryMethod = null;
 
-        public string Port = "7777";
-        public string QueryPort = "27015";
-        public string Defaultmap = "FFA_ThePit";
-        public string Maxplayers = "16";
-        public string Additional = "-BeaconPort={{beaconport}}";
+        public string Port = "27102";
+        public string QueryPort = "27131";
+        public string Defaultmap = "Oilfield";
+        public string Maxplayers = "28";
+        public string Additional = "?Scenario=Scenario_Refinery_Push_Security";
 
-        public string AppId = "629800";
+        public string AppId = "581330";
 
-        public MORDHAU(Functions.ServerConfig serverData)
+        public INSS(Functions.ServerConfig serverData)
         {
             _serverData = serverData;
         }
 
         public async void CreateServerCFG()
-        {    
-            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, @"Mordhau\Saved\Config\WindowsServer\Game.ini");
-            Directory.CreateDirectory(Path.GetDirectoryName(configPath));
-
-            //Download Game.ini
-            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
-            {
-                string configText = File.ReadAllText(configPath);
-                configText = configText.Replace("{{hostname}}", _serverData.ServerName);
-                configText = configText.Replace("{{rcon_password}}", _serverData.GetRCONPassword());
-                File.WriteAllText(configPath, configText);
-            }
-
-            //Edit WindowsGSM.cfg
-            string configFile = Functions.ServerPath.GetServersConfigs(_serverData.ServerID, "WindowsGSM.cfg");
-            if (File.Exists(configFile))
-            {
-                string configText = File.ReadAllText(configFile);
-                configText = configText.Replace("{{beaconport}}", (int.Parse(_serverData.ServerPort) + 7223).ToString());
-                File.WriteAllText(configFile, configText);
-            }
+        {
+            // No config file need to download
         }
 
         public async Task<Process> Start()
@@ -78,17 +44,14 @@ namespace WindowsGSM.GameServer
                 return null;
             }
 
-            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, @"Mordhau\Saved\Config\WindowsServer\Game.ini");
-            if (!File.Exists(configPath))
-            {
-                Notice = $"{Path.GetFileName(configPath)} not found ({configPath})";
-            }
-
             string param = string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : _serverData.ServerMap;
-            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? "" : $" -MultiHome={_serverData.ServerIP}";
+            param += $"{_serverData.ServerParam}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? "" : $"MaxPlayers={_serverData.ServerMaxPlayer}";
             param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" -Port={_serverData.ServerPort}";
             param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? "" : $" -QueryPort={_serverData.ServerQueryPort}";
-            param += $" {_serverData.ServerParam}" + (ToggleConsole ? " -log" : "");
+            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? "" : $" -MultiHome={_serverData.ServerIP}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? "" : $" -hostname={_serverData.ServerName}";
+            param += ToggleConsole ? " -log" : "";
 
             Process p;
             if (ToggleConsole)
@@ -129,7 +92,7 @@ namespace WindowsGSM.GameServer
                 p.BeginOutputReadLine();
                 p.BeginErrorReadLine();
             }
-            
+
             return p;
         }
 
@@ -168,12 +131,12 @@ namespace WindowsGSM.GameServer
 
         public bool IsInstallValid()
         {
-            return File.Exists(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "MordhauServer.exe"));
+            return File.Exists(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "InsurgencyServer.exe"));
         }
 
         public bool IsImportValid(string path)
         {
-            string exePath = Path.Combine(path, "MordhauServer.exe");
+            string exePath = Path.Combine(path, "InsurgencyServer.exe");
             Error = $"Invalid Path! Fail to find {Path.GetFileName(exePath)}";
             return File.Exists(exePath);
         }

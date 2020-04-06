@@ -195,9 +195,22 @@ namespace WindowsGSM.Installer
         {
             try
             {
+                // Send enter 3 times per 3 seconds
                 for (int i = 0; i < 3; i++)
                 {
-                    await Task.Delay(60000);
+                    await Task.Delay(3000);
+
+                    if (p == null || p.HasExited) { break; }
+                    p.StandardInput.WriteLine("");
+                }
+
+                // Wait 5 minutes
+                await Task.Delay(300000);
+
+                // Send enter 3 times per 3 seconds
+                for (int i = 0; i < 3; i++)
+                {
+                    await Task.Delay(3000);
 
                     if (p == null || p.HasExited) { break; }
                     p.StandardInput.WriteLine("");
@@ -284,6 +297,7 @@ namespace WindowsGSM.Installer
                 }
             };
             p.Start();
+            SendEnterPreventFreeze(p);
 
             string output = await p.StandardOutput.ReadToEndAsync();
             Regex regex = new Regex("\"public\"\r\n.{0,}{\r\n.{0,}\"buildid\".{1,}\"(.*?)\"");

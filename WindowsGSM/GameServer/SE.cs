@@ -16,9 +16,6 @@ namespace WindowsGSM.GameServer
     /// </summary>
     class SE
     {
-        [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
-
         private readonly Functions.ServerConfig _serverData;
 
         public string Error;
@@ -88,8 +85,8 @@ namespace WindowsGSM.GameServer
             }
 
             string param = (ToggleConsole ? "-console" : "-noconsole") + " -ignorelastsession";
-            param += string.IsNullOrEmpty(_serverData.ServerIP) ? "" : $" -ip {_serverData.ServerIP}";
-            param += string.IsNullOrEmpty(_serverData.ServerPort) ? "" : $" -port {_serverData.ServerPort}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? "" : $" -ip {_serverData.ServerIP}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" -port {_serverData.ServerPort}";
             param += $" {_serverData.ServerParam}";
 
             Process p;
@@ -170,7 +167,7 @@ namespace WindowsGSM.GameServer
                 }
                 else
                 {
-                    SetForegroundWindow(p.MainWindowHandle);
+                    Functions.ServerConsole.SetMainWindow(p.MainWindowHandle);
                     Functions.ServerConsole.SendWaitToMainWindow("^(c)");
                     Functions.ServerConsole.SendWaitToMainWindow("^(c)");
                 }

@@ -1,9 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
-using System.Windows.Forms;
-using System.Runtime.InteropServices;
 
 namespace WindowsGSM.GameServer
 {
@@ -29,9 +26,6 @@ namespace WindowsGSM.GameServer
     /// </summary>
     class SDTD
     {
-        [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
-
         private readonly Functions.ServerConfig _serverData;
 
         public string Error;
@@ -145,7 +139,7 @@ namespace WindowsGSM.GameServer
         {
             await Task.Run(() =>
             {
-                SetForegroundWindow(p.MainWindowHandle);
+                Functions.ServerConsole.SetMainWindow(p.MainWindowHandle);
                 p.CloseMainWindow();
                 Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
             });

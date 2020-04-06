@@ -1,16 +1,11 @@
 ﻿using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
-using System;
 
 namespace WindowsGSM.GameServer
 {
     class HEAT : Engine.Unity
     {
-        [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
-
         private readonly Functions.ServerConfig _serverData;
 
         public string Error;
@@ -88,7 +83,7 @@ namespace WindowsGSM.GameServer
         {
             await Task.Run(() =>
             {
-                SetForegroundWindow(p.MainWindowHandle);
+                Functions.ServerConsole.SetMainWindow(p.MainWindowHandle);
                 Functions.ServerConsole.SendWaitToMainWindow("/shutdown");
                 Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
                 Task.Delay(5000); //Wait 5 second for auto close

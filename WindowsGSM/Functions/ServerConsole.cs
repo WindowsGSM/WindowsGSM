@@ -25,9 +25,9 @@ namespace WindowsGSM.Functions
             _serverId = serverId;
         }
 
-        public void AddOutput(object sender, DataReceivedEventArgs args)
+        public async void AddOutput(object sender, DataReceivedEventArgs args)
         {
-            MainWindow.g_ServerConsoles[int.Parse(_serverId)].Add(args.Data);
+            await Task.Run(() => MainWindow.g_ServerConsoles[int.Parse(_serverId)].Add(args.Data));
         }
 
         public async void Input(Process process, string text, IntPtr mainWindow)
@@ -136,24 +136,11 @@ namespace WindowsGSM.Functions
             {
                 _consoleList.RemoveAt(0);
             }
-
-            if (_serverId != "0")
-            {
-                Refresh(_serverId);
-            }
         }
 
-        private void Refresh(string serverId)
+        public static void SetMainWindow(IntPtr hWnd)
         {
-            if (System.Windows.Application.Current == null) { return; }
-
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                var WindowsGSM = (MainWindow)System.Windows.Application.Current.MainWindow;
-                if (WindowsGSM == null) { return; }
-
-                WindowsGSM.RefreshConsoleList(serverId);
-            });
+            SetForegroundWindow(hWnd);
         }
 
         public static void SendWaitToMainWindow(string keys)

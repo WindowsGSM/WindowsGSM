@@ -15,7 +15,6 @@ using Microsoft.Win32;
 using MahApps.Metro;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
-using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
 using NCrontab;
 using System.Collections.Generic;
@@ -30,9 +29,6 @@ namespace WindowsGSM
     {
         [DllImport("user32.dll")]
         private static extern bool ShowWindow(IntPtr hWnd, WindowShowStyle nCmdShow);
-
-        [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
 
         [DllImport("user32.dll")]
         private static extern int SetWindowText(IntPtr hWnd, string windowName);
@@ -69,8 +65,7 @@ namespace WindowsGSM
 
         private readonly NotifyIcon notifyIcon;
 
-        private Install InstallWindow;
-        private Import ImportWindow;
+        private Process Installer;
 
         private static readonly ServerStatus[] g_iServerStatus = new ServerStatus[MAX_SERVER + 1];
 
@@ -115,6 +110,11 @@ namespace WindowsGSM
 
             Title = $"WindowsGSM {WGSM_VERSION}";
 
+            ThemeManager.Accents.ToList().ForEach(delegate (Accent accent)
+            {
+                comboBox_Themes.Items.Add(accent.Name);
+            });
+
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM");
             if (key == null)
             {
@@ -124,6 +124,7 @@ namespace WindowsGSM
                 key.SetValue("DarkTheme", "False");
                 key.SetValue("StartOnBoot", "False");
                 key.SetValue("DonorTheme", "False");
+                key.SetValue("DonorColor", "Blue");
                 key.SetValue("DonorAuthKey", "");
                 key.SetValue("SendStatistics", "True");
                 key.SetValue("Height", "540");
@@ -134,7 +135,8 @@ namespace WindowsGSM
                 MahAppSwitch_UIAnimation.IsChecked = true;
                 MahAppSwitch_DarkTheme.IsChecked = false;
                 MahAppSwitch_StartOnBoot.IsChecked = false;
-                MahAppSwitch_DonorTheme.IsChecked = false;
+                MahAppSwitch_DonorConnect.IsChecked = false;
+                comboBox_Themes.Text = "Blue";
                 MahAppSwitch_SendStatistics.IsChecked = true;
                 MahAppSwitch_DiscordBotAutoStart.IsChecked = false;
             }
@@ -144,17 +146,19 @@ namespace WindowsGSM
                 MahAppSwitch_UIAnimation.IsChecked = ((key.GetValue("UIAnimation") ?? true).ToString() == "True") ? true : false;
                 MahAppSwitch_DarkTheme.IsChecked = ((key.GetValue("DarkTheme") ?? false).ToString() == "True") ? true : false;
                 MahAppSwitch_StartOnBoot.IsChecked = ((key.GetValue("StartOnBoot") ?? false).ToString() == "True") ? true : false;
-                MahAppSwitch_DonorTheme.IsChecked = ((key.GetValue("DonorTheme") ?? false).ToString() == "True") ? true : false;
+                MahAppSwitch_DonorConnect.IsChecked = ((key.GetValue("DonorTheme") ?? false).ToString() == "True") ? true : false;
+                var theme = ThemeManager.GetAccent((key.GetValue("DonorColor") ?? "").ToString());
+                comboBox_Themes.Text = (theme == null || !(MahAppSwitch_DonorConnect.IsChecked ?? false)) ? "Blue" : theme.Name;
                 MahAppSwitch_SendStatistics.IsChecked = ((key.GetValue("SendStatistics") ?? true).ToString() == "True") ? true : false;
                 MahAppSwitch_DiscordBotAutoStart.IsChecked = ((key.GetValue("DiscordBotAutoStart") ?? false).ToString() == "True") ? true : false;
 
-                if (MahAppSwitch_DonorTheme.IsChecked ?? false)
+                if (MahAppSwitch_DonorConnect.IsChecked ?? false)
                 {
                     string authKey = (key.GetValue("DonorAuthKey") == null) ? "" : key.GetValue("DonorAuthKey").ToString();
                     if (!string.IsNullOrWhiteSpace(authKey))
                     {
 #pragma warning disable 4014
-                        ActivateDonorTheme(authKey);
+                        AuthenticateDonor(authKey);
 #pragma warning restore
                     }
                 }
@@ -232,6 +236,23 @@ namespace WindowsGSM
                 }
             }
 
+            //Add games to ComboBox
+            SortedList sortedList = new SortedList();
+            List<DictionaryEntry> gameName = GameServer.Data.Icon.ResourceManager.GetResourceSet(System.Globalization.CultureInfo.CurrentUICulture, true, true).Cast<DictionaryEntry>().ToList();
+            gameName.ForEach(delegate (DictionaryEntry entry) { sortedList.Add(entry.Key, entry.Value); });
+            label_GameServerCount.Content = $"{gameName.Count} game servers supported.";
+            for (int i = 0; i < sortedList.Count; i++)
+            {
+                var row = new Images.Row
+                {
+                    Image = "/WindowsGSM;component/" + sortedList.GetByIndex(i).ToString(),
+                    Name = sortedList.GetKey(i).ToString()
+                };
+
+                comboBox_InstallGameServer.Items.Add(row);
+                comboBox_ImportGameServer.Items.Add(row);
+            }
+
             LoadServerTable();
 
             if (ServerGrid.Items.Count > 0)
@@ -245,15 +266,16 @@ namespace WindowsGSM
             {
                 SendGoogleAnalytics();
             }
+
+            StartConsoleRefresh();
         }
 
         public void LoadServerTable()
         {
             string[] livePlayerData = new string[MAX_SERVER + 1];
-            for (int i = 0; i < ServerGrid.Items.Count; i++)
+            foreach (Functions.ServerTable item in ServerGrid.Items)
             {
-                var temp = (Functions.ServerTable)ServerGrid.Items[i];
-                livePlayerData[int.Parse(temp.ID)] = temp.Maxplayers;
+                livePlayerData[int.Parse(item.ID)] = item.Maxplayers;
             }
 
             var selectedrow = (Functions.ServerTable)ServerGrid.SelectedItem;
@@ -271,10 +293,7 @@ namespace WindowsGSM
                 var serverConfig = new Functions.ServerConfig(i.ToString());
 
                 //If Game server not exist return
-                if (GameServer.Data.Class.Get(serverConfig.ServerGame, null) == null)
-                {
-                    continue;
-                }
+                if (GameServer.Data.Class.Get(serverConfig.ServerGame) == null) { continue; }
 
                 string status;
                 switch (g_iServerStatus[i])
@@ -377,6 +396,28 @@ namespace WindowsGSM
                             await webhook.Send(server.ID, server.Game, "Started | Auto Start", server.Name, server.IP, server.Port);
                         }
                     }    
+                }
+            }
+        }
+
+        private async void StartConsoleRefresh()
+        {
+            while (true)
+            {
+                await Task.Delay(100);
+                var row = (Functions.ServerTable)ServerGrid.SelectedItem;
+                if (row != null)
+                {
+                    string text = g_ServerConsoles[int.Parse(row.ID)].Get();
+                    if (text.Length != console.Text.Length && text != console.Text)
+                    {
+                        console.Text = text;
+
+                        if (textbox_servercommand.Text.Length == 0)
+                        {
+                            console.ScrollToEnd();
+                        }
+                    }
                 }
             }
         }
@@ -490,6 +531,18 @@ namespace WindowsGSM
                     button_servercommand.IsEnabled = false;
                 }
 
+                switch (g_iServerStatus[int.Parse(row.ID)])
+                {
+                    case ServerStatus.Restarting:
+                    case ServerStatus.Restarted:
+                    case ServerStatus.Started:
+                    case ServerStatus.Starting:
+                    case ServerStatus.Stopping:
+                        button_Kill.IsEnabled = true;
+                        break;
+                    default: button_Kill.IsEnabled = false; break;
+                }
+
                 button_ManageAddons.IsEnabled = Functions.ServerAddon.IsGameSupportManageAddons(row.Game);
                 if (g_iServerStatus[int.Parse(row.ID)] == ServerStatus.Deleting || g_iServerStatus[int.Parse(row.ID)] == ServerStatus.Restoring)
                 {
@@ -521,99 +574,295 @@ namespace WindowsGSM
                 MahAppSwitch_AutoUpdateAlert.IsChecked = g_bAutoUpdateAlert[int.Parse(row.ID)];
                 MahAppSwitch_RestartCrontabAlert.IsChecked = g_bRestartCrontabAlert[int.Parse(row.ID)];
                 MahAppSwitch_CrashAlert.IsChecked = g_bCrashAlert[int.Parse(row.ID)];
-
-                RefreshConsoleList(row.ID);
-            }
-        }
-
-        public void RefreshConsoleList(string serverId)
-        {
-            var row = (Functions.ServerTable)ServerGrid.SelectedItem;
-
-            if (row.ID == serverId)
-            {
-                console.Text = g_ServerConsoles[int.Parse(serverId)].Get();
-                console.ScrollToEnd();
             }
         }
 
         private void Install_Click(object sender, RoutedEventArgs e)
         {
-            if (InstallWindow == null && ImportWindow == null)
+            MahAppFlyout_InstallGameServer.IsOpen = true;
+
+            if (!progressbar_InstallProgress.IsIndeterminate)
             {
-                InstallWindow = new Install();
-                InstallWindow.Closed += (object s, EventArgs arg) => { InstallWindow = null; };
+                textbox_InstallServerName.IsEnabled = true;
+                comboBox_InstallGameServer.IsEnabled = true;
+                progressbar_InstallProgress.IsIndeterminate = false;
+                textblock_InstallProgress.Text = "";
+                button_Install.IsEnabled = true;
 
-                //Add games to ComboBox
-                SortedList sortedList = new SortedList();
-                List<DictionaryEntry> gameName = GameServer.Data.Icon.ResourceManager.GetResourceSet(System.Globalization.CultureInfo.CurrentUICulture, true, true).Cast<DictionaryEntry>().ToList();
-                gameName.ForEach(delegate (DictionaryEntry entry)
-                {
-                    sortedList.Add(entry.Key, entry.Value);
-                });
+                ComboBox_InstallGameServer_SelectionChanged(sender, null);
 
-                for (int i = 0; i < sortedList.Count; i++)
+                var newServerConfig = new Functions.ServerConfig(null);
+                textbox_InstallServerName.Text = $"WindowsGSM - Server #{newServerConfig.ServerID}";
+            }
+        }
+
+        private async void Button_Install_Click(object sender, RoutedEventArgs e)
+        {
+            if (Installer != null)
+            {
+                if (!Installer.HasExited) { Installer.Kill(); }
+                Installer = null;
+            }
+
+            var selectedgame = (Images.Row)comboBox_InstallGameServer.SelectedItem;
+            if (string.IsNullOrWhiteSpace(textbox_InstallServerName.Text) || selectedgame == null) { return; }
+
+            var newServerConfig = new Functions.ServerConfig(null);
+            string installPath = Functions.ServerPath.GetServersServerFiles(newServerConfig.ServerID);
+            if (Directory.Exists(installPath))
+            {
+                try
                 {
-                    var row = new Images.Row
+                    Directory.Delete(installPath, true);
+                }
+                catch
+                {
+                    System.Windows.Forms.MessageBox.Show(installPath + " is not accessible!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+            }
+
+            Directory.CreateDirectory(installPath);
+
+            //Installation start
+            textbox_InstallServerName.IsEnabled = false;
+            comboBox_InstallGameServer.IsEnabled = false;
+            progressbar_InstallProgress.IsIndeterminate = true;
+            textblock_InstallProgress.Text = "Installing";
+            button_Install.IsEnabled = false;
+            textbox_InstallLog.Text = "";
+
+            string servername = textbox_InstallServerName.Text;
+            string servergame = selectedgame.Name;
+
+            newServerConfig.CreateServerDirectory();
+
+            dynamic gameServer = GameServer.Data.Class.Get(servergame, newServerConfig);
+            Installer = await gameServer.Install();
+
+            if (Installer != null)
+            {
+                //Wait installer exit. Example: steamcmd.exe
+                await Task.Run(() =>
+                {
+                    var reader = Installer.StandardOutput;
+                    while (!reader.EndOfStream)
                     {
-                        Image = "/WindowsGSM;component/" + sortedList.GetByIndex(i).ToString(),
-                        Name = sortedList.GetKey(i).ToString()
-                    };
-                    InstallWindow.comboBox.Items.Add(row);
+                        var nextLine = reader.ReadLine();
+                        if (nextLine.Contains("Logging in user "))
+                        {
+                            nextLine += Environment.NewLine + "Please send the Login Token:";
+                        }
+
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            textbox_InstallLog.AppendText(nextLine + Environment.NewLine);
+                            textbox_InstallLog.ScrollToEnd();
+                        });
+                    }
+
+                    Installer?.WaitForExit();
+                });
+            }
+
+            if (gameServer.IsInstallValid())
+            {
+                newServerConfig.ServerIP = newServerConfig.GetIPAddress();
+                newServerConfig.ServerPort = newServerConfig.GetAvailablePort(gameServer.Port, gameServer.PortIncrements);
+
+                // Create WindowsGSM.cfg
+                newServerConfig.SetData(servergame, servername, gameServer);
+                newServerConfig.CreateWindowsGSMConfig();
+
+                // Create WindowsGSM.cfg and game server config
+                try
+                {
+                    gameServer = GameServer.Data.Class.Get(servergame, newServerConfig);
+                    gameServer.CreateServerCFG();
+                }
+                catch
+                {
+                    // ignore
+                }
+
+                LoadServerTable();
+                Log(newServerConfig.ServerID, "Install: Success");
+
+                MahAppFlyout_InstallGameServer.IsOpen = false;
+                textbox_InstallServerName.IsEnabled = true;
+                comboBox_InstallGameServer.IsEnabled = true;
+                progressbar_InstallProgress.IsIndeterminate = false;
+
+                if (MahAppSwitch_SendStatistics.IsChecked ?? false)
+                {
+                    var analytics = new Functions.GoogleAnalytics();
+                    analytics.SendGameServerInstall(newServerConfig.ServerID, servergame);
                 }
             }
             else
             {
-                if (InstallWindow != null)
+                textbox_InstallServerName.IsEnabled = true;
+                comboBox_InstallGameServer.IsEnabled = true;
+                progressbar_InstallProgress.IsIndeterminate = false;
+
+                if (Installer != null)
                 {
-                    InstallWindow.Activate();
-                    InstallWindow.WindowState = WindowState.Normal;
+                    textblock_InstallProgress.Text = "Fail to install [ERROR] Exit code: " + Installer.ExitCode.ToString();
                 }
-                else if (ImportWindow != null)
+                else
                 {
-                    ImportWindow.Activate();
-                    ImportWindow.WindowState = WindowState.Normal;
+                    textblock_InstallProgress.Text = $"Fail to install {gameServer.Error}";
                 }
             }
         }
 
-        private void Import_Click(object sender, RoutedEventArgs e)
+        private void ComboBox_InstallGameServer_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (InstallWindow == null && ImportWindow == null)
+            // Set the elements visibility of Install Server Flyout
+            var selectedgame = (Images.Row)comboBox_InstallGameServer.SelectedItem;
+            button_InstallSetAccount.IsEnabled = false;
+            textBox_InstallToken.Visibility = Visibility.Hidden;
+            button_InstallSendToken.Visibility = Visibility.Hidden;
+            if (selectedgame == null) { return; }
+
+            try
             {
-                ImportWindow = new Import();
-                ImportWindow.Closed += (object s, EventArgs arg) => { ImportWindow = null; };
-
-                //Add games to ComboBox
-                SortedList sortedList = new SortedList();
-                List<DictionaryEntry> gameName = GameServer.Data.Icon.ResourceManager.GetResourceSet(System.Globalization.CultureInfo.CurrentUICulture, true, true).Cast<DictionaryEntry>().ToList();
-                gameName.ForEach(delegate (DictionaryEntry entry)
+                dynamic gameServer = GameServer.Data.Class.Get(selectedgame.Name);
+                if (gameServer.requireSteamAccount)
                 {
-                    sortedList.Add(entry.Key, entry.Value);
-                });
-
-                for (int i = 0; i < sortedList.Count; i++)
-                {
-                    var row = new Images.Row
-                    {
-                        Image = "/WindowsGSM;component/" + sortedList.GetByIndex(i).ToString(),
-                        Name = sortedList.GetKey(i).ToString()
-                    };
-                    ImportWindow.comboBox.Items.Add(row);
+                    button_InstallSetAccount.IsEnabled = true;
+                    textBox_InstallToken.Visibility = Visibility.Visible;
+                    button_InstallSendToken.Visibility = Visibility.Visible;
                 }
             }
-            else
+            catch
             {
-                if (InstallWindow != null)
+                // ignore
+            }
+        }
+
+        private void Button_SetAccount_Click(object sender, RoutedEventArgs e)
+        {
+            var steamCMD = new Installer.SteamCMD();
+            steamCMD.CreateUserDataTxtIfNotExist();
+
+            string userDataPath = Path.Combine(WGSM_PATH, @"installer\steamcmd\userData.txt");
+            if (File.Exists(userDataPath))
+            {
+                Process.Start("notepad.exe", userDataPath);
+            }
+        }
+
+        private void Button_SendToken_Click(object sender, RoutedEventArgs e)
+        {
+            if (Installer != null)
+            {
+                Installer.StandardInput.WriteLine(textBox_InstallToken.Text);
+            }
+
+            textBox_InstallToken.Text = "";
+        }
+
+        private void Import_Click(object sender, RoutedEventArgs e)
+        {
+            MahAppFlyout_ImportGameServer.IsOpen = true;
+
+            if (!progressbar_ImportProgress.IsIndeterminate)
+            {
+                textbox_ImportServerName.IsEnabled = true;
+                comboBox_ImportGameServer.IsEnabled = true;
+                progressbar_ImportProgress.IsIndeterminate = false;
+                textblock_ImportProgress.Text = "";
+                button_Import.Content = "Import";
+
+                var newServerConfig = new Functions.ServerConfig(null);
+                textbox_ImportServerName.Text = $"WindowsGSM - Server #{newServerConfig.ServerID}";
+            }
+        }
+
+        private async void Button_Import_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedgame = (Images.Row)comboBox_ImportGameServer.SelectedItem;
+            label_ServerDirWarn.Content = Directory.Exists(textbox_ServerDir.Text) ? "" : "Server Dir is invalid";
+            if (string.IsNullOrWhiteSpace(textbox_ImportServerName.Text) || selectedgame == null) { return; }
+
+            string servername = textbox_ImportServerName.Text;
+            string servergame = selectedgame.Name;
+
+            var newServerConfig = new Functions.ServerConfig(null);
+            dynamic gameServer = GameServer.Data.Class.Get(servergame, newServerConfig);
+
+            if (!gameServer.IsImportValid(textbox_ServerDir.Text))
+            {
+                label_ServerDirWarn.Content = gameServer.Error;
+                return;
+            }
+
+            string importPath = Functions.ServerPath.GetServersServerFiles(newServerConfig.ServerID);
+            if (Directory.Exists(importPath))
+            {
+                try
                 {
-                    InstallWindow.Activate();
-                    InstallWindow.WindowState = WindowState.Normal;
+                    Directory.Delete(importPath, true);
                 }
-                else if (ImportWindow != null)
+                catch
                 {
-                    ImportWindow.Activate();
-                    ImportWindow.WindowState = WindowState.Normal;
+                    System.Windows.Forms.MessageBox.Show(importPath + " is not accessible!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
                 }
+            }
+
+            //Directory.CreateDirectory(importPath);
+
+            //Import start
+            textbox_ImportServerName.IsEnabled = false;
+            comboBox_ImportGameServer.IsEnabled = false;
+            textbox_ServerDir.IsEnabled = false;
+            button_Browse.IsEnabled = false;
+            progressbar_ImportProgress.IsIndeterminate = true;
+            textblock_ImportProgress.Text = "Importing";
+
+            try
+            {
+                Directory.Move(textbox_ServerDir.Text, importPath);
+            }
+            catch
+            {
+                textbox_ImportServerName.IsEnabled = true;
+                comboBox_ImportGameServer.IsEnabled = true;
+                textbox_ServerDir.IsEnabled = true;
+                button_Browse.IsEnabled = true;
+                progressbar_ImportProgress.IsIndeterminate = false;
+                textblock_ImportProgress.Text = "[ERROR] Fail to import";
+
+                System.Windows.Forms.MessageBox.Show($"Fail to move the directory.\n{textbox_ServerDir.Text}\nto\n{importPath}", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Create WindowsGSM.cfg
+            newServerConfig.SetData(servergame, servername, gameServer);
+            newServerConfig.CreateWindowsGSMConfig();
+
+            LoadServerTable();
+            Log(newServerConfig.ServerID, "Import: Success");
+
+            MahAppFlyout_ImportGameServer.IsOpen = false;
+            textbox_ImportServerName.IsEnabled = true;
+            comboBox_ImportGameServer.IsEnabled = true;
+            textbox_ServerDir.IsEnabled = true;
+            button_Browse.IsEnabled = true;
+            progressbar_ImportProgress.IsIndeterminate = false;
+            textblock_ImportProgress.Text = "";
+        }
+
+        private void Button_Browse_Click(object sender, RoutedEventArgs e)
+        {
+            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+            folderBrowserDialog.ShowDialog();
+
+            if (!string.IsNullOrWhiteSpace(folderBrowserDialog.SelectedPath))
+            {
+                textbox_ServerDir.Text = folderBrowserDialog.SelectedPath;
             }
         }
 
@@ -766,6 +1015,35 @@ namespace WindowsGSM
             await GameServer_Restart(server);
         }
 
+        private async void Actions_Kill_Click(object sender, RoutedEventArgs e)
+        {
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
+
+            switch (g_iServerStatus[int.Parse(server.ID)])
+            {
+                case ServerStatus.Restarting:
+                case ServerStatus.Restarted:
+                case ServerStatus.Started:
+                case ServerStatus.Starting:
+                case ServerStatus.Stopping:
+                    Process p = g_Process[int.Parse(server.ID)];
+                    if (p != null && !p.HasExited)
+                    {
+                        Log(server.ID, "Actions: Kill");
+                        p.Kill();
+
+                        g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
+                        Log(server.ID, "Server: Killed");
+                        SetServerStatus(server, "Stopped");
+                        g_ServerConsoles[int.Parse(server.ID)].Clear();
+                        g_Process[int.Parse(server.ID)] = null;
+                    }
+
+                    break;
+            }
+        }
+
         private void Actions_ToggleConsole_Click(object sender, RoutedEventArgs e)
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
@@ -781,17 +1059,17 @@ namespace WindowsGSM
             ShowWindow(hWnd, ShowWindow(hWnd, WindowShowStyle.Hide) ? WindowShowStyle.Hide : WindowShowStyle.ShowNormal);
         }
 
-        private void Actions_StartAllServers_Click(object sender, RoutedEventArgs e)
+        private async void Actions_StartAllServers_Click(object sender, RoutedEventArgs e)
         {
             int num_row = ServerGrid.Items.Count;
             for (int i = 0; i < num_row; i++)
             {
                 var server = (Functions.ServerTable)ServerGrid.Items[i];
-                int serverId = int.Parse(server.ID);
+                if (server == null) { continue; }
 
-                if (g_iServerStatus[serverId] == ServerStatus.Stopped)
+                if (g_iServerStatus[int.Parse(server.ID)] == ServerStatus.Stopped)
                 {
-                    GameServer_Start(server);
+                    await GameServer_Start(server);
                 }
             }
         }
@@ -970,7 +1248,7 @@ namespace WindowsGSM
 
             //End All Running Process
             await EndAllRunningProcess(server.ID);
-            await Task.Delay(1000);
+            await Task.Delay(500);
 
             //Add Start File to WindowsFirewall before start
             string startPath = Functions.ServerPath.GetServersServerFiles(server.ID, gameServer.StartPath);
@@ -989,7 +1267,7 @@ namespace WindowsGSM
             //Fail to start
             if (p == null)
             {
-                g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
+                g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                 Log(server.ID, "Server: Fail to start");
                 Log(server.ID, "[ERROR] " + gameServer.Error);
                 SetServerStatus(server, "Stopped");
@@ -997,7 +1275,7 @@ namespace WindowsGSM
                 return null;
             }
 
-            g_Process[Int32.Parse(server.ID)] = p;
+            g_Process[int.Parse(server.ID)] = p;
             p.Exited += (sender, e) => OnGameServerExited(server);
 
             await Task.Run(() =>
@@ -1033,7 +1311,7 @@ namespace WindowsGSM
             //An error may occur on ShowWindow if not adding this 
             if (p == null || p.HasExited)
             {
-                g_Process[Int32.Parse(server.ID)] = null;
+                g_Process[int.Parse(server.ID)] = null;
 
                 g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
                 Log(server.ID, "Server: Fail to start");
@@ -1068,7 +1346,7 @@ namespace WindowsGSM
         {
             g_Process[int.Parse(server.ID)] = null;
 
-            dynamic gameServer = GameServer.Data.Class.Get(server.Game, null);
+            dynamic gameServer = GameServer.Data.Class.Get(server.Game);
             await gameServer.Stop(p);
 
             for (int i = 0; i < 10; i++)
@@ -1127,7 +1405,7 @@ namespace WindowsGSM
         #region Actions - Game Server
         private async Task GameServer_Start(Functions.ServerTable server, string notes = "")
         {
-            if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped) { return; }
+            if (g_iServerStatus[int.Parse(server.ID)] != ServerStatus.Stopped) { return; }
 
             string error = "";
             if (!string.IsNullOrWhiteSpace(server.IP) && !IsValidIPAddress(server.IP))
@@ -1148,22 +1426,28 @@ namespace WindowsGSM
                 return;
             }
 
-            Process p = g_Process[Int32.Parse(server.ID)];
+            Process p = g_Process[int.Parse(server.ID)];
             if (p != null) { return; }
 
-            if (g_bUpdateOnStart[Int32.Parse(server.ID)])
+            if (g_bUpdateOnStart[int.Parse(server.ID)])
             {
                 await GameServer_Update(server, " | Update on Start");
             }
 
-            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Starting;
+            g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Starting;
             Log(server.ID, "Action: Start" + notes);
             SetServerStatus(server, "Starting");
 
             var gameServer = await Server_BeginStart(server);
-            if (gameServer == null) { return; }
+            if (gameServer == null)
+            {
+                g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
+                Log(server.ID, "Server: Fail to start");
+                SetServerStatus(server, "Stopped");
+                return;
+            }
 
-            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Started;
+            g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Started;
             Log(server.ID, "Server: Started");
             if (!string.IsNullOrWhiteSpace(gameServer.Notice))
             {
@@ -1174,13 +1458,13 @@ namespace WindowsGSM
 
         private async Task GameServer_Stop(Functions.ServerTable server)
         {
-            if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Started) { return; }
+            if (g_iServerStatus[int.Parse(server.ID)] != ServerStatus.Started) { return; }
 
-            Process p = g_Process[Int32.Parse(server.ID)];
+            Process p = g_Process[int.Parse(server.ID)];
             if (p == null) { return; }
 
             //Begin stop
-            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopping;
+            g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopping;
             Log(server.ID, "Action: Stop");
             SetServerStatus(server, "Stopping");
 
@@ -1191,7 +1475,7 @@ namespace WindowsGSM
             {
                 Log(server.ID, "[NOTICE] Server fail to stop gracefully");
             }
-            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
+            g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
             SetServerStatus(server, "Stopped");
         }
 
@@ -1407,7 +1691,7 @@ namespace WindowsGSM
             await EndAllRunningProcess(server.ID);
             await Task.Delay(1000);
 
-            string serverPath = WGSM_PATH + @"\servers\" + server.ID;
+            string serverPath = Functions.ServerPath.GetServers(server.ID);
 
             await Task.Run(() =>
             {
@@ -1518,14 +1802,12 @@ namespace WindowsGSM
 
             while (p != null && !p.HasExited)
             {
+                await Task.Delay(60000 * UPDATE_INTERVAL_MINUTE);
+
                 if (!g_bAutoUpdate[serverId] || g_iServerStatus[serverId] == ServerStatus.Updating)
                 {
-                    await Task.Delay(1000);
-
                     continue;
                 }
-
-                await Task.Delay(60000 * UPDATE_INTERVAL_MINUTE);
 
                 if (p == null || p.HasExited) { break; }
 
@@ -1707,7 +1989,7 @@ namespace WindowsGSM
             if (string.IsNullOrWhiteSpace(server.IP) || string.IsNullOrWhiteSpace(server.QueryPort)) { return; }
 
             // Check the server support Query Method
-            dynamic gameServer = GameServer.Data.Class.Get(server.Game, null);
+            dynamic gameServer = GameServer.Data.Class.Get(server.Game);
             if (gameServer == null) { return; }
             if (gameServer.QueryMethod == null) { return; }
 
@@ -2035,17 +2317,24 @@ namespace WindowsGSM
         }
         #endregion
 
-        #region Donor Theme
-        private async void DonorTheme_IsCheckedChanged(object sender, EventArgs e)
+        #region Donor Connect
+        private async void DonorConnect_IsCheckedChanged(object sender, EventArgs e)
         {
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
 
             //If switch is checked
-            if (!MahAppSwitch_DonorTheme.IsChecked ?? false)
+            if (!MahAppSwitch_DonorConnect.IsChecked ?? false)
             {
-                SetDonorTheme();
-                Title = $"WindowsGSM {WGSM_VERSION}";
-                key.SetValue("DonorTheme", (MahAppSwitch_DonorTheme.IsChecked ?? false).ToString());
+                g_DonorType = "";
+                comboBox_Themes.Text = "Blue";
+                comboBox_Themes.IsEnabled = false;
+
+                //Set theme
+                AppTheme theme = ThemeManager.GetAppTheme((MahAppSwitch_DarkTheme.IsChecked ?? false) ? "BaseDark" : "BaseLight");
+                ThemeManager.ChangeAppStyle(System.Windows.Application.Current, ThemeManager.GetAccent(comboBox_Themes.SelectedItem.ToString()), theme);
+
+                key.SetValue("DonorTheme", (MahAppSwitch_DonorConnect.IsChecked ?? false).ToString());
+                key.SetValue("DonorColor", "Blue");
                 key.Close();
                 return;
             }
@@ -2060,26 +2349,26 @@ namespace WindowsGSM
                 DefaultText = authKey
             };
 
-            authKey = await this.ShowInputAsync("Donor Theme (Patreon)", "Please enter the activation key.", settings);
+            authKey = await this.ShowInputAsync("Donor Connect (Patreon)", "Please enter the activation key.", settings);
 
             //If pressed cancel or key is null or whitespace
             if (String.IsNullOrWhiteSpace(authKey))
             {
-                MahAppSwitch_DonorTheme.IsChecked = false;
+                MahAppSwitch_DonorConnect.IsChecked = false;
                 key.Close();
                 return;
             }
 
             ProgressDialogController controller = await this.ShowProgressAsync("Authenticating...", "Please wait...");
             controller.SetIndeterminate();
-            bool success = await ActivateDonorTheme(authKey);
+            (bool success, string name) = await AuthenticateDonor(authKey);
             await controller.CloseAsync();
 
             if (success)
             {
                 key.SetValue("DonorTheme", "True");
                 key.SetValue("DonorAuthKey", authKey);
-                await this.ShowMessageAsync("Success!", "Thanks for your donation! Here is your Donor Theme.");
+                await this.ShowMessageAsync("Success!", $"Thanks for your donation {name}, your support help us a lot!\nYou can choose any theme you like on the Settings!");
             }
             else
             {
@@ -2087,12 +2376,12 @@ namespace WindowsGSM
                 key.SetValue("DonorAuthKey", "");
                 await this.ShowMessageAsync("Fail to activate.", "Please visit https://windowsgsm.com/patreon/ to get the key.");
 
-                MahAppSwitch_DonorTheme.IsChecked = false;
+                MahAppSwitch_DonorConnect.IsChecked = false;
             }
             key.Close();
         }
 
-        private async Task<bool> ActivateDonorTheme(string authKey)
+        private async Task<(bool, string)> AuthenticateDonor(string authKey)
         {
             try
             {
@@ -2104,15 +2393,21 @@ namespace WindowsGSM
                     if (success)
                     {
                         string name = JObject.Parse(json)["name"].ToString();
-                        Title = $"WindowsGSM {WGSM_VERSION} - Patreon: {name}";
-
                         string type = JObject.Parse(json)["type"].ToString();
-                        SetDonorTheme(type);
 
                         g_DonorType = type;
                         g_DiscordBot.SetDonorType(g_DonorType);
+                        comboBox_Themes.IsEnabled = true;
 
-                        return true;
+                        return (true, name);
+                    }
+                    else
+                    {                
+                        MahAppSwitch_DonorConnect.IsChecked = false;
+
+                        //Set theme
+                        AppTheme theme = ThemeManager.GetAppTheme((MahAppSwitch_DarkTheme.IsChecked ?? false) ? "BaseDark" : "BaseLight");
+                        ThemeManager.ChangeAppStyle(System.Windows.Application.Current, ThemeManager.GetAccent("Blue"), theme);
                     }
                 }
             }
@@ -2121,48 +2416,18 @@ namespace WindowsGSM
 
             }
 
-            return false;
+            return (false, "");
         }
 
-        private void SetDonorTheme(string type = "")
+        private void ComboBox_Themes_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
+            key.SetValue("DonorColor", comboBox_Themes.SelectedItem.ToString());
+            key.Close();
+
             //Set theme
             AppTheme theme = ThemeManager.GetAppTheme((MahAppSwitch_DarkTheme.IsChecked ?? false) ? "BaseDark" : "BaseLight");
-            string color = "Teal";
-            switch (type)
-            {
-                case "BRONZE":
-                    color = "Orange";
-                    break;
-                case "GOLD":
-                    color = "Amber";
-                    break;
-                case "EMERALD":
-                    color = "Emerald";
-                    break;
-            }
-            ThemeManager.ChangeAppStyle(App.Current, ThemeManager.GetAccent(color), theme);
-
-            //Set icon
-            string uriPath = "pack://application:,,,/Images/WindowsGSM";
-            switch (type)
-            {
-                case "BRONZE":
-                case "GOLD":
-                case "EMERALD":
-                    uriPath += $"-{type}";
-                    break;
-            }
-            uriPath += ".ico";
-            var iconUri = new Uri(uriPath, UriKind.RelativeOrAbsolute);
-            Icon = BitmapFrame.Create(iconUri);
-
-            //Set notify icon
-            Stream iconStream = System.Windows.Application.GetResourceStream(new Uri(uriPath)).Stream;
-            if (iconStream != null)
-            {
-                notifyIcon.Icon = new System.Drawing.Icon(iconStream);
-            }
+            ThemeManager.ChangeAppStyle(System.Windows.Application.Current, ThemeManager.GetAccent(comboBox_Themes.SelectedItem.ToString()), theme);
         }
         #endregion
 
@@ -2672,11 +2937,7 @@ namespace WindowsGSM
                 textBox_DiscordBotToken.IsEnabled = false;
                 textBox_DiscordBotToken.Text = DiscordBot.Configs.GetBotToken();
 
-                listBox_DiscordBotAdminIDs.Items.Clear();
-                foreach (string adminID in DiscordBot.Configs.GetBotAdmins())
-                {
-                    listBox_DiscordBotAdminIDs.Items.Add(adminID);
-                }
+                Refresh_DiscordBotAdminList(listBox_DiscordBotAdminList.SelectedIndex);
             }
         }
         
@@ -2725,24 +2986,73 @@ namespace WindowsGSM
             string newAdminID = await this.ShowInputAsync("Add Admin ID", "Please enter the discord user ID.", settings);
             if (newAdminID == null) { return; } //If pressed cancel
 
-            var adminIDs = DiscordBot.Configs.GetBotAdmins();
-            adminIDs.Add(newAdminID);
-            DiscordBot.Configs.SetBotAdmins(adminIDs);
+            var adminList = DiscordBot.Configs.GetBotAdminList();
+            adminList.Add((newAdminID, "0"));
+            DiscordBot.Configs.SetBotAdminList(adminList);
+            Refresh_DiscordBotAdminList(listBox_DiscordBotAdminList.SelectedIndex);
+        }
 
-            listBox_DiscordBotAdminIDs.Items.Clear();
-            foreach (string adminID in DiscordBot.Configs.GetBotAdmins())
+        private async void Button_DiscordBotEditServerID_Click(object sender, RoutedEventArgs e)
+        {
+            var adminListItem = (DiscordBot.AdminListItem)listBox_DiscordBotAdminList.SelectedItem;
+            if (adminListItem == null) { return; }
+
+            var settings = new MetroDialogSettings
             {
-                listBox_DiscordBotAdminIDs.Items.Add(adminID);
+                AffirmativeButtonText = "Save",
+                DefaultText = adminListItem.ServerIds
+            };
+
+            string example = "0 - Grant All servers Permission.\n\nExamples:\n0\n1,2,3,4,5\n";
+            string newServerIds = await this.ShowInputAsync($"Edit Server IDs ({adminListItem.AdminId})", $"Please enter the server Ids where admin has access to the server.\n{example}", settings);
+            if (newServerIds == null) { return; } //If pressed cancel
+
+            var adminList = DiscordBot.Configs.GetBotAdminList();
+            for (int i = 0; i < adminList.Count; i++)
+            {
+                if (adminList[i].Item1 == adminListItem.AdminId)
+                {
+                    adminList.RemoveAt(i);
+                    adminList.Insert(i, (adminListItem.AdminId, newServerIds.Trim()));
+                    break;
+                }
             }
+            DiscordBot.Configs.SetBotAdminList(adminList);
+            Refresh_DiscordBotAdminList(listBox_DiscordBotAdminList.SelectedIndex);
         }
 
         private void Button_DiscordBotRemoveID_Click(object sender, RoutedEventArgs e)
         {
-            if (listBox_DiscordBotAdminIDs.SelectedIndex >= 0)
+            if (listBox_DiscordBotAdminList.SelectedIndex >= 0)
             {
-                listBox_DiscordBotAdminIDs.Items.Remove(listBox_DiscordBotAdminIDs.Items[listBox_DiscordBotAdminIDs.SelectedIndex]);
-                DiscordBot.Configs.SetBotAdmins(listBox_DiscordBotAdminIDs.Items.OfType<string>().ToList());
+                var adminList = DiscordBot.Configs.GetBotAdminList();
+                try
+                {
+                    adminList.RemoveAt(listBox_DiscordBotAdminList.SelectedIndex);
+                }
+                catch
+                {
+                    Console.WriteLine($"Fail to delete item {listBox_DiscordBotAdminList.SelectedIndex} in adminIDs.txt");
+                }
+                DiscordBot.Configs.SetBotAdminList(adminList);
+
+                listBox_DiscordBotAdminList.Items.Remove(listBox_DiscordBotAdminList.Items[listBox_DiscordBotAdminList.SelectedIndex]);
             }
+        }
+
+        public void Refresh_DiscordBotAdminList(int selectIndex = 0)
+        {
+            listBox_DiscordBotAdminList.Items.Clear();
+            foreach ((string adminID, string serverIDs) in DiscordBot.Configs.GetBotAdminList())
+            {
+                listBox_DiscordBotAdminList.Items.Add(new DiscordBot.AdminListItem { AdminId = adminID, ServerIds = serverIDs });
+            }
+            listBox_DiscordBotAdminList.SelectedIndex = listBox_DiscordBotAdminList.Items.Count >= 0 ? selectIndex : -1;
+        }
+
+        public int GetServerCount()
+        {
+            return ServerGrid.Items.Count;
         }
 
         public List<(string, string, string)> GetServerList()

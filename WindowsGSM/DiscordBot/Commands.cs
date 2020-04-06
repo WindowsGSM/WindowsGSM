@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -21,8 +22,8 @@ namespace WindowsGSM.DiscordBot
             if (message.Author.Id == _client.CurrentUser.Id) { return; }
 
             // Return if the author is not admin
-            var adminIDs = Configs.GetBotAdmins();
-            if (!adminIDs.Contains(message.Author.Id.ToString())) { return; }
+            List<string> adminIds = Configs.GetBotAdminIds();
+            if (!adminIds.Contains(message.Author.Id.ToString())) { return; }
 
             // Return if the message is not WindowsGSM prefix
             var prefix = Configs.GetBotPrefix();
@@ -33,18 +34,52 @@ namespace WindowsGSM.DiscordBot
                 await SendHelpEmbed(message);
                 return;
             }
-            if (message.Content.Length >= (commandLen + 1) && message.Content.Substring(0, commandLen + 1) != $"{prefix}wgsm ") { return; }
 
-            // Remote Actions
-            string[] args = message.Content.Split(new char[] { ' ' }, 2);
-            switch (args[1].Split(' ')[0])
+            if (message.Content.Length >= commandLen + 1 && message.Content.Substring(0, commandLen + 1) == $"{prefix}wgsm ")
             {
-                case "list": await Action_List(message); break;
-                case "start": await Action_Start(message, args[1]); break;
-                case "stop": await Action_Stop(message, args[1]); break;
-                case "restart": await Action_Restart(message, args[1]); break;
-                case "send": await Action_SendCommand(message, args[1]); break;
-                default: await SendHelpEmbed(message); break;
+                // Remote Actions
+                string[] args = message.Content.Split(new char[] { ' ' }, 2);
+                string[] splits = args[1].Split(' ');
+
+                switch (splits[0])
+                {
+                    case "start":
+                    case "stop":
+                    case "restart":
+                    case "send":
+                    case "list":
+                    case "check":
+                        List<string> serverIds = Configs.GetServerIdsByAdminId(message.Author.Id.ToString());
+                        if (splits[0] == "check")
+                        {
+                            await message.Channel.SendMessageAsync(
+                                serverIds.Contains("0") ? 
+                                "You have full permission.\nCommands: `check`, `list`, `start`, `stop`, `restart`, `send`" :
+                                $"You have permission on servers (`{string.Join(",", serverIds.ToArray())}`)\nCommands: `check`, `start`, `stop`, `restart`, `send`");
+                            break;
+                        }
+
+                        if (splits[0] == "list" && serverIds.Contains("0"))
+                        {
+                            await Action_List(message);
+                        }
+                        else if (splits[0] != "list" && (serverIds.Contains("0") || serverIds.Contains(splits[1])))
+                        {
+                            switch (splits[0])
+                            {
+                                case "start": await Action_Start(message, args[1]); break;
+                                case "stop": await Action_Stop(message, args[1]); break;
+                                case "restart": await Action_Restart(message, args[1]); break;
+                                case "send": await Action_SendCommand(message, args[1]); break;
+                            }
+                        }
+                        else
+                        {
+                            await message.Channel.SendMessageAsync("You don't have permission to access.");
+                        }
+                        break;
+                    default: await SendHelpEmbed(message); break;
+                }
             }
         }
 
@@ -238,8 +273,8 @@ namespace WindowsGSM.DiscordBot
             };
 
             string prefix = Configs.GetBotPrefix();
-            embed.AddField("Command", $"{prefix}wgsm list\n{prefix}wgsm start <SERVERID>\n{prefix}wgsm stop <SERVERID>\n{prefix}wgsm restart <SERVERID>\n{prefix}wgsm send <SERVERID> <COMMAND>", inline: true);
-            embed.AddField("Usage", "Print server list with id, status and name\nStart a server remotely by serverId\nStop a server remotely by serverId\nRestart a server remotely by serverId\nSend a command to server console", inline: true);
+            embed.AddField("Command", $"{prefix}wgsm check\n{prefix}wgsm list\n{prefix}wgsm start <SERVERID>\n{prefix}wgsm stop <SERVERID>\n{prefix}wgsm restart <SERVERID>\n{prefix}wgsm send <SERVERID> <COMMAND>", inline: true);
+            embed.AddField("Usage", "Check permission\nPrint server list with id, status and name\nStart a server remotely by serverId\nStop a server remotely by serverId\nRestart a server remotely by serverId\nSend a command to server console", inline: true);
 
             await message.Channel.SendMessageAsync(embed: embed.Build());
         }

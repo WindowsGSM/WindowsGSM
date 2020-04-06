@@ -1,18 +1,12 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Windows.Forms;
 
 namespace WindowsGSM.GameServer.Engine
 {
     class GoldSource
     {
-        [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
-
         public Functions.ServerConfig serverData;
 
         public string Error;
@@ -109,7 +103,7 @@ namespace WindowsGSM.GameServer.Engine
         {
             await Task.Run(() =>
             {
-                SetForegroundWindow(p.MainWindowHandle);
+                Functions.ServerConsole.SetMainWindow(p.MainWindowHandle);
                 Functions.ServerConsole.SendWaitToMainWindow("quit");
                 Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
             });

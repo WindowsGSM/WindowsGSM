@@ -4,68 +4,42 @@ using System.IO;
 
 namespace WindowsGSM.GameServer
 {
-    /// <summary>
-    /// 
-    /// Note:
-    /// Mordhau Dedicated Server is very special, the console doesn't allow any input, only output.
-    /// Server owner are required to port forward three ports which is unique.
-    /// 
-    /// RedirectStandardOutput works, but there is a problem figure out by ! AssaultLine who is a server owner of Mordhau community.
-    /// when changing a map to a custom map, the redirect output is stucked in p.OutputDataReceived and the whole WindowsGSM and Mordhau freeze.
-    /// Therefore, I give up to use RedirectStandardOutput and use the traditional method to handle this server which is ToggleConsole=true.
-    /// Although this may not cool as the server output is not within WindowsGSM, but that is the only choice to keep Mordhau stable.
-    /// 
-    /// The freezing issue is cause by heavy loading of custom map and output deadlocked, I think there is no fix for this until Mordhau developer fix the between output and load.
-    /// The issue can reproduce by change ToggleConsole=false. Then start a server and join the server, type ChangeMap <custommap> command in the terminal in Mordhau, the freeze issue occur.
-    /// 
-    /// </summary>
-    class MORDHAU : Engine.UnrealEngine
+    class CE
     {
         private readonly Functions.ServerConfig _serverData;
 
         public string Error;
         public string Notice;
 
-        public const string FullName = "Mordhau Dedicated Server";
-        public string StartPath = @"Mordhau\Binaries\Win64\MordhauServer-Win64-Shipping.exe";
-        public bool ToggleConsole = false;
+        public const string FullName = "Conan Exiles Dedicated Server";
+        public string StartPath = @"ConanSandbox\Binaries\Win64\ConanSandboxServer-Win64-Test.exe";
+        public bool ToggleConsole = true;
         public int PortIncrements = 2;
         public dynamic QueryMethod = new Query.A2S();
 
         public string Port = "7777";
         public string QueryPort = "27015";
-        public string Defaultmap = "FFA_ThePit";
-        public string Maxplayers = "16";
-        public string Additional = "-BeaconPort={{beaconport}}";
+        public string Defaultmap = "game.db";
+        public string Maxplayers = "40";
+        public string Additional = "";
 
-        public string AppId = "629800";
+        public string AppId = "443030";
 
-        public MORDHAU(Functions.ServerConfig serverData)
+        public CE(Functions.ServerConfig serverData)
         {
             _serverData = serverData;
         }
 
         public async void CreateServerCFG()
-        {    
-            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, @"Mordhau\Saved\Config\WindowsServer\Game.ini");
-            Directory.CreateDirectory(Path.GetDirectoryName(configPath));
-
-            //Download Game.ini
+        {
+            //Download Engine.ini
+            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, @"ConanSandbox\Saved\Config\WindowsServer\Engine.ini");
             if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
             {
                 string configText = File.ReadAllText(configPath);
-                configText = configText.Replace("{{hostname}}", _serverData.ServerName);
-                configText = configText.Replace("{{rcon_password}}", _serverData.GetRCONPassword());
+                configText = configText.Replace("{{ServerName}}", _serverData.ServerName);
+                configText = configText.Replace("{{ServerPassword}}", _serverData.GetRCONPassword());
                 File.WriteAllText(configPath, configText);
-            }
-
-            //Edit WindowsGSM.cfg
-            string configFile = Functions.ServerPath.GetServersConfigs(_serverData.ServerID, "WindowsGSM.cfg");
-            if (File.Exists(configFile))
-            {
-                string configText = File.ReadAllText(configFile);
-                configText = configText.Replace("{{beaconport}}", (int.Parse(_serverData.ServerPort) + 7223).ToString());
-                File.WriteAllText(configFile, configText);
             }
         }
 
@@ -78,16 +52,10 @@ namespace WindowsGSM.GameServer
                 return null;
             }
 
-            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, @"Mordhau\Saved\Config\WindowsServer\Game.ini");
-            if (!File.Exists(configPath))
-            {
-                Notice = $"{Path.GetFileName(configPath)} not found ({configPath})";
-            }
-
-            string param = string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : _serverData.ServerMap;
-            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? "" : $" -MultiHome={_serverData.ServerIP}";
+            string param = string.IsNullOrWhiteSpace(_serverData.ServerIP) ? "" : $" -MultiHome={_serverData.ServerIP}";
             param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" -Port={_serverData.ServerPort}";
             param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? "" : $" -QueryPort={_serverData.ServerQueryPort}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? "" : $" -MaxPlayers={_serverData.ServerMaxPlayer}";
             param += $" {_serverData.ServerParam}" + (ToggleConsole ? " -log" : "");
 
             Process p;
@@ -129,7 +97,7 @@ namespace WindowsGSM.GameServer
                 p.BeginOutputReadLine();
                 p.BeginErrorReadLine();
             }
-            
+
             return p;
         }
 
@@ -139,11 +107,12 @@ namespace WindowsGSM.GameServer
             {
                 if (p.StartInfo.CreateNoWindow)
                 {
-                    p.Kill();
+                    p.CloseMainWindow();
                 }
                 else
                 {
-                    p.CloseMainWindow();
+                    Functions.ServerConsole.SetMainWindow(p.MainWindowHandle);
+                    Functions.ServerConsole.SendWaitToMainWindow("^c");
                 }
             });
         }
@@ -168,12 +137,12 @@ namespace WindowsGSM.GameServer
 
         public bool IsInstallValid()
         {
-            return File.Exists(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "MordhauServer.exe"));
+            return File.Exists(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "ConanSandboxServer.exe"));
         }
 
         public bool IsImportValid(string path)
         {
-            string exePath = Path.Combine(path, "MordhauServer.exe");
+            string exePath = Path.Combine(path, "ConanSandboxServer.exe");
             Error = $"Invalid Path! Fail to find {Path.GetFileName(exePath)}";
             return File.Exists(exePath);
         }

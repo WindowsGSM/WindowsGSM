@@ -4,16 +4,11 @@ using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Text.RegularExpressions;
-using System.Runtime.InteropServices;
-using System;
 
 namespace WindowsGSM.GameServer
 {
     class MCPE
     {
-        [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
-
         private readonly Functions.ServerConfig _serverData;
 
         public string Error;
@@ -131,7 +126,7 @@ namespace WindowsGSM.GameServer
                 }
                 else
                 {
-                    SetForegroundWindow(p.MainWindowHandle);
+                    Functions.ServerConsole.SetMainWindow(p.MainWindowHandle);
                     Functions.ServerConsole.SendWaitToMainWindow("stop");
                     Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
                 }

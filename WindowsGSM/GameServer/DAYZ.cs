@@ -29,6 +29,7 @@ namespace WindowsGSM.GameServer
         public bool ToggleConsole = true;
         public int PortIncrements = 2;
         public dynamic QueryMethod = null;
+        public bool requireSteamAccount = true;
 
         public string Port = "2302";
         public string QueryPort = "2303";

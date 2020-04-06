@@ -17,7 +17,7 @@ namespace WindowsGSM.Functions
         {
             _serverId = serverId;
             _serverGame = serverGame;
-            _gameServer = GameServer.Data.Class.Get(serverGame, null);
+            _gameServer = GameServer.Data.Class.Get(serverGame);
         }
 
         public List<string> GetLeftListBox()
@@ -48,7 +48,7 @@ namespace WindowsGSM.Functions
                 }
             }
 
-            dynamic gameServer = GameServer.Data.Class.Get(_serverGame, null);
+            dynamic gameServer = GameServer.Data.Class.Get(_serverGame);
             if (gameServer is GameServer.Engine.Source)
             {
                 string dpluginPath = ServerPath.GetServersServerFiles(_serverId, gameServer.Game, @"addons\sourcemod\plugins\disabled");
@@ -92,7 +92,7 @@ namespace WindowsGSM.Functions
                 return list;
             }
 
-            dynamic gameServer = GameServer.Data.Class.Get(_serverGame, null);
+            dynamic gameServer = GameServer.Data.Class.Get(_serverGame);
             if (gameServer is GameServer.Engine.Source)
             {
                 string pluginPath = ServerPath.GetServersServerFiles(_serverId, gameServer.Game, @"addons\sourcemod\plugins");
@@ -121,7 +121,7 @@ namespace WindowsGSM.Functions
                 return true;
             }
 
-            dynamic gameServer = GameServer.Data.Class.Get(_serverGame, null);
+            dynamic gameServer = GameServer.Data.Class.Get(_serverGame);
             if (gameServer is GameServer.Engine.Source)
             {
                 string pluginPath = ServerPath.GetServersServerFiles(_serverId, gameServer.Game, @"addons\sourcemod\plugins");
@@ -153,7 +153,7 @@ namespace WindowsGSM.Functions
                 return true;
             }
 
-            dynamic gameServer = GameServer.Data.Class.Get(_serverGame, null);
+            dynamic gameServer = GameServer.Data.Class.Get(_serverGame);
             if (gameServer is GameServer.Engine.Source)
             {
                 string pluginPath = ServerPath.GetServersServerFiles(_serverId, gameServer.Game, @"addons\sourcemod\plugins");
@@ -182,7 +182,7 @@ namespace WindowsGSM.Functions
                 return "Steam Workshop";
             }
 
-            dynamic gameServer = GameServer.Data.Class.Get(_serverGame, null);
+            dynamic gameServer = GameServer.Data.Class.Get(_serverGame);
             if (gameServer is GameServer.Engine.Source)
             {
                 return "SourceMod Plugins";
@@ -193,7 +193,7 @@ namespace WindowsGSM.Functions
 
         public static bool IsGameSupportManageAddons(string serverGame)
         {
-            dynamic gameServer = GameServer.Data.Class.Get(serverGame, null);
+            dynamic gameServer = GameServer.Data.Class.Get(serverGame);
             if (gameServer is GameServer.Engine.Source)
             {
                 return true;

@@ -44,10 +44,10 @@ namespace WindowsGSM
                 }
             }
 
+            string version = string.Concat(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString().Reverse().Skip(2).Reverse());
+
             AppDomain.CurrentDomain.UnhandledException += (s, args) =>
             {
-                MessageBox.Show("Unhandled Exception: " + args.ExceptionObject, "Crash - Please screenshot this", MessageBoxButton.OK, MessageBoxImage.Error);
-
                 string logPath = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Logs");
                 Directory.CreateDirectory(logPath);
 
@@ -57,7 +57,9 @@ namespace WindowsGSM
                     File.Create(logFile).Dispose();
                 }
 
-                File.AppendAllText(logFile, args.ExceptionObject.ToString());
+                File.AppendAllText(logFile, $"WindowsGSM v{version}\n\n" + args.ExceptionObject.ToString());
+
+                MessageBox.Show($"Please view the crash log (CRASH_{DateTime.Now.ToString("yyyyMMdd")}.log)\n\nUnhandled Exception: {args.ExceptionObject}", $"WindowsGSM v{version} - Crash", MessageBoxButton.OK, MessageBoxImage.Error);
             };
 
             MainWindow mainwindow = new MainWindow();

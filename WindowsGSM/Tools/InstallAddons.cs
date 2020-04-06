@@ -9,7 +9,7 @@ namespace WindowsGSM.Tools
     {
         public static bool? IsAMXModXAndMetaModPExists(Functions.ServerTable server)
         {
-            dynamic gameServer = GameServer.Data.Class.Get(server.Game, null);
+            dynamic gameServer = GameServer.Data.Class.Get(server.Game);
             if (!(gameServer is GameServer.Engine.GoldSource))
             {
                 // Game Type not supported
@@ -24,7 +24,7 @@ namespace WindowsGSM.Tools
         {
             try
             {
-                dynamic gameServer = GameServer.Data.Class.Get(server.Game, null);
+                dynamic gameServer = GameServer.Data.Class.Get(server.Game);
                 return await GameServer.Addon.AMXModX.Install(server.ID, modFolder: gameServer.Game);
             }
             catch
@@ -35,7 +35,7 @@ namespace WindowsGSM.Tools
 
         public static bool? IsSourceModAndMetaModExists(Functions.ServerTable server)
         {
-            dynamic gameServer = GameServer.Data.Class.Get(server.Game, null);
+            dynamic gameServer = GameServer.Data.Class.Get(server.Game);
             if (!(gameServer is GameServer.Engine.Source))
             {
                 // Game Type not supported
@@ -50,7 +50,7 @@ namespace WindowsGSM.Tools
         {
             try
             {
-                dynamic gameServer = GameServer.Data.Class.Get(server.Game, null);
+                dynamic gameServer = GameServer.Data.Class.Get(server.Game);
                 return await GameServer.Addon.SourceMod.Install(server.ID, modFolder: gameServer.Game);
             }
             catch

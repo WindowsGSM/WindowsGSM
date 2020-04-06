@@ -45,7 +45,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
+    <Prefer32Bit>true</Prefer32Bit>
     <NoWarn>1998;</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -313,6 +313,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="DiscordBot\AdminListItem.cs" />
     <Compile Include="DiscordBot\Bot.cs" />
     <Compile Include="DiscordBot\Commands.cs" />
     <Compile Include="DiscordBot\Configs.cs" />
@@ -323,12 +324,15 @@
     <Compile Include="GameServer\Addon\AMXModX.cs" />
     <Compile Include="GameServer\Addon\SourceMod.cs" />
     <Compile Include="GameServer\ARKSE.cs" />
+    <Compile Include="GameServer\AVORION.cs" />
     <Compile Include="GameServer\BW.cs" />
+    <Compile Include="GameServer\CE.cs" />
     <Compile Include="GameServer\DODS.cs" />
     <Compile Include="GameServer\EGS.cs" />
     <Compile Include="GameServer\Engine\Unity.cs" />
     <Compile Include="GameServer\Engine\UnrealEngine.cs" />
     <Compile Include="GameServer\HEAT.cs" />
+    <Compile Include="GameServer\INSS.cs" />
     <Compile Include="GameServer\ONSET.cs" />
     <Compile Include="GameServer\Query\A2S.cs" />
     <Compile Include="GameServer\ROK.cs" />
@@ -356,14 +360,6 @@
     <Compile Include="Tools\GlobalServerList.cs" />
     <Compile Include="Tools\InstallAddons.cs" />
     <Compile Include="WindowsFirewall.cs" />
-    <Page Include="Import.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Install.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -377,12 +373,6 @@
     <Compile Include="GameServer\GMOD.cs" />
     <Compile Include="GameServer\MCPE.cs" />
     <Compile Include="GameServer\RUST.cs" />
-    <Compile Include="Import.xaml.cs">
-      <DependentUpon>Import.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Install.xaml.cs">
-      <DependentUpon>Install.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Functions\ServerConfig.cs" />
     <Compile Include="Images\Row.cs" />
     <Compile Include="GameServer\Data\Icon.Designer.cs">
@@ -648,6 +638,15 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Games\onset.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\avorion.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\ce.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\inss.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

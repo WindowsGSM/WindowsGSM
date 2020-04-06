@@ -123,8 +123,14 @@
   <data name="ARK: Survival Evolved Dedicated Server" xml:space="preserve">
     <value>Images/Games/arkse.png</value>
   </data>
+  <data name="Avorion Dedicated Server" xml:space="preserve">
+    <value>Images/Games/avorion.png</value>
+  </data>
   <data name="BlackWake Dedicated Server" xml:space="preserve">
     <value>Images/Games/bw.png</value>
+  </data>
+  <data name="Conan Exiles Dedicated Server" xml:space="preserve">
+    <value>Images/Games/ce.png</value>
   </data>
   <data name="Counter-Strike: 1.6 Dedicated Server" xml:space="preserve">
     <value>Images/Games/cs.png</value>
@@ -161,6 +167,9 @@
   </data>
   <data name="Insurgency Dedicated Server" xml:space="preserve">
     <value>Images/Games/ins.png</value>
+  </data>
+  <data name="Insurgency: Sandstorm Dedicated Server" xml:space="preserve">
+    <value>Images/Games/inss.png</value>
   </data>
   <data name="Left 4 Dead 2 Dedicated Server" xml:space="preserve">
     <value>Images/Games/l4d2.png</value>

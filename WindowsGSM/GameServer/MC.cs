@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Windows;
 using System.Net;
 using Newtonsoft.Json.Linq;
@@ -12,9 +11,6 @@ namespace WindowsGSM.GameServer
 {
     class MC
     {
-        [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
-
         private readonly Functions.ServerConfig _serverData;
 
         public string Error;
@@ -30,7 +26,7 @@ namespace WindowsGSM.GameServer
         public string QueryPort = "25565";
         public string Defaultmap = "world";
         public string Maxplayers = "20";
-        public string Additional = "-Xmx1024M -Xms1024M -XX:+UseG1GC";
+        public string Additional = "-Xmx1024M -Xms1024M";
 
         private enum Java : int
         {
@@ -38,6 +34,16 @@ namespace WindowsGSM.GameServer
             InstalledGlobal = 1, //(java)
             InstalledAbsolute = 2 //Path: (C:\Program Files (x86)\Java\jre1.8.0_231\bin\java.exe)
         }
+
+        private static string[] _JavaData =
+        { 
+            $"jre-8u241-windows-{(Environment.Is64BitOperatingSystem ? "x64" : "i586")}.exe",
+            Environment.Is64BitOperatingSystem ?
+                "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=241536_1f5b5a70bf22433b84d0e960903adac8" :
+                "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=241534_1f5b5a70bf22433b84d0e960903adac8",
+            $"C:\\Program Files{(Environment.Is64BitOperatingSystem ? "" : " (x86)")}\\Java\\jre1.8.0_241\\bin\\java.exe",
+            $"C:\\Program Files{(Environment.Is64BitOperatingSystem ? "" : " (x86)")}\\Java\\jre1.8.0_241"
+        };
 
         public MC(Functions.ServerConfig serverData)
         {
@@ -86,7 +92,7 @@ namespace WindowsGSM.GameServer
                 Notice = $"server.properties not found ({configPath}). Generated a new one.";
             }
 
-            string javaPath = (isJavaInstalled == Java.InstalledGlobal) ? "java" : "C:\\Program Files (x86)\\Java\\jre1.8.0_231\\bin\\java.exe";
+            string javaPath = (isJavaInstalled == Java.InstalledGlobal) ? "java" : _JavaData[2];
 
             if (isJavaInstalled == Java.InstalledAbsolute)
             {
@@ -152,7 +158,7 @@ namespace WindowsGSM.GameServer
                 }
                 else
                 {
-                    SetForegroundWindow(p.MainWindowHandle);
+                    Functions.ServerConsole.SetMainWindow(p.MainWindowHandle);
                     Functions.ServerConsole.SendWaitToMainWindow("stop");
                     Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
                 }
@@ -162,7 +168,7 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             //EULA
-            MessageBoxResult result = System.Windows.MessageBox.Show("By continuing you are indicating your agreement to the EULA.\n(https://account.mojang.com/documents/minecraft_eula)", "Agreement to the EULA", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            MessageBoxResult result = MessageBox.Show("By continuing you are indicating your agreement to the EULA.\n(https://account.mojang.com/documents/minecraft_eula)", "Agreement to the EULA", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result != MessageBoxResult.Yes)
             {
                 Error = "Disagree to the EULA";
@@ -173,7 +179,7 @@ namespace WindowsGSM.GameServer
             if (IsJavaJREInstalled() == 0)
             {
                 //Java
-                result = System.Windows.MessageBox.Show("Java is not installed\n\nWould you like to install?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                result = MessageBox.Show("Java is not installed\n\nWould you like to install?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (result != MessageBoxResult.Yes)
                 {
                     Error = "Java is not installed";
@@ -190,7 +196,7 @@ namespace WindowsGSM.GameServer
             {
                 WebClient webClient = new WebClient();
                 const string manifestUrl = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
-                string versionJson = webClient.DownloadString(manifestUrl);
+                string versionJson = await webClient.DownloadStringTaskAsync(manifestUrl);
                 string latesetVersion = JObject.Parse(versionJson)["latest"]["release"].ToString();
                 var versionObject = JObject.Parse(versionJson)["versions"];
                 string packageUrl = null;
@@ -211,13 +217,22 @@ namespace WindowsGSM.GameServer
                 }
 
                 //packageUrl example: https://launchermeta.mojang.com/v1/packages/6876d19c096de56d1aa2cf434ec6b0e66e0aba00/1.15.json
-                var packageJson = webClient.DownloadString(packageUrl);
+                var packageJson = await webClient.DownloadStringTaskAsync(packageUrl);
 
                 //serverJarUrl example: https://launcher.mojang.com/v1/objects/e9f105b3c5c7e85c7b445249a93362a22f62442d/server.jar
                 string serverJarUrl = JObject.Parse(packageJson)["downloads"]["server"]["url"].ToString();
+                await webClient.DownloadFileTaskAsync(serverJarUrl, Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "server.jar"));
 
-                webClient.DownloadFileCompleted += InitiateServerJar;
-                webClient.DownloadFileAsync(new Uri(serverJarUrl), Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "server.jar"));
+                //Create eula.txt
+                string eulaPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "eula.txt");
+                File.Create(eulaPath).Dispose();
+
+                using (TextWriter textwriter = new StreamWriter(eulaPath))
+                {
+                    textwriter.WriteLine("#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).");
+                    textwriter.WriteLine("#Generated by WindowsGSM.exe");
+                    textwriter.WriteLine("eula=true");
+                }
             }
             catch
             {
@@ -282,9 +297,18 @@ namespace WindowsGSM.GameServer
 
                 //serverJarUrl example: https://launcher.mojang.com/v1/objects/e9f105b3c5c7e85c7b445249a93362a22f62442d/server.jar
                 string serverJarUrl = JObject.Parse(packageJson)["downloads"]["server"]["url"].ToString();
+                await webClient.DownloadFileTaskAsync(serverJarUrl, Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "server.jar"));
 
-                webClient.DownloadFileCompleted += InitiateServerJar;
-                webClient.DownloadFileAsync(new Uri(serverJarUrl), serverJarPath);
+                //Create eula.txt
+                string eulaPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "eula.txt");
+                File.Create(eulaPath).Dispose();
+
+                using (TextWriter textwriter = new StreamWriter(eulaPath))
+                {
+                    textwriter.WriteLine("#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).");
+                    textwriter.WriteLine("#Generated by WindowsGSM.exe");
+                    textwriter.WriteLine("eula=true");
+                }
             }
             catch
             {
@@ -382,7 +406,7 @@ namespace WindowsGSM.GameServer
                 string output = p.StandardOutput.ReadToEnd();
                 string error = p.StandardError.ReadToEnd();
 
-                if (output.Contains("java version") || error.Contains("java version"))
+                if (!output.Contains("is not recognized"))
                 {
                     return Java.InstalledGlobal;
                 }
@@ -399,12 +423,12 @@ namespace WindowsGSM.GameServer
                 psi.RedirectStandardError = true;
                 psi.UseShellExecute = false;
                 psi.CreateNoWindow = true;
-                psi.Arguments = "/c \"C:\\Program Files (x86)\\Java\\jre1.8.0_231\\bin\\java.exe\" -version";
+                psi.Arguments = $"/c \"{_JavaData[2]}\" -version";
                 Process p = Process.Start(psi);
                 string output = p.StandardOutput.ReadToEnd();
                 string error = p.StandardError.ReadToEnd();
 
-                if (output.Contains("java version") || error.Contains("java version"))
+                if (!output.Contains("is not recognized"))
                 {
                     return Java.InstalledAbsolute;
                 }
@@ -420,8 +444,8 @@ namespace WindowsGSM.GameServer
         private async Task<bool> DownloadJavaJRE()
         {
             string serverFilesPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
-            string filename = "jre-8u231-windows-i586-iftw.exe";
-            string installer = "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=240725_5b13a193868b4bf28bcb45c792fce896";
+            string filename = _JavaData[0];
+            string installLink = _JavaData[1];
 
             //Download jre-8u231-windows-i586-iftw.exe from https://www.java.com/en/download/manual.jsp
             string jrePath = Path.Combine(serverFilesPath, filename);
@@ -430,30 +454,23 @@ namespace WindowsGSM.GameServer
                 WebClient webClient = new WebClient();
 
                 //Run jre-8u231-windows-i586-iftw.exe to install Java
-                await webClient.DownloadFileTaskAsync(installer, jrePath);
+                await webClient.DownloadFileTaskAsync(installLink, jrePath);
                 string installPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
-                string javaPath = @"C:\Program Files (x86)\Java\jre1.8.0_231";
                 ProcessStartInfo psi = new ProcessStartInfo(jrePath);
                 psi.WorkingDirectory = installPath;
-                psi.Arguments = $"INSTALL_SILENT=Enable INSTALLDIR=\"{javaPath}\"";
+                psi.Arguments = $"INSTALL_SILENT=Enable INSTALLDIR=\"{_JavaData[3]}\"";
                 Process p = new Process
                 {
                     StartInfo = psi,
                     EnableRaisingEvents = true
                 };
                 p.Start();
-                p.Exited += (object sender, EventArgs e) => 
+
+                while (!File.Exists(_JavaData[2]))
                 {
-                    try
-                    {
-                        //Delete the jre-8u231-windows-i586-iftw.exe after installation
-                        File.Delete(jrePath);
-                    }
-                    catch
-                    {
-                        //Ignore
-                    }
-                };      
+                    await Task.Delay(100);
+                    continue;
+                }
             }
             catch
             {
@@ -462,20 +479,6 @@ namespace WindowsGSM.GameServer
             }
 
             return true;
-        }
-
-        private void InitiateServerJar(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
-        {
-            //Create eula.txt
-            string eulaPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "eula.txt");
-            File.Create(eulaPath).Dispose();
-
-            using (TextWriter textwriter = new StreamWriter(eulaPath))
-            {
-                textwriter.WriteLine("#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).");
-                textwriter.WriteLine("#Generated by WindowsGSM.exe");
-                textwriter.WriteLine("eula=true");
-            }
         }
     }
 }

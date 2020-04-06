@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using System.Windows;
 using Discord;
 using Discord.WebSocket;
 
@@ -41,7 +42,7 @@ namespace WindowsGSM.DiscordBot
 		{
 			try
 			{
-				Stream stream = System.Windows.Application.GetResourceStream(new Uri($"pack://application:,,,/Images/WindowsGSM{(string.IsNullOrWhiteSpace(_donorType) ? "" : $"-{_donorType}")}.png")).Stream;
+				Stream stream = Application.GetResourceStream(new Uri($"pack://application:,,,/Images/WindowsGSM{(string.IsNullOrWhiteSpace(_donorType) ? "" : $"-{_donorType}")}.png")).Stream;
 				await _client.CurrentUser.ModifyAsync(x =>
 				{
 					x.Username = "WindowsGSM";
@@ -51,6 +52,19 @@ namespace WindowsGSM.DiscordBot
 			catch
 			{
 				// ignore
+			}
+
+			while (_client != null)
+			{
+				if (Application.Current == null) { continue; }
+				await Application.Current.Dispatcher.Invoke(async () =>
+				{
+					MainWindow WindowsGSM = (MainWindow)Application.Current.MainWindow;
+					int serverCount = WindowsGSM.ServerGrid.Items.Count;
+					await _client.SetGameAsync($"{serverCount} game server{(serverCount > 1 ? "s" : "")}");
+				});
+
+				await Task.Delay(900000);
 			}
 		}
 

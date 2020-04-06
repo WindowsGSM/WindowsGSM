@@ -1,9 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Runtime.InteropServices;
 using System.Net;
 using System.Text.RegularExpressions;
 
@@ -11,9 +9,6 @@ namespace WindowsGSM.GameServer
 {
     class GTA5
     {
-        [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
-
         private readonly Functions.ServerConfig _serverData;
 
         public string Error;
@@ -140,7 +135,7 @@ namespace WindowsGSM.GameServer
                 }
                 else
                 {
-                    SetForegroundWindow(p.MainWindowHandle);
+                    Functions.ServerConsole.SetMainWindow(p.MainWindowHandle);
                     Functions.ServerConsole.SendWaitToMainWindow("quit");
                     Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
                 }

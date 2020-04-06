@@ -2,7 +2,7 @@
 {
     static class Class
     {
-        public static dynamic Get(string serverGame, Functions.ServerConfig serverData)
+        public static dynamic Get(string serverGame, Functions.ServerConfig serverData = null)
         {
             switch (serverGame)
             {
@@ -35,7 +35,10 @@
                 case BW.FullName: return new BW(serverData);
                 case ONSET.FullName: return new ONSET(serverData);
                 case EGS.FullName: return new EGS(serverData);
-                case UNT.FullName: return new UNT(serverData);
+                case UNT.FullName: return new UNT(serverData); 
+                case AVORION.FullName: return new AVORION(serverData);
+                case CE.FullName: return new CE(serverData);
+                case INSS.FullName: return new INSS(serverData);
                 default: return null;
             }
         }

@@ -79,11 +79,29 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/avorion.png.
+        /// </summary>
+        public static string Avorion_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Avorion Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/bw.png.
         /// </summary>
         public static string BlackWake_Dedicated_Server {
             get {
                 return ResourceManager.GetString("BlackWake Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/ce.png.
+        /// </summary>
+        public static string Conan_Exiles_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Conan Exiles Dedicated Server", resourceCulture);
             }
         }
         
@@ -183,6 +201,15 @@ namespace WindowsGSM.GameServer.Data {
         public static string Heat_Dedicated_Server {
             get {
                 return ResourceManager.GetString("Heat Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/inss.png.
+        /// </summary>
+        public static string Insurgency__Sandstorm_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Insurgency: Sandstorm Dedicated Server", resourceCulture);
             }
         }
         
