@@ -117,9 +117,10 @@ namespace WindowsGSM
                             nextLine += System.Environment.NewLine + "Please send the Login Token:";
                         }
 
-                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        Application.Current.Dispatcher.Invoke(() =>
                         {
                             textbox_installlog.AppendText(nextLine + System.Environment.NewLine);
+                            textbox_installlog.ScrollToEnd();
                         });
                     }
 

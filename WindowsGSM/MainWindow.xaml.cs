@@ -781,7 +781,7 @@ namespace WindowsGSM
             ShowWindow(hWnd, ShowWindow(hWnd, WindowShowStyle.Hide) ? WindowShowStyle.Hide : WindowShowStyle.ShowNormal);
         }
 
-        private void Actions_StartAllServers_Click(object sender, RoutedEventArgs e)
+        private async void Actions_StartAllServers_Click(object sender, RoutedEventArgs e)
         {
             int num_row = ServerGrid.Items.Count;
             for (int i = 0; i < num_row; i++)
@@ -791,7 +791,7 @@ namespace WindowsGSM
 
                 if (g_iServerStatus[serverId] == ServerStatus.Stopped)
                 {
-                    GameServer_Start(server);
+                    await GameServer_Start(server);
                 }
             }
         }
