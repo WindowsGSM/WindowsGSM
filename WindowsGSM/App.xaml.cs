@@ -15,6 +15,8 @@ namespace WindowsGSM
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
 
+        public static Window MainWindow => Current.MainWindow;
+
         protected override void OnStartup(StartupEventArgs e)
         {
             //LINQ query for windowsgsm old processes

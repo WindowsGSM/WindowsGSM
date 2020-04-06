@@ -35,7 +35,7 @@ namespace WindowsGSM
         private static extern bool SetForegroundWindow(IntPtr hWnd);
 
         [DllImport("user32.dll")]
-        private static extern int SetWindowText(IntPtr hWnd, string windowName);
+        private static extern int SetWindowText(IntPtr hWnd, [MarshalAs(UnmanagedType.LPWStr)]string windowName);
 
         private enum WindowShowStyle : uint
         {
