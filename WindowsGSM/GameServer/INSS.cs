@@ -21,7 +21,7 @@ namespace WindowsGSM.GameServer
         public string QueryPort = "27131";
         public string Defaultmap = "Oilfield";
         public string Maxplayers = "28";
-        public string Additional = "?Scenario=Scenario_Refinery_Push_Security";
+        public string Additional = "Scenario=Scenario_Refinery_Push_Security";
 
         public string AppId = "581330";
 
