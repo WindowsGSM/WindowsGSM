@@ -34,8 +34,11 @@ namespace WindowsGSM.Installer
 
             try
             {
-                WebClient webClient = new WebClient();
-                await webClient.DownloadFileTaskAsync(installUrl, zipPath);
+                //Memory leak
+                using(WebClient webClient = new WebClient())
+                {
+                    await webClient.DownloadFileTaskAsync(installUrl, zipPath);
+                }
 
                 //Extract steamcmd.zip and delete the zip
                 await Task.Run(() => ZipFile.ExtractToDirectory(zipPath, _installPath));
