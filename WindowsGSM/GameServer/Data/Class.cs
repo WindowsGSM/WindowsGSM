@@ -39,6 +39,11 @@
                 case AVORION.FullName: return new AVORION(serverData);
                 case CE.FullName: return new CE(serverData);
                 case INSS.FullName: return new INSS(serverData);
+                case DOD.FullName: return new DOD(serverData);
+                case DMC.FullName: return new DMC(serverData);
+                case HLOF.FullName: return new HLOF(serverData);
+                case RCC.FullName: return new RCC(serverData);
+                case TFC.FullName: return new TFC(serverData);
                 default: return null;
             }
         }

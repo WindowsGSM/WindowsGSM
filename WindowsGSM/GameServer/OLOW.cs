@@ -25,7 +25,7 @@ namespace WindowsGSM.GameServer
         public string StartPath = @"Outlaws\Binaries\Win64\OutlawsServer-Win64-Shipping.exe";
         public bool ToggleConsole = false;
         public int PortIncrements = 2;
-        public dynamic QueryMethod = null;
+        public dynamic QueryMethod = new Query.A2S();
 
         public string Port = "27374";
         public string QueryPort = "27015";

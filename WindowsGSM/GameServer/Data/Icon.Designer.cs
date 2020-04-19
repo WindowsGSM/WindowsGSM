@@ -151,11 +151,29 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/dod.png.
+        /// </summary>
+        public static string Day_of_Defeat_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Day of Defeat Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/dayz.png.
         /// </summary>
         public static string DayZ_Dedicated_Server {
             get {
                 return ResourceManager.GetString("DayZ Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/dmc.png.
+        /// </summary>
+        public static string Deathmatch_Classic_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Deathmatch Classic Dedicated Server", resourceCulture);
             }
         }
         
@@ -183,6 +201,15 @@ namespace WindowsGSM.GameServer.Data {
         public static string Grand_Theft_Auto_V_Dedicated_Server__FiveM_ {
             get {
                 return ResourceManager.GetString("Grand Theft Auto V Dedicated Server (FiveM)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/hlof.png.
+        /// </summary>
+        public static string Half_Life__Opposing_Force_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Half-Life: Opposing Force Dedicated Server", resourceCulture);
             }
         }
         
@@ -304,6 +331,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/rcc.png.
+        /// </summary>
+        public static string Ricochet_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Ricochet Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/rust.png.
         /// </summary>
         public static string Rust_Dedicated_Server {
@@ -336,6 +372,15 @@ namespace WindowsGSM.GameServer.Data {
         public static string Team_Fortress_2_Dedicated_Server {
             get {
                 return ResourceManager.GetString("Team Fortress 2 Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/tfc.png.
+        /// </summary>
+        public static string Team_Fortress_Classic_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Team Fortress Classic Dedicated Server", resourceCulture);
             }
         }
         

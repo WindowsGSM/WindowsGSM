@@ -144,11 +144,17 @@
   <data name="Counter-Strike: Source Dedicated Server" xml:space="preserve">
     <value>Images/Games/css.png</value>
   </data>
+  <data name="Day of Defeat Dedicated Server" xml:space="preserve">
+    <value>Images/Games/dod.png</value>
+  </data>
   <data name="Day of Defeat: Source Dedicated Server" xml:space="preserve">
     <value>Images/Games/dods.png</value>
   </data>
   <data name="DayZ Dedicated Server" xml:space="preserve">
     <value>Images/Games/dayz.png</value>
+  </data>
+  <data name="Deathmatch Classic Dedicated Server" xml:space="preserve">
+    <value>Images/Games/dmc.png</value>
   </data>
   <data name="Empyrion - Galactic Survival Dedicated Server" xml:space="preserve">
     <value>Images/Games/egs.png</value>
@@ -161,6 +167,9 @@
   </data>
   <data name="Half-Life 2: Deathmatch Dedicated Server" xml:space="preserve">
     <value>Images/Games/hl2dm.png</value>
+  </data>
+  <data name="Half-Life: Opposing Force Dedicated Server" xml:space="preserve">
+    <value>Images/Games/hlof.png</value>
   </data>
   <data name="Heat Dedicated Server" xml:space="preserve">
     <value>Images/Games/heat.png</value>
@@ -198,6 +207,9 @@
   <data name="Reign Of Kings Dedicated Server" xml:space="preserve">
     <value>Images/Games/rok.png</value>
   </data>
+  <data name="Ricochet Dedicated Server" xml:space="preserve">
+    <value>Images/Games/rcc.png</value>
+  </data>
   <data name="Rust Dedicated Server" xml:space="preserve">
     <value>Images/Games/rust.png</value>
   </data>
@@ -209,6 +221,9 @@
   </data>
   <data name="Team Fortress 2 Dedicated Server" xml:space="preserve">
     <value>Images/Games/tf2.png</value>
+  </data>
+  <data name="Team Fortress Classic Dedicated Server" xml:space="preserve">
+    <value>Images/Games/tfc.png</value>
   </data>
   <data name="Unturned Dedicated Server" xml:space="preserve">
     <value>Images/Games/unt.png</value>

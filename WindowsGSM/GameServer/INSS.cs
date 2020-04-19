@@ -15,7 +15,7 @@ namespace WindowsGSM.GameServer
         public string StartPath = @"Insurgency\Binaries\Win64\InsurgencyServer-Win64-Shipping.exe";
         public bool ToggleConsole = false;
         public int PortIncrements = 2;
-        public dynamic QueryMethod = null;
+        public dynamic QueryMethod = new Query.A2S();
 
         public string Port = "27102";
         public string QueryPort = "27131";
@@ -46,7 +46,7 @@ namespace WindowsGSM.GameServer
 
             string param = string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : _serverData.ServerMap;
             param += $"{_serverData.ServerParam}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? "" : $"MaxPlayers={_serverData.ServerMaxPlayer}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? "" : $"?MaxPlayers={_serverData.ServerMaxPlayer}";
             param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" -Port={_serverData.ServerPort}";
             param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? "" : $" -QueryPort={_serverData.ServerQueryPort}";
             param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? "" : $" -MultiHome={_serverData.ServerIP}";

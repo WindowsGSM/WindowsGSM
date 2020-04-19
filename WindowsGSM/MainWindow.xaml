@@ -5,18 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WindowsGSM"
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         mc:Ignorable="d"
         Title="WindowsGSM" 
-        Height="585" 
-        Width="1040" 
+        Height="580" 
+        Width="1048" 
         Icon="Images\WindowsGSM-Icon-Border.ico"
         ResizeMode="CanResizeWithGrip"
-        MinHeight="500"
-        MinWidth="865"
+        MinHeight="580"
+        MinWidth="1048"
         Closing="Window_Closing"
         GlowBrush="{DynamicResource AccentColorBrush}"
         WindowStartupLocation="CenterScreen" Activated="Window_Activated">
-    <!-- MinHeight="500" MinWidth="865" -->
     <Controls:MetroWindow.RightWindowCommands>
         <Controls:WindowCommands>
             <Button x:Name="button_Website" Content="Website" Click="Button_Website_Click"/>
@@ -48,11 +48,11 @@
             <Controls:Flyout x:Name="MahAppFlyout_DiscordAlert" Header="Discord Alert Settings" Position="Bottom" Theme="Accent">
                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                     <StackPanel Orientation="Horizontal">
-                        <Controls:ToggleSwitch x:Name="MahAppSwitch_AutoStartAlert" Header="Auto Start Alert" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Click="Switch_AutoStartAlert_Click"/>
-                        <Controls:ToggleSwitch x:Name="MahAppSwitch_AutoRestartAlert" Header="Auto Restart Alert" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Click="Switch_AutoRestartAlert_Click"/>
-                        <Controls:ToggleSwitch x:Name="MahAppSwitch_AutoUpdateAlert" Header="Auto Update Alert" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Click="Switch_AutoUpdateAlert_Click"/>
-                        <Controls:ToggleSwitch x:Name="MahAppSwitch_RestartCrontabAlert" Header="Restart Crontab Alert" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Click="Switch_RestartCrontabAlert_Click"/>
-                        <Controls:ToggleSwitch x:Name="MahAppSwitch_CrashAlert" Header="Crash Alert" BorderThickness="20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Click="Switch_CrashAlert_Click"/>
+                        <Controls:ToggleSwitch x:Name="MahAppSwitch_AutoStartAlert" Header="Auto Start Alert" Margin="20,20,0,20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Click="Switch_AutoStartAlert_Click"/>
+                        <Controls:ToggleSwitch x:Name="MahAppSwitch_AutoRestartAlert" Header="Auto Restart Alert" Margin="20,20,0,20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Click="Switch_AutoRestartAlert_Click"/>
+                        <Controls:ToggleSwitch x:Name="MahAppSwitch_AutoUpdateAlert" Header="Auto Update Alert" Margin="20,20,0,20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Click="Switch_AutoUpdateAlert_Click"/>
+                        <Controls:ToggleSwitch x:Name="MahAppSwitch_RestartCrontabAlert" Header="Restart Crontab Alert" Margin="20,20,0,20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Click="Switch_RestartCrontabAlert_Click"/>
+                        <Controls:ToggleSwitch x:Name="MahAppSwitch_CrashAlert" Header="Crash Alert" Margin="20,20,0,20" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Click="Switch_CrashAlert_Click"/>
                     </StackPanel>
                 </ScrollViewer>
             </Controls:Flyout>
@@ -139,8 +139,7 @@
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">
-                                            <Image Source="{Binding Image}" Width="16" Height="16"/>
-                                            <TextBlock Text=" "/>
+                                            <Image Source="{Binding Image}" Width="16" Height="16" Margin="0,0,5,0"/>
                                             <TextBlock Text="{Binding Name}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -209,7 +208,7 @@
                             <Button x:Name="button_Browse" Content="Browse" Height="26" Width="70" Click="Button_Browse_Click"/>
                         </DockPanel>
                         <Label x:Name="label_ServerDirWarn" Content="" DockPanel.Dock="Top"/>
-                        
+
                         <DockPanel Margin="0,15,0,15" DockPanel.Dock="Top">
                             <Button x:Name="button_Import" Content="Import" VerticalAlignment="Top" Click="Button_Import_Click"/>
                         </DockPanel>
@@ -221,244 +220,412 @@
                                 <TextBlock x:Name="textblock_ImportProgress" Text="" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Grid>
                         </DockPanel>
-                        
+
                     </DockPanel>
                 </DockPanel>
             </Controls:Flyout>
         </Controls:FlyoutsControl>
     </Controls:MetroWindow.Flyouts>
 
-    <DockPanel Name="dp">
-        <Grid DockPanel.Dock="Top">
-            <Menu x:Name="menu" Height="30" DockPanel.Dock="Top" Margin="0,0,532,0">
-                <MenuItem Header="Servers" Height="30">
-                    <MenuItem Header="Install GameServer" Click="Install_Click">
-                        <MenuItem.Icon>
-                            <Image Source="/WindowsGSM;component/Images/Install.ico" Width="23" Margin="3"/>
-                        </MenuItem.Icon>
+    <Grid>
+        <DockPanel Name="dashboard" Margin="48,0,0,0">
+            <Grid Margin="10,10,10,10">
+                <DockPanel>
+                    <Label DockPanel.Dock="Top" Content="SYSTEM METRICS" FontWeight="SemiBold" Foreground="Gray"/>
+                    <DockPanel DockPanel.Dock="Top">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="10px"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="10px"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <DockPanel Grid.Column="0" Background="{DynamicResource GrayBrush10}">
+                                <Grid DockPanel.Dock="Left" Background="RoyalBlue" Height="Auto" Width="5"/>
+                                <DockPanel Margin="15">
+                                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                                        <Label DockPanel.Dock="Left" Content="CPU" FontSize="25" Padding="0"/>
+                                        <Label DockPanel.Dock="Right" Content="" VerticalAlignment="Bottom" HorizontalAlignment="Right" x:Name="dashboard_cpu_type"/>
+                                    </DockPanel>
+                                    <DockPanel DockPanel.Dock="Top">
+                                        <Label DockPanel.Dock="Left" Content="0%" Padding="0" x:Name="dashboard_cpu_usage"/>
+                                        <Label DockPanel.Dock="Left" Content="" Padding="0"/>
+                                    </DockPanel>
+                                    <Controls:MetroProgressBar DockPanel.Dock="Left" Height="20" Value="30" Background="{DynamicResource GrayBrush9}" Foreground="RoyalBlue" x:Name="dashboard_cpu_bar"/>
+                                </DockPanel>
+                            </DockPanel>
+                            <DockPanel Grid.Column="2" Background="{DynamicResource GrayBrush10}">
+                                <Grid DockPanel.Dock="Left" Background="Purple" Height="Auto" Width="5"/>
+                                <DockPanel Margin="15">
+                                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                                        <Label DockPanel.Dock="Left" Content="Memory" FontSize="25" Padding="0"/>
+                                        <Label DockPanel.Dock="Right" Content="" VerticalAlignment="Bottom" HorizontalAlignment="Right" x:Name="dashboard_ram_type"/>
+                                    </DockPanel>
+                                    <DockPanel DockPanel.Dock="Top">
+                                        <Label DockPanel.Dock="Left" Content="0%" Padding="0" x:Name="dashboard_ram_usage"/>
+                                        <Label DockPanel.Dock="Right" Content="/" Padding="0" HorizontalAlignment="Right" x:Name="dashboard_ram_ratio"/>
+                                    </DockPanel>
+                                    <Controls:MetroProgressBar DockPanel.Dock="Left" Height="20" Value="50" Background="{DynamicResource GrayBrush9}" Foreground="Purple" x:Name="dashboard_ram_bar"/>
+                                </DockPanel>
+                            </DockPanel>
+                            <DockPanel Grid.Column="4" Background="{DynamicResource GrayBrush10}">
+                                <Grid DockPanel.Dock="Left" Background="ForestGreen" Height="Auto" Width="5"/>
+                                <DockPanel Margin="15">
+                                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                                        <Label DockPanel.Dock="Left" Content="Disk" FontSize="25" Padding="0"/>
+                                        <Label DockPanel.Dock="Left" Content="" FontSize="25" Padding="5,0,0,0" x:Name="dashboard_disk_name"/>
+                                        <Label DockPanel.Dock="Right" Content="" VerticalAlignment="Bottom" HorizontalAlignment="Right" x:Name="dashboard_disk_type"/>
+                                    </DockPanel>
+                                    <DockPanel DockPanel.Dock="Top">
+                                        <Label DockPanel.Dock="Left" Content="0%" Padding="0" x:Name="dashboard_disk_usage"/>
+                                        <Label DockPanel.Dock="Right" Content="/" Padding="0" HorizontalAlignment="Right" x:Name="dashboard_disk_ratio"/>
+                                    </DockPanel>
+                                    <Controls:MetroProgressBar DockPanel.Dock="Left" Height="20" Value="50" Background="{DynamicResource GrayBrush9}" Foreground="ForestGreen" x:Name="dashboard_disk_bar"/>
+                                </DockPanel>
+                            </DockPanel>
+                        </Grid>
+                    </DockPanel>
+
+                    <Label DockPanel.Dock="Top" Content="GAME SERVERS" FontWeight="SemiBold" Foreground="Gray" Margin="0,10,0,0"/>
+                    <DockPanel DockPanel.Dock="Top" x:Name="dashboard_gameservers">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="10px"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="10px"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <DockPanel Grid.Column="0" Background="{DynamicResource GrayBrush10}">
+                                <Grid DockPanel.Dock="Left" Background="MediumVioletRed" Height="Auto" Width="5"/>
+                                <DockPanel Margin="15">
+                                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                                        <Label DockPanel.Dock="Left" Content="Servers" FontSize="25" Padding="0"/>
+                                        <Label DockPanel.Dock="Right" Content="Installed server count" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
+                                    </DockPanel>
+                                    <DockPanel DockPanel.Dock="Top">
+                                        <Label DockPanel.Dock="Left" Content="0%" Padding="0" x:Name="dashboard_servers_usage"/>
+                                        <Label DockPanel.Dock="Right" Content="/" Padding="0" HorizontalAlignment="Right" x:Name="dashboard_servers_ratio"/>
+                                    </DockPanel>
+                                    <Controls:MetroProgressBar DockPanel.Dock="Left" Height="20" Value="30" Background="{DynamicResource GrayBrush9}" Foreground="MediumVioletRed" x:Name="dashboard_servers_bar"/>
+                                </DockPanel>
+                            </DockPanel>
+                            <DockPanel Grid.Column="2" Background="{DynamicResource GrayBrush10}">
+                                <Grid DockPanel.Dock="Left" Background="SpringGreen" Height="Auto" Width="5"/>
+                                <DockPanel Margin="15">
+                                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                                        <Label DockPanel.Dock="Left" Content="Online" FontSize="25" Padding="0"/>
+                                        <Label DockPanel.Dock="Right" Content="Started server count" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
+                                    </DockPanel>
+                                    <DockPanel DockPanel.Dock="Top">
+                                        <Label DockPanel.Dock="Left" Content="0%" Padding="0" x:Name="dashboard_started_usage"/>
+                                        <Label DockPanel.Dock="Right" Content="/" Padding="0" HorizontalAlignment="Right" x:Name="dashboard_started_ratio"/>
+                                    </DockPanel>
+                                    <Controls:MetroProgressBar DockPanel.Dock="Left" Height="20" Value="50" Background="{DynamicResource GrayBrush9}" Foreground="SpringGreen" x:Name="dashboard_started_bar"/>
+                                </DockPanel>
+                            </DockPanel>
+                            <DockPanel Grid.Column="4" Background="{DynamicResource GrayBrush10}">
+                                <Grid DockPanel.Dock="Left" Background="Goldenrod" Height="Auto" Width="5"/>
+                                <DockPanel Margin="15">
+                                    <DockPanel DockPanel.Dock="Top">
+                                        <Label DockPanel.Dock="Left" Content="Active Players" FontSize="25" VerticalAlignment="Center"/>
+                                        <Label DockPanel.Dock="Right" Content="0" FontSize="25" HorizontalAlignment="Right" VerticalAlignment="Center" x:Name="dashboard_players_count"/>
+                                    </DockPanel>
+                                </DockPanel>
+                            </DockPanel>
+                        </Grid>
+                    </DockPanel>
+
+                    <DockPanel DockPanel.Dock="Top">
+                        <lvc:CartesianChart x:Name="livechart_players" LegendLocation="Right" Margin="0,10,0,0">
+                            <lvc:CartesianChart.AxisX>
+                                <lvc:Axis x:Name="livechart_players_axisX" Title="" Labels=""></lvc:Axis>
+                            </lvc:CartesianChart.AxisX>
+                            <lvc:CartesianChart.AxisY>
+                                <lvc:Axis x:Name="livechart_players_axisY" Title="Players" MinValue="0" MaxValue="10"/>
+                            </lvc:CartesianChart.AxisY>
+                        </lvc:CartesianChart>
+                    </DockPanel>
+                </DockPanel>
+            </Grid>
+        </DockPanel>
+
+        <DockPanel Name="home" Margin="48,0,0,0" Visibility="Hidden">
+            <Grid DockPanel.Dock="Top">
+                <Menu x:Name="menu" Height="30" DockPanel.Dock="Top" Margin="0,0,532,0">
+                    <MenuItem Header="Servers" Height="30">
+                        <MenuItem Header="Install GameServer" Click="Install_Click">
+                            <MenuItem.Icon>
+                                <Image Source="/WindowsGSM;component/Images/Install.ico" Width="23" Margin="3"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Import GameServer" Click="Import_Click"/>
+                        <Separator/>
+                        <MenuItem Header="Delete GameServer" Click="Delete_Click">
+                            <MenuItem.Icon>
+                                <Image Source="/WindowsGSM;component/Images/Delete.ico" Width="23" Margin="3"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
                     </MenuItem>
-                    <MenuItem Header="Import GameServer" Click="Import_Click"/>
-                    <Separator/>
-                    <MenuItem Header="Delete GameServer" Click="Delete_Click">
-                        <MenuItem.Icon>
-                            <Image Source="/WindowsGSM;component/Images/Delete.ico" Width="23" Margin="3"/>
-                        </MenuItem.Icon>
-                    </MenuItem>
-                </MenuItem>
-                <MenuItem Header="Actions" Height="30">
-                    <MenuItem Header="Start" Click="Actions_Start_Click">
-                        <MenuItem.Icon>
-                            <Image Source="/WindowsGSM;component/Images/Start.ico" Width="23" Margin="3"/>
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <MenuItem Header="Stop" Click="Actions_Stop_Click">
-                        <MenuItem.Icon>
-                            <Image Source="/WindowsGSM;component/Images/Stop.ico" Width="23" Margin="3"/>
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <MenuItem Header="Restart" Click="Actions_Restart_Click">
-                        <MenuItem.Icon>
-                            <Image Source="/WindowsGSM;component/Images/Restart.ico" Width="23" Margin="3"/>
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <MenuItem Header="More...">
-                        <MenuItem Header="Start All Servers" Click="Actions_StartAllServers_Click">
+                    <MenuItem Header="Actions" Height="30">
+                        <MenuItem Header="Start" Click="Actions_Start_Click">
                             <MenuItem.Icon>
                                 <Image Source="/WindowsGSM;component/Images/Start.ico" Width="23" Margin="3"/>
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="Stop All Servers" Click="Actions_StopAllServers_Click">
+                        <MenuItem Header="Stop" Click="Actions_Stop_Click">
                             <MenuItem.Icon>
                                 <Image Source="/WindowsGSM;component/Images/Stop.ico" Width="23" Margin="3"/>
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="Restart All Servers" Click="Actions_RestartAllServers_Click">
+                        <MenuItem Header="Restart" Click="Actions_Restart_Click">
                             <MenuItem.Icon>
                                 <Image Source="/WindowsGSM;component/Images/Restart.ico" Width="23" Margin="3"/>
                             </MenuItem.Icon>
                         </MenuItem>
-                    </MenuItem>
-                    <Separator/>
-                    <MenuItem Header="Toggle Console" Click="Actions_ToggleConsole_Click"/>
-                    <Separator/>
-                    <MenuItem Header="Update">
-                        <MenuItem.Icon>
-                            <Image Source="/WindowsGSM;component/Images/Update.ico" Width="23" Margin="3"/>
-                        </MenuItem.Icon>
-                        <MenuItem Header="Update" Height="30" Click="Actions_Update_Click"/>
-                        <MenuItem Header="Update Validate" Height="30" Click="Actions_UpdateValidate_Click"/>
-                    </MenuItem>
-                    <Separator/>
-                    <MenuItem Header="Backup" Click="Actions_Backup_Click">
-                        <MenuItem.Icon>
-                            <Image Source="/WindowsGSM;component/Images/Backup.ico" Width="23" Margin="3"/>
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <MenuItem Header="Restore Backup" Click="Actions_RestoreBackup_Click"/>
-                </MenuItem>
-                <MenuItem Header="Browse" Height="30">
-                    <MenuItem Header="Server Backups" Click="Browse_ServerBackups_Click">
-                        <MenuItem.Icon>
-                            <Image Source="/WindowsGSM;component/Images/Zip.ico" Width="23" Margin="3"/>
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <MenuItem Header="Server Configs" Click="Browse_ServerConfigs_Click">
-                        <MenuItem.Icon>
-                            <Image Source="/WindowsGSM;component/Images/Config.ico" Width="23" Margin="3"/>
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <MenuItem Header="Server Files" Click="Browse_ServerFiles_Click">
-                        <MenuItem.Icon>
-                            <Image Source="/WindowsGSM;component/Images/Files.ico" Width="23" Margin="3"/>
-                        </MenuItem.Icon>
-                    </MenuItem>
-                </MenuItem>
-                <MenuItem Header="Tools" Height="30">
-                    <MenuItem Header="Global Server List Check" Click="Tools_GlobalServerListCheck_Click"/>
-                    <MenuItem Header="Install Addons">
-                        <MenuItem Header="AMX Mod X + MetaMod-P" Click="Tool_InstallAMXModXMetamodP_Click">
+                        <MenuItem Header="More...">
+                            <MenuItem Header="Start All Servers" Click="Actions_StartAllServers_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/WindowsGSM;component/Images/Start.ico" Width="23" Margin="3"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Start Servers with Auto Start Enabled" Click="Actions_StartServersWithAutoStartEnabled_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/WindowsGSM;component/Images/Start.ico" Width="23" Margin="3"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Stop All Servers" Click="Actions_StopAllServers_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/WindowsGSM;component/Images/Stop.ico" Width="23" Margin="3"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Restart All Servers" Click="Actions_RestartAllServers_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/WindowsGSM;component/Images/Restart.ico" Width="23" Margin="3"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Header="Toggle Console" Click="Actions_ToggleConsole_Click"/>
+                        <Separator/>
+                        <MenuItem Header="Update">
                             <MenuItem.Icon>
-                                <Image Source="/WindowsGSM;component/Images/Tools/AMXModX.ico" Width="23" Margin="3"/>
+                                <Image Source="/WindowsGSM;component/Images/Update.ico" Width="23" Margin="3"/>
+                            </MenuItem.Icon>
+                            <MenuItem Header="Update" Height="30" Click="Actions_Update_Click"/>
+                            <MenuItem Header="Update Validate" Height="30" Click="Actions_UpdateValidate_Click"/>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Header="Backup" Click="Actions_Backup_Click">
+                            <MenuItem.Icon>
+                                <Image Source="/WindowsGSM;component/Images/Backup.ico" Width="23" Margin="3"/>
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="SourceMod + MetaMod" Click="Tools_InstallSourcemodMetamod_Click">
+                        <MenuItem Header="Restore Backup" Click="Actions_RestoreBackup_Click"/>
+                    </MenuItem>
+                    <MenuItem Header="Browse" Height="30">
+                        <MenuItem Header="Server Backups" Click="Browse_ServerBackups_Click">
                             <MenuItem.Icon>
-                                <Image Source="/WindowsGSM;component/Images/Tools/SourceMod.ico" Width="23" Margin="3"/>
+                                <Image Source="/WindowsGSM;component/Images/Zip.ico" Width="23" Margin="3"/>
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="DayZSAL Mod Server" Click="Tools_InstallDayZSALModServer_Click">
+                        <MenuItem Header="Server Configs" Click="Browse_ServerConfigs_Click">
                             <MenuItem.Icon>
-                                <Image Source="/WindowsGSM;component/Images/Tools/DayZSAL.ico" Width="23" Margin="3"/>
+                                <Image Source="/WindowsGSM;component/Images/Config.ico" Width="23" Margin="3"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Server Files" Click="Browse_ServerFiles_Click">
+                            <MenuItem.Icon>
+                                <Image Source="/WindowsGSM;component/Images/Files.ico" Width="23" Margin="3"/>
                             </MenuItem.Icon>
                         </MenuItem>
                     </MenuItem>
-                </MenuItem>
-                <MenuItem Header="Help" Height="30">
-                    <MenuItem Header="Online Documentation" Click="Help_OnlineDocumentation_Click">
-                        <MenuItem.Icon>
-                            <Image Source="/WindowsGSM;component/Images/Book.ico" Width="23" Margin="3"/>
-                        </MenuItem.Icon>
+                    <MenuItem Header="Tools" Height="30">
+                        <MenuItem Header="Global Server List Check" Click="Tools_GlobalServerListCheck_Click"/>
+                        <MenuItem Header="Install Addons">
+                            <MenuItem Header="AMX Mod X + MetaMod-P" Click="Tool_InstallAMXModXMetamodP_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/WindowsGSM;component/Images/Tools/AMXModX.ico" Width="23" Margin="3"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="SourceMod + MetaMod" Click="Tools_InstallSourcemodMetamod_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/WindowsGSM;component/Images/Tools/SourceMod.ico" Width="23" Margin="3"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="DayZSAL Mod Server" Click="Tools_InstallDayZSALModServer_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/WindowsGSM;component/Images/Tools/DayZSAL.ico" Width="23" Margin="3"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </MenuItem>
                     </MenuItem>
-                    <MenuItem Header="Report an issue" Click="Help_ReportIssue_Click">
-                        <MenuItem.Icon>
-                            <Image Source="/WindowsGSM;component/Images/Issue.ico" Width="23" Margin="3"/>
-                        </MenuItem.Icon>
+                    <MenuItem Header="Help" Height="30">
+                        <MenuItem Header="Online Documentation" Click="Help_OnlineDocumentation_Click">
+                            <MenuItem.Icon>
+                                <Image Source="/WindowsGSM;component/Images/Book.ico" Width="23" Margin="3"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Report an issue" Click="Help_ReportIssue_Click">
+                            <MenuItem.Icon>
+                                <Image Source="/WindowsGSM;component/Images/Issue.ico" Width="23" Margin="3"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Software Updates" Click="Help_SoftwareUpdates_Click">
+                            <MenuItem.Icon>
+                                <Image Source="/WindowsGSM;component/Images/Update.ico" Width="23" Margin="3"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Header="About WindowsGSM" Click="Help_AboutWindowsGSM_Click">
+                            <MenuItem.Icon>
+                                <Image Source="/WindowsGSM;component/Images/WindowsGSM-Icon.ico" Width="23" Margin="3"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
                     </MenuItem>
-                    <MenuItem Header="Software Updates" Click="Help_SoftwareUpdates_Click">
-                        <MenuItem.Icon>
-                            <Image Source="/WindowsGSM;component/Images/Update.ico" Width="23" Margin="3"/>
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <Separator/>
-                    <MenuItem Header="About WindowsGSM" Click="Help_AboutWindowsGSM_Click">
-                        <MenuItem.Icon>
-                            <Image Source="/WindowsGSM;component/Images/WindowsGSM-Icon.ico" Width="23" Margin="3"/>
-                        </MenuItem.Icon>
-                    </MenuItem>
-                </MenuItem>
-            </Menu>
-            <Label x:Name="label" Content="Discord Bot:" Margin="0,3,249,2" HorizontalAlignment="Right" Width="74"/>
-            <Controls:ToggleSwitch x:Name="switch_DiscordBot" Margin="0,6,169,6" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" HorizontalAlignment="Right" Width="74" Click="Switch_DiscordBot_Click"/>
-            <Button x:Name="button_DiscordBotSettings" Content="Settings" Margin="0,3,90,4" HorizontalAlignment="Right" Width="70" Click="Button_DiscordBotSettings_Click" Height="23"/>
-            <Button x:Name="button_DiscordBotInvite" Content="Invite" Margin="0,3,10,4" HorizontalAlignment="Right" Width="70" Height="23" Click="Button_DiscordBotInvite_Click"/>
-        </Grid>
-        <Grid Height="1" Background="Black" DockPanel.Dock="Top"/>
-        <Grid Height="35" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="0,0,0,0">
-            <Label x:Name="label_select" Content="Select a server" HorizontalAlignment="Left" Margin="10,2,0,0" VerticalAlignment="Top" Height="33"/>
-            <Grid x:Name="grid_action">
-                <Button x:Name="button_Start" Cursor="Hand" Content="START" HorizontalAlignment="Left" Margin="10,5,0,5" Width="101" Height="20" Click="Actions_Start_Click" Background="LimeGreen" Foreground="White"/>
-                <Button x:Name="button_Stop" Cursor="Hand" Content="STOP" HorizontalAlignment="Left" Margin="116,5,0,5" Width="101" Height="20" Click="Actions_Stop_Click" Background="Orange" Foreground="White"/>
-                <Button x:Name="button_Restart" Cursor="Hand" Content="RESTART" HorizontalAlignment="Left" Margin="222,5,0,5" Width="101" Height="20" Click="Actions_Restart_Click" Background="DeepSkyBlue" Foreground="White"/>
-                <Button x:Name="button_Kill" Cursor="Hand" Content="KILL" HorizontalAlignment="Left" Margin="328,5,0,5" Width="101" Height="20" Click="Actions_Kill_Click" Background="OrangeRed" Foreground="White"/>
-                <Button x:Name="button_Console" Cursor="Hand" Content="TOGGLE CONSOLE" HorizontalAlignment="Left" Margin="434,5,0,5" Width="101" Height="20" Click="Actions_ToggleConsole_Click"/>
-                <Button x:Name="button_Update" Cursor="Hand" Content="UPDATE" HorizontalAlignment="Left" Margin="540,5,0,5" Width="101" Height="20" Click="Actions_Update_Click"/>
-                <Button x:Name="button_Backup" Cursor="Hand" Content="BACKUP" HorizontalAlignment="Left" Margin="646,5,0,5" Width="101" Height="20" Click="Actions_Backup_Click"/>
-                <Button x:Name="button_ManageAddons" Cursor="Hand" Content="MANAGE ADDONS" HorizontalAlignment="Left" Margin="752,5,0,5" Width="101" Height="20" Click="Actions_ManageAddons_Click"/>
+                </Menu>
+                <Label x:Name="label" Content="Discord Bot:" Margin="0,3,219,2" HorizontalAlignment="Right" Width="74"/>
+                <Controls:ToggleSwitch x:Name="switch_DiscordBot" Margin="0,6,144,6" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" HorizontalAlignment="Right" Width="74" Click="Switch_DiscordBot_Click"/>
+                <Button x:Name="button_DiscordBotSettings" Content="Settings" Margin="0,3,80,4" HorizontalAlignment="Right" Width="60" Click="Button_DiscordBotSettings_Click" Height="23"/>
+                <Button x:Name="button_DiscordBotInvite" Content="Invite" Margin="0,3,10,4" HorizontalAlignment="Right" Width="60" Height="23" Click="Button_DiscordBotInvite_Click"/>
             </Grid>
-        </Grid>
-        <Grid Height="1" Background="Black" DockPanel.Dock="Top"/>
-        <Grid DockPanel.Dock="Top">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="4*"/>
-                <RowDefinition Height="5"/>
-                <RowDefinition Height="4*" MinHeight="210"/>
-            </Grid.RowDefinitions>
-
-            <DataGrid x:Name="ServerGrid" SelectionMode="Single" SelectionUnit="FullRow" RowHeaderWidth="0" HeadersVisibility="Column" GridLinesVisibility="None" DockPanel.Dock="Top" SelectionChanged="DataGrid_SelectionChanged" IsSynchronizedWithCurrentItem="True" HorizontalScrollBarVisibility="Disabled">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding Path=ID}" Width="35" MinWidth="35" MaxWidth="35"/>
-                    <DataGridTemplateColumn Header="MOD" IsReadOnly="True" Width="53" MinWidth="53" MaxWidth="53">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Image Source="{Binding Icon}" Width="18"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTextColumn Header="Status" IsReadOnly="True" Binding="{Binding Path=Status}" Width="80" MinWidth="80" MaxWidth="80"/>
-                    <DataGridTextColumn Header="Server Name" IsReadOnly="True" Binding="{Binding Path=Name}" Width="10*" MinWidth="105"/>
-                    <DataGridTextColumn Header="IP Address" IsReadOnly="True" Binding="{Binding Path=IP}" Width="4*" MinWidth="88"/>
-                    <DataGridTextColumn Header="Port" IsReadOnly="True" Binding="{Binding Path=Port}" Width="4*" MinWidth="52"/>
-                    <DataGridTextColumn Header="Query Port" IsReadOnly="True" Binding="{Binding Path=QueryPort}" Width="4*" MinWidth="93"/>
-                    <DataGridTextColumn Header="Map" IsReadOnly="True" Binding="{Binding Path=Defaultmap}" Width="7*" MinWidth="50"/>
-                    <DataGridTextColumn Header="Players" IsReadOnly="True" Binding="{Binding Path=Maxplayers}" Width="3*" MinWidth="70"/>
-                    <!--<DataGridTextColumn Header="RAM Usage" IsReadOnly="True" Binding="{Binding Path=RamUsage}" Width="4*"/>-->
-                </DataGrid.Columns>
-            </DataGrid>
-            <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch">
-                <GridSplitter.Background>
-                    <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlDarkDarkColorKey}}"/>
-                </GridSplitter.Background>
-            </GridSplitter>
-            <Grid Grid.Row="2">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="520" MaxWidth="520"/>
-                    <ColumnDefinition Width="5"/>
-                    <ColumnDefinition Width="1*"/>
-                </Grid.ColumnDefinitions>
-
-                <Grid>
-                    <Label x:Name="label_Status" Content="Server Status:" HorizontalAlignment="Left" Margin="24,9,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_Status" Content="" HorizontalAlignment="Left" Margin="110,10,0,0" Width="105" Height="11" Background="Orange" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False"/>
-
-                    <Label x:Name="label_restartcrontab" Content="Restart Crontab:" HorizontalAlignment="Left" Margin="10,39,0,0" VerticalAlignment="Top" Height="26"/>
-                    <Button x:Name="button_restartcrontab" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="110,40,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_RestartCrontab_Click"/>
-                    <Button x:Name="button_restartcrontabedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="165,40,0,0" VerticalAlignment="Top" Width="50" Height="25" Click="Button_CrontabEdit_Click"/>
-                    <TextBox x:Name="textBox_restartcrontab" Height="11" Margin="220,40,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="100"/>
-                    <TextBox x:Name="textBox_nextcrontab" Height="11" Margin="325,40,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="185" FontFamily="Consolas"/>
-
-                    <Controls:ToggleSwitch x:Name="switch_autorestart" Header="Auto Restart" Margin="148,101,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_AutoRestart_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="110"/>
-                    <Controls:ToggleSwitch x:Name="switch_autostart" Header="Auto Start" Margin="24,101,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_AutoStart_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="110"/>
-                    <Controls:ToggleSwitch x:Name="switch_autoupdate" Header="Auto Update" Margin="275,101,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_AutoUpdate_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="110"/>
-                    <Controls:ToggleSwitch x:Name="switch_updateonstart" Header="Update on Start" Margin="400,101,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_UpdateOnStart_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="110"/>
-
-                    <Label x:Name="label_discordalert" Content="Discord Alert:" HorizontalAlignment="Left" Margin="24,69,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_discordalert" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="110,70,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_DiscordAlert_Click"/>
-                    <Button x:Name="button_discordedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="165,70,0,0" VerticalAlignment="Top" Width="50" Height="25" Click="Button_DiscordEdit_Click"/>
-                    <Button x:Name="button_discordset" Cursor="Hand" Content="Set Message" HorizontalAlignment="Left" Margin="220,70,0,0" VerticalAlignment="Top" Width="100" Height="25" Click="Button_DiscordSetMessage_Click"/>
-                    <Button x:Name="button_discordtest" Cursor="Hand" Content="Send Test Alert" HorizontalAlignment="Left" Margin="325,70,0,0" VerticalAlignment="Top" Width="100" Height="25" Click="Button_DiscordWebhookTest_Click" IsEnabled="False"/>
-                    <Button x:Name="button_discordsettings" Content="Settings" HorizontalAlignment="Left" Margin="430,70,0,0" VerticalAlignment="Top" Width="80" Height="24" Click="Button_DiscordAlertSettings_Click"/>
-
-                    <Button x:Name="button_clearServerConsole" Cursor="Hand" Content="CLEAR SERVER CONSOLE" Margin="380,10,0,0" VerticalAlignment="Top" Height="18" Click="Button_ClearServerConsole_Click" HorizontalAlignment="Left" Width="130"/>
-                    <TextBox x:Name="textBox_wgsmlog" Margin="61,154,10,10" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True"/>
-                    <Label x:Name="label_wgsmlog" Content="Log:" HorizontalAlignment="Left" Margin="24,150,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_clearwgsmlog" Cursor="Hand" Content="CLEAR" Margin="10,0,0,10" Height="18" Click="Button_ClearWGSMLog_Click" HorizontalAlignment="Left" Width="45" VerticalAlignment="Bottom"/>
-
-                    <Label x:Name="label_embedconsole" Content="Embed Console:" HorizontalAlignment="Left" Margin="225,9,0,0" VerticalAlignment="Top"/>
-                    <Button x:Name="button_embedconsole" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="325,10,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_EmbedConsole_Click"/>
+            <Grid Height="1" Background="Black" DockPanel.Dock="Top"/>
+            <Grid Height="35" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="0,0,0,0">
+                <Label x:Name="label_select" Content="Select a server" HorizontalAlignment="Left" Margin="10,2,0,0" VerticalAlignment="Top" Height="33"/>
+                <Grid x:Name="grid_action">
+                    <Button x:Name="button_Start" Cursor="Hand" Content="START" HorizontalAlignment="Left" Margin="10,5,0,5" Width="101" Height="20" Click="Actions_Start_Click" Background="LimeGreen" Foreground="White"/>
+                    <Button x:Name="button_Stop" Cursor="Hand" Content="STOP" HorizontalAlignment="Left" Margin="116,5,0,5" Width="101" Height="20" Click="Actions_Stop_Click" Background="Orange" Foreground="White"/>
+                    <Button x:Name="button_Restart" Cursor="Hand" Content="RESTART" HorizontalAlignment="Left" Margin="222,5,0,5" Width="101" Height="20" Click="Actions_Restart_Click" Background="DeepSkyBlue" Foreground="White"/>
+                    <Button x:Name="button_Kill" Cursor="Hand" Content="KILL" HorizontalAlignment="Left" Margin="328,5,0,5" Width="101" Height="20" Click="Actions_Kill_Click" Background="OrangeRed" Foreground="White"/>
+                    <Button x:Name="button_Console" Cursor="Hand" Content="TOGGLE CONSOLE" HorizontalAlignment="Left" Margin="434,5,0,5" Width="101" Height="20" Click="Actions_ToggleConsole_Click"/>
+                    <Button x:Name="button_Update" Cursor="Hand" Content="UPDATE" HorizontalAlignment="Left" Margin="540,5,0,5" Width="101" Height="20" Click="Actions_Update_Click"/>
+                    <Button x:Name="button_Backup" Cursor="Hand" Content="BACKUP" HorizontalAlignment="Left" Margin="646,5,0,5" Width="101" Height="20" Click="Actions_Backup_Click"/>
+                    <Button x:Name="button_ManageAddons" Cursor="Hand" Content="MANAGE ADDONS" HorizontalAlignment="Left" Margin="752,5,0,5" Width="101" Height="20" Click="Actions_ManageAddons_Click"/>
+                    <Button x:Name="button_clearServerConsole" Cursor="Hand" Content="CLEAR SERVER CONSOLE" Margin="0,5,10,0" VerticalAlignment="Top" Height="18" Click="Button_ClearServerConsole_Click" HorizontalAlignment="Right" Width="130"/>
                 </Grid>
+            </Grid>
+            <Grid Height="1" Background="Black" DockPanel.Dock="Top"/>
+            <Grid DockPanel.Dock="Top">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="4*"/>
+                    <RowDefinition Height="5"/>
+                    <RowDefinition Height="4*" MinHeight="210"/>
+                </Grid.RowDefinitions>
 
-                <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch">
+                <DataGrid x:Name="ServerGrid" SelectionMode="Single" SelectionUnit="FullRow" RowHeaderWidth="0" HeadersVisibility="Column" GridLinesVisibility="None" DockPanel.Dock="Top" SelectionChanged="DataGrid_SelectionChanged" IsSynchronizedWithCurrentItem="True" HorizontalScrollBarVisibility="Disabled">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding Path=ID}" Width="35" MinWidth="35" MaxWidth="35"/>
+                        <DataGridTemplateColumn Header="MOD" IsReadOnly="True" Width="53" MinWidth="53" MaxWidth="53">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Image Source="{Binding Icon}" Width="18"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Status" IsReadOnly="True" Binding="{Binding Path=Status}" Width="80" MinWidth="80" MaxWidth="80"/>
+                        <DataGridTextColumn Header="Server Name" IsReadOnly="True" Binding="{Binding Path=Name}" Width="10*" MinWidth="105"/>
+                        <DataGridTextColumn Header="IP Address" IsReadOnly="True" Binding="{Binding Path=IP}" Width="4*" MinWidth="88"/>
+                        <DataGridTextColumn Header="Port" IsReadOnly="True" Binding="{Binding Path=Port}" Width="4*" MinWidth="52"/>
+                        <DataGridTextColumn Header="Query Port" IsReadOnly="True" Binding="{Binding Path=QueryPort}" Width="4*" MinWidth="93"/>
+                        <DataGridTextColumn Header="Map" IsReadOnly="True" Binding="{Binding Path=Defaultmap}" Width="7*" MinWidth="50"/>
+                        <DataGridTextColumn Header="Players" IsReadOnly="True" Binding="{Binding Path=Maxplayers}" Width="3*" MinWidth="70"/>
+                        <!--<DataGridTextColumn Header="RAM Usage" IsReadOnly="True" Binding="{Binding Path=RamUsage}" Width="4*"/>-->
+                    </DataGrid.Columns>
+                </DataGrid>
+                <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch">
                     <GridSplitter.Background>
                         <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlDarkDarkColorKey}}"/>
                     </GridSplitter.Background>
                 </GridSplitter>
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="520" MaxWidth="520"/>
+                        <ColumnDefinition Width="5"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
 
-                <Grid Grid.Column="2" MinWidth="100">
-                    <TextBox x:Name="console" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility ="Disabled" Background="Black" IsReadOnly="True" Margin="0,0,0,26" BorderBrush="Black" Foreground="White" BorderThickness="0" SelectionBrush="White" TextWrapping="Wrap"/>
-                    <TextBox x:Name="textbox_servercommand" TextWrapping="Wrap" Text="" Margin="0,0,61,0" Height="23" VerticalAlignment="Bottom" KeyDown="Textbox_ServerCommand_KeyDown" IsEnabled="False" Background="Black" BorderBrush="White" Foreground="White" CaretBrush="White" PreviewKeyDown="Textbox_ServerCommand_PreviewKeyDown"/>
-                    <Button x:Name="button_servercommand" Cursor="Hand" Content="Send" Click="Button_ServerCommand_Click" IsEnabled="False" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="61" Controls:ButtonHelper.CornerRadius="0"/>
+                    <Grid>
+                        <Button x:Name="button_Status" Content="" HorizontalAlignment="Left" Margin="165,10,0,0" Width="50" Height="11" Background="Orange" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False" />
+
+                        <TextBox x:Name="textBox_servergame" Height="11" Margin="165,10,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="345" FontFamily="Consolas"/>
+
+                        <Label x:Name="label_restartcrontab" Content="Restart Crontab:" HorizontalAlignment="Left" Margin="10,39,0,0" VerticalAlignment="Top" Height="26"/>
+                        <Button x:Name="button_restartcrontab" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="110,40,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_RestartCrontab_Click"/>
+                        <Button x:Name="button_restartcrontabedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="165,40,0,0" VerticalAlignment="Top" Width="50" Height="25" Click="Button_CrontabEdit_Click"/>
+                        <TextBox x:Name="textBox_restartcrontab" Height="11" Margin="220,40,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="100"/>
+                        <TextBox x:Name="textBox_nextcrontab" Height="11" Margin="325,40,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="185" FontFamily="Consolas"/>
+
+                        <Controls:ToggleSwitch x:Name="switch_autorestart" Header="Auto Restart" Margin="148,101,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_AutoRestart_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="110"/>
+                        <Controls:ToggleSwitch x:Name="switch_autostart" Header="Auto Start" Margin="24,101,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_AutoStart_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="110"/>
+                        <Controls:ToggleSwitch x:Name="switch_autoupdate" Header="Auto Update" Margin="275,101,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_AutoUpdate_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="110"/>
+                        <Controls:ToggleSwitch x:Name="switch_updateonstart" Header="Update on Start" Margin="400,101,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_UpdateOnStart_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="110"/>
+
+                        <Label x:Name="label_discordalert" Content="Discord Alert:" HorizontalAlignment="Left" Margin="24,69,0,0" VerticalAlignment="Top"/>
+                        <Button x:Name="button_discordalert" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="110,70,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_DiscordAlert_Click"/>
+                        <Button x:Name="button_discordedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="165,70,0,0" VerticalAlignment="Top" Width="50" Height="25" Click="Button_DiscordEdit_Click"/>
+                        <Button x:Name="button_discordset" Cursor="Hand" Content="Set Message" HorizontalAlignment="Left" Margin="220,70,0,0" VerticalAlignment="Top" Width="100" Height="25" Click="Button_DiscordSetMessage_Click"/>
+                        <Button x:Name="button_discordtest" Cursor="Hand" Content="Send Test Alert" HorizontalAlignment="Left" Margin="325,70,0,0" VerticalAlignment="Top" Width="100" Height="25" Click="Button_DiscordWebhookTest_Click" IsEnabled="False"/>
+                        <Button x:Name="button_discordsettings" Content="Settings" HorizontalAlignment="Left" Margin="430,70,0,0" VerticalAlignment="Top" Width="80" Height="24" Click="Button_DiscordAlertSettings_Click"/>
+                        <TextBox x:Name="textBox_wgsmlog" Margin="61,154,10,10" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True"/>
+                        <Label x:Name="label_wgsmlog" Content="Log:" HorizontalAlignment="Left" Margin="24,150,0,0" VerticalAlignment="Top"/>
+                        <Button x:Name="button_clearwgsmlog" Cursor="Hand" Content="CLEAR" Margin="10,0,0,10" Height="18" Click="Button_ClearWGSMLog_Click" HorizontalAlignment="Left" Width="45" VerticalAlignment="Bottom"/>
+
+                        <Label x:Name="label_embedconsole" Content="Embed Console:" HorizontalAlignment="Left" Margin="10,8,0,0" VerticalAlignment="Top"/>
+                        <Button x:Name="button_embedconsole" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="110,10,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_EmbedConsole_Click"/>
+                    </Grid>
+
+                    <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch">
+                        <GridSplitter.Background>
+                            <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlDarkDarkColorKey}}"/>
+                        </GridSplitter.Background>
+                    </GridSplitter>
+
+                    <Grid Grid.Column="2" MinWidth="100">
+                        <TextBox x:Name="console" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility ="Disabled" Background="Black" IsReadOnly="True" Margin="0,0,0,26" BorderBrush="Black" Foreground="White" BorderThickness="0" SelectionBrush="White" TextWrapping="Wrap"/>
+                        <TextBox x:Name="textbox_servercommand" TextWrapping="Wrap" Text="" Margin="0,0,61,0" Height="23" VerticalAlignment="Bottom" KeyDown="Textbox_ServerCommand_KeyDown" IsEnabled="False" Background="Black" BorderBrush="White" Foreground="White" CaretBrush="White" PreviewKeyDown="Textbox_ServerCommand_PreviewKeyDown"/>
+                        <Button x:Name="button_servercommand" Cursor="Hand" Content="Send" Click="Button_ServerCommand_Click" IsEnabled="False" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="61" Controls:ButtonHelper.CornerRadius="0"/>
+                    </Grid>
                 </Grid>
             </Grid>
+        </DockPanel>
+
+        <Grid>
+            <Grid.Resources>
+                <DataTemplate x:Key="MenuItemTemplate" DataType="{x:Type Controls:HamburgerMenuImageItem}">
+                    <Grid Height="48">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.Column="0" Source="{Binding Thumbnail}" Height="20" Width="20"/>
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="16" Foreground="White" Text="{Binding Label}"/>
+                    </Grid>
+                </DataTemplate>
+            </Grid.Resources>
+            <Controls:HamburgerMenu x:Name="HamburgerMenuControl"
+                                DisplayMode="CompactOverlay"
+                                IsPaneOpen="False"
+                                ItemTemplate="{StaticResource MenuItemTemplate}" ItemClick="HamburgerMenu_ItemClick" Loaded="HamburgerMenu_Loaded" MinWidth="49" HorizontalAlignment="Left">
+
+                <!--  Items  -->
+                <Controls:HamburgerMenu.ItemsSource>
+                    <Controls:HamburgerMenuItemCollection>
+                        <Controls:HamburgerMenuImageItem Label="Home">
+                            <Controls:HamburgerMenuImageItem.Thumbnail>
+                                <BitmapImage UriSource="pack://application:,,,/WindowsGSM;component/Images/HMenu/Home.ico" />
+                            </Controls:HamburgerMenuImageItem.Thumbnail>
+                        </Controls:HamburgerMenuImageItem>
+                        <Controls:HamburgerMenuImageItem Label="Dashboard">
+                            <Controls:HamburgerMenuImageItem.Thumbnail>
+                                <BitmapImage UriSource="pack://application:,,,/WindowsGSM;component/Images/HMenu/Dashboard.ico" />
+                            </Controls:HamburgerMenuImageItem.Thumbnail>
+                        </Controls:HamburgerMenuImageItem>
+                    </Controls:HamburgerMenuItemCollection>
+                </Controls:HamburgerMenu.ItemsSource>
+            </Controls:HamburgerMenu>
         </Grid>
-    </DockPanel>
+    </Grid>
 </Controls:MetroWindow>

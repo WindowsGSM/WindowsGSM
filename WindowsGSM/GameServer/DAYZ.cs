@@ -28,11 +28,11 @@ namespace WindowsGSM.GameServer
         public string StartPath = "DayZServer_x64.exe";
         public bool ToggleConsole = true;
         public int PortIncrements = 2;
-        public dynamic QueryMethod = null;
+        public dynamic QueryMethod = new Query.A2S();
         public bool requireSteamAccount = true;
 
         public string Port = "2302";
-        public string QueryPort = "2303";
+        public string QueryPort = "27016";
         public string Defaultmap = "dayzOffline.chernarusplus";
         public string Maxplayers = "60";
         public string Additional = "-config=serverDZ.cfg -doLogs -adminLog -netLog";

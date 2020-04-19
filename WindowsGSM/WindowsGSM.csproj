@@ -128,6 +128,14 @@
       <HintPath>..\packages\Discord.Net.WebSocket.2.1.1\lib\net46\Discord.Net.WebSocket.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="LiveCharts, Version=0.9.7.0, Culture=neutral, PublicKeyToken=0bc1f845d1ebb8df, processorArchitecture=MSIL">
+      <HintPath>..\packages\LiveCharts.0.9.7\lib\net45\LiveCharts.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="LiveCharts.Wpf, Version=0.9.7.0, Culture=neutral, PublicKeyToken=0bc1f845d1ebb8df, processorArchitecture=MSIL">
+      <HintPath>..\packages\LiveCharts.Wpf.0.9.7\lib\net45\LiveCharts.Wpf.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="MahApps.Metro, Version=1.6.5.1, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MahApps.Metro.1.6.5\lib\net47\MahApps.Metro.dll</HintPath>
       <Private>False</Private>
@@ -327,14 +335,20 @@
     <Compile Include="GameServer\AVORION.cs" />
     <Compile Include="GameServer\BW.cs" />
     <Compile Include="GameServer\CE.cs" />
+    <Compile Include="GameServer\DMC.cs" />
+    <Compile Include="GameServer\DOD.cs" />
     <Compile Include="GameServer\DODS.cs" />
     <Compile Include="GameServer\EGS.cs" />
     <Compile Include="GameServer\Engine\Unity.cs" />
     <Compile Include="GameServer\Engine\UnrealEngine.cs" />
     <Compile Include="GameServer\HEAT.cs" />
+    <Compile Include="GameServer\HLOF.cs" />
     <Compile Include="GameServer\INSS.cs" />
     <Compile Include="GameServer\ONSET.cs" />
     <Compile Include="GameServer\Query\A2S.cs" />
+    <Compile Include="GameServer\Query\FIVEM.cs" />
+    <Compile Include="GameServer\Query\UT3.cs" />
+    <Compile Include="GameServer\RCC.cs" />
     <Compile Include="GameServer\ROK.cs" />
     <Compile Include="GameServer\SDTD.cs" />
     <Compile Include="GameServer\Data\Class.cs" />
@@ -355,6 +369,7 @@
     <Compile Include="GameServer\Engine\GoldSource.cs" />
     <Compile Include="GameServer\Engine\Source.cs" />
     <Compile Include="GameServer\SW.cs" />
+    <Compile Include="GameServer\TFC.cs" />
     <Compile Include="GameServer\UNT.cs" />
     <Compile Include="GameServer\ZPS.cs" />
     <Compile Include="Tools\GlobalServerList.cs" />
@@ -647,6 +662,25 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Games\inss.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\dmc.png" />
+    <Resource Include="Images\Games\dod.png" />
+    <Resource Include="Images\Games\hlof.png" />
+    <Resource Include="Images\Games\rcc.png" />
+    <Resource Include="Images\Games\tfc.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\HMenu\Dashboard.ico" />
+    <Resource Include="Images\HMenu\Home.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\LiveCharts.0.9.7\lib\net45\LiveCharts.dll">
+      <Link>ReferencesEx\LiveCharts.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\packages\LiveCharts.Wpf.0.9.7\lib\net45\LiveCharts.Wpf.dll">
+      <Link>ReferencesEx\LiveCharts.Wpf.dll</Link>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

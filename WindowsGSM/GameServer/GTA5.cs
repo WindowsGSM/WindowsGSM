@@ -18,7 +18,7 @@ namespace WindowsGSM.GameServer
         public string StartPath = @"server\FXServer.exe";
         public bool ToggleConsole = false;
         public int PortIncrements = 1;
-        public dynamic QueryMethod = null;
+        public dynamic QueryMethod = new Query.FIVEM();
 
         public string Port = "30120";
         public string QueryPort = "30120";

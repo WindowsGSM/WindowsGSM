@@ -19,6 +19,9 @@ using Newtonsoft.Json.Linq;
 using NCrontab;
 using System.Collections.Generic;
 using System.Collections;
+using System.Management;
+using LiveCharts;
+using LiveCharts.Wpf;
 
 namespace WindowsGSM
 {
@@ -268,6 +271,8 @@ namespace WindowsGSM
             }
 
             StartConsoleRefresh();
+
+            StartDashBoardRefresh();
         }
 
         public void LoadServerTable()
@@ -378,10 +383,11 @@ namespace WindowsGSM
 
         private async void AutoStartServer()
         {
-            int num_row = ServerGrid.Items.Count;
-            for (int i = 0; i < num_row; i++)
+            List<Functions.ServerTable> servers = new List<Functions.ServerTable>();
+            foreach (var item in ServerGrid.Items) { servers.Add((Functions.ServerTable)item); }
+
+            foreach (var server in servers)
             {
-                var server = (Functions.ServerTable)ServerGrid.Items[i];
                 int serverId = int.Parse(server.ID);
 
                 if (g_bAutoStart[serverId])
@@ -395,7 +401,7 @@ namespace WindowsGSM
                             var webhook = new Functions.DiscordWebhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
                             await webhook.Send(server.ID, server.Game, "Started | Auto Start", server.Name, server.IP, server.Port);
                         }
-                    }    
+                    }
                 }
             }
         }
@@ -404,7 +410,7 @@ namespace WindowsGSM
         {
             while (true)
             {
-                await Task.Delay(100);
+                await Task.Delay(10);
                 var row = (Functions.ServerTable)ServerGrid.SelectedItem;
                 if (row != null)
                 {
@@ -412,13 +418,185 @@ namespace WindowsGSM
                     if (text.Length != console.Text.Length && text != console.Text)
                     {
                         console.Text = text;
-
-                        if (textbox_servercommand.Text.Length == 0)
-                        {
-                            console.ScrollToEnd();
-                        }
+                        console.ScrollToEnd();
                     }
                 }
+            }
+        }
+
+        private async void StartDashBoardRefresh()
+        {
+            // Get CPU info and Set
+            var mbo = await Task.Run(() => new ManagementObjectSearcher("SELECT Name, NumberOfCores FROM Win32_Processor").Get());
+            dashboard_cpu_type.Content = mbo.Cast<ManagementBaseObject>().Select(c => c["Name"].ToString()).FirstOrDefault();
+            int coreCount = mbo.Cast<ManagementBaseObject>().Sum(x => int.Parse(x["NumberOfCores"].ToString()));
+            PerformanceCounter cpuCounter = await Task.Run(() => new PerformanceCounter("Processor", "% Processor Time", "_Total"));
+            cpuCounter.NextValue();
+
+            // Get RAM info and Set
+            double totalMemory = await Task.Run(() => new ManagementObjectSearcher("Select TotalVisibleMemorySize from Win32_OperatingSystem").Get().Cast<ManagementObject>().Select(m => double.Parse(m["TotalVisibleMemorySize"].ToString())).FirstOrDefault());
+            dashboard_ram_type.Content = await GetMemoryType();
+
+            // Get Disk info and Set
+            string currentDisk = Path.GetPathRoot(Process.GetCurrentProcess().MainModule.FileName);
+            dashboard_disk_name.Content = $"({currentDisk.TrimEnd('\\')})";
+            long totalDisk = DriveInfo.GetDrives().Where(x => (x.Name == currentDisk) && x.IsReady).Select(x => x.TotalSize).FirstOrDefault();
+            dashboard_disk_type.Content = DriveInfo.GetDrives().Where(x => (x.Name == currentDisk) && x.IsReady).Select(x => x.DriveFormat).FirstOrDefault();
+
+            List<(string, int)> oldTypePlayers = ServerGrid.Items.Cast<Functions.ServerTable>()
+                .Where(s => s.Status == "Started" && s.Maxplayers.Contains("/"))
+                .Select(s => (type: s.Game, players: int.Parse(s.Maxplayers.Split('/')[0])))
+                .GroupBy(s => s.type)
+                .Select(s => (type: s.Key, players: s.Sum(p => p.players)))
+                .ToList();
+
+            while (true)
+            {
+                dashboard_cpu_bar.Value = cpuCounter.NextValue() * coreCount / 2;
+                dashboard_cpu_bar.Value = (dashboard_cpu_bar.Value > 100.0) ? 100.0 : dashboard_cpu_bar.Value;
+                dashboard_cpu_usage.Content = $"{string.Format("{0:0.00}", dashboard_cpu_bar.Value)}%";
+
+                double freeMemory = await Task.Run(() => new ManagementObjectSearcher("Select FreePhysicalMemory from Win32_OperatingSystem").Get().Cast<ManagementObject>().Select(m => double.Parse(m["FreePhysicalMemory"].ToString())).FirstOrDefault());
+                dashboard_ram_bar.Value = (1 - freeMemory / totalMemory) * 100;
+                dashboard_ram_bar.Value = (dashboard_ram_bar.Value > 100.0) ? 100.0 : dashboard_ram_bar.Value;
+                dashboard_ram_usage.Content = $"{string.Format("{0:0.00}", dashboard_ram_bar.Value)}%";
+                dashboard_ram_ratio.Content = GetMemoryString(totalMemory);
+
+                long freeSpace = DriveInfo.GetDrives().Where(x => (x.Name == currentDisk) && x.IsReady).Select(x => x.AvailableFreeSpace).FirstOrDefault();
+                dashboard_disk_bar.Value = (1 - (double)freeSpace / totalDisk) * 100;
+                dashboard_disk_bar.Value = (dashboard_disk_bar.Value > 100.0) ? 100.0 : dashboard_disk_bar.Value;
+                dashboard_disk_usage.Content = $"{string.Format("{0:0.00}", dashboard_disk_bar.Value)}%";
+                dashboard_disk_ratio.Content = GetDiskString(totalDisk);
+
+                dashboard_servers_bar.Value = ServerGrid.Items.Count * 100.0 / MAX_SERVER;
+                dashboard_servers_bar.Value = (dashboard_servers_bar.Value > 100.0) ? 100.0 : dashboard_servers_bar.Value;
+                dashboard_servers_usage.Content = $"{string.Format("{0:0.00}", dashboard_servers_bar.Value)}%";
+                dashboard_servers_ratio.Content = $"{ServerGrid.Items.Count}/{MAX_SERVER}";
+
+                int startedCount = ServerGrid.Items.Cast<Functions.ServerTable>().Where(s => s.Status == "Started").Count();
+                dashboard_started_bar.Value = ServerGrid.Items.Count == 0 ? 0 : startedCount * 100.0 / ServerGrid.Items.Count;
+                dashboard_started_bar.Value = (dashboard_started_bar.Value > 100.0) ? 100.0 : dashboard_started_bar.Value;
+                dashboard_started_usage.Content = $"{string.Format("{0:0.00}", dashboard_started_bar.Value)}%";
+                dashboard_started_ratio.Content = $"{startedCount}/{ServerGrid.Items.Count}";
+
+                dashboard_players_count.Content = GetActivePlayers();
+
+                Refresh_DashBoard_LiveChart();
+
+                await Task.Delay(2000);
+            }
+        }
+
+        private string GetMemoryString(double totalMemory)
+        {
+            int count = 0;
+            while (totalMemory > 1024.0)
+            {
+                totalMemory /= 1024.0;
+                count++;
+            }
+
+            return $"{string.Format("{0:0.00}", totalMemory * dashboard_ram_bar.Value / 100)}/{string.Format("{0:0.00}", totalMemory)} {(count == 1 ? "MB" : count == 2 ? "GB" : "TB")} ";
+        }
+
+        private async Task<string> GetMemoryType()
+        {
+            var mbo = await Task.Run(() => new ManagementObjectSearcher("SELECT MemoryType FROM Win32_PhysicalMemory").Get());
+            int type = mbo.Cast<ManagementBaseObject>().Select(c => int.Parse(c["MemoryType"].ToString())).FirstOrDefault();
+
+            switch (type)
+            {
+                case 1: return "Other";
+                case 2: return "DRAM";
+                case 3: return "Synchronous DRAM";
+                case 4: return "Cache DRAM";
+                case 5: return "EDO";
+                case 6: return "EDRAM";
+                case 7: return "VRAM";
+                case 8: return "SRAM";
+                case 9: return "RAM";
+                case 10: return "ROM";
+                case 11: return "Flash";
+                case 12: return "EEPROM";
+                case 13: return "FEPROM";
+                case 14: return "EPROM";
+                case 15: return "CDRAM";
+                case 16: return "3DRAM";
+                case 17: return "SDRAM";
+                case 18: return "SGRAM";
+                case 19: return "RDRAM";
+                case 20: return "DDR";
+                case 21: return "DDR2";
+                case 22: return "DDR2 FB-DIMM";
+                case 23: return "Undefined 23";
+                case 24: return "DDR3";
+                case 25: return "Undefined 25";
+                default: return "Unknown";
+            }
+        }
+       
+        private string GetDiskString(double totalDisk)
+        {
+            int count = 0;
+            while (totalDisk > 1024.0)
+            {
+                totalDisk /= 1024.0;
+                count++;
+            }
+
+            return $"{string.Format("{0:0.00}", totalDisk * dashboard_disk_bar.Value / 100)}/{string.Format("{0:0.00}", totalDisk)} {(count == 1 ? "KB" : count == 2 ? "MB" : count == 3 ? "GB" : "TB")} ";
+        }
+
+        private string GetActivePlayers()
+        {
+            int players = ServerGrid.Items.Cast<Functions.ServerTable>().Where(s => s.Maxplayers.Contains('/')).Sum(s => int.Parse(s.Maxplayers.Split('/')[0]));
+            return players.ToString();
+        }
+
+        private void Refresh_DashBoard_LiveChart()
+        {
+            // List<(ServerType, PlayerCount)> Example: ("Ricochet Dedicated Server", 0)
+            List<(string, int)> typePlayers = ServerGrid.Items.Cast<Functions.ServerTable>()
+                .Where(s => s.Status == "Started" && s.Maxplayers.Contains("/"))
+                .Select(s => (type: s.Game, players: int.Parse(s.Maxplayers.Split('/')[0])))
+                .GroupBy(s => s.type)
+                .Select(s => (type: s.Key, players: s.Sum(p => p.players)))
+                .ToList();
+
+            // Ajust the maxvalue of axis Y base on PlayerCount
+            if (typePlayers.Count > 0)
+            {
+                int maxValue = typePlayers.Select(s => s.Item2).Max() + 5;
+                livechart_players_axisY.MaxValue = (maxValue > 10) ? maxValue : 10;
+            }
+
+            // Update the column data if updated, if ServerType doesn't exist remove
+            for (int i = 0; i < livechart_players.Series.Count; i++)
+            {
+                if (typePlayers.Select(t => t.Item1).Contains(livechart_players.Series[i].Title))
+                {
+                    int currentPlayers = typePlayers.Where(t => t.Item1 == livechart_players.Series[i].Title).Select(t => t.Item2).FirstOrDefault();
+                    if (((ChartValues<int>)livechart_players.Series[i].Values)[0] != currentPlayers)
+                    {
+                        livechart_players.Series[i].Values[0] = currentPlayers;
+                    }
+
+                    typePlayers.Remove((livechart_players.Series[i].Title, currentPlayers));
+                }
+                else
+                {
+                    livechart_players.Series.RemoveAt(i--);
+                }
+            }
+
+            // Add ServerType Series if not exist
+            foreach ((string, int) item in typePlayers)
+            {
+                livechart_players.Series.Add(new ColumnSeries
+                {
+                    Title = item.Item1,
+                    Values = new ChartValues<int> { item.Item2 }
+                });
             }
         }
 
@@ -489,10 +667,20 @@ namespace WindowsGSM
 
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (ServerGrid.SelectedIndex != -1)
+            {
+                DataGrid_RefreshElements();
+            }
+        }
+
+        private void DataGrid_RefreshElements()
+        {
             var row = (Functions.ServerTable)ServerGrid.SelectedItem;
 
             if (row != null)
             {
+                Console.WriteLine("Datagrid Changed");
+
                 if (g_iServerStatus[int.Parse(row.ID)] == ServerStatus.Stopped)
                 {
                     button_Start.IsEnabled = true;
@@ -549,25 +737,27 @@ namespace WindowsGSM
                     button_ManageAddons.IsEnabled = false;
                 }
 
+                textBox_servergame.Text = row.Game;
+
                 button_Status.Content = row.Status.ToUpper();
                 button_Status.Background = (g_iServerStatus[int.Parse(row.ID)] == ServerStatus.Started) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Orange;
-               
+
                 switch_autorestart.IsChecked = g_bAutoRestart[int.Parse(row.ID)];
                 switch_autostart.IsChecked = g_bAutoStart[int.Parse(row.ID)];
                 switch_autoupdate.IsChecked = g_bAutoUpdate[int.Parse(row.ID)];
                 switch_updateonstart.IsChecked = g_bUpdateOnStart[int.Parse(row.ID)];
-  
-                button_discordalert.Content = (g_bDiscordAlert[int.Parse(row.ID)]) ? "ON" : "OFF";
-                button_discordalert.Background = (g_bDiscordAlert[int.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
-                button_discordtest.IsEnabled = (g_bDiscordAlert[int.Parse(row.ID)]) ? true : false;
 
-                button_restartcrontab.Content = (g_bRestartCrontab[int.Parse(row.ID)]) ? "ON" : "OFF";
-                button_restartcrontab.Background = (g_bRestartCrontab[int.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
+                button_discordalert.Content = g_bDiscordAlert[int.Parse(row.ID)] ? "ON" : "OFF";
+                button_discordalert.Background = g_bDiscordAlert[int.Parse(row.ID)] ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
+                button_discordtest.IsEnabled = g_bDiscordAlert[int.Parse(row.ID)] ? true : false;
+
+                button_restartcrontab.Content = g_bRestartCrontab[int.Parse(row.ID)] ? "ON" : "OFF";
+                button_restartcrontab.Background = g_bRestartCrontab[int.Parse(row.ID)] ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
                 textBox_restartcrontab.Text = g_CrontabFormat[int.Parse(row.ID)];
                 textBox_nextcrontab.Text = CrontabSchedule.TryParse(g_CrontabFormat[int.Parse(row.ID)])?.GetNextOccurrence(DateTime.Now).ToString("ddd, MM/dd/yyyy HH:mm:ss");
 
-                button_embedconsole.Content = (g_bEmbedConsole[int.Parse(row.ID)]) ? "ON" : "OFF";
-                button_embedconsole.Background = (g_bEmbedConsole[int.Parse(row.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
+                button_embedconsole.Content = g_bEmbedConsole[int.Parse(row.ID)] ? "ON" : "OFF";
+                button_embedconsole.Background = g_bEmbedConsole[int.Parse(row.ID)] ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
 
                 MahAppSwitch_AutoStartAlert.IsChecked = g_bAutoStartAlert[int.Parse(row.ID)];
                 MahAppSwitch_AutoRestartAlert.IsChecked = g_bAutoRestartAlert[int.Parse(row.ID)];
@@ -579,6 +769,12 @@ namespace WindowsGSM
 
         private void Install_Click(object sender, RoutedEventArgs e)
         {
+            if (ServerGrid.Items.Count >= MAX_SERVER)
+            {
+                System.Media.SystemSounds.Beep.Play();
+                return;
+            }
+
             MahAppFlyout_InstallGameServer.IsOpen = true;
 
             if (!progressbar_InstallProgress.IsIndeterminate)
@@ -765,6 +961,12 @@ namespace WindowsGSM
 
         private void Import_Click(object sender, RoutedEventArgs e)
         {
+            if (ServerGrid.Items.Count >= MAX_SERVER)
+            {
+                System.Media.SystemSounds.Beep.Play();
+                return;
+            }
+
             MahAppFlyout_ImportGameServer.IsOpen = true;
 
             if (!progressbar_ImportProgress.IsIndeterminate)
@@ -812,8 +1014,6 @@ namespace WindowsGSM
                 }
             }
 
-            //Directory.CreateDirectory(importPath);
-
             //Import start
             textbox_ImportServerName.IsEnabled = false;
             comboBox_ImportGameServer.IsEnabled = false;
@@ -824,9 +1024,11 @@ namespace WindowsGSM
 
             try
             {
-                Directory.Move(textbox_ServerDir.Text, importPath);
+                Microsoft.VisualBasic.FileIO.FileSystem.MoveDirectory(textbox_ServerDir.Text, importPath);
+                // This doesn't work on cross drive
+                //Directory.Move(textbox_ServerDir.Text, importPath);
             }
-            catch
+            catch (Exception ex)
             {
                 textbox_ImportServerName.IsEnabled = true;
                 comboBox_ImportGameServer.IsEnabled = true;
@@ -835,7 +1037,7 @@ namespace WindowsGSM
                 progressbar_ImportProgress.IsIndeterminate = false;
                 textblock_ImportProgress.Text = "[ERROR] Fail to import";
 
-                System.Windows.Forms.MessageBox.Show($"Fail to move the directory.\n{textbox_ServerDir.Text}\nto\n{importPath}", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                System.Windows.Forms.MessageBox.Show($"Fail to move the directory.\n{textbox_ServerDir.Text}\nto\n{importPath}\n\n{ex.ToString()}", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -1061,13 +1263,26 @@ namespace WindowsGSM
 
         private async void Actions_StartAllServers_Click(object sender, RoutedEventArgs e)
         {
-            int num_row = ServerGrid.Items.Count;
-            for (int i = 0; i < num_row; i++)
-            {
-                var server = (Functions.ServerTable)ServerGrid.Items[i];
-                if (server == null) { continue; }
+            List<Functions.ServerTable> servers = new List<Functions.ServerTable>();
+            foreach (var item in ServerGrid.Items) { servers.Add((Functions.ServerTable)item); }
 
+            foreach (var server in servers)
+            {
                 if (g_iServerStatus[int.Parse(server.ID)] == ServerStatus.Stopped)
+                {
+                    await GameServer_Start(server);
+                }
+            }
+        }
+
+        private async void Actions_StartServersWithAutoStartEnabled_Click(object sender, RoutedEventArgs e)
+        {
+            List<Functions.ServerTable> servers = new List<Functions.ServerTable>();
+            foreach (var item in ServerGrid.Items) { servers.Add((Functions.ServerTable)item); }
+
+            foreach (var server in servers)
+            {
+                if (g_iServerStatus[int.Parse(server.ID)] == ServerStatus.Stopped && g_bAutoStart[int.Parse(server.ID)])
                 {
                     await GameServer_Start(server);
                 }
@@ -1076,13 +1291,12 @@ namespace WindowsGSM
 
         private async void Actions_StopAllServers_Click(object sender, RoutedEventArgs e)
         {
-            int num_row = ServerGrid.Items.Count;
-            for (int i = 0; i < num_row; i++)
-            {
-                var server = (Functions.ServerTable)ServerGrid.Items[i];
-                int serverId = int.Parse(server.ID);
+            List<Functions.ServerTable> servers = new List<Functions.ServerTable>();
+            foreach (var item in ServerGrid.Items) { servers.Add((Functions.ServerTable)item); }
 
-                if (g_iServerStatus[serverId] == ServerStatus.Started)
+            foreach (var server in servers)
+            {
+                if (g_iServerStatus[int.Parse(server.ID)] == ServerStatus.Started)
                 {
                     await GameServer_Stop(server);
                 }
@@ -1091,13 +1305,12 @@ namespace WindowsGSM
 
         private async void Actions_RestartAllServers_Click(object sender, RoutedEventArgs e)
         {
-            int num_row = ServerGrid.Items.Count;
-            for (int i = 0; i < num_row; i++)
-            {
-                var server = (Functions.ServerTable)ServerGrid.Items[i];
-                int serverId = int.Parse(server.ID);
+            List<Functions.ServerTable> servers = new List<Functions.ServerTable>();
+            foreach (var item in ServerGrid.Items) { servers.Add((Functions.ServerTable)item); }
 
-                if (g_iServerStatus[serverId] == ServerStatus.Started)
+            foreach (var server in servers)
+            {
+                if (g_iServerStatus[int.Parse(server.ID)] == ServerStatus.Started)
                 {
                     await GameServer_Restart(server);
                 }
@@ -1999,6 +2212,11 @@ namespace WindowsGSM
             // Query server every 5 seconds
             while (p != null && !p.HasExited)
             {
+                if (g_iServerStatus[int.Parse(server.ID)] == ServerStatus.Stopped)
+                {
+                    break;
+                }
+
                 if (!IsValidIPAddress(server.IP) || !IsValidPort(server.QueryPort))
                 {
                     continue;
@@ -2006,38 +2224,27 @@ namespace WindowsGSM
 
                 dynamic query = gameServer.QueryMethod;
                 query.SetAddressPort(server.IP, int.Parse(server.QueryPort));
-                Dictionary<string, string> infos = await query.GetInfo();
-                if (infos != null)
+                string players = await query.GetPlayersAndMaxPlayers();
+
+                if (players != null)
                 {
-                    string players = infos["Players"];
-                    string maxplayers = infos["MaxPlayers"];
-                    server.Maxplayers = $"{players}/{maxplayers}";
+                    server.Maxplayers = players;
 
                     for (int i = 0; i < ServerGrid.Items.Count; i++)
                     {
-                        var temp = (Functions.ServerTable)ServerGrid.Items[i];
-                        if (server.ID == temp.ID)
+                        if (server.ID == ((Functions.ServerTable)ServerGrid.Items[i]).ID)
                         {
-                            if (ServerGrid.SelectedItem == ServerGrid.Items[i])
-                            {
-                                ServerGrid.Items[i] = server;
-                                ServerGrid.SelectedItem = ServerGrid.Items[i];
-                            }
-                            else
-                            {
-                                ServerGrid.Items[i] = server;
-                            }
+                            int selectedIndex = ServerGrid.SelectedIndex;
+                            ServerGrid.Items[i] = server;
+                            ServerGrid.SelectedIndex = selectedIndex;
+                            ServerGrid.Items.Refresh();
+                            break;
                         }
                     }
-
-                    ServerGrid.Items.Refresh();
                 }
                
                 await Task.Delay(5000);
             }
-
-            // Refresh server list after server stopped
-            ServerGrid.Items.Refresh();
         }
 
         private async Task EndAllRunningProcess(string serverId)
@@ -2078,27 +2285,25 @@ namespace WindowsGSM
         {
             server.Status = status;
 
+            if (server.Status != "Started" && server.Maxplayers.Contains('/'))
+            {
+                var serverConfig = new Functions.ServerConfig(server.ID);
+                server.Maxplayers = serverConfig.ServerMaxPlayer;
+            }
+
             for (int i = 0; i < ServerGrid.Items.Count; i++)
             {
-                var temp = ServerGrid.Items[i] as Functions.ServerTable;
-
-                if (server.ID == temp.ID)
+                if (server.ID == ((Functions.ServerTable)ServerGrid.Items[i]).ID)
                 {
-                    if (ServerGrid.SelectedItem == ServerGrid.Items[i])
-                    {
-                        ServerGrid.Items[i] = server;
-                        ServerGrid.SelectedItem = ServerGrid.Items[i];
-                    }
-                    else
-                    {
-                        ServerGrid.Items[i] = server;
-                    }
-
+                    int selectedIndex = ServerGrid.SelectedIndex;
+                    ServerGrid.Items[i] = server;
+                    ServerGrid.SelectedIndex = selectedIndex;
+                    ServerGrid.Items.Refresh();
                     break;
                 }
             }
 
-            ServerGrid.Items.Refresh();
+            DataGrid_RefreshElements();
         }
 
         public void Log(string serverId, string logText)
@@ -2938,6 +3143,11 @@ namespace WindowsGSM
                 textBox_DiscordBotToken.Text = DiscordBot.Configs.GetBotToken();
 
                 Refresh_DiscordBotAdminList(listBox_DiscordBotAdminList.SelectedIndex);
+
+                if (listBox_DiscordBotAdminList.Items.Count > 0 && listBox_DiscordBotAdminList.SelectedItem == null)
+                {
+                    listBox_DiscordBotAdminList.SelectedItem = listBox_DiscordBotAdminList.Items[0];
+                }
             }
         }
         
@@ -3160,5 +3370,20 @@ namespace WindowsGSM
             }
         }
         #endregion
+
+        private void HamburgerMenu_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            home.Visibility = (HamburgerMenuControl.SelectedIndex == 0) ? Visibility.Visible : Visibility.Hidden;
+            dashboard.Visibility = (HamburgerMenuControl.SelectedIndex == 1) ? Visibility.Visible : Visibility.Hidden;
+        }
+
+        private async void HamburgerMenu_Loaded(object sender, RoutedEventArgs e)
+        {
+            home.Visibility = Visibility.Visible;
+            dashboard.Visibility = Visibility.Hidden;
+
+            await Task.Delay(1); // Delay 0.001 sec due to a bug
+            HamburgerMenuControl.SelectedIndex = 0;
+        }
     }
 }

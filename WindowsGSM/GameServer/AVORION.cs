@@ -15,7 +15,7 @@ namespace WindowsGSM.GameServer
         public string StartPath = @"bin\AvorionServer.exe";
         public bool ToggleConsole = true;
         public int PortIncrements = 2;
-        public dynamic QueryMethod = new Query.A2S();
+        public dynamic QueryMethod = null;
 
         public string Port = "27000";
         public string QueryPort = "27001";

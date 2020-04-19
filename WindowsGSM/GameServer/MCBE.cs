@@ -44,7 +44,7 @@ namespace WindowsGSM.GameServer
                 configText = configText.Replace("{{max-players}}", Maxplayers);
                 string tempPort = _serverData.ServerPort;
                 configText = configText.Replace("{{server-port}}", tempPort);
-                configText = configText.Replace("{{server-portv6}}", (System.Int32.Parse(tempPort)+1).ToString());
+                configText = configText.Replace("{{server-portv6}}", (int.Parse(tempPort)+1).ToString());
                 configText = configText.Replace("{{level-name}}", Defaultmap);
                 File.WriteAllText(configPath, configText);
             }

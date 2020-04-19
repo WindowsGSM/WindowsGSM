@@ -15,7 +15,7 @@ namespace WindowsGSM.GameServer
         public string StartPath = "Unturned.exe";
         public bool ToggleConsole = true;
         public int PortIncrements = 2;
-        public dynamic QueryMethod = null;
+        public dynamic QueryMethod = new Query.A2S();
         public bool requireSteamAccount = true;
 
         public string Port = "27015";

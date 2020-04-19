@@ -35,11 +35,14 @@ namespace WindowsGSM.Functions
                 ""content"": """ + HttpUtility.JavaScriptStringEncode(_customMessage) + @""",
                 ""embeds"": [
                 {
-                    ""title"": ""Status"",
                     ""type"": ""rich"",
-                    ""description"": """ + GetStatusWithEmoji(serverstatus) + @""",
                     ""color"": " + GetColor(serverstatus) + @",
                     ""fields"": [
+                    {
+                        ""name"": ""Status"",
+                        ""value"": """ + GetStatusWithEmoji(serverstatus) + @""",
+                        ""inline"": true
+                    },
                     {
                         ""name"": ""Game Server"",
                         ""value"": """ + servergame + @""",
@@ -51,11 +54,11 @@ namespace WindowsGSM.Functions
                         ""inline"": true
                     }],
                     ""author"": {
-                        ""name"": ""ID: " + serverid + " | "+ HttpUtility.JavaScriptStringEncode(servername) + @""",
+                        ""name"": """ + HttpUtility.JavaScriptStringEncode(servername) + @""",
                         ""icon_url"": """ + GetServerGameIcon(servergame) + @"""
                     },
                     ""footer"": {
-                        ""text"": """ + MainWindow.WGSM_VERSION + @" - Alert"",
+                        ""text"": """ + MainWindow.WGSM_VERSION + @" - Discord Alert"",
                         ""icon_url"": """ + avatarUrl + @"""
                     },
                     ""timestamp"": """ + DateTime.UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss.mssZ") + @""",

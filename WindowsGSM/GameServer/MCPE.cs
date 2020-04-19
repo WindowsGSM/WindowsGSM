@@ -18,7 +18,7 @@ namespace WindowsGSM.GameServer
         public string StartPath = @"bin\php\php.exe";
         public bool ToggleConsole = false;
         public int PortIncrements = 1;
-        public dynamic QueryMethod = null;
+        public dynamic QueryMethod = new Query.UT3();
 
         public string Port = "19132";
         public string QueryPort = "19132";

@@ -214,5 +214,18 @@ namespace WindowsGSM.GameServer.Query
             // Return bytes in UTF8 except the last byte because it is 0x00
             return Encoding.UTF8.GetString(bytes.Take(bytes.Length - 1).ToArray());
         }
+
+        public async Task<string> GetPlayersAndMaxPlayers()
+        {
+            try
+            {
+                Dictionary<string, string> kv = await GetInfo();
+                return kv["Players"] + '/' + kv["MaxPlayers"];
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 }

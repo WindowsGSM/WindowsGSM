@@ -15,7 +15,7 @@ namespace WindowsGSM.Functions
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
 
-        private static readonly int MAX_LINE = 200;
+        private static readonly int MAX_LINE = 150;
         private readonly List<string> _consoleList = new List<string>();
         private readonly string _serverId;
         private int _lineNumber = 0;
@@ -27,28 +27,31 @@ namespace WindowsGSM.Functions
 
         public async void AddOutput(object sender, DataReceivedEventArgs args)
         {
-            await Task.Run(() => MainWindow.g_ServerConsoles[int.Parse(_serverId)].Add(args.Data));
+            System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+            {
+                MainWindow.g_ServerConsoles[int.Parse(_serverId)].Add(args.Data);
+            });
         }
 
         public async void Input(Process process, string text, IntPtr mainWindow)
         {
-            await Task.Run(() =>
+            if (!process.HasExited)
             {
-                if (!process.HasExited)
+                if (process.StartInfo.RedirectStandardInput)
                 {
-                    if (process.StartInfo.RedirectStandardInput)
+                    try
                     {
-                        try
-                        {
-                            process.StandardInput.WriteLine(text);
-                            Add(text);
-                        }
-                        catch
-                        {
-                            //ignore
-                        }
+                        process.StandardInput.WriteLine(text);
+                        Add(text);
                     }
-                    else
+                    catch
+                    {
+                        //ignore
+                    }
+                }
+                else
+                {
+                    await Task.Run(() =>
                     {
                         SetForegroundWindow(mainWindow);
                         var current = GetForegroundWindow();
@@ -59,9 +62,9 @@ namespace WindowsGSM.Functions
                             SendWaitToMainWindow("{ENTER}");
                             SetForegroundWindow(wgsmWindow);
                         }
-                    }
+                    });
                 }
-            });
+            }
         }
 
         public void InputFor7DTD(Process process, string text, IntPtr mainWindow)

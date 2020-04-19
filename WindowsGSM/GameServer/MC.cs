@@ -20,7 +20,7 @@ namespace WindowsGSM.GameServer
         public string StartPath = "";
         public bool ToggleConsole = false;
         public int PortIncrements = 1;
-        public dynamic QueryMethod = null;
+        public dynamic QueryMethod = new Query.UT3();
 
         public string Port = "25565";
         public string QueryPort = "25565";
