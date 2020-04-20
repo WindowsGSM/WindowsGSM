@@ -28,11 +28,11 @@ namespace WindowsGSM.Tools
         public UdpClientHandler(IPEndPoint endPoint, int sendTimeout, int receiveTimeout)
         {
             this._endPoint = endPoint ?? throw new ArgumentNullException(nameof(endPoint));
-            this._sendTimeout = sendTimeout > 0 ? sendTimeout : throw new ArgumentException($"{nameof(sendTimeout)} must be more than 0.");
-            this._receiveTimeout = receiveTimeout > 0 ? receiveTimeout : throw new ArgumentException($"{nameof(receiveTimeout)} must be more than 0."); ;
+            this._sendTimeout = sendTimeout > 0 ? sendTimeout : throw new ArgumentException($"{nameof(sendTimeout)} must be more than zero.");
+            this._receiveTimeout = receiveTimeout > 0 ? receiveTimeout : throw new ArgumentException($"{nameof(receiveTimeout)} must be more than zero."); ;
             this._udpClient = new UdpClient();
             this._udpClient.Client.SendTimeout = _sendTimeout;
-            this._udpClient.Client.ReceiveTimeout = receiveTimeout;
+            this._udpClient.Client.ReceiveTimeout = _receiveTimeout;
             this._udpClient.Connect(_endPoint);
         }
 
