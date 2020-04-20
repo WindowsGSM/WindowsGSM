@@ -41,7 +41,7 @@ namespace WindowsGSM.GameServer.Query
                 {
                     byte[] requestData;
                     byte[] responseData;
-                    using (UdpClientHandler udpHandler = new UdpClientHandler(_IPEndPoint, _timeout, _timeout))
+                    using (UdpClientHandler udpHandler = new UdpClientHandler(_IPEndPoint))
                     {
                         // Send UT3_HANDSHAKE request
                         requestData = UT3_MAGIC
@@ -50,7 +50,7 @@ namespace WindowsGSM.GameServer.Query
                             .ToArray();
 
                         // Receive response
-                        byte[] token = GetToken(udpHandler.GetResponse(requestData, requestData.Length).ToArray());
+                        byte[] token = GetToken(udpHandler.GetResponse(requestData, requestData.Length, _timeout, _timeout).ToArray());
 
                         // Send UT3_INFO request
                         requestData = UT3_MAGIC
@@ -60,7 +60,7 @@ namespace WindowsGSM.GameServer.Query
                             .ToArray();
 
                         // Receive response
-                        responseData = udpHandler.GetResponse(requestData, requestData.Length)
+                        responseData = udpHandler.GetResponse(requestData, requestData.Length, _timeout, _timeout)
                             .Skip(5)
                             .ToArray();
                     }

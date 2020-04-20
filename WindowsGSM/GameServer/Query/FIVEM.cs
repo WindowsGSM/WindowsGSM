@@ -37,7 +37,7 @@ namespace WindowsGSM.GameServer.Query
                 {
                     byte[] requestData;
                     byte[] responseData;
-                    using (UdpClientHandler udpHandler = new UdpClientHandler(_IPEndPoint, _timeout, _timeout))
+                    using (UdpClientHandler udpHandler = new UdpClientHandler(_IPEndPoint))
                     {
                         // Send FIVEM_INFO request
                         requestData = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }
@@ -45,7 +45,7 @@ namespace WindowsGSM.GameServer.Query
                             .ToArray();
 
                         // Receive response (Skip "\FF\FF\FF\FFinfoResponse\n\\")
-                        responseData = udpHandler.GetResponse(requestData, requestData.Length)
+                        responseData = udpHandler.GetResponse(requestData, requestData.Length, _timeout, _timeout)
                             .Skip(18)
                             .ToArray();
                     }

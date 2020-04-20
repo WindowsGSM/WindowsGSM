@@ -45,14 +45,14 @@ namespace WindowsGSM.GameServer.Query
                 {
                     byte[] requestData;
                     byte[] responseData;
-                    using (UdpClientHandler udpHandler = new UdpClientHandler(_IPEndPoint, _timeout, _timeout))
+                    using (UdpClientHandler udpHandler = new UdpClientHandler(_IPEndPoint))
                     {
                         requestData = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }
                             .Concat(A2S_INFO)
                             .Concat(new byte[] { 0x00 })
                             .ToArray();
 
-                        responseData = udpHandler.GetResponse(requestData, requestData.Length)
+                        responseData = udpHandler.GetResponse(requestData, requestData.Length, _timeout, _timeout)
                             .Skip(4)
                             .ToArray();
                     }
@@ -158,7 +158,7 @@ namespace WindowsGSM.GameServer.Query
                 {
                     byte[] requestData;
                     byte[] responseData;
-                    using (UdpClientHandler udpHandler = new UdpClientHandler(_IPEndPoint, _timeout, _timeout))
+                    using (UdpClientHandler udpHandler = new UdpClientHandler(_IPEndPoint))
                     {
                         // Send A2S_PLAYER request
                         requestData = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }
@@ -166,7 +166,7 @@ namespace WindowsGSM.GameServer.Query
                             .Concat(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF })
                             .ToArray();
 
-                        responseData = udpHandler.GetResponse(requestData, requestData.Length)
+                        responseData = udpHandler.GetResponse(requestData, requestData.Length, _timeout, _timeout)
                             .Skip(5)
                             .ToArray();
 
@@ -177,7 +177,7 @@ namespace WindowsGSM.GameServer.Query
                             .ToArray();
 
                         // Receive response
-                        responseData = udpHandler.GetResponse(requestData, requestData.Length)
+                        responseData = udpHandler.GetResponse(requestData, requestData.Length, _timeout, _timeout)
                             .Skip(4)
                             .ToArray();
                     }

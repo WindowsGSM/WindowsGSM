@@ -14,10 +14,8 @@ namespace WindowsGSM.Tools
     public sealed class UdpClientHandler : IDisposable
     {
         private IPEndPoint _endPoint;
-        private readonly int _sendTimeout;
-        private readonly int _receiveTimeout;
         private readonly UdpClient _udpClient;
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// Base constructor.
@@ -25,14 +23,10 @@ namespace WindowsGSM.Tools
         /// <param name="endPoint">IP and port of the remote PC.</param>
         /// <param name="sendTimeout">Send timeout.</param>
         /// <param name="receiveTimeout">Recieve timeout.</param>
-        public UdpClientHandler(IPEndPoint endPoint, int sendTimeout, int receiveTimeout)
+        public UdpClientHandler(IPEndPoint endPoint)
         {
             this._endPoint = endPoint ?? throw new ArgumentNullException(nameof(endPoint));
-            this._sendTimeout = sendTimeout > 0 ? sendTimeout : throw new ArgumentException($"{nameof(sendTimeout)} must be more than zero.");
-            this._receiveTimeout = receiveTimeout > 0 ? receiveTimeout : throw new ArgumentException($"{nameof(receiveTimeout)} must be more than zero."); ;
             this._udpClient = new UdpClient();
-            this._udpClient.Client.SendTimeout = _sendTimeout;
-            this._udpClient.Client.ReceiveTimeout = _receiveTimeout;
             this._udpClient.Connect(_endPoint);
         }
 
@@ -42,11 +36,23 @@ namespace WindowsGSM.Tools
         /// <param name="requestData">Your data</param>
         /// <param name="length">Data length</param>
         /// <returns></returns>
-        public IEnumerable<byte> GetResponse(IEnumerable<byte> requestData, int length)
+        public IEnumerable<byte> GetResponse(IEnumerable<byte> requestData, int length, int sendTimeout, int receiveTimeout)
         {
             if (_disposed)
+            {
                 throw new ObjectDisposedException(nameof(UdpClient));
+            }
+            else if(sendTimeout <= 0)
+            {
+                throw new ArgumentException($"{nameof(sendTimeout)} must be more than zero.");
+            }
+            else if(receiveTimeout <= 0)
+            {
+                throw new ArgumentException($"{nameof(receiveTimeout)} must be more than zero.");
+            }
 
+            _udpClient.Client.SendTimeout = sendTimeout;
+            _udpClient.Client.ReceiveTimeout = receiveTimeout;
             _udpClient.Send(requestData.ToArray(), length);
             return _udpClient.Receive(ref _endPoint);
         }
