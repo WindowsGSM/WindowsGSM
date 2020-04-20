@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using WindowsGSM.Tools;
 
 namespace WindowsGSM.GameServer.Query
 {
@@ -16,7 +17,6 @@ namespace WindowsGSM.GameServer.Query
         private static readonly byte[] UT3_INFO = { 0x00 };
         private static readonly byte[] UT3_SESSIONID = { 0x10, 0x20, 0x30, 0x40 };
 
-        private UdpClient _udpClient;
         private IPEndPoint _IPEndPoint;
         private int _timeout;
 
@@ -30,7 +30,7 @@ namespace WindowsGSM.GameServer.Query
         public void SetAddressPort(string address, int port, int timeout = 5)
         {
             _IPEndPoint = new IPEndPoint(IPAddress.Parse(address), port);
-            _timeout = timeout;
+            _timeout = timeout * 1000;
         }
 
         public async Task<Dictionary<string, string>> GetInfo()
@@ -39,26 +39,34 @@ namespace WindowsGSM.GameServer.Query
             {
                 try
                 {
-                    _udpClient = new UdpClient();
-                    _udpClient.Client.SendTimeout = _udpClient.Client.ReceiveTimeout = _timeout * 1000;
-                    _udpClient.Connect(_IPEndPoint);
+                    byte[] requestData;
+                    byte[] responseData;
+                    using (UdpClientHandler udpHandler = new UdpClientHandler(_IPEndPoint, _timeout, _timeout))
+                    {
+                        // Send UT3_HANDSHAKE request
+                        requestData = UT3_MAGIC
+                            .Concat(UT3_HANDSHAKE)
+                            .Concat(UT3_SESSIONID)
+                            .ToArray();
 
-                    // Send UT3_HANDSHAKE request
-                    byte[] request = new byte[0].Concat(UT3_MAGIC).Concat(UT3_HANDSHAKE).Concat(UT3_SESSIONID).ToArray();
-                    _udpClient.Send(request, request.Length);
+                        // Receive response
+                        byte[] token = GetToken(udpHandler.GetResponse(requestData, requestData.Length).ToArray());
 
-                    // Receive response
-                    byte[] token = GetToken(_udpClient.Receive(ref _IPEndPoint).ToArray());
+                        // Send UT3_INFO request
+                        requestData = UT3_MAGIC
+                            .Concat(UT3_INFO)
+                            .Concat(UT3_SESSIONID)
+                            .Concat(token)
+                            .ToArray();
 
-                    // Send UT3_INFO request
-                    request = new byte[0].Concat(UT3_MAGIC).Concat(UT3_INFO).Concat(UT3_SESSIONID).Concat(token).ToArray();
-                    _udpClient.Send(request, request.Length);
-
-                    // Receive response
-                    byte[] response = _udpClient.Receive(ref _IPEndPoint).Skip(5).ToArray();
+                        // Receive response
+                        responseData = udpHandler.GetResponse(requestData, requestData.Length)
+                            .Skip(5)
+                            .ToArray();
+                    }
 
                     var keys = new Dictionary<string, string>();
-                    using (var br = new BinaryReader(new MemoryStream(response), Encoding.UTF8))
+                    using (var br = new BinaryReader(new MemoryStream(responseData), Encoding.UTF8))
                     {
                         keys["MOTD"] = ReadString(br);
                         keys["GameType"] = ReadString(br);
