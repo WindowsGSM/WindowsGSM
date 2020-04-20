@@ -36,7 +36,7 @@ namespace WindowsGSM.Functions
         public ServerConfig(string serverid)
         {
             //Get next available ServerID
-            if (serverid == null || serverid == "")
+            if (serverid == null || serverid == string.Empty)
             {
                 for (int id = 1; id <= MainWindow.MAX_SERVER; id++)
                 {
@@ -115,7 +115,7 @@ namespace WindowsGSM.Functions
             ServerQueryPort = (int.Parse(ServerPort) - int.Parse(gameServer.Port) + int.Parse(gameServer.QueryPort)).ToString(); // Magic
             ServerMap = gameServer.Defaultmap;
             ServerMaxPlayer = gameServer.Maxplayers;
-            ServerGSLT = "";
+            ServerGSLT = string.Empty;
             ServerParam = gameServer.Additional;
             EmbedConsole = !gameServer.ToggleConsole;
 
@@ -124,8 +124,8 @@ namespace WindowsGSM.Functions
             AutoUpdate = false;
             UpdateOnStart = false;
             DiscordAlert = false;
-            DiscordMessage = "";
-            DiscordWebhook = "";
+            DiscordMessage = string.Empty;
+            DiscordWebhook = string.Empty;
             RestartCrontab = false;
             CrontabFormat = "0 6 * * *";
             AutoStartAlert = true;
@@ -155,21 +155,21 @@ namespace WindowsGSM.Functions
                     textwriter.WriteLine($"servermaxplayer=\"{ServerMaxPlayer}\"");
                     textwriter.WriteLine($"servergslt=\"{ServerGSLT}\"");
                     textwriter.WriteLine($"serverparam=\"{ServerParam}\"");
-                    textwriter.WriteLine("");
+                    textwriter.WriteLine(string.Empty);
                     textwriter.WriteLine("autorestart=\"0\"");
                     textwriter.WriteLine("autostart=\"0\"");
                     textwriter.WriteLine("autoupdate=\"0\"");
                     textwriter.WriteLine("updateonstart=\"0\"");
-                    textwriter.WriteLine("");
+                    textwriter.WriteLine(string.Empty);
                     textwriter.WriteLine("discordalert=\"0\"");
                     textwriter.WriteLine($"discordmessage=\"{DiscordMessage}\"");
                     textwriter.WriteLine($"discordwebhook=\"{DiscordWebhook}\"");
-                    textwriter.WriteLine("");
+                    textwriter.WriteLine(string.Empty);
                     textwriter.WriteLine("restartcrontab=\"0\"");
                     textwriter.WriteLine($"crontabformat=\"{CrontabFormat}\"");
-                    textwriter.WriteLine("");
+                    textwriter.WriteLine(string.Empty);
                     textwriter.WriteLine($"embedconsole=\"{(EmbedConsole ? "1" : "0")}\"");
-                    textwriter.WriteLine("");
+                    textwriter.WriteLine(string.Empty);
                     textwriter.WriteLine("autostartalert=\"1\"");
                     textwriter.WriteLine("autorestartalert=\"1\"");
                     textwriter.WriteLine("autoupdatealert=\"1\"");
@@ -193,7 +193,7 @@ namespace WindowsGSM.Functions
         public bool DeleteServerDirectory()
         {
             string serverid_dir = ServerPath.GetServers(ServerID);
-            if (Directory.Exists(serverid_dir) && ServerID != null && ServerID != "")
+            if (Directory.Exists(serverid_dir) && ServerID != null && ServerID != string.Empty)
             {
                 try
                 {
@@ -336,7 +336,7 @@ namespace WindowsGSM.Functions
                 }
             }
 
-            return "";
+            return string.Empty;
         }
 
         public static void SetSetting(string serverId, string settingName, string data)

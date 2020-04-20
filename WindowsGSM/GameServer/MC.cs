@@ -17,7 +17,7 @@ namespace WindowsGSM.GameServer
         public string Notice;
 
         public const string FullName = "Minecraft: Java Edition Server";
-        public string StartPath = "";
+        public string StartPath = string.Empty;
         public bool ToggleConsole = false;
         public int PortIncrements = 1;
         public dynamic QueryMethod = new Query.UT3();
@@ -41,8 +41,8 @@ namespace WindowsGSM.GameServer
             Environment.Is64BitOperatingSystem ?
                 "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=241536_1f5b5a70bf22433b84d0e960903adac8" :
                 "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=241534_1f5b5a70bf22433b84d0e960903adac8",
-            $"C:\\Program Files{(Environment.Is64BitOperatingSystem ? "" : " (x86)")}\\Java\\jre1.8.0_241\\bin\\java.exe",
-            $"C:\\Program Files{(Environment.Is64BitOperatingSystem ? "" : " (x86)")}\\Java\\jre1.8.0_241"
+            $"C:\\Program Files{(Environment.Is64BitOperatingSystem ? string.Empty : " (x86)")}\\Java\\jre1.8.0_241\\bin\\java.exe",
+            $"C:\\Program Files{(Environment.Is64BitOperatingSystem ? string.Empty : " (x86)")}\\Java\\jre1.8.0_241"
         };
 
         public MC(Functions.ServerConfig serverData)
@@ -344,7 +344,7 @@ namespace WindowsGSM.GameServer
             if (!File.Exists(logPath))
             {
                 Error = $"{logFile} is missing.";
-                return "";
+                return string.Empty;
             }
 
             FileStream fileStream = new FileStream(logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -364,7 +364,7 @@ namespace WindowsGSM.GameServer
             fileStream.Close();
 
             Error = $"Fail to get local build";
-            return "";
+            return string.Empty;
         }
 
         public async Task<string> GetRemoteBuild()
@@ -389,7 +389,7 @@ namespace WindowsGSM.GameServer
             }
 
             Error = $"Fail to get remote build";
-            return "";
+            return string.Empty;
         }
 
         private static Java IsJavaJREInstalled()

@@ -26,7 +26,7 @@ namespace WindowsGSM.GameServer
         public string QueryPort = "19132";
         public string Defaultmap = "Bedrock level";
         public string Maxplayers = "10";
-        public string Additional = "";
+        public string Additional = string.Empty;
 
         public MCBE(Functions.ServerConfig serverData)
         {
@@ -267,7 +267,7 @@ namespace WindowsGSM.GameServer
         {
             string versionPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "MCBE-version.txt");
             Error = $"Fail to get local build";
-            return File.Exists(versionPath) ? File.ReadAllText(versionPath) : "";
+            return File.Exists(versionPath) ? File.ReadAllText(versionPath) : string.Empty;
         }
 
         public async Task<string> GetRemoteBuild()
@@ -292,7 +292,7 @@ namespace WindowsGSM.GameServer
             }
 
             Error = $"Fail to get remote build";
-            return "";
+            return string.Empty;
         }
     }
 }

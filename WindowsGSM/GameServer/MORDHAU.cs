@@ -84,11 +84,11 @@ namespace WindowsGSM.GameServer
                 Notice = $"{Path.GetFileName(configPath)} not found ({configPath})";
             }
 
-            string param = string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : _serverData.ServerMap;
-            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? "" : $" -MultiHome={_serverData.ServerIP}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" -Port={_serverData.ServerPort}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? "" : $" -QueryPort={_serverData.ServerQueryPort}";
-            param += $" {_serverData.ServerParam}" + (ToggleConsole ? " -log" : "");
+            string param = string.IsNullOrWhiteSpace(_serverData.ServerMap) ? string.Empty : _serverData.ServerMap;
+            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? string.Empty : $" -MultiHome={_serverData.ServerIP}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $" -Port={_serverData.ServerPort}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? string.Empty : $" -QueryPort={_serverData.ServerQueryPort}";
+            param += $" {_serverData.ServerParam}" + (ToggleConsole ? " -log" : string.Empty);
 
             Process p;
             if (ToggleConsole)
@@ -151,7 +151,7 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", AppId);
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, AppId);
             Error = steamCMD.Error;
 
             return p;
@@ -160,7 +160,7 @@ namespace WindowsGSM.GameServer
         public async Task<bool> Update(bool validate = false)
         {
             var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", AppId, validate);
+            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, string.Empty, AppId, validate);
             Error = steamCMD.Error;
 
             return updateSuccess;

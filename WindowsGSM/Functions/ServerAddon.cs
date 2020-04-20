@@ -27,7 +27,7 @@ namespace WindowsGSM.Functions
             if (_serverGame == GameServer.DAYZ.FullName)
             {
                 string modPath = ServerPath.GetServersConfigs(_serverId, "DayZActivatedMods.cfg");
-                string activatedMods = File.Exists(modPath) ? File.ReadAllText(modPath) : "";
+                string activatedMods = File.Exists(modPath) ? File.ReadAllText(modPath) : string.Empty;
                 string[] folders = Directory.GetDirectories(ServerPath.GetServersServerFiles(_serverId), "@*", SearchOption.TopDirectoryOnly);
 
                 foreach (string folder in folders)
@@ -188,7 +188,7 @@ namespace WindowsGSM.Functions
                 return "SourceMod Plugins";
             }
 
-            return "";
+            return string.Empty;
         }
 
         public static bool IsGameSupportManageAddons(string serverGame)

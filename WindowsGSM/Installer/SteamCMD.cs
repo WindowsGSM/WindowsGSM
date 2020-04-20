@@ -99,14 +99,14 @@ namespace WindowsGSM.Installer
                 _param = $"+login \"{steamUser}\" \"{steamPass}\"";
             }
 
-            _param += $" +force_install_dir \"{installDir}\"" + (string.IsNullOrWhiteSpace(modName) ? "" : $" +app_set_config 90 mod {modName}") + $" +app_update {appId}" + (validate ? " validate" : "");
+            _param += $" +force_install_dir \"{installDir}\"" + (string.IsNullOrWhiteSpace(modName) ? string.Empty : $" +app_set_config 90 mod {modName}") + $" +app_update {appId}" + (validate ? " validate" : "");
             
             if (appId == "90")
             {
                 //Install 4 more times if hlds.exe
                 for (int i = 0; i < 4; i++)
                 {
-                    _param += $" +app_update {appId}" + (validate ? " validate" : "");
+                    _param += $" +app_update {appId}" + (validate ? " validate" : string.Empty);
                 }
             }
 
@@ -204,7 +204,7 @@ namespace WindowsGSM.Installer
                     await Task.Delay(3000);
 
                     if (p == null || p.HasExited) { break; }
-                    p.StandardInput.WriteLine("");
+                    p.StandardInput.WriteLine(string.Empty);
                 }
 
                 // Wait 5 minutes
@@ -216,7 +216,7 @@ namespace WindowsGSM.Installer
                     await Task.Delay(3000);
 
                     if (p == null || p.HasExited) { break; }
-                    p.StandardInput.WriteLine("");
+                    p.StandardInput.WriteLine(string.Empty);
                 }
             }
             catch
@@ -233,7 +233,7 @@ namespace WindowsGSM.Installer
             if (!File.Exists(manifestPath))
             {
                 Error = $"{manifestFile} is missing.";
-                return "";
+                return string.Empty;
             }
 
             string text = File.ReadAllText(manifestPath);
@@ -243,7 +243,7 @@ namespace WindowsGSM.Installer
             if (matches.Count != 1 || matches[0].Groups.Count != 2)
             {
                 Error = $"Fail to get local build";
-                return "";
+                return string.Empty;
             }
 
             return matches[0].Groups[1].Value;
@@ -258,7 +258,7 @@ namespace WindowsGSM.Installer
                 if (!await Download())
                 {
                     Error = "Fail to download steamcmd.exe";
-                    return "";
+                    return string.Empty;
                 }
             }
 
@@ -309,7 +309,7 @@ namespace WindowsGSM.Installer
             if (matches.Count < 1 || matches[1].Groups.Count < 2)
             {
                 Error = $"Fail to get remote build";
-                return "";
+                return string.Empty;
             }
 
             return matches[0].Groups[1].Value;

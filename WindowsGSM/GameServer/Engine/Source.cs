@@ -33,12 +33,12 @@ namespace WindowsGSM.GameServer.Engine
 
         public virtual string Port { get { return "27015"; } }
         public virtual string QueryPort { get { return "27015"; } }
-        public virtual string Defaultmap { get { return ""; } }
+        public virtual string Defaultmap { get { return string.Empty; } }
         public virtual string Maxplayers { get { return "24"; } }
         public virtual string Additional { get { return "-nocrashdialog +clientport {{clientport}}"; } }
 
-        public virtual string Game { get { return ""; } }
-        public virtual string AppId { get { return ""; } }
+        public virtual string Game { get { return string.Empty; } }
+        public virtual string AppId { get { return string.Empty; } }
 
         public Source(Functions.ServerConfig serverData)
         {
@@ -62,12 +62,12 @@ namespace WindowsGSM.GameServer.Engine
 
             StringBuilder sb = new StringBuilder();
             sb.Append($"-console -game {Game}");
-            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerIP) ? "" : $" -ip {serverData.ServerIP}");
-            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerPort) ? "" : $" -port {serverData.ServerPort}");
-            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerMaxPlayer) ? "" : $" -maxplayers {serverData.ServerMaxPlayer}");
-            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerGSLT) ? "" : $" +sv_setsteamaccount {serverData.ServerGSLT}");
-            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerParam) ? "" : $" {serverData.ServerParam}");
-            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerMap) ? "" : $" +map {serverData.ServerMap}");
+            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerIP) ? string.Empty : $" -ip {serverData.ServerIP}");
+            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerPort) ? string.Empty : $" -port {serverData.ServerPort}");
+            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerMaxPlayer) ? string.Empty : $" -maxplayers {serverData.ServerMaxPlayer}");
+            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerGSLT) ? string.Empty : $" +sv_setsteamaccount {serverData.ServerGSLT}");
+            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerParam) ? string.Empty : $" {serverData.ServerParam}");
+            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerMap) ? string.Empty : $" +map {serverData.ServerMap}");
             string param = sb.ToString();
 
             Process p;
@@ -148,7 +148,7 @@ namespace WindowsGSM.GameServer.Engine
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(serverData.ServerID, "", AppId, true);
+            Process p = await steamCMD.Install(serverData.ServerID, string.Empty, AppId, true);
             Error = steamCMD.Error;
 
             return p;
@@ -157,7 +157,7 @@ namespace WindowsGSM.GameServer.Engine
         public async Task<bool> Update(bool validate = false)
         {
             var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(serverData.ServerID, "", AppId, validate);
+            bool updateSuccess = await steamCMD.Update(serverData.ServerID, string.Empty, AppId, validate);
             Error = steamCMD.Error;
 
             return updateSuccess;

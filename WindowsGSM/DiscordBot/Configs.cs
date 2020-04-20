@@ -30,7 +30,7 @@ namespace WindowsGSM.DiscordBot
 			}
 			catch
 			{
-				return "";
+				return string.Empty;
 			}
 		}
 
@@ -48,7 +48,7 @@ namespace WindowsGSM.DiscordBot
 			}
 			catch
 			{
-				return "";
+				return string.Empty;
 			}
 		}
 
@@ -108,7 +108,7 @@ namespace WindowsGSM.DiscordBot
 				foreach (var line in lines)
 				{
 					string[] items = line.Split(new char[] { ' ' }, 2);
-					adminList.Add((items[0], items.Length == 1 ? "" : items[1]));
+					adminList.Add((items[0], items.Length == 1 ? string.Empty : items[1]));
 				}
 				return adminList;
 			}

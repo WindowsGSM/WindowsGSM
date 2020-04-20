@@ -99,13 +99,13 @@ namespace WindowsGSM.Functions
         public string GetPreviousCommand()
         {
             --_lineNumber;
-            return (_consoleList.Count == 0) ? "" : _consoleList[GetLineNumber()].ToString();
+            return (_consoleList.Count == 0) ? string.Empty : _consoleList[GetLineNumber()].ToString();
         }
 
         public string GetNextCommand()
         {
             ++_lineNumber;
-            return (_consoleList.Count == 0) ? "" : _consoleList[GetLineNumber()].ToString();
+            return (_consoleList.Count == 0) ? string.Empty : _consoleList[GetLineNumber()].ToString();
         }
 
         private int GetLineNumber()

@@ -19,12 +19,12 @@ namespace WindowsGSM.GameServer.Engine
 
         public virtual string Port { get { return "27015"; } }
         public virtual string QueryPort { get { return "27015"; } }
-        public virtual string Defaultmap { get { return ""; } }
+        public virtual string Defaultmap { get { return string.Empty; } }
         public virtual string Maxplayers { get { return "24"; } }
-        public virtual string Additional { get { return ""; } }
+        public virtual string Additional { get { return string.Empty; } }
 
-        public virtual string Game { get { return ""; } }
-        public virtual string AppId { get { return ""; } }
+        public virtual string Game { get { return string.Empty; } }
+        public virtual string AppId { get { return string.Empty; } }
 
         public GoldSource(Functions.ServerConfig serverData)
         {
@@ -48,12 +48,12 @@ namespace WindowsGSM.GameServer.Engine
 
             StringBuilder sb = new StringBuilder();
             sb.Append($"-console -game {Game}");
-            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerIP) ? "" : $" -ip {serverData.ServerIP}");
-            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerPort) ? "" : $" -port {serverData.ServerPort}");
-            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerMaxPlayer) ? "" : $" -maxplayers {serverData.ServerMaxPlayer}");
-            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerGSLT) ? "" : $" +sv_setsteamaccount {serverData.ServerGSLT}");
-            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerParam) ? "" : $" {serverData.ServerParam}");
-            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerMap) ? "" : $" +map {serverData.ServerMap}");
+            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerIP) ? string.Empty : $" -ip {serverData.ServerIP}");
+            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerPort) ? string.Empty : $" -port {serverData.ServerPort}");
+            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerMaxPlayer) ? string.Empty : $" -maxplayers {serverData.ServerMaxPlayer}");
+            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerGSLT) ? string.Empty : $" +sv_setsteamaccount {serverData.ServerGSLT}");
+            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerParam) ? string.Empty : $" {serverData.ServerParam}");
+            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerMap) ? string.Empty : $" +map {serverData.ServerMap}");
             string param = sb.ToString();
 
             Process p;

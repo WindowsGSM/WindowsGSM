@@ -46,9 +46,9 @@ namespace WindowsGSM.GameServer
             }
 
             string param = "-batchmode --nographics";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" -port:{_serverData.ServerPort}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? "" : $" -players:{_serverData.ServerMaxPlayer}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : $" -{_serverData.ServerMap}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $" -port:{_serverData.ServerPort}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? string.Empty : $" -players:{_serverData.ServerMaxPlayer}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerMap) ? string.Empty : $" -{_serverData.ServerMap}";
             param += $" {_serverData.ServerParam}";
 
             Process p;
@@ -116,7 +116,7 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", AppId, true, loginAnonymous: false);
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, AppId, true, loginAnonymous: false);
             Error = steamCMD.Error;
 
             return p;
@@ -125,7 +125,7 @@ namespace WindowsGSM.GameServer
         public async Task<bool> Update(bool validate = false)
         {
             var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", AppId, validate, loginAnonymous: false);
+            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, string.Empty, AppId, validate, loginAnonymous: false);
             Error = steamCMD.Error;
 
             return updateSuccess;

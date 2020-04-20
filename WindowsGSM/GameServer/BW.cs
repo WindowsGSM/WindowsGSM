@@ -21,7 +21,7 @@ namespace WindowsGSM.GameServer
         public string QueryPort = "27015";
         public string Defaultmap = "Island";
         public string Maxplayers = "6";
-        public string Additional = "";
+        public string Additional = string.Empty;
 
         public string AppId = "376030";
 
@@ -90,7 +90,7 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", "423410");
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, "423410");
             Error = steamCMD.Error;
 
             return p;
@@ -99,7 +99,7 @@ namespace WindowsGSM.GameServer
         public async Task<bool> Update(bool validate = false)
         {
             var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "423410", validate);
+            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, string.Empty, "423410", validate);
             Error = steamCMD.Error;
 
             return updateSuccess;

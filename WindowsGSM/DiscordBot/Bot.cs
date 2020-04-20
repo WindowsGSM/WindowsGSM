@@ -42,7 +42,7 @@ namespace WindowsGSM.DiscordBot
 		{
 			try
 			{
-				Stream stream = Application.GetResourceStream(new Uri($"pack://application:,,,/Images/WindowsGSM{(string.IsNullOrWhiteSpace(_donorType) ? "" : $"-{_donorType}")}.png")).Stream;
+				Stream stream = Application.GetResourceStream(new Uri($"pack://application:,,,/Images/WindowsGSM{(string.IsNullOrWhiteSpace(_donorType) ? string.Empty : $"-{_donorType}")}.png")).Stream;
 				await _client.CurrentUser.ModifyAsync(x =>
 				{
 					x.Username = "WindowsGSM";
@@ -83,7 +83,7 @@ namespace WindowsGSM.DiscordBot
 
 		public string GetInviteLink()
 		{
-			return (_client == null || _client.CurrentUser == null) ? "" : $"https://discordapp.com/api/oauth2/authorize?client_id={_client.CurrentUser.Id}&permissions=67497024&scope=bot";
+			return (_client == null || _client.CurrentUser == null) ? string.Empty : $"https://discordapp.com/api/oauth2/authorize?client_id={_client.CurrentUser.Id}&permissions=67497024&scope=bot";
 		}
 	}
 }

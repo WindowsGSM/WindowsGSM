@@ -94,7 +94,7 @@ namespace WindowsGSM
 
         private static readonly bool[] g_bEmbedConsole = new bool[MAX_SERVER + 1];
 
-        private string g_DonorType = "";
+        private string g_DonorType = string.Empty;
 
         private readonly DiscordBot.Bot g_DiscordBot = new DiscordBot.Bot();
 
@@ -150,14 +150,14 @@ namespace WindowsGSM
                 MahAppSwitch_DarkTheme.IsChecked = ((key.GetValue("DarkTheme") ?? false).ToString() == "True") ? true : false;
                 MahAppSwitch_StartOnBoot.IsChecked = ((key.GetValue("StartOnBoot") ?? false).ToString() == "True") ? true : false;
                 MahAppSwitch_DonorConnect.IsChecked = ((key.GetValue("DonorTheme") ?? false).ToString() == "True") ? true : false;
-                var theme = ThemeManager.GetAccent((key.GetValue("DonorColor") ?? "").ToString());
+                var theme = ThemeManager.GetAccent((key.GetValue("DonorColor") ?? string.Empty).ToString());
                 comboBox_Themes.Text = (theme == null || !(MahAppSwitch_DonorConnect.IsChecked ?? false)) ? "Blue" : theme.Name;
                 MahAppSwitch_SendStatistics.IsChecked = ((key.GetValue("SendStatistics") ?? true).ToString() == "True") ? true : false;
                 MahAppSwitch_DiscordBotAutoStart.IsChecked = ((key.GetValue("DiscordBotAutoStart") ?? false).ToString() == "True") ? true : false;
 
                 if (MahAppSwitch_DonorConnect.IsChecked ?? false)
                 {
-                    string authKey = (key.GetValue("DonorAuthKey") == null) ? "" : key.GetValue("DonorAuthKey").ToString();
+                    string authKey = (key.GetValue("DonorAuthKey") == null) ? string.Empty : key.GetValue("DonorAuthKey").ToString();
                     if (!string.IsNullOrWhiteSpace(authKey))
                     {
 #pragma warning disable 4014
@@ -782,7 +782,7 @@ namespace WindowsGSM
                 textbox_InstallServerName.IsEnabled = true;
                 comboBox_InstallGameServer.IsEnabled = true;
                 progressbar_InstallProgress.IsIndeterminate = false;
-                textblock_InstallProgress.Text = "";
+                textblock_InstallProgress.Text = string.Empty;
                 button_Install.IsEnabled = true;
 
                 ComboBox_InstallGameServer_SelectionChanged(sender, null);
@@ -826,7 +826,7 @@ namespace WindowsGSM
             progressbar_InstallProgress.IsIndeterminate = true;
             textblock_InstallProgress.Text = "Installing";
             button_Install.IsEnabled = false;
-            textbox_InstallLog.Text = "";
+            textbox_InstallLog.Text = string.Empty;
 
             string servername = textbox_InstallServerName.Text;
             string servergame = selectedgame.Name;
@@ -956,7 +956,7 @@ namespace WindowsGSM
                 Installer.StandardInput.WriteLine(textBox_InstallToken.Text);
             }
 
-            textBox_InstallToken.Text = "";
+            textBox_InstallToken.Text = string.Empty;
         }
 
         private void Import_Click(object sender, RoutedEventArgs e)
@@ -974,7 +974,7 @@ namespace WindowsGSM
                 textbox_ImportServerName.IsEnabled = true;
                 comboBox_ImportGameServer.IsEnabled = true;
                 progressbar_ImportProgress.IsIndeterminate = false;
-                textblock_ImportProgress.Text = "";
+                textblock_ImportProgress.Text = string.Empty;
                 button_Import.Content = "Import";
 
                 var newServerConfig = new Functions.ServerConfig(null);
@@ -985,7 +985,7 @@ namespace WindowsGSM
         private async void Button_Import_Click(object sender, RoutedEventArgs e)
         {
             var selectedgame = (Images.Row)comboBox_ImportGameServer.SelectedItem;
-            label_ServerDirWarn.Content = Directory.Exists(textbox_ServerDir.Text) ? "" : "Server Dir is invalid";
+            label_ServerDirWarn.Content = Directory.Exists(textbox_ServerDir.Text) ? string.Empty : "Server Dir is invalid";
             if (string.IsNullOrWhiteSpace(textbox_ImportServerName.Text) || selectedgame == null) { return; }
 
             string servername = textbox_ImportServerName.Text;
@@ -1054,7 +1054,7 @@ namespace WindowsGSM
             textbox_ServerDir.IsEnabled = true;
             button_Browse.IsEnabled = true;
             progressbar_ImportProgress.IsIndeterminate = false;
-            textblock_ImportProgress.Text = "";
+            textblock_ImportProgress.Text = string.Empty;
         }
 
         private void Button_Browse_Click(object sender, RoutedEventArgs e)
@@ -1136,7 +1136,7 @@ namespace WindowsGSM
         private void Button_ServerCommand_Click(object sender, RoutedEventArgs e)
         {
             string command = textbox_servercommand.Text;
-            textbox_servercommand.Text = "";
+            textbox_servercommand.Text = string.Empty;
 
             if (string.IsNullOrWhiteSpace(command)) { return; }
 
@@ -1620,7 +1620,7 @@ namespace WindowsGSM
         {
             if (g_iServerStatus[int.Parse(server.ID)] != ServerStatus.Stopped) { return; }
 
-            string error = "";
+            string error = string.Empty;
             if (!string.IsNullOrWhiteSpace(server.IP) && !IsValidIPAddress(server.IP))
             {
                 error += " IP address is not valid.";
@@ -1631,7 +1631,7 @@ namespace WindowsGSM
                 error += " Port number is not valid.";
             }
 
-            if (error != "")
+            if (error != string.Empty)
             {
                 Log(server.ID, "Server: Fail to start");
                 Log(server.ID, "[ERROR]" + error);
@@ -1743,7 +1743,7 @@ namespace WindowsGSM
 
             if (updated)
             {
-                Log(server.ID, $"Server: Updated {(validate ? "Validate " : "")}({remoteVersion})");
+                Log(server.ID, $"Server: Updated {(validate ? "Validate " : string.Empty)}({remoteVersion})");
             }
             else
             {
@@ -2530,7 +2530,7 @@ namespace WindowsGSM
             //If switch is checked
             if (!MahAppSwitch_DonorConnect.IsChecked ?? false)
             {
-                g_DonorType = "";
+                g_DonorType = string.Empty;
                 comboBox_Themes.Text = "Blue";
                 comboBox_Themes.IsEnabled = false;
 
@@ -2546,7 +2546,7 @@ namespace WindowsGSM
 
             //If switch is not checked
             key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
-            string authKey = (key.GetValue("DonorAuthKey") == null) ? "" : key.GetValue("DonorAuthKey").ToString();
+            string authKey = (key.GetValue("DonorAuthKey") == null) ? string.Empty : key.GetValue("DonorAuthKey").ToString();
 
             var settings = new MetroDialogSettings
             {
@@ -2621,7 +2621,7 @@ namespace WindowsGSM
 
             }
 
-            return (false, "");
+            return (false, string.Empty);
         }
 
         private void ComboBox_Themes_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -3297,7 +3297,7 @@ namespace WindowsGSM
         public string GetServerName(string serverId)
         {
             var server = GetServerTableById(serverId);
-            return (server == null) ? "" : server.Name;
+            return (server == null) ? string.Empty : server.Name;
         }
 
         private Functions.ServerTable GetServerTableById(string serverId)

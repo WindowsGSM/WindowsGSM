@@ -86,13 +86,13 @@ namespace WindowsGSM.GameServer
             }
 
             string param = $" {_serverData.ServerParam}";
-            param += string.IsNullOrEmpty(_serverData.ServerIP) ? "" : $" -ip={_serverData.ServerIP}";
-            param += string.IsNullOrEmpty(_serverData.ServerPort) ? "" : $" -port={_serverData.ServerPort}";
+            param += string.IsNullOrEmpty(_serverData.ServerIP) ? string.Empty : $" -ip={_serverData.ServerIP}";
+            param += string.IsNullOrEmpty(_serverData.ServerPort) ? string.Empty : $" -port={_serverData.ServerPort}";
 
             string modPath = Functions.ServerPath.GetServersConfigs(_serverData.ServerID, "DayZActivatedMods.cfg");
             if (File.Exists(modPath))
             {
-                string modParam = "";
+                string modParam = string.Empty;
                 foreach (string modName in File.ReadLines(modPath))
                 {
                     modParam += $"{modName.Trim()};";
@@ -131,7 +131,7 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", "223350", true, loginAnonymous: false);
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, "223350", true, loginAnonymous: false);
             Error = steamCMD.Error;
 
             return p;
@@ -140,7 +140,7 @@ namespace WindowsGSM.GameServer
         public async Task<bool> Update(bool validate = false)
         {
             var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "223350", validate, loginAnonymous: false);
+            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, string.Empty, "223350", validate, loginAnonymous: false);
             Error = steamCMD.Error;
 
             return updateSuccess;

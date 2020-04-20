@@ -24,7 +24,7 @@ namespace WindowsGSM.GameServer
         public string QueryPort = "19132";
         public string Defaultmap = "world";
         public string Maxplayers = "20";
-        public string Additional = "";
+        public string Additional = string.Empty;
 
         public MCPE(Functions.ServerConfig serverData)
         {
@@ -231,7 +231,7 @@ namespace WindowsGSM.GameServer
             if (!File.Exists(PMMPPath))
             {
                 Error = $"{PMMPFile} is missing.";
-                return "";
+                return string.Empty;
             }
 
             using (StreamReader sr = File.OpenText(PMMPPath))
@@ -248,7 +248,7 @@ namespace WindowsGSM.GameServer
             }
 
             Error = $"Fail to get local build";
-            return "";
+            return string.Empty;
         }
 
         public async Task<string> GetRemoteBuild()
@@ -272,7 +272,7 @@ namespace WindowsGSM.GameServer
             }
 
             Error = $"Fail to get remote build";
-            return "";
+            return string.Empty;
         }
     }
 }
