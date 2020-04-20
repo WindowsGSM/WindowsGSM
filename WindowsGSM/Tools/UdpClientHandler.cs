@@ -66,7 +66,9 @@ namespace WindowsGSM.Tools
         private void Dispose(bool disposing)
         {
             if (_disposed)
+            {
                 return;
+            }
 
             if(disposing)
             {
