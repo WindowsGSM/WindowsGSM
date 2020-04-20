@@ -15,7 +15,7 @@ namespace WindowsGSM.Functions
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
 
-        private static readonly int MAX_LINE = 150;
+        private const int MAX_LINE = 150;
         private readonly List<string> _consoleList = new List<string>();
         private readonly string _serverId;
         private int _lineNumber = 0;
@@ -99,13 +99,13 @@ namespace WindowsGSM.Functions
         public string GetPreviousCommand()
         {
             --_lineNumber;
-            return (_consoleList.Count == 0) ? string.Empty : _consoleList[GetLineNumber()].ToString();
+            return (_consoleList.Count == 0) ? string.Empty : _consoleList[GetLineNumber()];
         }
 
         public string GetNextCommand()
         {
             ++_lineNumber;
-            return (_consoleList.Count == 0) ? string.Empty : _consoleList[GetLineNumber()].ToString();
+            return (_consoleList.Count == 0) ? string.Empty : _consoleList[GetLineNumber()];
         }
 
         private int GetLineNumber()
@@ -128,7 +128,7 @@ namespace WindowsGSM.Functions
             {
                 _lineNumber = _consoleList.Count + 1;
 
-                if (_consoleList.Count > 0 && text == _consoleList[_consoleList.Count - 1].ToString())
+                if (_consoleList.Count > 0 && text == _consoleList[_consoleList.Count - 1])
                 {
                     return;
                 }
