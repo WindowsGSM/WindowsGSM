@@ -41,7 +41,7 @@ namespace WindowsGSM.GameServer
         public string QueryPort = "26900";
         public string Defaultmap = "Navezgane";
         public string Maxplayers = "8";
-        public string Additional = "";
+        public string Additional = string.Empty;
 
         public SDTD(Functions.ServerConfig serverData)
         {
@@ -148,7 +148,7 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", "294420");
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, "294420");
             Error = steamCMD.Error;
 
             return p;
@@ -157,7 +157,7 @@ namespace WindowsGSM.GameServer
         public async Task<bool> Update(bool validate = false)
         {
             var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "294420", validate);
+            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, string.Empty, "294420", validate);
             Error = steamCMD.Error;
 
             return updateSuccess;

@@ -31,7 +31,7 @@ namespace WindowsGSM.GameServer
         public string QueryPort = "28015";
         public string Defaultmap = "Procedural Map";
         public string Maxplayers = "50";
-        public string Additional = "";
+        public string Additional = string.Empty;
 
         public RUST(Functions.ServerConfig serverData)
         {
@@ -63,11 +63,11 @@ namespace WindowsGSM.GameServer
             string srcdsPath = Path.Combine(workingDir, "RustDedicated.exe");
 
             string param = $"-nographics -batchmode -silent-crashes";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? "" : $" +server.hostname \"{_serverData.ServerName}\"";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? "" : $" +server.ip {_serverData.ServerIP}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" +server.port {_serverData.ServerPort}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : $" +server.level \"{_serverData.ServerMap}\"";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? "" : $" +server.maxplayers {_serverData.ServerMaxPlayer}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? string.Empty : $" +server.hostname \"{_serverData.ServerName}\"";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? string.Empty : $" +server.ip {_serverData.ServerIP}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $" +server.port {_serverData.ServerPort}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerMap) ? string.Empty : $" +server.level \"{_serverData.ServerMap}\"";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? string.Empty : $" +server.maxplayers {_serverData.ServerMaxPlayer}";
 
             foreach (string line in File.ReadLines(configPath))
             {
@@ -104,7 +104,7 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", "258550");
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, "258550");
             Error = steamCMD.Error;
 
             return p;
@@ -113,7 +113,7 @@ namespace WindowsGSM.GameServer
         public async Task<bool> Update(bool validate = false)
         {
             var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "258550", validate);
+            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, string.Empty, "258550", validate);
             Error = steamCMD.Error;
 
             return updateSuccess;

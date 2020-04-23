@@ -31,7 +31,7 @@ namespace WindowsGSM.GameServer
         public string QueryPort = "27017";
         public string Defaultmap = "world";
         public string Maxplayers = "4";
-        public string Additional = "";
+        public string Additional = string.Empty;
 
         public SE(Functions.ServerConfig serverData)
         {
@@ -85,8 +85,8 @@ namespace WindowsGSM.GameServer
             }
 
             string param = (ToggleConsole ? "-console" : "-noconsole") + " -ignorelastsession";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? "" : $" -ip {_serverData.ServerIP}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" -port {_serverData.ServerPort}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? string.Empty : $" -ip {_serverData.ServerIP}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $" -port {_serverData.ServerPort}";
             param += $" {_serverData.ServerParam}";
 
             Process p;
@@ -177,7 +177,7 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", "298740");
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, "298740");
             Error = steamCMD.Error;
 
             return p;
@@ -186,7 +186,7 @@ namespace WindowsGSM.GameServer
         public async Task<bool> Update(bool validate = false)
         {
             var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "298740", validate);
+            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, string.Empty, "298740", validate);
             Error = steamCMD.Error;
 
             return updateSuccess;

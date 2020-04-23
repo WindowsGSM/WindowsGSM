@@ -272,7 +272,7 @@ namespace WindowsGSM.GameServer
         {
             string versionPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "FiveM-version.txt");
             Error = $"Fail to get local build";
-            return File.Exists(versionPath) ? File.ReadAllText(versionPath) : "";
+            return File.Exists(versionPath) ? File.ReadAllText(versionPath) : string.Empty;
         }
 
         public async Task<string> GetRemoteBuild()
@@ -292,7 +292,7 @@ namespace WindowsGSM.GameServer
             }
 
             Error = $"Fail to get remote build";
-            return "";
+            return string.Empty;
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using WindowsGSM.Tools;
 
 namespace WindowsGSM.GameServer.Query
 {
@@ -42,12 +43,19 @@ namespace WindowsGSM.GameServer.Query
             {
                 try
                 {
-                    byte[] requestData = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }
-                        .Concat(A2S_INFO)
-                        .Concat(new byte[] { 0x00 })
-                        .ToArray();
+                    byte[] requestData;
+                    byte[] responseData;
+                    using (UdpClientHandler udpHandler = new UdpClientHandler(_IPEndPoint))
+                    {
+                        requestData = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }
+                            .Concat(A2S_INFO)
+                            .Concat(new byte[] { 0x00 })
+                            .ToArray();
 
-                    byte[] responseData = UdpRequest(requestData).Skip(4).ToArray();
+                        responseData = udpHandler.GetResponse(requestData, requestData.Length, _timeout, _timeout)
+                            .Skip(4)
+                            .ToArray();
+                    }
 
                     // Store response's data
                     var keys = new Dictionary<string, string>();
@@ -148,22 +156,31 @@ namespace WindowsGSM.GameServer.Query
             {
                 try
                 {
-                    // Send A2S_PLAYER request
-                    byte[] requestData = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }
-                        .Concat(A2S_INFO)
-                        .Concat(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF })
-                        .ToArray();
+                    byte[] requestData;
+                    byte[] responseData;
+                    using (UdpClientHandler udpHandler = new UdpClientHandler(_IPEndPoint))
+                    {
+                        // Send A2S_PLAYER request
+                        requestData = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }
+                            .Concat(A2S_INFO)
+                            .Concat(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF })
+                            .ToArray();
 
-                    byte[] responseData = UdpRequest(requestData).Skip(5).ToArray();
+                        responseData = udpHandler.GetResponse(requestData, requestData.Length, _timeout, _timeout)
+                            .Skip(5)
+                            .ToArray();
 
-                    // Send A2S_PLAYER request with challenge
-                    requestData = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }
-                        .Concat(A2S_PLAYER)
-                        .Concat(responseData)
-                        .ToArray();
+                        // Send A2S_PLAYER request with challenge
+                        requestData = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }
+                            .Concat(A2S_PLAYER)
+                            .Concat(responseData)
+                            .ToArray();
 
-                    // Receive response
-                    responseData = UdpRequest(requestData).Skip(4).ToArray();
+                        // Receive response
+                        responseData = udpHandler.GetResponse(requestData, requestData.Length, _timeout, _timeout)
+                            .Skip(4)
+                            .ToArray();
+                    }
 
                     // Store response's data
                     var keys = new Dictionary<int, (string, long, TimeSpan)>();
@@ -219,24 +236,6 @@ namespace WindowsGSM.GameServer.Query
             catch
             {
                 return null;
-            }
-        }
-
-        /// <summary>
-        /// UDP request method.
-        /// </summary>
-        /// <param name="request">Your data</param>
-        /// <returns>UDP response</returns>
-        private IEnumerable<byte> UdpRequest(byte[] request)
-        {
-            using (UdpClient udpClient = new UdpClient())
-            {
-                udpClient.Client.SendTimeout = udpClient.Client.ReceiveTimeout = _timeout;
-                udpClient.Connect(_IPEndPoint);
-                udpClient.Send(request, request.Length);
-
-                // Receive response
-                return udpClient.Receive(ref _IPEndPoint);
             }
         }
     }

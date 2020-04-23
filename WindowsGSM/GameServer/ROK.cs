@@ -25,7 +25,7 @@ namespace WindowsGSM.GameServer
         public string QueryPort = "7350";
         public string Defaultmap = "CrownLand";
         public string Maxplayers = "30";
-        public string Additional = "";
+        public string Additional = string.Empty;
 
         public ROK(Functions.ServerConfig serverData)
         {
@@ -95,7 +95,7 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", "381690", true);
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, "381690", true);
             Error = steamCMD.Error;
 
             return p;
@@ -104,7 +104,7 @@ namespace WindowsGSM.GameServer
         public async Task<bool> Update(bool validate = false)
         {
             var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "381690", validate);
+            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, string.Empty, "381690", validate);
             Error = steamCMD.Error;
 
             return updateSuccess;

@@ -374,6 +374,7 @@
     <Compile Include="GameServer\ZPS.cs" />
     <Compile Include="Tools\GlobalServerList.cs" />
     <Compile Include="Tools\InstallAddons.cs" />
+    <Compile Include="Tools\UdpClientHandler.cs" />
     <Compile Include="WindowsFirewall.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

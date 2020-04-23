@@ -90,7 +90,11 @@ namespace WindowsGSM.DiscordBot
                 MainWindow WindowsGSM = (MainWindow)Application.Current.MainWindow;
 
                 var list = WindowsGSM.GetServerList();
-                string ids = "", status = "", servers = "";
+
+                string ids = string.Empty;
+                string status = string.Empty;
+                string servers = string.Empty;
+
                 foreach ((string id, string state, string server) in list)
                 {
                     ids += $"`{id}`\n";

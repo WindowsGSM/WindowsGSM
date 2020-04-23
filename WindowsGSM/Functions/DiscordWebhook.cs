@@ -15,9 +15,9 @@ namespace WindowsGSM.Functions
 
         public DiscordWebhook(string webhookurl, string customMessage, string donorType = "")
         {
-            _webhookUrl = webhookurl ?? "";
-            _customMessage = customMessage ?? "";
-            _donorType = donorType ?? "";
+            _webhookUrl = webhookurl ?? string.Empty;
+            _customMessage = customMessage ?? string.Empty;
+            _donorType = donorType ?? string.Empty;
         }
 
         public async Task<bool> Send(string serverid, string servergame, string serverstatus, string servername, string serverip, string serverport)
@@ -167,7 +167,7 @@ namespace WindowsGSM.Functions
 
         private string GetAvatarUrl()
         {
-            return "https://github.com/WindowsGSM/WindowsGSM/raw/master/WindowsGSM/Images/WindowsGSM" + (string.IsNullOrWhiteSpace(_donorType) ? "" : $"-{_donorType}") + ".png";
+            return "https://github.com/WindowsGSM/WindowsGSM/raw/master/WindowsGSM/Images/WindowsGSM" + (string.IsNullOrWhiteSpace(_donorType) ? string.Empty : $"-{_donorType}") + ".png";
         }
     }
 }

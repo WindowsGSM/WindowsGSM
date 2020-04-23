@@ -21,7 +21,7 @@ namespace WindowsGSM.GameServer
         public string QueryPort = "25564";
         public string Defaultmap = "data/tiles/island12.xml";
         public string Maxplayers = "32";
-        public string Additional = "";
+        public string Additional = string.Empty;
 
         public SW(Functions.ServerConfig serverData)
         {
@@ -82,7 +82,7 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", "1247090");
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, "1247090");
             Error = steamCMD.Error;
 
             return p;
@@ -91,7 +91,7 @@ namespace WindowsGSM.GameServer
         public async Task<bool> Update(bool validate = false)
         {
             var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "1247090", validate);
+            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, string.Empty, "1247090", validate);
             Error = steamCMD.Error;
 
             return updateSuccess;

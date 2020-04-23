@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using WindowsGSM.Tools;
 
 namespace WindowsGSM.GameServer.Query
 {
@@ -11,7 +12,6 @@ namespace WindowsGSM.GameServer.Query
     {
         private static readonly byte[] FIVEM_INFO = Encoding.Default.GetBytes("getinfo windowsgsm");
 
-        private UdpClient _udpClient;
         private IPEndPoint _IPEndPoint;
         private int _timeout;
 
@@ -25,7 +25,7 @@ namespace WindowsGSM.GameServer.Query
         public void SetAddressPort(string address, int port, int timeout = 5)
         {
             _IPEndPoint = new IPEndPoint(IPAddress.Parse(address), port);
-            _timeout = timeout;
+            _timeout = timeout * 1000;
         }
 
         /// <summary>Get general information of specific game server.</summary>
@@ -35,17 +35,22 @@ namespace WindowsGSM.GameServer.Query
             {
                 try
                 {
-                    _udpClient = new UdpClient();
-                    _udpClient.Client.SendTimeout = _udpClient.Client.ReceiveTimeout = _timeout * 1000;
-                    _udpClient.Connect(_IPEndPoint);
+                    byte[] requestData;
+                    byte[] responseData;
+                    using (UdpClientHandler udpHandler = new UdpClientHandler(_IPEndPoint))
+                    {
+                        // Send FIVEM_INFO request
+                        requestData = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }
+                            .Concat(FIVEM_INFO)
+                            .ToArray();
 
-                    // Send FIVEM_INFO request
-                    byte[] request = new byte[0].Concat(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }).Concat(FIVEM_INFO).ToArray();
-                    _udpClient.Send(request, request.Length);
+                        // Receive response (Skip "\FF\FF\FF\FFinfoResponse\n\\")
+                        responseData = udpHandler.GetResponse(requestData, requestData.Length, _timeout, _timeout)
+                            .Skip(18)
+                            .ToArray();
+                    }
 
-                    // Receive response (Skip "\FF\FF\FF\FFinfoResponse\n\\")
-                    byte[] response = _udpClient.Receive(ref _IPEndPoint).Skip(18).ToArray();
-                    string[] splits = Encoding.UTF8.GetString(response).Split('\\');
+                    string[] splits = Encoding.UTF8.GetString(responseData).Split('\\');
 
                     // Store response's data
                     var keys = new Dictionary<string, string>();

@@ -52,12 +52,12 @@ namespace WindowsGSM.GameServer
                 return null;
             }
 
-            string param = string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : $"{_serverData.ServerMap}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" -port={_serverData.ServerPort}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? "" : $" -servername=\"{_serverData.ServerName}\"";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? "" : $" -PlayerCount={_serverData.ServerMaxPlayer}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? "" : $" -queryport={_serverData.ServerQueryPort}";
-            param += $" {_serverData.ServerParam}" + ((ToggleConsole) ? " -log" : "");
+            string param = string.IsNullOrWhiteSpace(_serverData.ServerMap) ? string.Empty : $"{_serverData.ServerMap}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $" -port={_serverData.ServerPort}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? string.Empty : $" -servername=\"{_serverData.ServerName}\"";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? string.Empty : $" -PlayerCount={_serverData.ServerMaxPlayer}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? string.Empty : $" -queryport={_serverData.ServerQueryPort}";
+            param += $" {_serverData.ServerParam}" + ((ToggleConsole) ? " -log" : string.Empty);
 
             Process p;
             if (ToggleConsole)
@@ -112,7 +112,7 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", "915070");
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, "915070");
             Error = steamCMD.Error;
 
             return p;
@@ -121,7 +121,7 @@ namespace WindowsGSM.GameServer
         public async Task<bool> Update(bool validate = false)
         {
             var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "915070", validate);
+            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, string.Empty, "915070", validate);
             Error = steamCMD.Error;
 
             return updateSuccess;
