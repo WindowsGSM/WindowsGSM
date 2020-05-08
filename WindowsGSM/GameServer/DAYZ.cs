@@ -111,7 +111,8 @@ namespace WindowsGSM.GameServer
                     WorkingDirectory = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID),
                     FileName = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath),
                     Arguments = param,
-                    WindowStyle = ProcessWindowStyle.Minimized
+                    WindowStyle = ProcessWindowStyle.Minimized,
+                    UseShellExecute = false
                 },
                 EnableRaisingEvents = true
             };

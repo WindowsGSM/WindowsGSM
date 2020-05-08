@@ -329,6 +329,7 @@
     <Compile Include="Functions\GoogleAnalytics.cs" />
     <Compile Include="Functions\ServerAddon.cs" />
     <Compile Include="Functions\ServerConsole.cs" />
+    <Compile Include="Functions\SystemMetrics.cs" />
     <Compile Include="GameServer\Addon\AMXModX.cs" />
     <Compile Include="GameServer\Addon\SourceMod.cs" />
     <Compile Include="GameServer\ARKSE.cs" />
@@ -374,7 +375,7 @@
     <Compile Include="GameServer\ZPS.cs" />
     <Compile Include="Tools\GlobalServerList.cs" />
     <Compile Include="Tools\InstallAddons.cs" />
-    <Compile Include="Tools\UdpClientHandler.cs" />
+    <Compile Include="Functions\UdpClientHandler.cs" />
     <Compile Include="WindowsFirewall.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -682,6 +683,9 @@
     <EmbeddedResource Include="..\packages\LiveCharts.Wpf.0.9.7\lib\net45\LiveCharts.Wpf.dll">
       <Link>ReferencesEx\LiveCharts.Wpf.dll</Link>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\HMenu\Discord.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

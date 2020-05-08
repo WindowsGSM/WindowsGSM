@@ -143,8 +143,10 @@ namespace WindowsGSM.GameServer
             string PHPzipPath = Path.Combine(serverFilesPath, fileName);
             try
             {
-                WebClient webClient = new WebClient();
-                await webClient.DownloadFileTaskAsync(installUrl, PHPzipPath);
+                using (WebClient webClient = new WebClient())
+                {
+                    await webClient.DownloadFileTaskAsync(installUrl, PHPzipPath);
+                }
 
                 //Extract PHP-7.3-Windows-x64.zip and delete the zip
                 await Task.Run(() => ZipFile.ExtractToDirectory(PHPzipPath, serverFilesPath));
@@ -161,8 +163,10 @@ namespace WindowsGSM.GameServer
             installUrl = "https://jenkins.pmmp.io/job/PocketMine-MP/lastStableBuild/artifact/PocketMine-MP.phar";
             try
             {
-                WebClient webClient = new WebClient();
-                await webClient.DownloadFileTaskAsync(installUrl, Path.Combine(serverFilesPath, fileName));
+                using (WebClient webClient = new WebClient())
+                {
+                    await webClient.DownloadFileTaskAsync(installUrl, Path.Combine(serverFilesPath, fileName));
+                }
             }
             catch
             {
@@ -195,8 +199,10 @@ namespace WindowsGSM.GameServer
             string installUrl = "https://jenkins.pmmp.io/job/PocketMine-MP/lastStableBuild/artifact/PocketMine-MP.phar";
             try
             {
-                WebClient webClient = new WebClient();
-                await webClient.DownloadFileTaskAsync(installUrl, PMMPPath);
+                using (WebClient webClient = new WebClient())
+                {
+                    await webClient.DownloadFileTaskAsync(installUrl, PMMPPath);
+                } 
             }
             catch
             {
@@ -255,15 +261,17 @@ namespace WindowsGSM.GameServer
         {
             try
             {
-                WebClient webClient = new WebClient();
-                string remoteUrl = "https://jenkins.pmmp.io/job/PocketMine-MP/lastStableBuild/artifact/build_info.json";
-                string html = await webClient.DownloadStringTaskAsync(remoteUrl);
-                Regex regex = new Regex("\"build_number\":\\D{0,}(.*?),");
-                var matches = regex.Matches(html);
-
-                if (matches.Count == 1 && matches[0].Groups.Count == 2)
+                using (WebClient webClient = new WebClient())
                 {
-                    return matches[0].Groups[1].Value;
+                    string remoteUrl = "https://jenkins.pmmp.io/job/PocketMine-MP/lastStableBuild/artifact/build_info.json";
+                    string html = await webClient.DownloadStringTaskAsync(remoteUrl);
+                    Regex regex = new Regex("\"build_number\":\\D{0,}(.*?),");
+                    var matches = regex.Matches(html);
+
+                    if (matches.Count == 1 && matches[0].Groups.Count == 2)
+                    {
+                        return matches[0].Groups[1].Value;
+                    }
                 }
             }
             catch

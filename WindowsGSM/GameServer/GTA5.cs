@@ -279,12 +279,14 @@ namespace WindowsGSM.GameServer
         {
             try
             {
-                WebClient webClient = new WebClient();
-                string html = await webClient.DownloadStringTaskAsync("https://runtime.fivem.net/artifacts/fivem/build_server_windows/master/");
-                Regex regex = new Regex(@"[0-9]{4}-[ -~][^\s]{39}");
-                var matches = regex.Matches(html);
+                using (WebClient webClient = new WebClient())
+                {
+                    string html = await webClient.DownloadStringTaskAsync("https://runtime.fivem.net/artifacts/fivem/build_server_windows/master/");
+                    Regex regex = new Regex(@"[0-9]{4}-[ -~][^\s]{39}");
+                    var matches = regex.Matches(html);
 
-                return matches[0].Value;
+                    return matches[0].Value;
+                }
             }
             catch
             {

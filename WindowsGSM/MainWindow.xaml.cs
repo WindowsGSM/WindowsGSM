@@ -377,8 +377,8 @@ namespace WindowsGSM
 
         private async void AutoStartDiscordBot()
         {
-            switch_DiscordBot.IsChecked = await g_DiscordBot.Start(DiscordBot.Configs.GetBotToken());
-            Log("0", "Discord Bot " + ((switch_DiscordBot.IsChecked ?? false) ? "started." : "fail to start. Reason: Bot Token is invalid."));
+            switch_DiscordBot.IsChecked = await g_DiscordBot.Start();
+            DiscordBotLog("Discord Bot " + ((switch_DiscordBot.IsChecked ?? false) ? "started." : "fail to start. Reason: Bot Token is invalid."));
         }
 
         private async void AutoStartServer()
@@ -426,22 +426,20 @@ namespace WindowsGSM
 
         private async void StartDashBoardRefresh()
         {
+            var system = new Functions.SystemMetrics();
+
             // Get CPU info and Set
-            var mbo = await Task.Run(() => new ManagementObjectSearcher("SELECT Name, NumberOfCores FROM Win32_Processor").Get());
-            dashboard_cpu_type.Content = mbo.Cast<ManagementBaseObject>().Select(c => c["Name"].ToString()).FirstOrDefault();
-            int coreCount = mbo.Cast<ManagementBaseObject>().Sum(x => int.Parse(x["NumberOfCores"].ToString()));
-            PerformanceCounter cpuCounter = await Task.Run(() => new PerformanceCounter("Processor", "% Processor Time", "_Total"));
-            cpuCounter.NextValue();
+            await Task.Run(() => system.GetCPUStaticInfo());
+            dashboard_cpu_type.Content = system.CPUType;
 
             // Get RAM info and Set
-            double totalMemory = await Task.Run(() => new ManagementObjectSearcher("Select TotalVisibleMemorySize from Win32_OperatingSystem").Get().Cast<ManagementObject>().Select(m => double.Parse(m["TotalVisibleMemorySize"].ToString())).FirstOrDefault());
-            dashboard_ram_type.Content = await GetMemoryType();
+            await Task.Run(() => system.GetRAMStaticInfo());
+            dashboard_ram_type.Content = system.RAMType;
 
             // Get Disk info and Set
-            string currentDisk = Path.GetPathRoot(Process.GetCurrentProcess().MainModule.FileName);
-            dashboard_disk_name.Content = $"({currentDisk.TrimEnd('\\')})";
-            long totalDisk = DriveInfo.GetDrives().Where(x => (x.Name == currentDisk) && x.IsReady).Select(x => x.TotalSize).FirstOrDefault();
-            dashboard_disk_type.Content = DriveInfo.GetDrives().Where(x => (x.Name == currentDisk) && x.IsReady).Select(x => x.DriveFormat).FirstOrDefault();
+            await Task.Run(() => system.GetDiskStaticInfo());
+            dashboard_disk_name.Content = $"({system.DiskName})";
+            dashboard_disk_type.Content = system.DiskType;
 
             List<(string, int)> oldTypePlayers = ServerGrid.Items.Cast<Functions.ServerTable>()
                 .Where(s => s.Status == "Started" && s.Maxplayers.Contains("/"))
@@ -452,34 +450,32 @@ namespace WindowsGSM
 
             while (true)
             {
-                dashboard_cpu_bar.Value = cpuCounter.NextValue() * coreCount / 2;
+                dashboard_cpu_bar.Value = await Task.Run(() => system.GetCPUUsage());
                 dashboard_cpu_bar.Value = (dashboard_cpu_bar.Value > 100.0) ? 100.0 : dashboard_cpu_bar.Value;
-                dashboard_cpu_usage.Content = $"{string.Format("{0:0.00}", dashboard_cpu_bar.Value)}%";
+                dashboard_cpu_usage.Content = $"{dashboard_cpu_bar.Value}%";
 
-                double freeMemory = await Task.Run(() => new ManagementObjectSearcher("Select FreePhysicalMemory from Win32_OperatingSystem").Get().Cast<ManagementObject>().Select(m => double.Parse(m["FreePhysicalMemory"].ToString())).FirstOrDefault());
-                dashboard_ram_bar.Value = (1 - freeMemory / totalMemory) * 100;
+                dashboard_ram_bar.Value = await Task.Run(() => system.GetRAMUsage());
                 dashboard_ram_bar.Value = (dashboard_ram_bar.Value > 100.0) ? 100.0 : dashboard_ram_bar.Value;
                 dashboard_ram_usage.Content = $"{string.Format("{0:0.00}", dashboard_ram_bar.Value)}%";
-                dashboard_ram_ratio.Content = GetMemoryString(totalMemory);
+                dashboard_ram_ratio.Content = Functions.SystemMetrics.GetMemoryRatioString(dashboard_ram_bar.Value, system.RAMTotalSize);
 
-                long freeSpace = DriveInfo.GetDrives().Where(x => (x.Name == currentDisk) && x.IsReady).Select(x => x.AvailableFreeSpace).FirstOrDefault();
-                dashboard_disk_bar.Value = (1 - (double)freeSpace / totalDisk) * 100;
+                dashboard_disk_bar.Value = await Task.Run(() => system.GetDiskUsage());
                 dashboard_disk_bar.Value = (dashboard_disk_bar.Value > 100.0) ? 100.0 : dashboard_disk_bar.Value;
                 dashboard_disk_usage.Content = $"{string.Format("{0:0.00}", dashboard_disk_bar.Value)}%";
-                dashboard_disk_ratio.Content = GetDiskString(totalDisk);
+                dashboard_disk_ratio.Content = Functions.SystemMetrics.GetDiskRatioString(dashboard_disk_bar.Value, system.DiskTotalSize);
 
                 dashboard_servers_bar.Value = ServerGrid.Items.Count * 100.0 / MAX_SERVER;
                 dashboard_servers_bar.Value = (dashboard_servers_bar.Value > 100.0) ? 100.0 : dashboard_servers_bar.Value;
                 dashboard_servers_usage.Content = $"{string.Format("{0:0.00}", dashboard_servers_bar.Value)}%";
                 dashboard_servers_ratio.Content = $"{ServerGrid.Items.Count}/{MAX_SERVER}";
 
-                int startedCount = ServerGrid.Items.Cast<Functions.ServerTable>().Where(s => s.Status == "Started").Count();
+                int startedCount = GetStartedServerCount();
                 dashboard_started_bar.Value = ServerGrid.Items.Count == 0 ? 0 : startedCount * 100.0 / ServerGrid.Items.Count;
                 dashboard_started_bar.Value = (dashboard_started_bar.Value > 100.0) ? 100.0 : dashboard_started_bar.Value;
                 dashboard_started_usage.Content = $"{string.Format("{0:0.00}", dashboard_started_bar.Value)}%";
                 dashboard_started_ratio.Content = $"{startedCount}/{ServerGrid.Items.Count}";
 
-                dashboard_players_count.Content = GetActivePlayers();
+                dashboard_players_count.Content = GetActivePlayers().ToString();
 
                 Refresh_DashBoard_LiveChart();
 
@@ -487,70 +483,14 @@ namespace WindowsGSM
             }
         }
 
-        private string GetMemoryString(double totalMemory)
+        public int GetStartedServerCount()
         {
-            int count = 0;
-            while (totalMemory > 1024.0)
-            {
-                totalMemory /= 1024.0;
-                count++;
-            }
-
-            return $"{string.Format("{0:0.00}", totalMemory * dashboard_ram_bar.Value / 100)}/{string.Format("{0:0.00}", totalMemory)} {(count == 1 ? "MB" : count == 2 ? "GB" : "TB")} ";
+            return ServerGrid.Items.Cast<Functions.ServerTable>().Where(s => s.Status == "Started").Count();
         }
 
-        private async Task<string> GetMemoryType()
+        public int GetActivePlayers()
         {
-            var mbo = await Task.Run(() => new ManagementObjectSearcher("SELECT MemoryType FROM Win32_PhysicalMemory").Get());
-            int type = mbo.Cast<ManagementBaseObject>().Select(c => int.Parse(c["MemoryType"].ToString())).FirstOrDefault();
-
-            switch (type)
-            {
-                case 1: return "Other";
-                case 2: return "DRAM";
-                case 3: return "Synchronous DRAM";
-                case 4: return "Cache DRAM";
-                case 5: return "EDO";
-                case 6: return "EDRAM";
-                case 7: return "VRAM";
-                case 8: return "SRAM";
-                case 9: return "RAM";
-                case 10: return "ROM";
-                case 11: return "Flash";
-                case 12: return "EEPROM";
-                case 13: return "FEPROM";
-                case 14: return "EPROM";
-                case 15: return "CDRAM";
-                case 16: return "3DRAM";
-                case 17: return "SDRAM";
-                case 18: return "SGRAM";
-                case 19: return "RDRAM";
-                case 20: return "DDR";
-                case 21: return "DDR2";
-                case 22: return "DDR2 FB-DIMM";
-                case 23: return "Undefined 23";
-                case 24: return "DDR3";
-                case 25: return "Undefined 25";
-                default: return "Unknown";
-            }
-        }
-       
-        private string GetDiskString(double totalDisk)
-        {
-            int count = 0;
-            while (totalDisk > 1024.0)
-            {
-                totalDisk /= 1024.0;
-                count++;
-            }
-
-            return $"{string.Format("{0:0.00}", totalDisk * dashboard_disk_bar.Value / 100)}/{string.Format("{0:0.00}", totalDisk)} {(count == 1 ? "KB" : count == 2 ? "MB" : count == 3 ? "GB" : "TB")} ";
-        }
-
-        private string GetActivePlayers()
-        {
-            int players = ServerGrid.Items.Cast<Functions.ServerTable>().Where(s => s.Maxplayers.Contains('/')).Sum(s => int.Parse(s.Maxplayers.Split('/')[0]));
-            return players.ToString();
+            return ServerGrid.Items.Cast<Functions.ServerTable>().Where(s => s.Maxplayers.Contains('/')).Sum(s => int.Parse(s.Maxplayers.Split('/')[0]));
         }
 
         private void Refresh_DashBoard_LiveChart()
@@ -610,10 +550,10 @@ namespace WindowsGSM
             analytics.SendDisk();
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             // Stop Discord Bot
-            g_DiscordBot.Stop().Wait();
+            await g_DiscordBot.Stop();
 
             // Save height and width
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
@@ -945,7 +885,7 @@ namespace WindowsGSM
             string userDataPath = Path.Combine(WGSM_PATH, @"installer\steamcmd\userData.txt");
             if (File.Exists(userDataPath))
             {
-                Process.Start("notepad.exe", userDataPath);
+                Process.Start(userDataPath);
             }
         }
 
@@ -2316,7 +2256,29 @@ namespace WindowsGSM
             File.AppendAllText(logFile, log);
 
             textBox_wgsmlog.AppendText(log);
+            textBox_wgsmlog.Text = RemovedOldLog(textBox_wgsmlog.Text);
             textBox_wgsmlog.ScrollToEnd();
+        }
+
+        public void DiscordBotLog(string logText)
+        {
+            string log = $"[{DateTime.Now.ToString("MM/dd/yyyy-HH:mm:ss")}] {logText}" + Environment.NewLine;
+            string logPath = Functions.ServerPath.GetLogs();
+            Directory.CreateDirectory(logPath);
+
+            string logFile = Path.Combine(logPath, $"L{DateTime.Now.ToString("yyyyMMdd")}-DiscordBot.log");
+            File.AppendAllText(logFile, log);
+
+            textBox_DiscordBotLog.AppendText(log);
+            textBox_DiscordBotLog.Text = RemovedOldLog(textBox_DiscordBotLog.Text);
+            textBox_DiscordBotLog.ScrollToEnd();
+        }
+
+        private string RemovedOldLog(string logText)
+        {
+            const int MAX_LOG_LINE = 50;
+            int lineCount = logText.Count(f => f == '\n');
+            return (lineCount > MAX_LOG_LINE) ? string.Join("\n", logText.Split('\n').Skip(lineCount - MAX_LOG_LINE).ToArray()) : logText;
         }
 
         private void Button_ClearServerConsole_Click(object sender, RoutedEventArgs e)
@@ -2590,7 +2552,7 @@ namespace WindowsGSM
         {
             try
             {
-                using (var webClient = new WebClient())
+                using (WebClient webClient = new WebClient())
                 {
                     string json = await webClient.DownloadStringTaskAsync($"https://windowsgsm.com/patreon/patreonAuth.php?auth={authKey}");
                     bool success = (JObject.Parse(json)["success"].ToString() == "True") ? true : false;
@@ -2917,7 +2879,7 @@ namespace WindowsGSM
         {
             try
             {
-                using (var webClient = new WebClient())
+                using (WebClient webClient = new WebClient())
                 {
                     return webClient.DownloadString("https://ipinfo.io/ip").Replace("\n", "");
                 }
@@ -3114,40 +3076,16 @@ namespace WindowsGSM
             if (switch_DiscordBot.IsChecked ?? false)
             {
                 switch_DiscordBot.IsEnabled = false;
-                switch_DiscordBot.IsChecked = await g_DiscordBot.Start(DiscordBot.Configs.GetBotToken());
-                Log("0", "Discord Bot " + ((switch_DiscordBot.IsChecked ?? false) ? "started." : "fail to start. Reason: Bot Token is invalid."));
+                switch_DiscordBot.IsChecked = await g_DiscordBot.Start();
+                DiscordBotLog("Discord Bot " + ((switch_DiscordBot.IsChecked ?? false) ? "started." : "fail to start. Reason: Bot Token is invalid."));
                 switch_DiscordBot.IsEnabled = true;
             }
             else
             {
                 switch_DiscordBot.IsEnabled = false;
                 await g_DiscordBot.Stop();
-                Log("0", "Discord Bot stopped.");
+                DiscordBotLog("Discord Bot stopped.");
                 switch_DiscordBot.IsEnabled = true;
-            }
-        }
-
-        private void Button_DiscordBotSettings_Click(object sender, RoutedEventArgs e)
-        {
-            MahAppFlyout_DiscordBot.IsOpen = !MahAppFlyout_DiscordBot.IsOpen;
-
-            if (MahAppFlyout_DiscordBot.IsOpen)
-            {
-                label_DiscordBotCommands.Content = DiscordBot.Configs.GetCommandsList();
-                button_DiscordBotPrefixEdit.Content = "Edit";
-                textBox_DiscordBotPrefix.IsEnabled = false;
-                textBox_DiscordBotPrefix.Text = DiscordBot.Configs.GetBotPrefix();
-
-                button_DiscordBotTokenEdit.Content = "Edit";
-                textBox_DiscordBotToken.IsEnabled = false;
-                textBox_DiscordBotToken.Text = DiscordBot.Configs.GetBotToken();
-
-                Refresh_DiscordBotAdminList(listBox_DiscordBotAdminList.SelectedIndex);
-
-                if (listBox_DiscordBotAdminList.Items.Count > 0 && listBox_DiscordBotAdminList.SelectedItem == null)
-                {
-                    listBox_DiscordBotAdminList.SelectedItem = listBox_DiscordBotAdminList.Items[0];
-                }
             }
         }
         
@@ -3173,6 +3111,7 @@ namespace WindowsGSM
         {
             if (button_DiscordBotTokenEdit.Content.ToString() == "Edit")
             {
+                rectangle_DiscordBotTokenSpoiler.Visibility = Visibility.Hidden;
                 button_DiscordBotTokenEdit.Content = "Save";
                 textBox_DiscordBotToken.IsEnabled = true;
                 textBox_DiscordBotToken.Focus();
@@ -3180,12 +3119,36 @@ namespace WindowsGSM
             }
             else
             {
+                rectangle_DiscordBotTokenSpoiler.Visibility = Visibility.Visible;
                 button_DiscordBotTokenEdit.Content = "Edit";
                 textBox_DiscordBotToken.IsEnabled = false;
                 DiscordBot.Configs.SetBotToken(textBox_DiscordBotToken.Text);
             }
         }
-        
+
+        private void button_DiscordBotDashboardEdit_Click(object sender, RoutedEventArgs e)
+        {
+            if (button_DiscordBotDashboardEdit.Content.ToString() == "Edit")
+            {
+                button_DiscordBotDashboardEdit.Content = "Save";
+                textBox_DiscordBotDashboard.IsEnabled = true;
+                textBox_DiscordBotDashboard.Focus();
+                textBox_DiscordBotDashboard.SelectAll();
+            }
+            else
+            {
+                button_DiscordBotDashboardEdit.Content = "Edit";
+                textBox_DiscordBotDashboard.IsEnabled = false;
+                DiscordBot.Configs.SetDashboardChannel(textBox_DiscordBotDashboard.Text);
+            }
+        }
+
+        private void NumericUpDown_DiscordRefreshRate_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double?> e)
+        {
+            double rate = numericUpDown_DiscordRefreshRate.Value ?? 5;
+            DiscordBot.Configs.SetDashboardRefreshRate((int)rate);
+        }
+
         private async void Button_DiscordBotAddID_Click(object sender, RoutedEventArgs e)
         {
             var settings = new MetroDialogSettings
@@ -3316,7 +3279,7 @@ namespace WindowsGSM
             var server = GetServerTableById(serverId);
             if (server == null) { return false; }
 
-            Log(serverId, $"Discord: Receive START action | {adminName} ({adminID})");
+            DiscordBotLog($"Discord: Receive START action | {adminName} ({adminID})");
             await GameServer_Start(server);
             return g_iServerStatus[int.Parse(serverId)] == ServerStatus.Started;
         }
@@ -3326,7 +3289,7 @@ namespace WindowsGSM
             var server = GetServerTableById(serverId);
             if (server == null) { return false; }
 
-            Log(serverId, $"Discord: Receive STOP action | {adminName} ({adminID})");
+            DiscordBotLog($"Discord: Receive STOP action | {adminName} ({adminID})");
             await GameServer_Stop(server);
             return g_iServerStatus[int.Parse(serverId)] == ServerStatus.Stopped;
         }
@@ -3336,7 +3299,7 @@ namespace WindowsGSM
             var server = GetServerTableById(serverId);
             if (server == null) { return false; }
 
-            Log(serverId, $"Discord: Receive RESTART action | {adminName} ({adminID})");
+            DiscordBotLog($"Discord: Receive RESTART action | {adminName} ({adminID})");
             await GameServer_Restart(server);
             return g_iServerStatus[int.Parse(serverId)] == ServerStatus.Started;
         }
@@ -3346,7 +3309,7 @@ namespace WindowsGSM
             var server = GetServerTableById(serverId);
             if (server == null) { return false; }
 
-            Log(serverId, $"Discord: Receive SEND action | {adminName} ({adminID}) | {command}");
+            DiscordBotLog($"Discord: Receive SEND action | {adminName} ({adminID}) | {command}");
             SendCommand(server, command);
             return true;
         }
@@ -3373,14 +3336,37 @@ namespace WindowsGSM
 
         private void HamburgerMenu_ItemClick(object sender, ItemClickEventArgs e)
         {
-            home.Visibility = (HamburgerMenuControl.SelectedIndex == 0) ? Visibility.Visible : Visibility.Hidden;
-            dashboard.Visibility = (HamburgerMenuControl.SelectedIndex == 1) ? Visibility.Visible : Visibility.Hidden;
+            hMenu_Home.Visibility = (HamburgerMenuControl.SelectedIndex == 0) ? Visibility.Visible : Visibility.Hidden;
+            hMenu_Dashboard.Visibility = (HamburgerMenuControl.SelectedIndex == 1) ? Visibility.Visible : Visibility.Hidden;
+            hMenu_Discordbot.Visibility = (HamburgerMenuControl.SelectedIndex == 2) ? Visibility.Visible : Visibility.Hidden;
+
+            if (HamburgerMenuControl.SelectedIndex == 2)
+            {
+                label_DiscordBotCommands.Content = DiscordBot.Configs.GetCommandsList();
+                button_DiscordBotPrefixEdit.Content = "Edit";
+                textBox_DiscordBotPrefix.IsEnabled = false;
+                textBox_DiscordBotPrefix.Text = DiscordBot.Configs.GetBotPrefix();
+
+                button_DiscordBotTokenEdit.Content = "Edit";
+                textBox_DiscordBotToken.IsEnabled = false;
+                textBox_DiscordBotToken.Text = DiscordBot.Configs.GetBotToken();
+                textBox_DiscordBotDashboard.Text = DiscordBot.Configs.GetDashboardChannel();
+                numericUpDown_DiscordRefreshRate.Value = DiscordBot.Configs.GetDashboardRefreshRate();
+
+                Refresh_DiscordBotAdminList(listBox_DiscordBotAdminList.SelectedIndex);
+
+                if (listBox_DiscordBotAdminList.Items.Count > 0 && listBox_DiscordBotAdminList.SelectedItem == null)
+                {
+                    listBox_DiscordBotAdminList.SelectedItem = listBox_DiscordBotAdminList.Items[0];
+                }
+            }
         }
 
         private async void HamburgerMenu_Loaded(object sender, RoutedEventArgs e)
         {
-            home.Visibility = Visibility.Visible;
-            dashboard.Visibility = Visibility.Hidden;
+            hMenu_Home.Visibility = Visibility.Visible;
+            hMenu_Dashboard.Visibility = Visibility.Hidden;
+            hMenu_Discordbot.Visibility = Visibility.Hidden;
 
             await Task.Delay(1); // Delay 0.001 sec due to a bug
             HamburgerMenuControl.SelectedIndex = 0;

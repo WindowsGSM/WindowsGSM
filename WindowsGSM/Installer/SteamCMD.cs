@@ -34,8 +34,7 @@ namespace WindowsGSM.Installer
 
             try
             {
-                //Memory leak
-                using(WebClient webClient = new WebClient())
+                using (WebClient webClient = new WebClient())
                 {
                     await webClient.DownloadFileTaskAsync(installUrl, zipPath);
                 }

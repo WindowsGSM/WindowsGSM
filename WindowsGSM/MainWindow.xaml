@@ -87,49 +87,13 @@
             <Controls:Flyout x:Name="MahAppFlyout_DiscordBot" Header="Discord Bot Settings" Position="Right" Theme="Adapt" IsModal="True">
                 <DockPanel VerticalAlignment="Stretch" Height="Auto">
                     <DockPanel Margin="20,0,20,0">
-                        <DockPanel Margin="0,0,0,0" DockPanel.Dock="Top">
-                            <DockPanel Margin="0,0,0,10" DockPanel.Dock="Top">
-                                <Label Content="Usage: Remote control your game servers with Discord" DockPanel.Dock="Top"/>
-                                <Label Content="Available commands:" DockPanel.Dock="Top"/>
-                                <Label x:Name="label_DiscordBotCommands" Content="" FontFamily="Consolas" DockPanel.Dock="Top"/>
-                            </DockPanel>
-                            <DockPanel Margin="0,0,0,10" DockPanel.Dock="Top">
-                                <Controls:ToggleSwitch x:Name="MahAppSwitch_DiscordBotAutoStart" Margin="5,5,0,0" Header="Auto Start" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Click="Switch_DiscordBotAutoStart_Click"/>
-                                <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Right">
-                                    <DockPanel DockPanel.Dock="Top">
-                                        <Label Content="Bot Prefix"/>
-                                        <Button x:Name="button_DiscordBotPrefixEdit" Content="Edit" Margin="0,0,0,5" HorizontalAlignment="Right" Width="70" Height="23" Click="Button_DiscordBotPrefixEdit_Click"/>
-                                    </DockPanel>
-                                    <TextBox x:Name="textBox_DiscordBotPrefix" Height="11" DockPanel.Dock="Top" Text="" Margin="0,0,0,0" Width="150" IsEnabled="False" FontFamily="Consolas"/>
-                                </DockPanel>
-                            </DockPanel>
-                            <DockPanel DockPanel.Dock="Top">
-                                <Label Content="Bot Token"/>
-                                <Button x:Name="button_DiscordBotTokenEdit" Content="Edit" Margin="0,0,0,5" HorizontalAlignment="Right" Width="70" Height="23" Click="Button_DiscordBotTokenEdit_Click"/>
-                            </DockPanel>
-                            <TextBox x:Name="textBox_DiscordBotToken" Height="11" DockPanel.Dock="Top" Text="" Margin="0,0,0,20" Width="400" IsEnabled="False" FontFamily="Consolas"/>
-                            <DockPanel DockPanel.Dock="Top">
-                                <Label Content="Admin List"/>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                    <Button x:Name="button_DiscordBotAddID" Content="Add Admin ID" Margin="0,0,5,5" HorizontalAlignment="Right" Width="97" Height="23" Click="Button_DiscordBotAddID_Click"/>
-                                    <Button x:Name="button_DiscordBotEditServerID" Content="Edit Server ID" Margin="0,0,5,5" HorizontalAlignment="Right" Width="97" Height="23" Click="Button_DiscordBotEditServerID_Click"/>
-                                    <Button x:Name="button_DiscordBotRemoveID" Content="Remove" Margin="0,0,0,5" HorizontalAlignment="Right" Width="70" Height="23" Click="Button_DiscordBotRemoveID_Click"/>
-                                </StackPanel>
-                            </DockPanel>
-                            <DataGrid x:Name="listBox_DiscordBotAdminList" Margin="0,0,0,20" SelectionMode="Single" BorderThickness="1" DockPanel.Dock="Top">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Admin ID" IsReadOnly="True" Binding="{Binding Path=AdminId}" Width="125" MinWidth="125" MaxWidth="125" FontFamily="Consolas"/>
-                                    <DataGridTextColumn Header="Server IDs" IsReadOnly="True" Binding="{Binding Path=ServerIds}" Width="273" MinWidth="273" MaxWidth="273" FontFamily="Consolas"/>
-                                </DataGrid.Columns>
-                            </DataGrid>
-                        </DockPanel>
+
                     </DockPanel>
                 </DockPanel>
             </Controls:Flyout>
             <Controls:Flyout x:Name="MahAppFlyout_InstallGameServer" Header="Install Game Server" Position="Left" Theme="Adapt" IsModal="True">
                 <DockPanel VerticalAlignment="Stretch" Height="Auto">
                     <DockPanel Margin="20,0,20,0">
-
                         <DockPanel DockPanel.Dock="Top">
                             <Label Content="Game Server"></Label>
                             <Label x:Name="label_GameServerCount" Content="" HorizontalAlignment="Right"></Label>
@@ -153,7 +117,7 @@
                         </DockPanel>
 
                         <DockPanel Margin="0,0,0,15" DockPanel.Dock="Top">
-                            <Button x:Name="button_InstallSetAccount" Content="Set Account" DockPanel.Dock="Left" Width="120" Margin="0,0,5,0"/>
+                            <Button x:Name="button_InstallSetAccount" Content="Set Account" DockPanel.Dock="Left" Width="120" Margin="0,0,5,0" Click="Button_SetAccount_Click"/>
                             <Button x:Name="button_Install" Content="Install" VerticalAlignment="Top" Click="Button_Install_Click"/>
                         </DockPanel>
 
@@ -228,7 +192,84 @@
     </Controls:MetroWindow.Flyouts>
 
     <Grid>
-        <DockPanel Name="dashboard" Margin="48,0,0,0">
+        <DockPanel Name="hMenu_Discordbot" Margin="48,0,0,0">
+            <Grid DockPanel.Dock="Top">
+                <DockPanel Margin="10,10,10,10" DockPanel.Dock="Top">
+                    <DockPanel>
+                        <DockPanel DockPanel.Dock="Left">
+                            <DockPanel DockPanel.Dock="Top">
+                                <DockPanel DockPanel.Dock="Top">
+                                    <Label DockPanel.Dock="Top" Content="DISCORD BOT" FontWeight="SemiBold" Foreground="Gray"/>
+                                </DockPanel>
+                                <DockPanel DockPanel.Dock="Top">
+                                    <Label Content="Usage: Remote control the game servers with Discord" DockPanel.Dock="Left"/>
+                                    <Button x:Name="button_DiscordBotInvite" DockPanel.Dock="Right" HorizontalAlignment="Right" Content="Invite" Width="75" Height="23" Click="Button_DiscordBotInvite_Click"/>
+                                </DockPanel>
+                                <Label Content="Available commands:" DockPanel.Dock="Top"/>
+                                <Label x:Name="label_DiscordBotCommands" Content="" FontFamily="Consolas" DockPanel.Dock="Top"/>
+                            </DockPanel>
+                            <DockPanel DockPanel.Dock="Top" Margin="5,10,0,0">
+                                <Controls:ToggleSwitch DockPanel.Dock="Left" VerticalAlignment="Center" x:Name="switch_DiscordBot" Header="Enable" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="140" Click="Switch_DiscordBot_Click"/>
+                                <Controls:ToggleSwitch DockPanel.Dock="Left" VerticalAlignment="Center" x:Name="MahAppSwitch_DiscordBotAutoStart" Header="Auto Start" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="140" Click="Switch_DiscordBotAutoStart_Click"/>
+                                <DockPanel DockPanel.Dock="Top" Margin="10,0,0,0">
+                                    <DockPanel DockPanel.Dock="Top">
+                                        <Label DockPanel.Dock="Left" Content="Bot Prefix"/>
+                                        <Button DockPanel.Dock="Right" x:Name="button_DiscordBotPrefixEdit" Content="Edit" Margin="0,0,0,5" HorizontalAlignment="Right" Width="75" Height="23" Click="Button_DiscordBotPrefixEdit_Click"/>
+                                    </DockPanel>
+                                    <TextBox x:Name="textBox_DiscordBotPrefix" Height="11" DockPanel.Dock="Top" Text="" Margin="0,0,0,0" Width="170" IsEnabled="False" FontFamily="Consolas"/>
+                                </DockPanel>
+                            </DockPanel>
+
+                            <DockPanel DockPanel.Dock="Top" Margin="0,10,0,0">
+                                <Label Content="Bot Token"/>
+                                <Button x:Name="button_DiscordBotTokenEdit" Content="Edit" Margin="0,0,0,5" HorizontalAlignment="Right" Width="75" Height="23" Click="Button_DiscordBotTokenEdit_Click"/>
+                            </DockPanel>
+                            <Grid DockPanel.Dock="Top">
+                                <TextBox x:Name="textBox_DiscordBotToken" Height="11" Text="" IsEnabled="False" FontFamily="Consolas"/>
+                                <Rectangle x:Name="rectangle_DiscordBotTokenSpoiler" Fill="#FF2B2B2B" Height="20" Stroke="Black" VerticalAlignment="Top" Margin="3"/>
+                            </Grid>
+
+                            <DockPanel DockPanel.Dock="Top" Margin="0,10,0,0">
+                                <DockPanel DockPanel.Dock="Left">
+                                    <DockPanel DockPanel.Dock="Top">
+                                        <Label Content="Dashboard Channel"/>
+                                        <Button x:Name="button_DiscordBotDashboardEdit" Content="Edit" Margin="35,0,0,5" HorizontalAlignment="Right" Width="75" Height="23" Click="button_DiscordBotDashboardEdit_Click"/>
+                                    </DockPanel>
+                                    <TextBox x:Name="textBox_DiscordBotDashboard" Height="11" DockPanel.Dock="Top" Text="" IsEnabled="False" FontFamily="Consolas"/>
+                                </DockPanel>
+                                <DockPanel DockPanel.Dock="Right" Margin="10,0,0,0">
+                                    <Label Content="Dashboard Refresh Rate (Second)" DockPanel.Dock="Top"/>
+                                    <Controls:NumericUpDown x:Name="numericUpDown_DiscordRefreshRate" Minimum="2" Maximum="900" Interval="1" Height="5" Margin="0,4,0,0" ValueChanged="NumericUpDown_DiscordRefreshRate_ValueChanged"/>
+                                </DockPanel>
+                            </DockPanel>
+
+                            <DockPanel DockPanel.Dock="Top" Margin="0,10,0,0">
+                                <Label Content="Discord Bot Log"/>
+                            </DockPanel>
+                            <TextBox x:Name="textBox_DiscordBotLog" FontFamily="Consolas" MaxWidth="465" DockPanel.Dock="Top" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" TextWrapping="NoWrap"/>
+                        </DockPanel>
+                        <DockPanel DockPanel.Dock="Right" Margin="20,0,0,0">
+                            <DockPanel DockPanel.Dock="Top">
+                                <Label Content="Admin List"/>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <Button x:Name="button_DiscordBotAddID" Content="Add Admin ID" Margin="0,0,5,5" HorizontalAlignment="Right" Width="97" Height="23" Click="Button_DiscordBotAddID_Click"/>
+                                    <Button x:Name="button_DiscordBotEditServerID" Content="Edit Server ID" Margin="0,0,5,5" HorizontalAlignment="Right" Width="97" Height="23" Click="Button_DiscordBotEditServerID_Click"/>
+                                    <Button x:Name="button_DiscordBotRemoveID" Content="Remove" Margin="0,0,0,5" HorizontalAlignment="Right" Width="70" Height="23" Click="Button_DiscordBotRemoveID_Click"/>
+                                </StackPanel>
+                            </DockPanel>
+                            <DataGrid x:Name="listBox_DiscordBotAdminList" SelectionMode="Single" BorderThickness="1" DockPanel.Dock="Top">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Admin ID" IsReadOnly="True" Binding="{Binding Path=AdminId}" Width="150" MinWidth="150" MaxWidth="150" FontFamily="Consolas"/>
+                                    <DataGridTextColumn Header="Server IDs" IsReadOnly="True" Binding="{Binding Path=ServerIds}" Width="1*" FontFamily="Consolas"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </DockPanel>
+                </DockPanel>
+            </Grid>
+        </DockPanel>
+
+        <DockPanel Name="hMenu_Dashboard" Margin="48,0,0,0" Visibility="Hidden">
             <Grid Margin="10,10,10,10">
                 <DockPanel>
                     <Label DockPanel.Dock="Top" Content="SYSTEM METRICS" FontWeight="SemiBold" Foreground="Gray"/>
@@ -353,9 +394,9 @@
             </Grid>
         </DockPanel>
 
-        <DockPanel Name="home" Margin="48,0,0,0" Visibility="Hidden">
+        <DockPanel Name="hMenu_Home" Margin="48,0,0,0" Visibility="Hidden">
             <Grid DockPanel.Dock="Top">
-                <Menu x:Name="menu" Height="30" DockPanel.Dock="Top" Margin="0,0,532,0">
+                <Menu x:Name="menu" Height="30" DockPanel.Dock="Top">
                     <MenuItem Header="Servers" Height="30">
                         <MenuItem Header="Install GameServer" Click="Install_Click">
                             <MenuItem.Icon>
@@ -487,10 +528,6 @@
                         </MenuItem>
                     </MenuItem>
                 </Menu>
-                <Label x:Name="label" Content="Discord Bot:" Margin="0,3,219,2" HorizontalAlignment="Right" Width="74"/>
-                <Controls:ToggleSwitch x:Name="switch_DiscordBot" Margin="0,6,144,6" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" HorizontalAlignment="Right" Width="74" Click="Switch_DiscordBot_Click"/>
-                <Button x:Name="button_DiscordBotSettings" Content="Settings" Margin="0,3,80,4" HorizontalAlignment="Right" Width="60" Click="Button_DiscordBotSettings_Click" Height="23"/>
-                <Button x:Name="button_DiscordBotInvite" Content="Invite" Margin="0,3,10,4" HorizontalAlignment="Right" Width="60" Height="23" Click="Button_DiscordBotInvite_Click"/>
             </Grid>
             <Grid Height="1" Background="Black" DockPanel.Dock="Top"/>
             <Grid Height="35" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="0,0,0,0">
@@ -621,6 +658,11 @@
                         <Controls:HamburgerMenuImageItem Label="Dashboard">
                             <Controls:HamburgerMenuImageItem.Thumbnail>
                                 <BitmapImage UriSource="pack://application:,,,/WindowsGSM;component/Images/HMenu/Dashboard.ico" />
+                            </Controls:HamburgerMenuImageItem.Thumbnail>
+                        </Controls:HamburgerMenuImageItem>
+                        <Controls:HamburgerMenuImageItem Label="Discord Bot">
+                            <Controls:HamburgerMenuImageItem.Thumbnail>
+                                <BitmapImage UriSource="pack://application:,,,/WindowsGSM;component/Images/HMenu/Discord.ico" />
                             </Controls:HamburgerMenuImageItem.Thumbnail>
                         </Controls:HamburgerMenuImageItem>
                     </Controls:HamburgerMenuItemCollection>

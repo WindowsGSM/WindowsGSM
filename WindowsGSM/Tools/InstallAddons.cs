@@ -77,10 +77,12 @@ namespace WindowsGSM.Tools
             {
                 string zipPath = Functions.ServerPath.GetServersServerFiles(server.ID, "dzsalmodserver.zip");
 
-                WebClient webClient = new WebClient();
-                await webClient.DownloadFileTaskAsync("http://dayzsalauncher.com/releases/dzsalmodserver.zip", zipPath);
-                await Task.Run(() => { try { ZipFile.ExtractToDirectory(zipPath, Functions.ServerPath.GetServersServerFiles(server.ID)); } catch { } });
-                await Task.Run(() => { try { File.Delete(zipPath); } catch { } });
+                using (WebClient webClient = new WebClient())
+                {
+                    await webClient.DownloadFileTaskAsync("http://dayzsalauncher.com/releases/dzsalmodserver.zip", zipPath);
+                    await Task.Run(() => { try { ZipFile.ExtractToDirectory(zipPath, Functions.ServerPath.GetServersServerFiles(server.ID)); } catch { } });
+                    await Task.Run(() => { try { File.Delete(zipPath); } catch { } });
+                }
 
                 return true;
             }

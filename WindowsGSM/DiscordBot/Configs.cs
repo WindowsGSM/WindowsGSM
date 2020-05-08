@@ -11,9 +11,6 @@ namespace WindowsGSM.DiscordBot
 		public static void CreateConfigs()
 		{
 			Directory.CreateDirectory(_botPath);
-			File.AppendText(Path.Combine(_botPath, "token.txt"));
-			File.AppendText(Path.Combine(_botPath, "adminIDs.txt"));
-			File.AppendText(Path.Combine(_botPath, "prefix.txt"));
 		}
 
 		public static string GetCommandsList()
@@ -56,6 +53,42 @@ namespace WindowsGSM.DiscordBot
 		{
 			Directory.CreateDirectory(_botPath);
 			File.WriteAllText(Path.Combine(_botPath, "token.txt"), token.Trim());
+		}
+
+		public static string GetDashboardChannel()
+		{
+			try
+			{
+				return File.ReadAllText(Path.Combine(_botPath, "channel.txt")).Trim();
+			}
+			catch
+			{
+				return string.Empty;
+			}
+		}
+
+		public static void SetDashboardChannel(string channel)
+		{
+			Directory.CreateDirectory(_botPath);
+			File.WriteAllText(Path.Combine(_botPath, "channel.txt"), channel.Trim());
+		}
+
+		public static int GetDashboardRefreshRate()
+		{
+			try
+			{
+				return int.Parse(File.ReadAllText(Path.Combine(_botPath, "refreshrate.txt")).Trim());
+			}
+			catch
+			{
+				return 5;
+			}
+		}
+
+		public static void SetDashboardRefreshRate(int rate)
+		{
+			Directory.CreateDirectory(_botPath);
+			File.WriteAllText(Path.Combine(_botPath, "refreshrate.txt"), rate.ToString());
 		}
 
 		public static List<string> GetBotAdminIds()

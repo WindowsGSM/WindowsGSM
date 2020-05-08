@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using WindowsGSM.Tools;
+using WindowsGSM.Functions;
 
 namespace WindowsGSM.GameServer.Query
 {
