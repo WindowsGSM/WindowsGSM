@@ -56,6 +56,11 @@
                     </StackPanel>
                 </ScrollViewer>
             </Controls:Flyout>
+            <Controls:Flyout x:Name="MahAppFlyout_SetAffinity" Header="Set Affinity" Position="Bottom" Theme="Dark">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="StackPanel_SetAffinity" Orientation="Horizontal" VerticalAlignment="Center" Margin="20"/>
+                </ScrollViewer>
+            </Controls:Flyout>
             <Controls:Flyout x:Name="MahAppFlyout_ManageAddons" Header="Manage Addons" Position="Right" Theme="Adapt" IsModal="True">
                 <DockPanel VerticalAlignment="Stretch" Height="Auto">
                     <DockPanel Margin="20,0,0,0">
@@ -81,13 +86,6 @@
                                 <ListBox x:Name="listBox_ManageAddonsRight" Margin="0,0,0,20" BorderThickness="1" DockPanel.Dock="Top" Width="300" MinHeight="300" MouseDoubleClick="ListBox_ManageAddonsRight_DoubleClick"/>
                             </DockPanel>
                         </DockPanel>
-                    </DockPanel>
-                </DockPanel>
-            </Controls:Flyout>
-            <Controls:Flyout x:Name="MahAppFlyout_DiscordBot" Header="Discord Bot Settings" Position="Right" Theme="Adapt" IsModal="True">
-                <DockPanel VerticalAlignment="Stretch" Height="Auto">
-                    <DockPanel Margin="20,0,20,0">
-
                     </DockPanel>
                 </DockPanel>
             </Controls:Flyout>
@@ -192,7 +190,7 @@
     </Controls:MetroWindow.Flyouts>
 
     <Grid>
-        <DockPanel Name="hMenu_Discordbot" Margin="48,0,0,0">
+        <DockPanel Name="hMenu_Discordbot" Margin="48,0,0,0" Visibility="Hidden">
             <Grid DockPanel.Dock="Top">
                 <DockPanel Margin="10,10,10,10" DockPanel.Dock="Top">
                     <DockPanel>
@@ -394,7 +392,7 @@
             </Grid>
         </DockPanel>
 
-        <DockPanel Name="hMenu_Home" Margin="48,0,0,0" Visibility="Hidden">
+        <DockPanel Name="hMenu_Home" Margin="48,0,0,0" Visibility="Visible">
             <Grid DockPanel.Dock="Top">
                 <Menu x:Name="menu" Height="30" DockPanel.Dock="Top">
                     <MenuItem Header="Servers" Height="30">
@@ -530,19 +528,19 @@
                 </Menu>
             </Grid>
             <Grid Height="1" Background="Black" DockPanel.Dock="Top"/>
-            <Grid Height="35" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="0,0,0,0">
+            <Grid Height="40" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="0,0,0,0">
                 <Label x:Name="label_select" Content="Select a server" HorizontalAlignment="Left" Margin="10,2,0,0" VerticalAlignment="Top" Height="33"/>
-                <Grid x:Name="grid_action">
-                    <Button x:Name="button_Start" Cursor="Hand" Content="START" HorizontalAlignment="Left" Margin="10,5,0,5" Width="101" Height="20" Click="Actions_Start_Click" Background="LimeGreen" Foreground="White"/>
-                    <Button x:Name="button_Stop" Cursor="Hand" Content="STOP" HorizontalAlignment="Left" Margin="116,5,0,5" Width="101" Height="20" Click="Actions_Stop_Click" Background="Orange" Foreground="White"/>
-                    <Button x:Name="button_Restart" Cursor="Hand" Content="RESTART" HorizontalAlignment="Left" Margin="222,5,0,5" Width="101" Height="20" Click="Actions_Restart_Click" Background="DeepSkyBlue" Foreground="White"/>
-                    <Button x:Name="button_Kill" Cursor="Hand" Content="KILL" HorizontalAlignment="Left" Margin="328,5,0,5" Width="101" Height="20" Click="Actions_Kill_Click" Background="OrangeRed" Foreground="White"/>
-                    <Button x:Name="button_Console" Cursor="Hand" Content="TOGGLE CONSOLE" HorizontalAlignment="Left" Margin="434,5,0,5" Width="101" Height="20" Click="Actions_ToggleConsole_Click"/>
-                    <Button x:Name="button_Update" Cursor="Hand" Content="UPDATE" HorizontalAlignment="Left" Margin="540,5,0,5" Width="101" Height="20" Click="Actions_Update_Click"/>
-                    <Button x:Name="button_Backup" Cursor="Hand" Content="BACKUP" HorizontalAlignment="Left" Margin="646,5,0,5" Width="101" Height="20" Click="Actions_Backup_Click"/>
-                    <Button x:Name="button_ManageAddons" Cursor="Hand" Content="MANAGE ADDONS" HorizontalAlignment="Left" Margin="752,5,0,5" Width="101" Height="20" Click="Actions_ManageAddons_Click"/>
-                    <Button x:Name="button_clearServerConsole" Cursor="Hand" Content="CLEAR SERVER CONSOLE" Margin="0,5,10,0" VerticalAlignment="Top" Height="18" Click="Button_ClearServerConsole_Click" HorizontalAlignment="Right" Width="130"/>
-                </Grid>
+                <DockPanel x:Name="grid_action">
+                    <Button x:Name="button_Start" Cursor="Hand" Content="START" HorizontalAlignment="Left" Margin="10,5,0,5" Width="101" Height="26" Click="Actions_Start_Click" Background="LimeGreen" Foreground="White"/>
+                    <Button x:Name="button_Stop" Cursor="Hand" Content="STOP" HorizontalAlignment="Left" Margin="5,5,0,5" Width="101" Height="26" Click="Actions_Stop_Click" Background="Orange" Foreground="White"/>
+                    <Button x:Name="button_Restart" Cursor="Hand" Content="RESTART" HorizontalAlignment="Left" Margin="5,5,0,5" Width="101" Height="26" Click="Actions_Restart_Click" Background="DeepSkyBlue" Foreground="White"/>
+                    <Button x:Name="button_Kill" Cursor="Hand" Content="KILL" HorizontalAlignment="Left" Margin="5,5,0,5" Width="101" Height="26" Click="Actions_Kill_Click" Background="OrangeRed" Foreground="White"/>
+                    <Button x:Name="button_Console" Cursor="Hand" Content="TOGGLE CONSOLE" HorizontalAlignment="Left" Margin="5,5,0,5" Width="101" Height="26" Click="Actions_ToggleConsole_Click"/>
+                    <Button x:Name="button_Update" Cursor="Hand" Content="UPDATE" HorizontalAlignment="Left" Margin="5,5,0,5" Width="101" Height="26" Click="Actions_Update_Click"/>
+                    <Button x:Name="button_Backup" Cursor="Hand" Content="BACKUP" HorizontalAlignment="Left" Margin="5,5,0,5" Width="101" Height="26" Click="Actions_Backup_Click"/>
+                    <Button x:Name="button_ManageAddons" Cursor="Hand" Content="MANAGE ADDONS" HorizontalAlignment="Left" Margin="5,5,0,5" Width="101" Height="26" Click="Actions_ManageAddons_Click"/>
+                    <Button x:Name="button_clearServerConsole" Cursor="Hand" Content="CLEAR SERVER CONSOLE" Margin="0,5,10,5" Height="26" Click="Button_ClearServerConsole_Click" HorizontalAlignment="Right" Width="130"/>
+                </DockPanel>
             </Grid>
             <Grid Height="1" Background="Black" DockPanel.Dock="Top"/>
             <Grid DockPanel.Dock="Top">
@@ -579,39 +577,46 @@
                 </GridSplitter>
                 <Grid Grid.Row="2">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="520" MaxWidth="520"/>
+                        <ColumnDefinition Width="500" MaxWidth="500"/>
                         <ColumnDefinition Width="5"/>
                         <ColumnDefinition Width="1*"/>
                     </Grid.ColumnDefinitions>
 
                     <Grid>
-                        <Button x:Name="button_Status" Content="" HorizontalAlignment="Left" Margin="165,10,0,0" Width="50" Height="11" Background="Orange" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False" />
+                        <Button x:Name="button_Status" Content="" HorizontalAlignment="Left" Margin="428,11,0,0" Width="50" Height="11" Background="Orange" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False" />
 
-                        <TextBox x:Name="textBox_servergame" Height="11" Margin="165,10,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="345" FontFamily="Consolas"/>
+                        <Label x:Name="label_ProcessPriority" Content="Process Priority" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="26"/>
+                        <Slider x:Name="slider_ProcessPriority" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="103,10,0,0" Width="110" Height="26" Minimum="0" Maximum="5" IsSnapToTickEnabled="True" TickPlacement="BottomRight" ValueChanged="Slider_ProcessPriority_ValueChanged"/>
+                        <TextBox x:Name="textBox_ProcessPriority" Height="11" Margin="218,10,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="90" FontFamily="Consolas"/>
 
-                        <Label x:Name="label_restartcrontab" Content="Restart Crontab:" HorizontalAlignment="Left" Margin="10,39,0,0" VerticalAlignment="Top" Height="26"/>
-                        <Button x:Name="button_restartcrontab" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="110,40,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_RestartCrontab_Click"/>
-                        <Button x:Name="button_restartcrontabedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="165,40,0,0" VerticalAlignment="Top" Width="50" Height="25" Click="Button_CrontabEdit_Click"/>
-                        <TextBox x:Name="textBox_restartcrontab" Height="11" Margin="220,40,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="100"/>
-                        <TextBox x:Name="textBox_nextcrontab" Height="11" Margin="325,40,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="185" FontFamily="Consolas"/>
+                        <Button x:Name="button_SetAffinity" Content="Set Affinity" HorizontalAlignment="Left" Margin="313,10,0,0" VerticalAlignment="Top" Width="77" Height="26" Click="Button_SetAffinity_Click"/>
+                        <TextBox x:Name="textBox_SetAffinity" Height="11" Margin="395,10,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="95" FontFamily="Consolas"/>
 
-                        <Controls:ToggleSwitch x:Name="switch_autorestart" Header="Auto Restart" Margin="148,101,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_AutoRestart_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="110"/>
-                        <Controls:ToggleSwitch x:Name="switch_autostart" Header="Auto Start" Margin="24,101,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_AutoStart_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="110"/>
-                        <Controls:ToggleSwitch x:Name="switch_autoupdate" Header="Auto Update" Margin="275,101,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_AutoUpdate_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="110"/>
-                        <Controls:ToggleSwitch x:Name="switch_updateonstart" Header="Update on Start" Margin="400,101,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_UpdateOnStart_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="110"/>
+                        <Label x:Name="label_restartcrontab" Content="Restart Crontab" HorizontalAlignment="Left" Margin="10,39,0,0" VerticalAlignment="Top" Height="26"/>
+                        <Controls:ToggleSwitch x:Name="switch_restartcrontab" Margin="103,43,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_RestartCrontab_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="70"/>
+                        <Button x:Name="button_restartcrontabedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="178,40,0,0" VerticalAlignment="Top" Width="35" Height="26" Click="Button_CrontabEdit_Click"/>
+                        <TextBox x:Name="textBox_restartcrontab" Height="23" Margin="218,40,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="90"/>
+                        <TextBox x:Name="textBox_nextcrontab" Height="11" Margin="313,40,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="177" FontFamily="Consolas"/>
 
-                        <Label x:Name="label_discordalert" Content="Discord Alert:" HorizontalAlignment="Left" Margin="24,69,0,0" VerticalAlignment="Top"/>
-                        <Button x:Name="button_discordalert" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="110,70,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_DiscordAlert_Click"/>
-                        <Button x:Name="button_discordedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="165,70,0,0" VerticalAlignment="Top" Width="50" Height="25" Click="Button_DiscordEdit_Click"/>
-                        <Button x:Name="button_discordset" Cursor="Hand" Content="Set Message" HorizontalAlignment="Left" Margin="220,70,0,0" VerticalAlignment="Top" Width="100" Height="25" Click="Button_DiscordSetMessage_Click"/>
-                        <Button x:Name="button_discordtest" Cursor="Hand" Content="Send Test Alert" HorizontalAlignment="Left" Margin="325,70,0,0" VerticalAlignment="Top" Width="100" Height="25" Click="Button_DiscordWebhookTest_Click" IsEnabled="False"/>
-                        <Button x:Name="button_discordsettings" Content="Settings" HorizontalAlignment="Left" Margin="430,70,0,0" VerticalAlignment="Top" Width="80" Height="24" Click="Button_DiscordAlertSettings_Click"/>
-                        <TextBox x:Name="textBox_wgsmlog" Margin="61,154,10,10" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True"/>
-                        <Label x:Name="label_wgsmlog" Content="Log:" HorizontalAlignment="Left" Margin="24,150,0,0" VerticalAlignment="Top"/>
+                        <Label Content="Auto Start" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Margin="10,126,0,0"/>
+                        <Controls:ToggleSwitch x:Name="switch_autostart" Margin="103,129,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_AutoStart_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="70" Height="20"/>
+
+                        <Controls:ToggleSwitch x:Name="switch_embedconsole" Margin="103,101,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_EmbedConsole_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="70"/>
+                        <Controls:ToggleSwitch x:Name="switch_autorestart" Header="Auto Restart" Margin="190,104,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_AutoRestart_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="90"/>
+                        <Controls:ToggleSwitch x:Name="switch_autoupdate" Header="Auto Update" Margin="285,104,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_AutoUpdate_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="90"/>
+                        <Controls:ToggleSwitch x:Name="switch_updateonstart" Header="Update on Start" Margin="380,104,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_UpdateOnStart_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="110"/>
+
+                        <Label x:Name="label_discordalert" Content="Discord Alert" HorizontalAlignment="Left" Margin="10,69,0,0" VerticalAlignment="Top"/>
+                        <Controls:ToggleSwitch x:Name="switch_discordalert" Margin="103,72,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_DiscordAlert_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="70"/>
+                        <Button x:Name="button_discordedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="178,70,0,0" VerticalAlignment="Top" Width="35" Height="26" Click="Button_DiscordEdit_Click"/>
+                        <Button x:Name="button_discordset" Cursor="Hand" Content="Set Message" HorizontalAlignment="Left" Margin="218,70,0,0" VerticalAlignment="Top" Width="90" Height="26" Click="Button_DiscordSetMessage_Click"/>
+                        <Button x:Name="button_discordtest" Cursor="Hand" Content="Send Test Alert" HorizontalAlignment="Left" Margin="395,70,0,0" VerticalAlignment="Top" Width="95" Height="26" Click="Button_DiscordWebhookTest_Click" IsEnabled="False"/>
+                        <Button x:Name="button_discordsettings" Content="Settings" HorizontalAlignment="Left" Margin="313,70,0,0" VerticalAlignment="Top" Width="77" Height="26" Click="Button_DiscordAlertSettings_Click"/>
+                        <Label x:Name="label_wgsmlog" Content="Log:" HorizontalAlignment="Left" Margin="24,154,0,0" VerticalAlignment="Top"/>
                         <Button x:Name="button_clearwgsmlog" Cursor="Hand" Content="CLEAR" Margin="10,0,0,10" Height="18" Click="Button_ClearWGSMLog_Click" HorizontalAlignment="Left" Width="45" VerticalAlignment="Bottom"/>
-
-                        <Label x:Name="label_embedconsole" Content="Embed Console:" HorizontalAlignment="Left" Margin="10,8,0,0" VerticalAlignment="Top"/>
-                        <Button x:Name="button_embedconsole" Cursor="Hand" Content="" HorizontalAlignment="Left" Margin="110,10,0,0" Width="50" Height="11" Background="Red" Foreground="White" VerticalAlignment="Top" Click="Button_EmbedConsole_Click"/>
+                        <TextBox x:Name="textBox_wgsmlog" Margin="10,157,10,10" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True"/>
+                        
+                        <Label x:Name="label_embedconsole" Content="Embed Console" HorizontalAlignment="Left" Margin="10,98,0,0" VerticalAlignment="Top"/>
                     </Grid>
 
                     <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch">
@@ -643,9 +648,14 @@
                 </DataTemplate>
             </Grid.Resources>
             <Controls:HamburgerMenu x:Name="HamburgerMenuControl"
-                                DisplayMode="CompactOverlay"
-                                IsPaneOpen="False"
-                                ItemTemplate="{StaticResource MenuItemTemplate}" ItemClick="HamburgerMenu_ItemClick" Loaded="HamburgerMenu_Loaded" MinWidth="49" HorizontalAlignment="Left">
+                                    DisplayMode="CompactInline"
+                                    IsPaneOpen="False"
+                                    ItemTemplate="{StaticResource MenuItemTemplate}"
+                                    ItemClick="HamburgerMenu_ItemClick"
+                                    Loaded="HamburgerMenu_Loaded"
+                                    MinWidth="49"
+                                    HorizontalAlignment="Left"
+                                    Visibility="Hidden">
 
                 <!--  Items  -->
                 <Controls:HamburgerMenu.ItemsSource>

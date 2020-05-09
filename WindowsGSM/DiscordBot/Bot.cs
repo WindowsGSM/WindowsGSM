@@ -142,7 +142,7 @@ namespace WindowsGSM.DiscordBot
 				embed.WithFooter(new EmbedFooterBuilder().WithIconUrl("https://github.com/WindowsGSM/WindowsGSM/raw/master/WindowsGSM/Images/WindowsGSM.png").WithText($"WindowsGSM {MainWindow.WGSM_VERSION} | Live Dashboard"));
 				embed.WithCurrentTimestamp();
 
-				if (ShouldReturn(startToken)) { return; }
+				if (ShouldReturn(startToken)) { break; }
 
 				if (_dashboardTextChannel != null)
 				{
@@ -161,20 +161,28 @@ namespace WindowsGSM.DiscordBot
 							try
 							{
 								await _dashboardTextChannel.DeleteMessageAsync(_dashboardMessage);
+								_dashboardMessage = await _dashboardTextChannel.SendMessageAsync(embed: embed.Build());
 							}
 							catch
 							{
 								// ignore
 							}
-
-							if (ShouldReturn(startToken)) { return; }
-							_dashboardMessage = await _dashboardTextChannel.SendMessageAsync(embed: embed.Build());
 						}
 					}
 				}
 
 				await Task.Delay(refreshRate * 1000);
-			}	
+			}
+
+			// Delete the message after the bot stop
+			try
+			{
+				await _dashboardTextChannel.DeleteMessageAsync(_dashboardMessage);
+			}
+			catch
+			{
+				// ignore
+			}
 		}
 
 		public void SetDonorType(string donorType)

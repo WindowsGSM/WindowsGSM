@@ -44,6 +44,7 @@
                 case HLOF.FullName: return new HLOF(serverData);
                 case RCC.FullName: return new RCC(serverData);
                 case TFC.FullName: return new TFC(serverData);
+                case TF.FullName: return new TF(serverData);
                 default: return null;
             }
         }

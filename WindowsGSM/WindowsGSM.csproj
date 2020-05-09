@@ -325,6 +325,8 @@
     <Compile Include="DiscordBot\Bot.cs" />
     <Compile Include="DiscordBot\Commands.cs" />
     <Compile Include="DiscordBot\Configs.cs" />
+    <Compile Include="Functions\CPU\Affinity.cs" />
+    <Compile Include="Functions\CPU\Priority.cs" />
     <Compile Include="Functions\Github.cs" />
     <Compile Include="Functions\GoogleAnalytics.cs" />
     <Compile Include="Functions\ServerAddon.cs" />
@@ -370,6 +372,7 @@
     <Compile Include="GameServer\Engine\GoldSource.cs" />
     <Compile Include="GameServer\Engine\Source.cs" />
     <Compile Include="GameServer\SW.cs" />
+    <Compile Include="GameServer\TF.cs" />
     <Compile Include="GameServer\TFC.cs" />
     <Compile Include="GameServer\UNT.cs" />
     <Compile Include="GameServer\ZPS.cs" />
@@ -686,6 +689,13 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\HMenu\Discord.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="WebAPI\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\sq.png" />
+    <Resource Include="Images\Games\tf.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

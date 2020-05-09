@@ -19,7 +19,6 @@ using Newtonsoft.Json.Linq;
 using NCrontab;
 using System.Collections.Generic;
 using System.Collections;
-using System.Management;
 using LiveCharts;
 using LiveCharts.Wpf;
 
@@ -93,6 +92,11 @@ namespace WindowsGSM
         private static readonly string[] g_CrontabFormat = new string[MAX_SERVER + 1];
 
         private static readonly bool[] g_bEmbedConsole = new bool[MAX_SERVER + 1];
+
+        private static readonly string[] g_CPUPriority = new string[MAX_SERVER + 1];
+        private static readonly string[] g_CPUAffinity = new string[MAX_SERVER + 1];
+
+        private readonly List<System.Windows.Controls.CheckBox> _checkBoxes = new List<System.Windows.Controls.CheckBox>();
 
         private string g_DonorType = string.Empty;
 
@@ -179,6 +183,62 @@ namespace WindowsGSM
             if (MahAppSwitch_DiscordBotAutoStart.IsChecked ?? false)
             {
                 AutoStartDiscordBot();
+            }
+
+            // Add items to Set Affinity Flyout
+            for (int i = 0; i < Environment.ProcessorCount; i++)
+            {
+                StackPanel stackPanel = new StackPanel
+                {
+                    Orientation = System.Windows.Controls.Orientation.Horizontal,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(15, 0, 0, 0)
+                };
+
+                _checkBoxes.Add(new System.Windows.Controls.CheckBox());
+                _checkBoxes[i].Focusable = false;
+                var label = new System.Windows.Controls.Label
+                {
+                    Content = $"CPU {i}",
+                    Padding = new Thickness(0, 5, 0, 5)
+                };
+
+                stackPanel.Children.Add(_checkBoxes[i]);
+                stackPanel.Children.Add(label);
+                StackPanel_SetAffinity.Children.Add(stackPanel);
+            }
+
+            // Add click listener on each checkBox
+            foreach (var checkBox in _checkBoxes)
+            {
+                checkBox.Click += (sender, e) =>
+                {
+                    var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+                    if (server == null) { return; }
+
+                    CheckPrioity:
+                    string priority = string.Empty;
+                    for (int i = _checkBoxes.Count - 1; i >= 0; i--)
+                    {
+                        priority += (_checkBoxes[i].IsChecked ?? false) ? "1" : "0";
+                    }
+
+                    if (!priority.Contains("1"))
+                    {
+                        checkBox.IsChecked = true;
+                        goto CheckPrioity;
+                    }
+
+                    textBox_SetAffinity.Text = Functions.CPU.Affinity.GetAffinityValidatedString(priority);
+
+                    g_CPUAffinity[int.Parse(server.ID)] = priority;
+                    Functions.ServerConfig.SetSetting(server.ID, "cpuaffinity", priority);
+
+                    if (g_Process[int.Parse(server.ID)] != null && !g_Process[int.Parse(server.ID)].HasExited)
+                    {
+                        g_Process[int.Parse(server.ID)].ProcessorAffinity = Functions.CPU.Affinity.GetAffinityIntPtr(priority);
+                    }
+                };
             }
 
             notifyIcon = new NotifyIcon
@@ -355,6 +415,8 @@ namespace WindowsGSM
                     g_bAutoUpdateAlert[i] = serverConfig.AutoUpdateAlert;
                     g_bRestartCrontabAlert[i] = serverConfig.RestartCrontabAlert;
                     g_bCrashAlert[i] = serverConfig.CrashAlert;
+                    g_CPUPriority[i] = serverConfig.CPUPriority;
+                    g_CPUAffinity[i] = serverConfig.CPUAffinity;
 
                     ServerGrid.Items.Add(server);
 
@@ -550,10 +612,44 @@ namespace WindowsGSM
             analytics.SendDisk();
         }
 
-        private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            // Stop Discord Bot
-            await g_DiscordBot.Stop();
+            // Shutdown all server before WindowsGSM close
+            bool hasServerRunning = false;
+            for (int i = 0; i <= MAX_SERVER; i++)
+            {
+                if (g_Process[i] != null && !g_Process[i].HasExited)
+                {
+                    hasServerRunning = true;
+                    break;
+                }
+            }
+
+            if (hasServerRunning)
+            {
+                MessageBoxResult result = System.Windows.MessageBox.Show("Are you sure to quit?\n(All game servers will be stopped)", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result != MessageBoxResult.Yes)
+                {
+                    e.Cancel = true;
+
+                    return;
+                }
+
+                for (int i = 0; i <= MAX_SERVER; i++)
+                {
+                    if (g_Process[i] == null)
+                    {
+                        continue;
+                    }
+
+                    if (!g_Process[i].HasExited)
+                    {
+                        Process p = g_Process[i];
+                        g_Process[i] = null;
+                        p.Kill();
+                    }
+                }
+            }
 
             // Save height and width
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
@@ -564,45 +660,8 @@ namespace WindowsGSM
                 key.Close();
             }
 
-            // Shutdown all server before WindowsGSM close
-            bool hasServerRunning = false;
-            for (int i = 0; i <= MAX_SERVER; i++)
-            {
-                if (g_Process[i] != null)
-                {
-                    if (!g_Process[i].HasExited)
-                    {
-                        hasServerRunning = true;
-
-                        break;
-                    }
-                }
-            }
-
-            if (!hasServerRunning) { return; }
-
-            MessageBoxResult result = System.Windows.MessageBox.Show("Are you sure to quit?\n(All game servers will be stopped)", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (result != MessageBoxResult.Yes)
-            {
-                e.Cancel = true;
-
-                return;
-            }
-
-            for (int i = 0; i <= MAX_SERVER; i++)
-            {
-                if (g_Process[i] == null)
-                {
-                    continue;
-                }
-
-                if (!g_Process[i].HasExited)
-                {
-                    Process p = g_Process[i];
-                    g_Process[i] = null;
-                    p.Kill();
-                }
-            }
+            // Stop Discord Bot
+            g_DiscordBot.Stop().ConfigureAwait(false);
         }
 
         private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -677,27 +736,30 @@ namespace WindowsGSM
                     button_ManageAddons.IsEnabled = false;
                 }
 
-                textBox_servergame.Text = row.Game;
+                slider_ProcessPriority.Value = Functions.CPU.Priority.GetPriorityInteger(g_CPUPriority[int.Parse(row.ID)]);
+                textBox_ProcessPriority.Text = Functions.CPU.Priority.GetPriorityByInteger((int)slider_ProcessPriority.Value);
+
+                textBox_SetAffinity.Text = Functions.CPU.Affinity.GetAffinityValidatedString(g_CPUAffinity[int.Parse(row.ID)]);
+                string affinity = new string(textBox_SetAffinity.Text.Reverse().ToArray());
+                for (int i = 0; i < _checkBoxes.Count; i++)
+                {
+                    _checkBoxes[i].IsChecked = affinity[i] == '1';
+                }
 
                 button_Status.Content = row.Status.ToUpper();
                 button_Status.Background = (g_iServerStatus[int.Parse(row.ID)] == ServerStatus.Started) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Orange;
 
+                switch_restartcrontab.IsChecked = g_bRestartCrontab[int.Parse(row.ID)];
+                switch_embedconsole.IsChecked = g_bEmbedConsole[int.Parse(row.ID)];
                 switch_autorestart.IsChecked = g_bAutoRestart[int.Parse(row.ID)];
                 switch_autostart.IsChecked = g_bAutoStart[int.Parse(row.ID)];
                 switch_autoupdate.IsChecked = g_bAutoUpdate[int.Parse(row.ID)];
                 switch_updateonstart.IsChecked = g_bUpdateOnStart[int.Parse(row.ID)];
 
-                button_discordalert.Content = g_bDiscordAlert[int.Parse(row.ID)] ? "ON" : "OFF";
-                button_discordalert.Background = g_bDiscordAlert[int.Parse(row.ID)] ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
                 button_discordtest.IsEnabled = g_bDiscordAlert[int.Parse(row.ID)] ? true : false;
 
-                button_restartcrontab.Content = g_bRestartCrontab[int.Parse(row.ID)] ? "ON" : "OFF";
-                button_restartcrontab.Background = g_bRestartCrontab[int.Parse(row.ID)] ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
                 textBox_restartcrontab.Text = g_CrontabFormat[int.Parse(row.ID)];
                 textBox_nextcrontab.Text = CrontabSchedule.TryParse(g_CrontabFormat[int.Parse(row.ID)])?.GetNextOccurrence(DateTime.Now).ToString("ddd, MM/dd/yyyy HH:mm:ss");
-
-                button_embedconsole.Content = g_bEmbedConsole[int.Parse(row.ID)] ? "ON" : "OFF";
-                button_embedconsole.Background = g_bEmbedConsole[int.Parse(row.ID)] ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
 
                 MahAppSwitch_AutoStartAlert.IsChecked = g_bAutoStartAlert[int.Parse(row.ID)];
                 MahAppSwitch_AutoRestartAlert.IsChecked = g_bAutoRestartAlert[int.Parse(row.ID)];
@@ -1137,6 +1199,8 @@ namespace WindowsGSM
             g_bAutoUpdateAlert[i] = serverConfig.AutoUpdateAlert;
             g_bRestartCrontabAlert[i] = serverConfig.RestartCrontabAlert;
             g_bCrashAlert[i] = serverConfig.CrashAlert;
+            g_CPUPriority[i] = serverConfig.CPUPriority;
+            g_CPUAffinity[i] = serverConfig.CPUAffinity;
 
             await GameServer_Start(server);
         }
@@ -1317,6 +1381,7 @@ namespace WindowsGSM
             ListBox_ManageAddons_Refresh();
 
             MahAppFlyout_DiscordAlert.IsOpen = false;
+            MahAppFlyout_SetAffinity.IsOpen = false;
             MahAppFlyout_ManageAddons.IsOpen = !MahAppFlyout_ManageAddons.IsOpen;
         }
         #endregion
@@ -1466,13 +1531,19 @@ namespace WindowsGSM
             {
                 g_Process[int.Parse(server.ID)] = null;
 
-                g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
+                g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                 Log(server.ID, "Server: Fail to start");
                 Log(server.ID, "[ERROR] Exit Code: " + p.ExitCode.ToString());
                 SetServerStatus(server, "Stopped");
 
                 return null;
             }
+
+            // Set Priority
+            p = Functions.CPU.Priority.SetProcessWithPriority(p, Functions.CPU.Priority.GetPriorityInteger(g_CPUPriority[int.Parse(server.ID)]));
+
+            // Set Affinity
+            p.ProcessorAffinity = Functions.CPU.Affinity.GetAffinityIntPtr(Functions.CPU.Affinity.GetAffinityValidatedString(g_CPUAffinity[int.Parse(server.ID)]));
 
             SetWindowText(p.MainWindowHandle, server.Name);
 
@@ -2393,6 +2464,7 @@ namespace WindowsGSM
         private void Button_Settings_Click(object sender, RoutedEventArgs e)
         {
             MahAppFlyout_DiscordAlert.IsOpen = false;
+            MahAppFlyout_SetAffinity.IsOpen = false;
             MahAppFlyout_Settings.IsOpen = !MahAppFlyout_Settings.IsOpen;
         }
 
@@ -2908,14 +2980,37 @@ namespace WindowsGSM
         }
 
         #region Left Buttom Grid
+        private void Slider_ProcessPriority_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
+
+            g_CPUPriority[int.Parse(server.ID)] = ((int)slider_ProcessPriority.Value).ToString();
+            Functions.ServerConfig.SetSetting(server.ID, "cpupriority", g_CPUPriority[int.Parse(server.ID)]);
+            textBox_ProcessPriority.Text = Functions.CPU.Priority.GetPriorityByInteger((int)slider_ProcessPriority.Value);
+
+            if (g_Process[int.Parse(server.ID)] != null && !g_Process[int.Parse(server.ID)].HasExited)
+            {
+                g_Process[int.Parse(server.ID)] = Functions.CPU.Priority.SetProcessWithPriority(g_Process[int.Parse(server.ID)], (int)slider_ProcessPriority.Value);
+            }
+        }
+
+        private void Button_SetAffinity_Click(object sender, RoutedEventArgs e)
+        {
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
+
+            MahAppFlyout_DiscordAlert.IsOpen = false;
+            MahAppFlyout_SetAffinity.IsOpen = !MahAppFlyout_SetAffinity.IsOpen;
+        }
+
         private void Button_RestartCrontab_Click(object sender, RoutedEventArgs e)
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bRestartCrontab[Int32.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "restartcrontab");
-            button_restartcrontab.Content = (g_bRestartCrontab[Int32.Parse(server.ID)]) ? "ON" : "OFF";
-            button_restartcrontab.Background = (g_bRestartCrontab[Int32.Parse(server.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
+            g_bRestartCrontab[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "restartcrontab");
+            switch_restartcrontab.IsChecked = g_bRestartCrontab[int.Parse(server.ID)];
         }
 
         private void Button_EmbedConsole_Click(object sender, RoutedEventArgs e)
@@ -2923,9 +3018,8 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bEmbedConsole[Int32.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "embedconsole");
-            button_embedconsole.Content = (g_bEmbedConsole[Int32.Parse(server.ID)]) ? "ON" : "OFF";
-            button_embedconsole.Background = (g_bEmbedConsole[Int32.Parse(server.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
+            g_bEmbedConsole[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "embedconsole");
+            switch_embedconsole.IsChecked = g_bEmbedConsole[int.Parse(server.ID)];
         }
 
         private void Button_AutoRestart_Click(object sender, RoutedEventArgs e)
@@ -2960,6 +3054,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
+            MahAppFlyout_SetAffinity.IsOpen = false;
             MahAppFlyout_DiscordAlert.IsOpen = !MahAppFlyout_DiscordAlert.IsOpen;
         }
 
@@ -2968,8 +3063,8 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bUpdateOnStart[Int32.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "updateonstart");
-            switch_updateonstart.IsChecked = g_bUpdateOnStart[Int32.Parse(server.ID)];
+            g_bUpdateOnStart[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "updateonstart");
+            switch_updateonstart.IsChecked = g_bUpdateOnStart[int.Parse(server.ID)];
         }
 
         private void Button_DiscordAlert_Click(object sender, RoutedEventArgs e)
@@ -2977,10 +3072,9 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bDiscordAlert[Int32.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "discordalert");
-            button_discordalert.Content = (g_bDiscordAlert[Int32.Parse(server.ID)]) ? "ON" : "OFF";
-            button_discordalert.Background = (g_bDiscordAlert[Int32.Parse(server.ID)]) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Red;
-            button_discordtest.IsEnabled = (g_bDiscordAlert[Int32.Parse(server.ID)]) ? true : false;
+            g_bDiscordAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "discordalert");
+            switch_discordalert.IsChecked = g_bDiscordAlert[int.Parse(server.ID)];
+            button_discordtest.IsEnabled = (g_bDiscordAlert[int.Parse(server.ID)]) ? true : false;
         }
 
         private async void Button_CrontabEdit_Click(object sender, RoutedEventArgs e)
@@ -2999,7 +3093,7 @@ namespace WindowsGSM
             crontabFormat = await this.ShowInputAsync("Crontab Format", "Please enter the crontab expressions", settings);
             if (crontabFormat == null) { return; } //If pressed cancel
 
-            g_CrontabFormat[Int32.Parse(server.ID)] = crontabFormat;
+            g_CrontabFormat[int.Parse(server.ID)] = crontabFormat;
             Functions.ServerConfig.SetSetting(server.ID, "crontabformat", crontabFormat);
 
             textBox_restartcrontab.Text = crontabFormat;
@@ -3336,6 +3430,8 @@ namespace WindowsGSM
 
         private void HamburgerMenu_ItemClick(object sender, ItemClickEventArgs e)
         {
+            HamburgerMenuControl.IsPaneOpen = false;
+
             hMenu_Home.Visibility = (HamburgerMenuControl.SelectedIndex == 0) ? Visibility.Visible : Visibility.Hidden;
             hMenu_Dashboard.Visibility = (HamburgerMenuControl.SelectedIndex == 1) ? Visibility.Visible : Visibility.Hidden;
             hMenu_Discordbot.Visibility = (HamburgerMenuControl.SelectedIndex == 2) ? Visibility.Visible : Visibility.Hidden;
@@ -3364,6 +3460,7 @@ namespace WindowsGSM
 
         private async void HamburgerMenu_Loaded(object sender, RoutedEventArgs e)
         {
+            HamburgerMenuControl.Visibility = Visibility.Visible;
             hMenu_Home.Visibility = Visibility.Visible;
             hMenu_Dashboard.Visibility = Visibility.Hidden;
             hMenu_Discordbot.Visibility = Visibility.Hidden;

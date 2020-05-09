@@ -32,6 +32,8 @@ namespace WindowsGSM.Functions
         public bool AutoUpdateAlert;
         public bool RestartCrontabAlert;
         public bool CrashAlert;
+        public string CPUPriority;
+        public string CPUAffinity;
 
         public ServerConfig(string serverid)
         {
@@ -100,6 +102,8 @@ namespace WindowsGSM.Functions
                             case "autoupdatealert": AutoUpdateAlert = (keyvalue[1] == "1") ? true : false; break;
                             case "restartcrontabalert": RestartCrontabAlert = (keyvalue[1] == "1") ? true : false; break;
                             case "crashalert": CrashAlert = (keyvalue[1] == "1") ? true : false; break;
+                            case "cpupriority": CPUPriority = keyvalue[1]; break;
+                            case "cpuaffinity": CPUAffinity = keyvalue[1]; break;
                         }
                     }
                 }
@@ -133,6 +137,8 @@ namespace WindowsGSM.Functions
             AutoUpdateAlert = true;
             RestartCrontabAlert = true;
             CrashAlert = true;
+            CPUPriority = "2";
+            CPUAffinity = string.Concat(System.Linq.Enumerable.Repeat("1", Environment.ProcessorCount)).ToString();
         }
 
         public bool CreateWindowsGSMConfig()
@@ -155,6 +161,9 @@ namespace WindowsGSM.Functions
                     textwriter.WriteLine($"servermaxplayer=\"{ServerMaxPlayer}\"");
                     textwriter.WriteLine($"servergslt=\"{ServerGSLT}\"");
                     textwriter.WriteLine($"serverparam=\"{ServerParam}\"");
+                    textwriter.WriteLine(string.Empty);
+                    textwriter.WriteLine($"cpupriority=\"{CPUPriority}\"");
+                    textwriter.WriteLine($"cpuaffinity=\"{CPUAffinity}\"");
                     textwriter.WriteLine(string.Empty);
                     textwriter.WriteLine("autorestart=\"0\"");
                     textwriter.WriteLine("autostart=\"0\"");

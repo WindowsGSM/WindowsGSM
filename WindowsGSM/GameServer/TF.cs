@@ -4,50 +4,57 @@ using System.IO;
 
 namespace WindowsGSM.GameServer
 {
-    class AVORION
+    class TF
     {
         private readonly Functions.ServerConfig _serverData;
 
         public string Error;
         public string Notice;
 
-        public const string FullName = "Avorion Dedicated Server";
-        public string StartPath = @"bin\AvorionServer.exe";
+        public const string FullName = "The Forest Dedicated Server";
+        public string StartPath = "TheForestDedicatedServer.exe";
         public bool ToggleConsole = true;
-        public int PortIncrements = 1;
+        public int PortIncrements = 2;
         public dynamic QueryMethod = null;
 
-        public string Port = "27000";
-        public string QueryPort = "27003";
-        public string Defaultmap = "avorion_galaxy";
-        public string Maxplayers = "10";
-        public string Additional = "--admin avorion_admin";
+        public string Port = "27015";
+        public string QueryPort = "27016";
+        public string Defaultmap = "";
+        public string Maxplayers = "4";
+        public string Additional = "-configfilepath \"Server.cfg\"";
 
-        public string AppId = "565060";
+        public string AppId = "556450";
 
-        public AVORION(Functions.ServerConfig serverData)
+        public TF(Functions.ServerConfig serverData)
         {
             _serverData = serverData;
         }
 
         public async void CreateServerCFG()
         {
-            // No config file
+            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "Server.cfg");
+            if (await Functions.Github.DownloadGameServerConfig(configPath, _serverData.ServerGame))
+            {
+                string configText = File.ReadAllText(configPath);
+                configText = configText.Replace("{{serverIP}}", _serverData.ServerIP);
+                configText = configText.Replace("{{serverSteamPort}}", (int.Parse(_serverData.ServerPort) - 18249).ToString());
+                configText = configText.Replace("{{serverGamePort}}", _serverData.ServerPort);
+                configText = configText.Replace("{{serverQueryPort}}", _serverData.ServerQueryPort);
+                configText = configText.Replace("{{serverName}}", _serverData.ServerName);
+                configText = configText.Replace("{{serverPlayers}}", _serverData.ServerMaxPlayer);
+                File.WriteAllText(configPath, configText);
+            }
         }
 
         public async Task<Process> Start()
         {
-            string dataPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "galaxies");
-            Directory.CreateDirectory(dataPath);
+            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "Server.cfg");
+            if (!File.Exists(configPath))
+            {
+                Notice = $"{Path.GetFileName(configPath)} not found ({configPath})";
+            }
 
-            string param = $"--datapath \"{dataPath}\"";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerMap) ? string.Empty : $" --galaxy-name {_serverData.ServerMap}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? string.Empty : $" --server-name \"{_serverData.ServerName}\"";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? string.Empty : $" --ip {_serverData.ServerIP}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $" --port {_serverData.ServerPort}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? string.Empty : $" --query-port {_serverData.ServerQueryPort}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? string.Empty : $" --max-players {_serverData.ServerMaxPlayer}";
-            param += $" {_serverData.ServerParam}";
+            string param = $"-batchmode -nographics {_serverData.ServerParam}";
 
             Process p;
             if (ToggleConsole)
@@ -59,7 +66,8 @@ namespace WindowsGSM.GameServer
                         WorkingDirectory = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID),
                         FileName = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath),
                         Arguments = param,
-                        WindowStyle = ProcessWindowStyle.Minimized
+                        WindowStyle = ProcessWindowStyle.Minimized,
+                        UseShellExecute = false
                     },
                     EnableRaisingEvents = true
                 };
@@ -98,18 +106,7 @@ namespace WindowsGSM.GameServer
         {
             await Task.Run(() =>
             {
-                if (p.StartInfo.RedirectStandardInput)
-                {
-                    p.Kill();
-                }
-                else
-                {
-                    Functions.ServerConsole.SetMainWindow(p.MainWindowHandle);
-                    Functions.ServerConsole.SendWaitToMainWindow("/save");
-                    Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
-                    Functions.ServerConsole.SendWaitToMainWindow("/stop");
-                    Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
-                }
+                p.Kill();
             });
         }
 

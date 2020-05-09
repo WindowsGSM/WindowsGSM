@@ -385,6 +385,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/tf.png.
+        /// </summary>
+        public static string The_Forest_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("The Forest Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/unt.png.
         /// </summary>
         public static string Unturned_Dedicated_Server {

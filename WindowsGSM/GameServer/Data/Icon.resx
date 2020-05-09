@@ -225,6 +225,9 @@
   <data name="Team Fortress Classic Dedicated Server" xml:space="preserve">
     <value>Images/Games/tfc.png</value>
   </data>
+  <data name="The Forest Dedicated Server" xml:space="preserve">
+    <value>Images/Games/tf.png</value>
+  </data>
   <data name="Unturned Dedicated Server" xml:space="preserve">
     <value>Images/Games/unt.png</value>
   </data>
