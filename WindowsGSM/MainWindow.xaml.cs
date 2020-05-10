@@ -308,7 +308,7 @@ namespace WindowsGSM
             {
                 var row = new Images.Row
                 {
-                    Image = "/WindowsGSM;component/" + sortedList.GetByIndex(i).ToString(),
+                    Image = "/WindowsGSM;component/" + sortedList.GetByIndex(i),
                     Name = sortedList.GetKey(i).ToString()
                 };
 
@@ -480,7 +480,10 @@ namespace WindowsGSM
                     if (text.Length != console.Text.Length && text != console.Text)
                     {
                         console.Text = text;
-                        console.ScrollToEnd();
+                        if (!console.IsMouseOver)
+                        {
+                            console.ScrollToEnd();
+                        }
                     }
                 }
             }
@@ -502,13 +505,6 @@ namespace WindowsGSM
             await Task.Run(() => system.GetDiskStaticInfo());
             dashboard_disk_name.Content = $"({system.DiskName})";
             dashboard_disk_type.Content = system.DiskType;
-
-            List<(string, int)> oldTypePlayers = ServerGrid.Items.Cast<Functions.ServerTable>()
-                .Where(s => s.Status == "Started" && s.Maxplayers.Contains("/"))
-                .Select(s => (type: s.Game, players: int.Parse(s.Maxplayers.Split('/')[0])))
-                .GroupBy(s => s.type)
-                .Select(s => (type: s.Key, players: s.Sum(p => p.players)))
-                .ToList();
 
             while (true)
             {
@@ -1024,13 +1020,28 @@ namespace WindowsGSM
             progressbar_ImportProgress.IsIndeterminate = true;
             textblock_ImportProgress.Text = "Importing";
 
-            try
+            string sourcePath = textbox_ServerDir.Text;
+            string importLog = await Task.Run(() =>
             {
-                Microsoft.VisualBasic.FileIO.FileSystem.MoveDirectory(textbox_ServerDir.Text, importPath);
-                // This doesn't work on cross drive
-                //Directory.Move(textbox_ServerDir.Text, importPath);
-            }
-            catch (Exception ex)
+                try
+                {
+                    Microsoft.VisualBasic.FileIO.FileSystem.CopyDirectory(sourcePath, importPath);
+
+                    // Scary error while moving the directory, some files may lost - Risky
+                    //Microsoft.VisualBasic.FileIO.FileSystem.MoveDirectory(sourcePath, importPath);
+
+                    // This doesn't work on cross drive - Not working on cross drive
+                    //Directory.Move(sourcePath, importPath);
+
+                    return null;
+                }
+                catch (Exception ex)
+                {
+                    return ex.Message;         
+                }
+            });
+
+            if (importLog != null)
             {
                 textbox_ImportServerName.IsEnabled = true;
                 comboBox_ImportGameServer.IsEnabled = true;
@@ -1038,8 +1049,7 @@ namespace WindowsGSM
                 button_Browse.IsEnabled = true;
                 progressbar_ImportProgress.IsIndeterminate = false;
                 textblock_ImportProgress.Text = "[ERROR] Fail to import";
-
-                System.Windows.Forms.MessageBox.Show($"Fail to move the directory.\n{textbox_ServerDir.Text}\nto\n{importPath}\n\n{ex.ToString()}", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                System.Windows.MessageBox.Show($"Fail to copy the directory.\n{textbox_ServerDir.Text}\nto\n{importPath}\n\nYou may install a new server and copy the old servers file to the new server.\n\nException: {importLog}", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -2380,6 +2390,7 @@ namespace WindowsGSM
             textbox_servercommand.Focusable = false;
             g_ServerConsoles[int.Parse(server.ID)].Input(p, command, g_MainWindow[int.Parse(server.ID)]);
             textbox_servercommand.Focusable = true;
+            console.ScrollToEnd();
         }
 
         private static bool IsValidIPAddress(string ip)
@@ -2652,7 +2663,7 @@ namespace WindowsGSM
             }
             catch
             {
-
+                // ignore
             }
 
             return (false, string.Empty);
@@ -2953,7 +2964,7 @@ namespace WindowsGSM
             {
                 using (WebClient webClient = new WebClient())
                 {
-                    return webClient.DownloadString("https://ipinfo.io/ip").Replace("\n", "");
+                    return webClient.DownloadString("https://ipinfo.io/ip").Replace("\n", string.Empty);
                 }
             }
             catch

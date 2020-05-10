@@ -216,6 +216,9 @@
   <data name="Space Engineers Dedicated Server" xml:space="preserve">
     <value>Images/Games/se.png</value>
   </data>
+  <data name="Squad Dedicated Server" xml:space="preserve">
+    <value>Images/Games/sq.png</value>
+  </data>
   <data name="Stormworks Dedicated Server" xml:space="preserve">
     <value>Images/Games/sw.png</value>
   </data>

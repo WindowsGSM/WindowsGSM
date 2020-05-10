@@ -52,14 +52,9 @@ namespace WindowsGSM
                 Directory.CreateDirectory(logPath);
 
                 string logFile = Path.Combine(logPath, $"CRASH_{DateTime.Now.ToString("yyyyMMdd")}.log");
-                if (!File.Exists(logFile))
-                {
-                    File.Create(logFile).Dispose();
-                }
-
                 File.AppendAllText(logFile, $"WindowsGSM v{version}\n\n" + args.ExceptionObject.ToString());
 
-                MessageBox.Show($"Please view the crash log (CRASH_{DateTime.Now.ToString("yyyyMMdd")}.log)\n\nUnhandled Exception: {args.ExceptionObject}", $"WindowsGSM v{version} - Crash", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Please view the crash log (CRASH_{DateTime.Now.ToString("yyyyMMdd")}.log)\n\nUnhandled Exception:\n{args.ExceptionObject}", $"WindowsGSM v{version} - Crash", MessageBoxButton.OK, MessageBoxImage.Error);
             };
 
             MainWindow mainwindow = new MainWindow();

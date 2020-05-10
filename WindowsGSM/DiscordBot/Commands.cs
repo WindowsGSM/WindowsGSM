@@ -38,7 +38,7 @@ namespace WindowsGSM.DiscordBot
             if (message.Content.Length >= commandLen + 1 && message.Content.Substring(0, commandLen + 1) == $"{prefix}wgsm ")
             {
                 // Remote Actions
-                string[] args = message.Content.Split(new char[] { ' ' }, 2);
+                string[] args = message.Content.Split(new[] { ' ' }, 2);
                 string[] splits = args[1].Split(' ');
 
                 switch (splits[0])

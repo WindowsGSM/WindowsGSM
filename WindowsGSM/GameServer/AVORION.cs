@@ -104,11 +104,8 @@ namespace WindowsGSM.GameServer
                 }
                 else
                 {
-                    Functions.ServerConsole.SetMainWindow(p.MainWindowHandle);
-                    Functions.ServerConsole.SendWaitToMainWindow("/save");
-                    Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
-                    Functions.ServerConsole.SendWaitToMainWindow("/stop");
-                    Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
+                    Functions.ServerConsole.SendMessageToMainWindow(p.MainWindowHandle, "/save");
+                    Functions.ServerConsole.SendMessageToMainWindow(p.MainWindowHandle, "/stop");
                 }
             });
         }

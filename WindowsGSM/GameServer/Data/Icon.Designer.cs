@@ -358,6 +358,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/sq.png.
+        /// </summary>
+        public static string Squad_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Squad Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/sw.png.
         /// </summary>
         public static string Stormworks_Dedicated_Server {

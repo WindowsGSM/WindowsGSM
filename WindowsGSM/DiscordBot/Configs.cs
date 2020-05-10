@@ -117,7 +117,7 @@ namespace WindowsGSM.DiscordBot
 				var lines = File.ReadAllLines(Path.Combine(_botPath, "adminIDs.txt"));
 				foreach (var line in lines)
 				{
-					string[] items = line.Split(new char[] { ' ' }, 2);
+					string[] items = line.Split(new[] { ' ' }, 2);
 					if (items[0] == adminId)
 					{
 						return items[1].Trim().Split(',').Select(s => s.Trim()).ToList();

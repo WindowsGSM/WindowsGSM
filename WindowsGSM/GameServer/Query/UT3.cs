@@ -88,8 +88,8 @@ namespace WindowsGSM.GameServer.Query
 
         private byte[] GetToken(byte[] response)
         {
-            Int32 challenge = Int32.Parse(Encoding.ASCII.GetString(response.Skip(5).ToArray()));
-            return new byte[] { (byte)(challenge >> 24 & 0xFF), (byte)(challenge >> 16 & 0xFF), (byte)(challenge >> 8 & 0xFF), (byte)(challenge >> 0 & 0xFF) };
+            int challenge = int.Parse(Encoding.ASCII.GetString(response.Skip(5).ToArray()));
+            return new[] { (byte)(challenge >> 24 & 0xFF), (byte)(challenge >> 16 & 0xFF), (byte)(challenge >> 8 & 0xFF), (byte)(challenge >> 0 & 0xFF) };
         }
 
         private string ReadString(BinaryReader br)
@@ -99,7 +99,7 @@ namespace WindowsGSM.GameServer.Query
             // Get all bytes until 0x00
             do
             {
-                bytes = bytes.Concat(new byte[] { br.ReadByte() }).ToArray();
+                bytes = bytes.Concat(new[] { br.ReadByte() }).ToArray();
             }
             while (bytes[bytes.Length - 1] != 0x00);
 

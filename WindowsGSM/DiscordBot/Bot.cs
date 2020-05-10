@@ -75,7 +75,7 @@ namespace WindowsGSM.DiscordBot
 					{
 						MainWindow WindowsGSM = (MainWindow)Application.Current.MainWindow;
 						int serverCount = WindowsGSM.ServerGrid.Items.Count;
-						await _client.SetGameAsync($"{serverCount} game server{(serverCount > 1 ? "s" : "")}");
+						await _client.SetGameAsync($"{serverCount} game server{(serverCount > 1 ? "s" : string.Empty)}");
 					});
 				}
 
@@ -160,13 +160,14 @@ namespace WindowsGSM.DiscordBot
 						{
 							try
 							{
-								await _dashboardTextChannel.DeleteMessageAsync(_dashboardMessage);
-								_dashboardMessage = await _dashboardTextChannel.SendMessageAsync(embed: embed.Build());
+								await _dashboardTextChannel.DeleteMessageAsync(_dashboardMessage);			
 							}
 							catch
 							{
 								// ignore
 							}
+
+							_dashboardMessage = await _dashboardTextChannel.SendMessageAsync(embed: embed.Build());
 						}
 					}
 				}

@@ -218,7 +218,7 @@ namespace WindowsGSM.GameServer.Query
             // Get all bytes until 0x00
             do
             {
-                bytes = bytes.Concat(new byte[] { br.ReadByte() }).ToArray();
+                bytes = bytes.Concat(new[] { br.ReadByte() }).ToArray();
             }
             while (bytes[bytes.Length - 1] != 0x00);
 

@@ -10,10 +10,16 @@ namespace WindowsGSM.Functions
     public class ServerConsole
     {
         [DllImport("user32.dll")]
-        static extern IntPtr GetForegroundWindow();
+        private static extern IntPtr GetForegroundWindow();
 
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = false)]
+        private static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+        private const int WM_KEYDOWN = 0x0100;
+        private const int WM_CHAR = 0x0102;
 
         private const int MAX_LINE = 150;
         private readonly List<string> _consoleList = new List<string>();
@@ -53,15 +59,7 @@ namespace WindowsGSM.Functions
                 {
                     await Task.Run(() =>
                     {
-                        SetForegroundWindow(mainWindow);
-                        var current = GetForegroundWindow();
-                        var wgsmWindow = Process.GetCurrentProcess().MainWindowHandle;
-                        if (current != wgsmWindow)
-                        {
-                            SendWaitToMainWindow(text);
-                            SendWaitToMainWindow("{ENTER}");
-                            SetForegroundWindow(wgsmWindow);
-                        }
+                        SendMessageToMainWindow(mainWindow, text);
                     });
                 }
             }
@@ -139,6 +137,25 @@ namespace WindowsGSM.Functions
             {
                 _consoleList.RemoveAt(0);
             }
+        }
+
+        public static void SendMessageToMainWindow(IntPtr hWnd, string message)
+        {
+            // Here is a minor error on PostMessage, when it sends repeated char, some char may disappear. Example: send 1111111, windows may receive 1111 or 11111
+            for (int i = 0; i < message.Length; i++)
+            {
+                // This is the solution for the error stated above
+                if (i > 0 && message[i] == message[i-1])
+                {
+                    // Send a None key, break the repeat bug
+                    PostMessage(hWnd, WM_KEYDOWN, (IntPtr)Keys.None, (IntPtr)0);
+                }
+
+                PostMessage(hWnd, WM_CHAR, (IntPtr)message[i], (IntPtr)0);
+            }
+
+            // Send enter
+            PostMessage(hWnd, WM_KEYDOWN, (IntPtr)Keys.Enter, (IntPtr)(0 << 29 | 0));
         }
 
         public static void SetMainWindow(IntPtr hWnd)

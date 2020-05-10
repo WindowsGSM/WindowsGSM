@@ -85,9 +85,7 @@ namespace WindowsGSM.GameServer
         {
             await Task.Run(() =>
             {
-                Functions.ServerConsole.SetMainWindow(p.MainWindowHandle);
-                Functions.ServerConsole.SendWaitToMainWindow("/shutdown");
-                Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
+                Functions.ServerConsole.SendMessageToMainWindow(p.MainWindowHandle, "/shutdown");
                 Task.Delay(5000); //Wait 5 second for auto close
             });
         }

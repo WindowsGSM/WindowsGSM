@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Reflection;
+using System.Windows;
 
 namespace WindowsGSM
 {
@@ -36,18 +37,21 @@ namespace WindowsGSM
                 }
                 catch
                 {
+                    // ignore
+                }
+                
+                if (new FileInfo(mahappsPath).Length < 1097216)
+                {
                     File.Delete(mahappsPath);
+                    MessageBox.Show("Fail to download MahApps.Metro.dll, please try again later", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
-
-                while (new FileInfo(mahappsPath).Length < 1097216) { }
             }
             #endregion
 
             AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
             {
                 var resourceName = Assembly.GetExecutingAssembly().GetName().Name + ".ReferencesEx." + new AssemblyName(args.Name).Name + ".dll";
-
                 using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
                 {
                     if (stream != null)

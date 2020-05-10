@@ -371,6 +371,7 @@
     <Compile Include="GameServer\SE.cs" />
     <Compile Include="GameServer\Engine\GoldSource.cs" />
     <Compile Include="GameServer\Engine\Source.cs" />
+    <Compile Include="GameServer\SQ.cs" />
     <Compile Include="GameServer\SW.cs" />
     <Compile Include="GameServer\TF.cs" />
     <Compile Include="GameServer\TFC.cs" />
