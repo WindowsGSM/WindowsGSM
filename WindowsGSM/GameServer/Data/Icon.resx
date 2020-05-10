@@ -126,6 +126,9 @@
   <data name="Avorion Dedicated Server" xml:space="preserve">
     <value>Images/Games/avorion.png</value>
   </data>
+  <data name="Barotrauma Dedicated Server" xml:space="preserve">
+    <value>Images/Games/bt.png</value>
+  </data>
   <data name="BlackWake Dedicated Server" xml:space="preserve">
     <value>Images/Games/bw.png</value>
   </data>

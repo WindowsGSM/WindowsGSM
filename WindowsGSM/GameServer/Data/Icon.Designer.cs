@@ -88,6 +88,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/bt.png.
+        /// </summary>
+        public static string Barotrauma_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Barotrauma Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/bw.png.
         /// </summary>
         public static string BlackWake_Dedicated_Server {

@@ -336,6 +336,7 @@
     <Compile Include="GameServer\Addon\SourceMod.cs" />
     <Compile Include="GameServer\ARKSE.cs" />
     <Compile Include="GameServer\AVORION.cs" />
+    <Compile Include="GameServer\BT.cs" />
     <Compile Include="GameServer\BW.cs" />
     <Compile Include="GameServer\CE.cs" />
     <Compile Include="GameServer\DMC.cs" />
@@ -697,6 +698,9 @@
   <ItemGroup>
     <Resource Include="Images\Games\sq.png" />
     <Resource Include="Images\Games\tf.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\bt.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
