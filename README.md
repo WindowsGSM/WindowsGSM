@@ -1,12 +1,11 @@
-![Screenshot](https://windowsgsm.com/assets/images/WindowsGSM-v1.17.0.png)
-![Screenshot DashBoard](https://windowsgsm.com/assets/images/WindowsGSM-DashBoard.png)
+![Screenshot](https://windowsgsm.com/assets/images/WindowsGSM-v1.18.0.png)
 
-[![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/BattlefieldDuck/WindowsGSM/)
-[![Build status](https://ci.appveyor.com/api/projects/status/ttaomnayo3gidf2g?svg=true)](https://ci.appveyor.com/project/BattlefieldDuck/windowsgsm)
+[![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/WindowsGSM/WindowsGSM/)
+[![Build status](https://ci.appveyor.com/api/projects/status/ttaomnayo3gidf2g?svg=true)](https://ci.appveyor.com/project/WindowsGSM/windowsgsm)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/35390bff1d4140da806eaff186cfbf5c)](https://www.codacy.com/gh/WindowsGSM/WindowsGSM?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=WindowsGSM/WindowsGSM&amp;utm_campaign=Badge_Grade)
-[![GitHub license](https://img.shields.io/github/license/BattlefieldDuck/WindowsGSM.svg)](https://github.com/BattlefieldDuck/WindowsGSM/blob/master/LICENSE)
-[![GitHub release](https://img.shields.io/github/release/BattlefieldDuck/WindowsGSM.svg)](https://github.com/BattlefieldDuck/WindowsGSM/releases/)
-[![Github all releases](https://img.shields.io/github/downloads/BattlefieldDuck/WindowsGSM/total.svg)](https://github.com/BattlefieldDuck/WindowsGSM/releases/)
+[![GitHub license](https://img.shields.io/github/license/WindowsGSM/WindowsGSM.svg)](https://github.com/WindowsGSM/WindowsGSM/blob/master/LICENSE)
+[![GitHub release](https://img.shields.io/github/release/WindowsGSM/WindowsGSM.svg)](https://github.com/WindowsGSM/WindowsGSM/releases/)
+[![Github all releases](https://img.shields.io/github/downloads/WindowsGSM/WindowsGSM/total.svg)](https://github.com/WindowsGSM/WindowsGSM/releases/)
 [![Discord Shield](https://discordapp.com/api/guilds/590590698907107340/widget.png?style=shield)](https://discord.gg/bGc7t2R)
 
 # What is WindowsGSM?
@@ -47,13 +46,15 @@ WindowsGSM is a powerful tool to manage game servers. Equipped with a GUI for se
 | ![logo](WindowsGSM/Images/Games/rcc.png?raw=true)    | Ricochet Dedicated Server                         |✅| A2S  |
 | ![logo](WindowsGSM/Images/Games/rust.png?raw=true)   | Rust Dedicated Server                             |✅| A2S  |
 | ![logo](WindowsGSM/Images/Games/se.png?raw=true)     | Space Engineers Dedicated Server                  |✅| A2S  |
+| ![logo](WindowsGSM/Images/Games/sq.png?raw=true)     | Squad Dedicated Server                            |✅| A2S  |
 | ![logo](WindowsGSM/Images/Games/sw.png?raw=true)     | Stormworks Dedicated Server                       |✅|      |
 | ![logo](WindowsGSM/Images/Games/tf2.png?raw=true)    | Team Fortress 2 Dedicated Server                  |✅| A2S  |
 | ![logo](WindowsGSM/Images/Games/tfc.png?raw=true)    | Team Fortress Classic Dedicated Server            |✅| A2S  |
+| ![logo](WindowsGSM/Images/Games/tf.png?raw=true)     | The Forest Dedicated Server                       |✅|      |
 | ![logo](WindowsGSM/Images/Games/unt.png?raw=true)    | Unturned Dedicated Server                         |✅| A2S  |
 | ![logo](WindowsGSM/Images/Games/zps.png?raw=true)    | Zombie Panic Source Dedicated Server              |✅| A2S  |
 
-### Features
+## Features
   * **Easy Install** - No installation knowledge is required, download any game server by one-click install.
   * **Manage multiple servers** - Manage multiple servers with the same software. No more messy server files!
   * **Easy Backup** - A basic backup feature that allows you to backup or restore server files with just one-click.
@@ -63,26 +64,32 @@ WindowsGSM is a powerful tool to manage game servers. Equipped with a GUI for se
   * **Auto Update** - Checks for updates every 30 minutes, making sure your game servers are up to date!
   * **Restart Crontab** - Schedule your game servers to restart at any time, very useful for servers that require restarts to run smoothly.
   * **Start on Login** - Auto start WindowsGSM and game servers on user login.
+  * **CPU Priority and Affinity** - Set and save the cpu priority and affinity!
   * **Mod Manager** - Manage your server custom mods with WindowsGSM!
   * **Remote Control** - Remote control your game servers with Discord!
 
-### Documentation
+### Dashboard
+![Screenshot DashBoard](https://windowsgsm.com/assets/images/WindowsGSM-Dashboard-v1.18.0.png)
+
+### Discord Bot Remote Control
+![Screenshot DiscordBot](https://windowsgsm.com/assets/images/WindowsGSM-DiscordBot-v1.18.0.png)
+
+## Documentation
   * Website: <https://docs.windowsgsm.com/>
   * Github: <https://github.com/WindowsGSM/Documentation>
 
-### Community
+## Community
   * Steam: <https://steamcommunity.com/groups/WindowsGSM>
   * Discord: <https://discord.gg/bGc7t2R>
 
-### Authors & Credits
+## Authors & Credits
   * **TatLead** - *Initial work* - [BattlefieldDuck](https://github.com/BattlefieldDuck)
   * **Deathreus** - *Code optimization* - [Deathreus](https://github.com/Deathreus)
   * **! AssaultLine** - *Mordhau server test*
   * **Dennis** - *Mordhau server test*
 
 ### License
-This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/BattlefieldDuck/WindowsGSM/blob/master/LICENSE) file for details
+This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/WindowsGSM/WindowsGSM/blob/master/LICENSE) file for details
 
 ## Stargazers over time
-
 [![Stargazers over time](https://starchart.cc/WindowsGSM/WindowsGSM.svg)](https://starchart.cc/WindowsGSM/WindowsGSM)
