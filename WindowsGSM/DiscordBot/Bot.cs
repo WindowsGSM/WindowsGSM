@@ -148,7 +148,14 @@ namespace WindowsGSM.DiscordBot
 				{
 					if (_dashboardMessage == null)
 					{
-						_dashboardMessage = await _dashboardTextChannel.SendMessageAsync(embed: embed.Build());
+						try
+						{
+							_dashboardMessage = await _dashboardTextChannel.SendMessageAsync(embed: embed.Build());
+						}
+						catch
+						{
+							await Task.Delay(60000);
+						}
 					}
 					else
 					{
@@ -158,16 +165,7 @@ namespace WindowsGSM.DiscordBot
 						}
 						catch
 						{
-							try
-							{
-								await _dashboardTextChannel.DeleteMessageAsync(_dashboardMessage);			
-							}
-							catch
-							{
-								// ignore
-							}
-
-							_dashboardMessage = await _dashboardTextChannel.SendMessageAsync(embed: embed.Build());
+							await Task.Delay(60000);
 						}
 					}
 				}
