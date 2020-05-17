@@ -34,6 +34,11 @@ namespace WindowsGSM.Functions
             return Path.Combine(GetServers(serverid), "configs", path1, path2);
         }
 
+        public static string GetServersCache(string serverid, string path1 = "", string path2 = "")
+        {
+            return Path.Combine(GetServers(serverid), "cache", path1, path2);
+        }
+
         public static string GetServersServerFiles(string serverid, string path1 = "", string path2 = "")
         {
             return Path.Combine(GetServers(serverid), "serverfiles", path1, path2);

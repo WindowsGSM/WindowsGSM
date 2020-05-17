@@ -246,7 +246,8 @@ namespace WindowsGSM
                 BalloonTipTitle = "WindowsGSM",
                 BalloonTipText = "WindowsGSM is running in the background",
                 Text = "WindowsGSM",
-                BalloonTipIcon = ToolTipIcon.Info
+                BalloonTipIcon = ToolTipIcon.Info,
+                Visible = true
             };
 
             Stream iconStream = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/Images/WindowsGSM-Icon.ico")).Stream;
@@ -257,47 +258,6 @@ namespace WindowsGSM
 
             notifyIcon.BalloonTipClicked += OnBalloonTipClick;
             notifyIcon.MouseClick += NotifyIcon_MouseClick;
-            notifyIcon.Visible = true;
-
-            //Set All server status to stopped
-            for (int i = 0; i <= MAX_SERVER; i++)
-            {
-                g_iServerStatus[i] = ServerStatus.Stopped;
-                g_ServerConsoles[i] = new Functions.ServerConsole(i.ToString());
-            }
-
-            //LINQ query for windowsgsm old processes
-            var processes = (from p in Process.GetProcesses()
-                             where ((Predicate<Process>)(p_ =>
-                             {
-                                 try
-                                 {
-                                     return p_.MainModule.FileName.Contains(Path.Combine(WGSM_PATH, "Servers"));
-                                 }
-                                 catch
-                                 {
-                                     return false;
-                                 }
-                             }))(p)
-                             select p).ToList();
-
-            // Kill all old processes
-            foreach (var process in processes)
-            {
-                string path = process.MainModule.FileName.Replace(Path.Combine(WGSM_PATH, "Servers"), "").Substring(1);
-
-                if (int.TryParse(path.Split(Path.DirectorySeparatorChar).First(), out int serverId))
-                {
-                    try
-                    {
-                        process.Kill();
-                    }
-                    catch
-                    {
-                        //ignore
-                    }
-                }
-            }
 
             //Add games to ComboBox
             SortedList sortedList = new SortedList();
@@ -316,11 +276,50 @@ namespace WindowsGSM
                 comboBox_ImportGameServer.Items.Add(row);
             }
 
+            for (int i = 0; i <= MAX_SERVER; i++)
+            {
+                g_iServerStatus[i] = ServerStatus.Stopped;
+                g_ServerConsoles[i] = new Functions.ServerConsole(i.ToString());
+            }
+
             LoadServerTable();
 
             if (ServerGrid.Items.Count > 0)
             {
                 ServerGrid.SelectedItem = ServerGrid.Items[0];
+            }
+
+            foreach (Functions.ServerTable server in ServerGrid.Items.Cast<Functions.ServerTable>().ToList())
+            {
+                int pid = Functions.ServerCache.GetPID(server.ID);
+                if (pid != -1)
+                {
+                    Process p = null;
+                    try
+                    {
+                        p = Process.GetProcessById(pid);
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+
+                    string pName = Functions.ServerCache.GetProcessName(server.ID);
+                    if (!string.IsNullOrWhiteSpace(pName) && p.ProcessName == pName)
+                    {
+                        g_Process[int.Parse(server.ID)] = p;
+                        g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Started;
+                        SetServerStatus(server, "Started");
+
+                        g_MainWindow[int.Parse(server.ID)] = Functions.ServerCache.GetWindowsIntPtr(server.ID);
+                        p.Exited += (sender, e) => OnGameServerExited(server);
+
+                        StartAutoUpdateCheck(server);
+                        StartRestartCrontabCheck(server);
+                        StartSendHeartBeat(server);
+                        StartQuery(server);
+                    }
+                }
             }
 
             AutoStartServer();
@@ -548,14 +547,14 @@ namespace WindowsGSM
 
         public int GetActivePlayers()
         {
-            return ServerGrid.Items.Cast<Functions.ServerTable>().Where(s => s.Maxplayers.Contains('/')).Sum(s => int.Parse(s.Maxplayers.Split('/')[0]));
+            return ServerGrid.Items.Cast<Functions.ServerTable>().Where(s => s.Maxplayers != null && s.Maxplayers.Contains('/')).Sum(s => int.Parse(s.Maxplayers.Split('/')[0]));
         }
 
         private void Refresh_DashBoard_LiveChart()
         {
             // List<(ServerType, PlayerCount)> Example: ("Ricochet Dedicated Server", 0)
             List<(string, int)> typePlayers = ServerGrid.Items.Cast<Functions.ServerTable>()
-                .Where(s => s.Status == "Started" && s.Maxplayers.Contains("/"))
+                .Where(s => s.Status == "Started" && s.Maxplayers != null && s.Maxplayers.Contains("/"))
                 .Select(s => (type: s.Game, players: int.Parse(s.Maxplayers.Split('/')[0])))
                 .GroupBy(s => s.type)
                 .Select(s => (type: s.Key, players: s.Sum(p => p.players)))
@@ -610,43 +609,6 @@ namespace WindowsGSM
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            // Shutdown all server before WindowsGSM close
-            bool hasServerRunning = false;
-            for (int i = 0; i <= MAX_SERVER; i++)
-            {
-                if (g_Process[i] != null && !g_Process[i].HasExited)
-                {
-                    hasServerRunning = true;
-                    break;
-                }
-            }
-
-            if (hasServerRunning)
-            {
-                MessageBoxResult result = System.Windows.MessageBox.Show("Are you sure to quit?\n(All game servers will be stopped)", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (result != MessageBoxResult.Yes)
-                {
-                    e.Cancel = true;
-
-                    return;
-                }
-
-                for (int i = 0; i <= MAX_SERVER; i++)
-                {
-                    if (g_Process[i] == null)
-                    {
-                        continue;
-                    }
-
-                    if (!g_Process[i].HasExited)
-                    {
-                        Process p = g_Process[i];
-                        g_Process[i] = null;
-                        p.Kill();
-                    }
-                }
-            }
-
             // Save height and width
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
             if (key != null)
@@ -1098,7 +1060,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            string webhookUrl = Functions.ServerConfig.GetSetting(server.ID, "discordwebhook");
+            string webhookUrl = Functions.ServerConfig.GetSetting(server.ID, Functions.SettingName.DiscordWebhook);
 
             var settings = new MetroDialogSettings
             {
@@ -1110,7 +1072,7 @@ namespace WindowsGSM
             if (webhookUrl == null) { return; } //If pressed cancel
 
             g_DiscordWebhook[Int32.Parse(server.ID)] = webhookUrl;
-            Functions.ServerConfig.SetSetting(server.ID, "discordwebhook", webhookUrl);
+            Functions.ServerConfig.SetSetting(server.ID, Functions.SettingName.DiscordWebhook, webhookUrl);
         }
 
         private async void Button_DiscordSetMessage_Click(object sender, RoutedEventArgs e)
@@ -1118,7 +1080,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            string message = Functions.ServerConfig.GetSetting(server.ID, "discordmessage");
+            string message = Functions.ServerConfig.GetSetting(server.ID, Functions.SettingName.DiscordMessage);
 
             var settings = new MetroDialogSettings
             {
@@ -1129,8 +1091,8 @@ namespace WindowsGSM
             message = await this.ShowInputAsync("Discord Custom Message", "Please enter the custom message.\n\nExample ping message <@discorduserid>:\n<@348921660361146380>", settings);
             if (message == null) { return; } //If pressed cancel
 
-            g_DiscordMessage[Int32.Parse(server.ID)] = message;
-            Functions.ServerConfig.SetSetting(server.ID, "discordmessage", message);
+            g_DiscordMessage[int.Parse(server.ID)] = message;
+            Functions.ServerConfig.SetSetting(server.ID, Functions.SettingName.DiscordMessage, message);
         }
 
         private async void Button_DiscordWebhookTest_Click(object sender, RoutedEventArgs e)
@@ -1265,7 +1227,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            Process p = g_Process[Int32.Parse(server.ID)];
+            Process p = g_Process[int.Parse(server.ID)];
             if (p == null) { return; }
 
             //If console is useless, return
@@ -1555,6 +1517,11 @@ namespace WindowsGSM
             // Set Affinity
             p.ProcessorAffinity = Functions.CPU.Affinity.GetAffinityIntPtr(Functions.CPU.Affinity.GetAffinityValidatedString(g_CPUAffinity[int.Parse(server.ID)]));
 
+            // Save Cache
+            Functions.ServerCache.SavePID(server.ID, p.Id);
+            Functions.ServerCache.SaveProcessName(server.ID, p.ProcessName);
+            Functions.ServerCache.SaveWindowsIntPtr(server.ID, g_MainWindow[int.Parse(server.ID)]);
+
             SetWindowText(p.MainWindowHandle, server.Name);
 
             ShowWindow(p.MainWindowHandle, WindowShowStyle.Hide);
@@ -1590,6 +1557,11 @@ namespace WindowsGSM
             }
 
             g_ServerConsoles[int.Parse(server.ID)].Clear();
+
+            // Save Cache
+            Functions.ServerCache.SavePID(server.ID, -1);
+            Functions.ServerCache.SaveProcessName(server.ID, string.Empty);
+            Functions.ServerCache.SaveWindowsIntPtr(server.ID, (IntPtr)0);
 
             if (p != null && !p.HasExited)
             {
@@ -2689,7 +2661,7 @@ namespace WindowsGSM
 
         private void Help_ReportIssue_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start("https://github.com/BattlefieldDuck/WindowsGSM/issues");
+            Process.Start("https://github.com/WindowsGSM/WindowsGSM/issues");
         }
 
         private async void Help_SoftwareUpdates_Click(object sender, RoutedEventArgs e)
@@ -2997,7 +2969,7 @@ namespace WindowsGSM
             if (server == null) { return; }
 
             g_CPUPriority[int.Parse(server.ID)] = ((int)slider_ProcessPriority.Value).ToString();
-            Functions.ServerConfig.SetSetting(server.ID, "cpupriority", g_CPUPriority[int.Parse(server.ID)]);
+            Functions.ServerConfig.SetSetting(server.ID, Functions.SettingName.CPUPriority, g_CPUPriority[int.Parse(server.ID)]);
             textBox_ProcessPriority.Text = Functions.CPU.Priority.GetPriorityByInteger((int)slider_ProcessPriority.Value);
 
             if (g_Process[int.Parse(server.ID)] != null && !g_Process[int.Parse(server.ID)].HasExited)
@@ -3020,7 +2992,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bRestartCrontab[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "restartcrontab");
+            g_bRestartCrontab[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.RestartCrontab);
             switch_restartcrontab.IsChecked = g_bRestartCrontab[int.Parse(server.ID)];
         }
 
@@ -3029,7 +3001,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bEmbedConsole[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "embedconsole");
+            g_bEmbedConsole[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.EmbedConsole);
             switch_embedconsole.IsChecked = g_bEmbedConsole[int.Parse(server.ID)];
         }
 
@@ -3038,7 +3010,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bAutoRestart[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "autorestart");
+            g_bAutoRestart[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.AutoRestart);
             switch_autorestart.IsChecked = g_bAutoRestart[int.Parse(server.ID)];
         }
 
@@ -3047,7 +3019,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bAutoStart[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "autostart");
+            g_bAutoStart[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.AutoStart);
             switch_autostart.IsChecked = g_bAutoStart[int.Parse(server.ID)];
         }
 
@@ -3056,7 +3028,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bAutoUpdate[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "autoupdate");
+            g_bAutoUpdate[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.AutoUpdate);
             switch_autoupdate.IsChecked = g_bAutoUpdate[int.Parse(server.ID)];
         }
 
@@ -3074,7 +3046,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bUpdateOnStart[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "updateonstart");
+            g_bUpdateOnStart[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.UpdateOnStart);
             switch_updateonstart.IsChecked = g_bUpdateOnStart[int.Parse(server.ID)];
         }
 
@@ -3083,7 +3055,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bDiscordAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "discordalert");
+            g_bDiscordAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.DiscordAlert);
             switch_discordalert.IsChecked = g_bDiscordAlert[int.Parse(server.ID)];
             button_discordtest.IsEnabled = (g_bDiscordAlert[int.Parse(server.ID)]) ? true : false;
         }
@@ -3093,7 +3065,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            string crontabFormat = Functions.ServerConfig.GetSetting(server.ID, "crontabformat");
+            string crontabFormat = Functions.ServerConfig.GetSetting(server.ID, Functions.SettingName.CrontabFormat);
 
             var settings = new MetroDialogSettings
             {
@@ -3105,7 +3077,7 @@ namespace WindowsGSM
             if (crontabFormat == null) { return; } //If pressed cancel
 
             g_CrontabFormat[int.Parse(server.ID)] = crontabFormat;
-            Functions.ServerConfig.SetSetting(server.ID, "crontabformat", crontabFormat);
+            Functions.ServerConfig.SetSetting(server.ID, Functions.SettingName.CrontabFormat, crontabFormat);
 
             textBox_restartcrontab.Text = crontabFormat;
             textBox_nextcrontab.Text = CrontabSchedule.TryParse(crontabFormat)?.GetNextOccurrence(DateTime.Now).ToString("ddd, MM/dd/yyyy HH:mm:ss");
@@ -3118,7 +3090,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bAutoStartAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "autostartalert");
+            g_bAutoStartAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.AutoStartAlert);
             MahAppSwitch_AutoStartAlert.IsChecked = g_bAutoStartAlert[int.Parse(server.ID)];
         }
 
@@ -3127,7 +3099,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bAutoRestartAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "autorestartalert");
+            g_bAutoRestartAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.AutoRestartAlert);
             MahAppSwitch_AutoRestartAlert.IsChecked = g_bAutoRestartAlert[int.Parse(server.ID)];
         }
 
@@ -3136,7 +3108,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bAutoUpdateAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "autoupdatealert");
+            g_bAutoUpdateAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.AutoUpdateAlert);
             MahAppSwitch_AutoUpdateAlert.IsChecked = g_bAutoUpdateAlert[int.Parse(server.ID)];
         }
 
@@ -3145,7 +3117,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bRestartCrontabAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "restartcrontabalert");
+            g_bRestartCrontabAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.RestartCrontabAlert);
             MahAppSwitch_RestartCrontabAlert.IsChecked = g_bRestartCrontabAlert[int.Parse(server.ID)];
         }
 
@@ -3154,7 +3126,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bCrashAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, "crashalert");
+            g_bCrashAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.CrashAlert);
             MahAppSwitch_CrashAlert.IsChecked = g_bCrashAlert[int.Parse(server.ID)];
         }
         #endregion

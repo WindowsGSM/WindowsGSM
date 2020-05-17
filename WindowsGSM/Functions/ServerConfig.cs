@@ -5,6 +5,36 @@ using System.Net.Sockets;
 
 namespace WindowsGSM.Functions
 {
+    static class SettingName
+    {
+        public const string ServerGame = "servergame";
+        public const string ServerName = "servername";
+        public const string ServerIP = "serverip";
+        public const string ServerPort = "serverport";
+        public const string ServerQueryPort = "serverqueryport";
+        public const string ServerMap = "servermap";
+        public const string ServerMaxPlayer = "servermaxplayer";
+        public const string ServerGSLT = "servergslt";
+        public const string ServerParam = "serverparam";
+        public const string AutoRestart = "autorestart";
+        public const string AutoStart = "autostart";
+        public const string AutoUpdate = "autoupdate";
+        public const string UpdateOnStart = "updateonstart";
+        public const string DiscordAlert = "discordalert";
+        public const string DiscordMessage = "discordmessage";
+        public const string DiscordWebhook = "discordwebhook";
+        public const string RestartCrontab = "restartcrontab";
+        public const string CrontabFormat = "crontabformat";
+        public const string EmbedConsole = "embedconsole";
+        public const string AutoStartAlert = "autostartalert";
+        public const string AutoRestartAlert = "autorestartalert";
+        public const string AutoUpdateAlert = "autoupdatealert";
+        public const string RestartCrontabAlert = "restartcrontabalert";
+        public const string CrashAlert = "crashalert";
+        public const string CPUPriority = "cpupriority";
+        public const string CPUAffinity = "cpuaffinity";
+    }
+
     class ServerConfig
     {
         public string ServerID;
@@ -71,39 +101,38 @@ namespace WindowsGSM.Functions
                 foreach (string line in File.ReadLines(configpath))
                 {
                     string[] keyvalue = line.Split(new char[] { '=' }, 2);
-
                     if (keyvalue.Length == 2)
                     {
                         keyvalue[1] = keyvalue[1].Trim('\"');
 
                         switch (keyvalue[0])
                         {
-                            case "servergame": ServerGame = keyvalue[1]; break;
-                            case "servername": ServerName = keyvalue[1]; break;
-                            case "serverip": ServerIP = keyvalue[1]; break;
-                            case "serverport": ServerPort = keyvalue[1]; break;
-                            case "serverqueryport": ServerQueryPort = keyvalue[1]; break;
-                            case "servermap": ServerMap = keyvalue[1]; break;
-                            case "servermaxplayer": ServerMaxPlayer = keyvalue[1]; break;
-                            case "servergslt": ServerGSLT = keyvalue[1]; break;
-                            case "serverparam": ServerParam = keyvalue[1]; break;
-                            case "autorestart": AutoRestart = (keyvalue[1] == "1") ? true : false; break;
-                            case "autostart": AutoStart = (keyvalue[1] == "1") ? true : false; break;
-                            case "autoupdate": AutoUpdate = (keyvalue[1] == "1") ? true : false; break;
-                            case "updateonstart": UpdateOnStart = (keyvalue[1] == "1") ? true : false; break;
-                            case "discordalert": DiscordAlert = (keyvalue[1] == "1") ? true : false; break;
-                            case "discordmessage": DiscordMessage = keyvalue[1]; break;
-                            case "discordwebhook": DiscordWebhook = keyvalue[1]; break;
-                            case "restartcrontab": RestartCrontab = (keyvalue[1] == "1") ? true : false; break;
-                            case "crontabformat": CrontabFormat = keyvalue[1]; break;
-                            case "embedconsole": EmbedConsole = (keyvalue[1] == "1") ? true : false; break;
-                            case "autostartalert": AutoStartAlert = (keyvalue[1] == "1") ? true : false; break;
-                            case "autorestartalert": AutoRestartAlert = (keyvalue[1] == "1") ? true : false; break;
-                            case "autoupdatealert": AutoUpdateAlert = (keyvalue[1] == "1") ? true : false; break;
-                            case "restartcrontabalert": RestartCrontabAlert = (keyvalue[1] == "1") ? true : false; break;
-                            case "crashalert": CrashAlert = (keyvalue[1] == "1") ? true : false; break;
-                            case "cpupriority": CPUPriority = keyvalue[1]; break;
-                            case "cpuaffinity": CPUAffinity = keyvalue[1]; break;
+                            case SettingName.ServerGame: ServerGame = keyvalue[1]; break;
+                            case SettingName.ServerName: ServerName = keyvalue[1]; break;
+                            case SettingName.ServerIP: ServerIP = keyvalue[1]; break;
+                            case SettingName.ServerPort: ServerPort = keyvalue[1]; break;
+                            case SettingName.ServerQueryPort: ServerQueryPort = keyvalue[1]; break;
+                            case SettingName.ServerMap: ServerMap = keyvalue[1]; break;
+                            case SettingName.ServerMaxPlayer: ServerMaxPlayer = keyvalue[1]; break;
+                            case SettingName.ServerGSLT: ServerGSLT = keyvalue[1]; break;
+                            case SettingName.ServerParam: ServerParam = keyvalue[1]; break;
+                            case SettingName.AutoRestart: AutoRestart = (keyvalue[1] == "1") ? true : false; break;
+                            case SettingName.AutoStart: AutoStart = (keyvalue[1] == "1") ? true : false; break;
+                            case SettingName.AutoUpdate: AutoUpdate = (keyvalue[1] == "1") ? true : false; break;
+                            case SettingName.UpdateOnStart: UpdateOnStart = (keyvalue[1] == "1") ? true : false; break;
+                            case SettingName.DiscordAlert: DiscordAlert = (keyvalue[1] == "1") ? true : false; break;
+                            case SettingName.DiscordMessage: DiscordMessage = keyvalue[1]; break;
+                            case SettingName.DiscordWebhook: DiscordWebhook = keyvalue[1]; break;
+                            case SettingName.RestartCrontab: RestartCrontab = (keyvalue[1] == "1") ? true : false; break;
+                            case SettingName.CrontabFormat: CrontabFormat = keyvalue[1]; break;
+                            case SettingName.EmbedConsole: EmbedConsole = (keyvalue[1] == "1") ? true : false; break;
+                            case SettingName.AutoStartAlert: AutoStartAlert = (keyvalue[1] == "1") ? true : false; break;
+                            case SettingName.AutoRestartAlert: AutoRestartAlert = (keyvalue[1] == "1") ? true : false; break;
+                            case SettingName.AutoUpdateAlert: AutoUpdateAlert = (keyvalue[1] == "1") ? true : false; break;
+                            case SettingName.RestartCrontabAlert: RestartCrontabAlert = (keyvalue[1] == "1") ? true : false; break;
+                            case SettingName.CrashAlert: CrashAlert = (keyvalue[1] == "1") ? true : false; break;
+                            case SettingName.CPUPriority: CPUPriority = keyvalue[1]; break;
+                            case SettingName.CPUAffinity: CPUAffinity = keyvalue[1]; break;
                         }
                     }
                 }
@@ -121,7 +150,7 @@ namespace WindowsGSM.Functions
             ServerMaxPlayer = gameServer.Maxplayers;
             ServerGSLT = string.Empty;
             ServerParam = gameServer.Additional;
-            EmbedConsole = !gameServer.ToggleConsole;
+            EmbedConsole = false;
 
             AutoRestart = false;
             AutoStart = false;
@@ -152,38 +181,38 @@ namespace WindowsGSM.Functions
 
                 using (TextWriter textwriter = new StreamWriter(configpath))
                 {
-                    textwriter.WriteLine($"servergame=\"{ServerGame}\"");
-                    textwriter.WriteLine($"servername=\"{ServerName}\"");
-                    textwriter.WriteLine($"serverip=\"{ServerIP}\"");
-                    textwriter.WriteLine($"serverport=\"{ServerPort}\"");
-                    textwriter.WriteLine($"serverqueryport=\"{ServerQueryPort}\"");
-                    textwriter.WriteLine($"servermap=\"{ServerMap}\"");
-                    textwriter.WriteLine($"servermaxplayer=\"{ServerMaxPlayer}\"");
-                    textwriter.WriteLine($"servergslt=\"{ServerGSLT}\"");
-                    textwriter.WriteLine($"serverparam=\"{ServerParam}\"");
+                    textwriter.WriteLine($"{SettingName.ServerGame}=\"{ServerGame}\"");
+                    textwriter.WriteLine($"{SettingName.ServerName}=\"{ServerName}\"");
+                    textwriter.WriteLine($"{SettingName.ServerIP}=\"{ServerIP}\"");
+                    textwriter.WriteLine($"{SettingName.ServerPort}=\"{ServerPort}\"");
+                    textwriter.WriteLine($"{SettingName.ServerQueryPort}=\"{ServerQueryPort}\"");
+                    textwriter.WriteLine($"{SettingName.ServerMap}=\"{ServerMap}\"");
+                    textwriter.WriteLine($"{SettingName.ServerMaxPlayer}=\"{ServerMaxPlayer}\"");
+                    textwriter.WriteLine($"{SettingName.ServerGSLT}=\"{ServerGSLT}\"");
+                    textwriter.WriteLine($"{SettingName.ServerParam}=\"{ServerParam}\"");
                     textwriter.WriteLine(string.Empty);
-                    textwriter.WriteLine($"cpupriority=\"{CPUPriority}\"");
-                    textwriter.WriteLine($"cpuaffinity=\"{CPUAffinity}\"");
+                    textwriter.WriteLine($"{SettingName.CPUPriority}=\"{CPUPriority}\"");
+                    textwriter.WriteLine($"{SettingName.CPUAffinity}=\"{CPUAffinity}\"");
                     textwriter.WriteLine(string.Empty);
-                    textwriter.WriteLine("autorestart=\"0\"");
-                    textwriter.WriteLine("autostart=\"0\"");
-                    textwriter.WriteLine("autoupdate=\"0\"");
-                    textwriter.WriteLine("updateonstart=\"0\"");
+                    textwriter.WriteLine($"{SettingName.AutoRestart}=\"0\"");
+                    textwriter.WriteLine($"{SettingName.AutoStart}=\"0\"");
+                    textwriter.WriteLine($"{SettingName.AutoUpdate}=\"0\"");
+                    textwriter.WriteLine($"{SettingName.UpdateOnStart}=\"0\"");
                     textwriter.WriteLine(string.Empty);
-                    textwriter.WriteLine("discordalert=\"0\"");
-                    textwriter.WriteLine($"discordmessage=\"{DiscordMessage}\"");
-                    textwriter.WriteLine($"discordwebhook=\"{DiscordWebhook}\"");
+                    textwriter.WriteLine($"{SettingName.DiscordAlert}=\"0\"");
+                    textwriter.WriteLine($"{SettingName.DiscordMessage}=\"{DiscordMessage}\"");
+                    textwriter.WriteLine($"{SettingName.DiscordWebhook}=\"{DiscordWebhook}\"");
                     textwriter.WriteLine(string.Empty);
-                    textwriter.WriteLine("restartcrontab=\"0\"");
-                    textwriter.WriteLine($"crontabformat=\"{CrontabFormat}\"");
+                    textwriter.WriteLine($"{SettingName.RestartCrontab}=\"0\"");
+                    textwriter.WriteLine($"{SettingName.CrontabFormat}=\"{CrontabFormat}\"");
                     textwriter.WriteLine(string.Empty);
-                    textwriter.WriteLine($"embedconsole=\"{(EmbedConsole ? "1" : "0")}\"");
+                    textwriter.WriteLine($"{SettingName.EmbedConsole}=\"{(EmbedConsole ? "1" : "0")}\"");
                     textwriter.WriteLine(string.Empty);
-                    textwriter.WriteLine("autostartalert=\"1\"");
-                    textwriter.WriteLine("autorestartalert=\"1\"");
-                    textwriter.WriteLine("autoupdatealert=\"1\"");
-                    textwriter.WriteLine("restartcrontabalert=\"1\"");
-                    textwriter.WriteLine("crashalert=\"1\"");
+                    textwriter.WriteLine($"{SettingName.AutoStartAlert}=\"1\"");
+                    textwriter.WriteLine($"{SettingName.AutoRestartAlert}=\"1\"");
+                    textwriter.WriteLine($"{SettingName.AutoUpdateAlert}=\"1\"");
+                    textwriter.WriteLine($"{SettingName.RestartCrontabAlert}=\"1\"");
+                    textwriter.WriteLine($"{SettingName.CrashAlert}=\"1\"");
                 }
 
                 return true;
@@ -207,7 +236,6 @@ namespace WindowsGSM.Functions
                 try
                 {
                     Directory.Delete(serverid_dir, true);
-
                     return true;
                 }
                 catch

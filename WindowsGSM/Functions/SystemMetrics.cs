@@ -22,16 +22,32 @@ namespace WindowsGSM.Functions
 
         public void GetCPUStaticInfo()
         {
-            var mbo = new ManagementObjectSearcher("SELECT Name, NumberOfCores FROM Win32_Processor").Get();
-            CPUType = mbo.Cast<ManagementBaseObject>().Select(c => c["Name"].ToString()).FirstOrDefault();
-            CPUCoreCount = mbo.Cast<ManagementBaseObject>().Sum(x => int.Parse(x["NumberOfCores"].ToString()));
+            try
+            {
+                var mbo = new ManagementObjectSearcher("SELECT Name, NumberOfCores FROM Win32_Processor").Get();
+                CPUType = mbo.Cast<ManagementBaseObject>().Select(c => c["Name"].ToString()).FirstOrDefault();
+                CPUCoreCount = mbo.Cast<ManagementBaseObject>().Sum(x => int.Parse(x["NumberOfCores"].ToString()));
+            }
+            catch
+            {
+                CPUType = "Fail to get CPU Type";
+                CPUCoreCount = -1;
+            }
         }
 
         public void GetRAMStaticInfo()
         {
-            const string RAM_TOTAL_MEMORY = "TotalVisibleMemorySize";
-            RAMTotalSize = new ManagementObjectSearcher($"Select {RAM_TOTAL_MEMORY} from Win32_OperatingSystem").Get().Cast<ManagementObject>().Select(m => double.Parse(m[RAM_TOTAL_MEMORY].ToString())).FirstOrDefault();
-            RAMType = GetMemoryType();
+            try
+            {
+                const string RAM_TOTAL_MEMORY = "TotalVisibleMemorySize";
+                RAMTotalSize = new ManagementObjectSearcher($"Select {RAM_TOTAL_MEMORY} from Win32_OperatingSystem").Get().Cast<ManagementObject>().Select(m => double.Parse(m[RAM_TOTAL_MEMORY].ToString())).FirstOrDefault();
+                RAMType = GetMemoryType();
+            }
+            catch
+            {
+                RAMTotalSize = -1;
+                RAMType = "Fail to get RAM Type";
+            }
         }
 
         public void GetDiskStaticInfo(string disk = null)
@@ -44,15 +60,29 @@ namespace WindowsGSM.Functions
 
         public double GetCPUUsage()
         {
-            const string CPU_USAGE = "PercentProcessorTime";
-            return double.Parse(new ManagementObjectSearcher($"SELECT {CPU_USAGE} FROM Win32_PerfFormattedData_PerfOS_Processor WHERE Name='_Total'").Get().Cast<ManagementObject>().First().Properties[CPU_USAGE].Value.ToString());
+            try
+            {
+                const string CPU_USAGE = "PercentProcessorTime";
+                return double.Parse(new ManagementObjectSearcher($"SELECT {CPU_USAGE} FROM Win32_PerfFormattedData_PerfOS_Processor WHERE Name='_Total'").Get().Cast<ManagementObject>().First().Properties[CPU_USAGE].Value.ToString());
+            }
+            catch
+            {
+                return 0;
+            }
         }
 
         public double GetRAMUsage()
         {
-            const string RAM_FREE_MEMORY = "FreePhysicalMemory";
-            double freeMemory = new ManagementObjectSearcher($"Select {RAM_FREE_MEMORY} from Win32_OperatingSystem").Get().Cast<ManagementObject>().Select(m => double.Parse(m[RAM_FREE_MEMORY].ToString())).FirstOrDefault();
-            return (RAMTotalSize == 0) ? 0 : (1 - freeMemory / RAMTotalSize) * 100;
+            try
+            {
+                const string RAM_FREE_MEMORY = "FreePhysicalMemory";
+                double freeMemory = new ManagementObjectSearcher($"Select {RAM_FREE_MEMORY} from Win32_OperatingSystem").Get().Cast<ManagementObject>().Select(m => double.Parse(m[RAM_FREE_MEMORY].ToString())).FirstOrDefault();
+                return (RAMTotalSize == 0) ? 0 : (1 - freeMemory / RAMTotalSize) * 100;
+            }
+            catch
+            {
+                return 0;
+            }
         }
 
         public double GetDiskUsage(string disk = null)

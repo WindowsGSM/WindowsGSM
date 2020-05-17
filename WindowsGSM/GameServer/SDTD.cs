@@ -101,6 +101,7 @@ namespace WindowsGSM.GameServer
                 {
                     StartInfo =
                     {
+                        WorkingDirectory = workingDir,
                         FileName = exePath,
                         Arguments = param,
                         WindowStyle = ProcessWindowStyle.Minimized
@@ -115,6 +116,7 @@ namespace WindowsGSM.GameServer
                 {
                     StartInfo =
                     {
+                        WorkingDirectory = workingDir,
                         FileName = exePath,
                         Arguments = param,
                         WindowStyle = ProcessWindowStyle.Minimized,

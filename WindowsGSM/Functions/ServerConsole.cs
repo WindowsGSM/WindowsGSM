@@ -20,6 +20,8 @@ namespace WindowsGSM.Functions
 
         private const int WM_KEYDOWN = 0x0100;
         private const int WM_CHAR = 0x0102;
+        private const int WM_GETTEXT = 0x000D;
+        private const int WM_GETTEXTLENGTH = 0x000E;
 
         private const int MAX_LINE = 150;
         private readonly List<string> _consoleList = new List<string>();

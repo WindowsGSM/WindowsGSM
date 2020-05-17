@@ -330,6 +330,7 @@
     <Compile Include="Functions\Github.cs" />
     <Compile Include="Functions\GoogleAnalytics.cs" />
     <Compile Include="Functions\ServerAddon.cs" />
+    <Compile Include="Functions\ServerCache.cs" />
     <Compile Include="Functions\ServerConsole.cs" />
     <Compile Include="Functions\SystemMetrics.cs" />
     <Compile Include="GameServer\Addon\AMXModX.cs" />
