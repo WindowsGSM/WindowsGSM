@@ -703,5 +703,8 @@
   <ItemGroup>
     <Resource Include="Images\Games\bt.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\HMenu\Settings.ico" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

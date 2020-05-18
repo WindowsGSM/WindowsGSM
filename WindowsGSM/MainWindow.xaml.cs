@@ -35,6 +35,22 @@ namespace WindowsGSM
         [DllImport("user32.dll")]
         private static extern int SetWindowText(IntPtr hWnd, string windowName);
 
+        private static class RegistryKeyName
+        {
+            public const string HardWareAcceleration = "HardWareAcceleration";
+            public const string UIAnimation = "UIAnimation";
+            public const string DarkTheme = "DarkTheme";
+            public const string StartOnBoot = "StartOnBoot";
+            public const string RestartOnCrash = "RestartOnCrash";
+            public const string DonorTheme = "DonorTheme";
+            public const string DonorColor = "DonorColor";
+            public const string DonorAuthKey = "DonorAuthKey";
+            public const string SendStatistics = "SendStatistics";
+            public const string Height = "Height";
+            public const string Width = "Width";
+            public const string DiscordBotAutoStart = "DiscordBotAutoStart";
+        }
+
         private enum WindowShowStyle : uint
         {
             Hide = 0,
@@ -104,7 +120,7 @@ namespace WindowsGSM
 
         public static Functions.ServerConsole[] g_ServerConsoles = new Functions.ServerConsole[MAX_SERVER + 1];
 
-        public MainWindow()
+        public MainWindow(bool showCrashHint)
         {
             //Add SplashScreen
             SplashScreen splashScreen = new SplashScreen("Images/SplashScreen.png");
@@ -126,22 +142,24 @@ namespace WindowsGSM
             if (key == null)
             {
                 key = Registry.CurrentUser.CreateSubKey(@"SOFTWARE\WindowsGSM");
-                key.SetValue("HardWareAcceleration", "True");
-                key.SetValue("UIAnimation", "True");
-                key.SetValue("DarkTheme", "False");
-                key.SetValue("StartOnBoot", "False");
-                key.SetValue("DonorTheme", "False");
-                key.SetValue("DonorColor", "Blue");
-                key.SetValue("DonorAuthKey", "");
-                key.SetValue("SendStatistics", "True");
-                key.SetValue("Height", "540");
-                key.SetValue("Width", "960");
-                key.SetValue("DiscordBotAutoStart", "False");
+                key.SetValue(RegistryKeyName.HardWareAcceleration, "True");
+                key.SetValue(RegistryKeyName.UIAnimation, "True");
+                key.SetValue(RegistryKeyName.DarkTheme, "False");
+                key.SetValue(RegistryKeyName.StartOnBoot, "False");
+                key.SetValue(RegistryKeyName.RestartOnCrash, "False");
+                key.SetValue(RegistryKeyName.DonorTheme, "False");
+                key.SetValue(RegistryKeyName.DonorColor, "Blue");
+                key.SetValue(RegistryKeyName.DonorAuthKey, "");
+                key.SetValue(RegistryKeyName.SendStatistics, "True");
+                key.SetValue(RegistryKeyName.Height, "540");
+                key.SetValue(RegistryKeyName.Width, "960");
+                key.SetValue(RegistryKeyName.DiscordBotAutoStart, "False");
 
                 MahAppSwitch_HardWareAcceleration.IsChecked = true;
                 MahAppSwitch_UIAnimation.IsChecked = true;
                 MahAppSwitch_DarkTheme.IsChecked = false;
                 MahAppSwitch_StartOnBoot.IsChecked = false;
+                MahAppSwitch_RestartOnCrash.IsChecked = false;
                 MahAppSwitch_DonorConnect.IsChecked = false;
                 comboBox_Themes.Text = "Blue";
                 MahAppSwitch_SendStatistics.IsChecked = true;
@@ -149,19 +167,20 @@ namespace WindowsGSM
             }
             else
             {
-                MahAppSwitch_HardWareAcceleration.IsChecked = ((key.GetValue("HardWareAcceleration") ?? true).ToString() == "True") ? true : false;
-                MahAppSwitch_UIAnimation.IsChecked = ((key.GetValue("UIAnimation") ?? true).ToString() == "True") ? true : false;
-                MahAppSwitch_DarkTheme.IsChecked = ((key.GetValue("DarkTheme") ?? false).ToString() == "True") ? true : false;
-                MahAppSwitch_StartOnBoot.IsChecked = ((key.GetValue("StartOnBoot") ?? false).ToString() == "True") ? true : false;
-                MahAppSwitch_DonorConnect.IsChecked = ((key.GetValue("DonorTheme") ?? false).ToString() == "True") ? true : false;
-                var theme = ThemeManager.GetAccent((key.GetValue("DonorColor") ?? string.Empty).ToString());
+                MahAppSwitch_HardWareAcceleration.IsChecked = ((key.GetValue(RegistryKeyName.HardWareAcceleration) ?? true).ToString() == "True") ? true : false;
+                MahAppSwitch_UIAnimation.IsChecked = ((key.GetValue(RegistryKeyName.UIAnimation) ?? true).ToString() == "True") ? true : false;
+                MahAppSwitch_DarkTheme.IsChecked = ((key.GetValue(RegistryKeyName.DarkTheme) ?? false).ToString() == "True") ? true : false;
+                MahAppSwitch_StartOnBoot.IsChecked = ((key.GetValue(RegistryKeyName.StartOnBoot) ?? false).ToString() == "True") ? true : false;
+                MahAppSwitch_RestartOnCrash.IsChecked = ((key.GetValue(RegistryKeyName.RestartOnCrash) ?? false).ToString() == "True") ? true : false;
+                MahAppSwitch_DonorConnect.IsChecked = ((key.GetValue(RegistryKeyName.DonorTheme) ?? false).ToString() == "True") ? true : false;
+                var theme = ThemeManager.GetAccent((key.GetValue(RegistryKeyName.DonorColor) ?? string.Empty).ToString());
                 comboBox_Themes.Text = (theme == null || !(MahAppSwitch_DonorConnect.IsChecked ?? false)) ? "Blue" : theme.Name;
-                MahAppSwitch_SendStatistics.IsChecked = ((key.GetValue("SendStatistics") ?? true).ToString() == "True") ? true : false;
-                MahAppSwitch_DiscordBotAutoStart.IsChecked = ((key.GetValue("DiscordBotAutoStart") ?? false).ToString() == "True") ? true : false;
+                MahAppSwitch_SendStatistics.IsChecked = ((key.GetValue(RegistryKeyName.SendStatistics) ?? true).ToString() == "True") ? true : false;
+                MahAppSwitch_DiscordBotAutoStart.IsChecked = ((key.GetValue(RegistryKeyName.DiscordBotAutoStart) ?? false).ToString() == "True") ? true : false;
 
                 if (MahAppSwitch_DonorConnect.IsChecked ?? false)
                 {
-                    string authKey = (key.GetValue("DonorAuthKey") == null) ? string.Empty : key.GetValue("DonorAuthKey").ToString();
+                    string authKey = (key.GetValue(RegistryKeyName.DonorAuthKey) == null) ? string.Empty : key.GetValue(RegistryKeyName.DonorAuthKey).ToString();
                     if (!string.IsNullOrWhiteSpace(authKey))
                     {
 #pragma warning disable 4014
@@ -170,15 +189,15 @@ namespace WindowsGSM
                     }
                 }
 
-                Height = (key.GetValue("Height") == null) ? 540 : double.Parse(key.GetValue("Height").ToString());
-                Width = (key.GetValue("Width") == null) ? 960 : double.Parse(key.GetValue("Width").ToString());
+                Height = (key.GetValue(RegistryKeyName.Height) == null) ? 540 : double.Parse(key.GetValue(RegistryKeyName.Height).ToString());
+                Width = (key.GetValue(RegistryKeyName.Width) == null) ? 960 : double.Parse(key.GetValue(RegistryKeyName.Width).ToString());
             }
             key.Close();
 
             RenderOptions.ProcessRenderMode = (MahAppSwitch_HardWareAcceleration.IsChecked ?? false) ? System.Windows.Interop.RenderMode.SoftwareOnly : System.Windows.Interop.RenderMode.Default;
             WindowTransitionsEnabled = MahAppSwitch_UIAnimation.IsChecked ?? false;
             ThemeManager.ChangeAppTheme(App.Current, (MahAppSwitch_DarkTheme.IsChecked ?? false) ? "BaseDark" : "BaseLight");
-            //Not required - it is set by windows settings
+            //Not required - it is set in windows settings
             //SetStartOnBoot(MahAppSwitch_StartOnBoot.IsChecked ?? false);
             if (MahAppSwitch_DiscordBotAutoStart.IsChecked ?? false)
             {
@@ -289,7 +308,7 @@ namespace WindowsGSM
                 ServerGrid.SelectedItem = ServerGrid.Items[0];
             }
 
-            foreach (Functions.ServerTable server in ServerGrid.Items.Cast<Functions.ServerTable>().ToList())
+            foreach (var server in ServerGrid.Items.Cast<Functions.ServerTable>().ToList())
             {
                 int pid = Functions.ServerCache.GetPID(server.ID);
                 if (pid != -1)
@@ -320,6 +339,12 @@ namespace WindowsGSM
                         StartQuery(server);
                     }
                 }
+            }
+
+            if (showCrashHint)
+            {
+                string logFile = $"CRASH_{DateTime.Now.ToString("yyyyMMdd")}.log";
+                Log("0", $"WindowsGSM crashed unexpectedly, please view the crash log {logFile}");
             }
 
             AutoStartServer();
@@ -429,7 +454,7 @@ namespace WindowsGSM
                 }
                 catch
                 {
-
+                    // ignore
                 }
             }
 
@@ -444,14 +469,11 @@ namespace WindowsGSM
 
         private async void AutoStartServer()
         {
-            List<Functions.ServerTable> servers = new List<Functions.ServerTable>();
-            foreach (var item in ServerGrid.Items) { servers.Add((Functions.ServerTable)item); }
-
-            foreach (var server in servers)
+            foreach (Functions.ServerTable server in ServerGrid.Items.Cast<Functions.ServerTable>().ToList())
             {
                 int serverId = int.Parse(server.ID);
 
-                if (g_bAutoStart[serverId])
+                if (g_bAutoStart[serverId] && g_iServerStatus[serverId] == ServerStatus.Stopped)
                 {
                     await GameServer_Start(server, " | Auto Start");
 
@@ -1148,6 +1170,12 @@ namespace WindowsGSM
         }
 
         #region Actions - Button Click
+        private void Actions_Crash_Click(object sender, RoutedEventArgs e)
+        {
+            int test = 0;
+            _ = 0 / test; // Crash
+        }
+
         private async void Actions_Start_Click(object sender, RoutedEventArgs e)
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
@@ -1239,10 +1267,7 @@ namespace WindowsGSM
 
         private async void Actions_StartAllServers_Click(object sender, RoutedEventArgs e)
         {
-            List<Functions.ServerTable> servers = new List<Functions.ServerTable>();
-            foreach (var item in ServerGrid.Items) { servers.Add((Functions.ServerTable)item); }
-
-            foreach (var server in servers)
+            foreach (var server in ServerGrid.Items.Cast<Functions.ServerTable>().ToList())
             {
                 if (g_iServerStatus[int.Parse(server.ID)] == ServerStatus.Stopped)
                 {
@@ -1253,10 +1278,7 @@ namespace WindowsGSM
 
         private async void Actions_StartServersWithAutoStartEnabled_Click(object sender, RoutedEventArgs e)
         {
-            List<Functions.ServerTable> servers = new List<Functions.ServerTable>();
-            foreach (var item in ServerGrid.Items) { servers.Add((Functions.ServerTable)item); }
-
-            foreach (var server in servers)
+            foreach (var server in ServerGrid.Items.Cast<Functions.ServerTable>().ToList())
             {
                 if (g_iServerStatus[int.Parse(server.ID)] == ServerStatus.Stopped && g_bAutoStart[int.Parse(server.ID)])
                 {
@@ -1267,10 +1289,7 @@ namespace WindowsGSM
 
         private async void Actions_StopAllServers_Click(object sender, RoutedEventArgs e)
         {
-            List<Functions.ServerTable> servers = new List<Functions.ServerTable>();
-            foreach (var item in ServerGrid.Items) { servers.Add((Functions.ServerTable)item); }
-
-            foreach (var server in servers)
+            foreach (var server in ServerGrid.Items.Cast<Functions.ServerTable>().ToList())
             {
                 if (g_iServerStatus[int.Parse(server.ID)] == ServerStatus.Started)
                 {
@@ -1281,10 +1300,7 @@ namespace WindowsGSM
 
         private async void Actions_RestartAllServers_Click(object sender, RoutedEventArgs e)
         {
-            List<Functions.ServerTable> servers = new List<Functions.ServerTable>();
-            foreach (var item in ServerGrid.Items) { servers.Add((Functions.ServerTable)item); }
-
-            foreach (var server in servers)
+            foreach (var server in ServerGrid.Items.Cast<Functions.ServerTable>().ToList())
             {
                 if (g_iServerStatus[int.Parse(server.ID)] == ServerStatus.Started)
                 {
@@ -2353,12 +2369,6 @@ namespace WindowsGSM
             Process p = g_Process[int.Parse(server.ID)];
             if (p == null) { return; }
 
-            if (server.Game == GameServer.SDTD.FullName)
-            {
-                g_ServerConsoles[int.Parse(server.ID)].InputFor7DTD(p, command, g_MainWindow[int.Parse(server.ID)]);
-                return;
-            }
-
             textbox_servercommand.Focusable = false;
             g_ServerConsoles[int.Parse(server.ID)].Input(p, command, g_MainWindow[int.Parse(server.ID)]);
             textbox_servercommand.Focusable = true;
@@ -2467,7 +2477,7 @@ namespace WindowsGSM
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
             if (key != null)
             {
-                key.SetValue("HardWareAcceleration", (MahAppSwitch_HardWareAcceleration.IsChecked ?? false).ToString());
+                key.SetValue(RegistryKeyName.HardWareAcceleration, (MahAppSwitch_HardWareAcceleration.IsChecked ?? false).ToString());
                 key.Close();
             }
 
@@ -2479,7 +2489,7 @@ namespace WindowsGSM
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
             if (key != null)
             {
-                key.SetValue("UIAnimation", (MahAppSwitch_UIAnimation.IsChecked ?? false).ToString());
+                key.SetValue(RegistryKeyName.UIAnimation, (MahAppSwitch_UIAnimation.IsChecked ?? false).ToString());
                 key.Close();
             }
 
@@ -2491,7 +2501,7 @@ namespace WindowsGSM
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
             if (key != null)
             {
-                key.SetValue("DarkTheme", (MahAppSwitch_DarkTheme.IsChecked ?? false).ToString());
+                key.SetValue(RegistryKeyName.DarkTheme, (MahAppSwitch_DarkTheme.IsChecked ?? false).ToString());
                 key.Close();
             }
 
@@ -2503,11 +2513,21 @@ namespace WindowsGSM
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
             if (key != null)
             {
-                key.SetValue("StartOnBoot", (MahAppSwitch_StartOnBoot.IsChecked ?? false).ToString());
+                key.SetValue(RegistryKeyName.StartOnBoot, (MahAppSwitch_StartOnBoot.IsChecked ?? false).ToString());
                 key.Close();
             }
 
             SetStartOnBoot(MahAppSwitch_StartOnBoot.IsChecked ?? false);
+        }
+
+        private void RestartOnCrash_IsCheckedChanged(object sender, EventArgs e)
+        {
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
+            if (key != null)
+            {
+                key.SetValue(RegistryKeyName.RestartOnCrash, (MahAppSwitch_RestartOnCrash.IsChecked ?? false).ToString());
+                key.Close();
+            }
         }
 
         private void SendStatistics_IsCheckedChanged(object sender, EventArgs e)
@@ -2515,7 +2535,7 @@ namespace WindowsGSM
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
             if (key != null)
             {
-                key.SetValue("SendStatistics", (MahAppSwitch_SendStatistics.IsChecked ?? false).ToString());
+                key.SetValue(RegistryKeyName.SendStatistics, (MahAppSwitch_SendStatistics.IsChecked ?? false).ToString());
                 key.Close();
             }
         }
@@ -2555,15 +2575,15 @@ namespace WindowsGSM
                 AppTheme theme = ThemeManager.GetAppTheme((MahAppSwitch_DarkTheme.IsChecked ?? false) ? "BaseDark" : "BaseLight");
                 ThemeManager.ChangeAppStyle(System.Windows.Application.Current, ThemeManager.GetAccent(comboBox_Themes.SelectedItem.ToString()), theme);
 
-                key.SetValue("DonorTheme", (MahAppSwitch_DonorConnect.IsChecked ?? false).ToString());
-                key.SetValue("DonorColor", "Blue");
+                key.SetValue(RegistryKeyName.DonorTheme, (MahAppSwitch_DonorConnect.IsChecked ?? false).ToString());
+                key.SetValue(RegistryKeyName.DonorColor, "Blue");
                 key.Close();
                 return;
             }
 
             //If switch is not checked
             key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
-            string authKey = (key.GetValue("DonorAuthKey") == null) ? string.Empty : key.GetValue("DonorAuthKey").ToString();
+            string authKey = (key.GetValue(RegistryKeyName.DonorAuthKey) == null) ? string.Empty : key.GetValue(RegistryKeyName.DonorAuthKey).ToString();
 
             var settings = new MetroDialogSettings
             {
@@ -2574,7 +2594,7 @@ namespace WindowsGSM
             authKey = await this.ShowInputAsync("Donor Connect (Patreon)", "Please enter the activation key.", settings);
 
             //If pressed cancel or key is null or whitespace
-            if (String.IsNullOrWhiteSpace(authKey))
+            if (string.IsNullOrWhiteSpace(authKey))
             {
                 MahAppSwitch_DonorConnect.IsChecked = false;
                 key.Close();
@@ -2588,14 +2608,14 @@ namespace WindowsGSM
 
             if (success)
             {
-                key.SetValue("DonorTheme", "True");
-                key.SetValue("DonorAuthKey", authKey);
+                key.SetValue(RegistryKeyName.DonorTheme, "True");
+                key.SetValue(RegistryKeyName.DonorAuthKey, authKey);
                 await this.ShowMessageAsync("Success!", $"Thanks for your donation {name}, your support help us a lot!\nYou can choose any theme you like on the Settings!");
             }
             else
             {
-                key.SetValue("DonorTheme", "False");
-                key.SetValue("DonorAuthKey", "");
+                key.SetValue(RegistryKeyName.DonorTheme, "False");
+                key.SetValue(RegistryKeyName.DonorAuthKey, "");
                 await this.ShowMessageAsync("Fail to activate.", "Please visit https://windowsgsm.com/patreon/ to get the key.");
 
                 MahAppSwitch_DonorConnect.IsChecked = false;
@@ -2644,7 +2664,7 @@ namespace WindowsGSM
         private void ComboBox_Themes_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
-            key.SetValue("DonorColor", comboBox_Themes.SelectedItem.ToString());
+            key.SetValue(RegistryKeyName.DonorColor, comboBox_Themes.SelectedItem.ToString());
             key.Close();
 
             //Set theme
@@ -3438,6 +3458,30 @@ namespace WindowsGSM
                 {
                     listBox_DiscordBotAdminList.SelectedItem = listBox_DiscordBotAdminList.Items[0];
                 }
+            }
+        }
+
+        private void HamburgerMenu_OptionsItemClick(object sender, ItemClickEventArgs e)
+        {
+            if (HamburgerMenuControl.SelectedOptionsIndex == 0)
+            {
+                MahAppFlyout_DiscordAlert.IsOpen = false;
+                MahAppFlyout_SetAffinity.IsOpen = false;
+                MahAppFlyout_Settings.IsOpen = !MahAppFlyout_Settings.IsOpen;
+            }
+
+            HamburgerMenuControl.SelectedOptionsIndex = -1;
+            if (hMenu_Home.Visibility == Visibility.Visible)
+            {
+                HamburgerMenuControl.SelectedIndex = 0;
+            }
+            else if (hMenu_Dashboard.Visibility == Visibility.Visible)
+            {
+                HamburgerMenuControl.SelectedIndex = 1;
+            }
+            else if (hMenu_Discordbot.Visibility == Visibility.Visible)
+            {
+                HamburgerMenuControl.SelectedIndex = 2;
             }
         }
 

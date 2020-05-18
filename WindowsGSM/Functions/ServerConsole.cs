@@ -61,27 +61,26 @@ namespace WindowsGSM.Functions
                 {
                     await Task.Run(() =>
                     {
-                        SendMessageToMainWindow(mainWindow, text);
+                        if (!process.HasExited && process.ProcessName == "7DaysToDieServer")
+                        {
+                            SetForegroundWindow(mainWindow);
+                            var current = GetForegroundWindow();
+                            var wgsmWindow = Process.GetCurrentProcess().MainWindowHandle;
+                            if (current != wgsmWindow)
+                            {
+                                SendWaitToMainWindow("{TAB}");
+                                SendWaitToMainWindow(text);
+                                SendWaitToMainWindow("{TAB}");
+                                SendWaitToMainWindow(text);
+                                SendWaitToMainWindow("{ENTER}");
+                                SetForegroundWindow(wgsmWindow);
+                            }
+                        }
+                        else
+                        {
+                            SendMessageToMainWindow(mainWindow, text);
+                        }
                     });
-                }
-            }
-        }
-
-        public void InputFor7DTD(Process process, string text, IntPtr mainWindow)
-        {
-            if (!process.HasExited)
-            {
-                SetForegroundWindow(mainWindow);
-                var current = GetForegroundWindow();
-                var wgsmWindow = Process.GetCurrentProcess().MainWindowHandle;
-                if (current != wgsmWindow)
-                {
-                    SendWaitToMainWindow("{TAB}");
-                    SendWaitToMainWindow(text);
-                    SendWaitToMainWindow("{TAB}");
-                    SendWaitToMainWindow(text);
-                    SendWaitToMainWindow("{ENTER}");
-                    SetForegroundWindow(wgsmWindow);
                 }
             }
         }

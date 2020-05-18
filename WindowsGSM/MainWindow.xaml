@@ -22,7 +22,7 @@
             <Button x:Name="button_Website" Content="Website" Click="Button_Website_Click"/>
             <Button x:Name="button_Discord" Content="Discord" Click="Button_Discord_Click"/>
             <Button x:Name="button_Patreon" Content="Patreon" Click="Button_Patreon_Click"/>
-            <Button x:Name="button_Settings" Content="Settings" Click="Button_Settings_Click"/>
+            <!--<Button x:Name="button_Settings" Content="Settings" Click="Button_Settings_Click"/>-->
             <Button x:Name="button_Hide" Content="Hide" Click="Button_Hide_Click"/>
         </Controls:WindowCommands>
     </Controls:MetroWindow.RightWindowCommands>
@@ -32,12 +32,13 @@
             <Controls:Flyout x:Name="MahAppFlyout_Settings" Header="WindowsGSM Settings" Position="Right" Width="300" Theme="Accent" IsModal="True">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <Controls:ToggleSwitch x:Name="MahAppSwitch_HardWareAcceleration" Header="Hardware Acceleration" Margin="20,10,0,25" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="HardWareAcceleration_IsCheckedChanged"/>
-                        <Controls:ToggleSwitch x:Name="MahAppSwitch_UIAnimation" Header="UI Animation" Margin="20,0,0,25" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="UIAnimation_IsCheckedChanged"/>
-                        <Controls:ToggleSwitch x:Name="MahAppSwitch_DarkTheme" Header="Dark Theme" Margin="20,0,0,25" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="DarkTheme_IsCheckedChanged"/>
-                        <Controls:ToggleSwitch x:Name="MahAppSwitch_StartOnBoot" Header="Start WindowsGSM on Login" Margin="20,0,0,25" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="StartOnLogin_IsCheckedChanged"/>
-                        <Controls:ToggleSwitch x:Name="MahAppSwitch_SendStatistics" Header="Send Statistics" Margin="20,0,0,25" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="SendStatistics_IsCheckedChanged"/>
-                        <Controls:ToggleSwitch x:Name="MahAppSwitch_DonorConnect" Header="Donor Connect (Patreon)" Margin="20,0,0,25" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="DonorConnect_IsCheckedChanged"/>
+                        <Controls:ToggleSwitch x:Name="MahAppSwitch_HardWareAcceleration" Header="Hardware Acceleration" Margin="20,10,0,15" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="HardWareAcceleration_IsCheckedChanged"/>
+                        <Controls:ToggleSwitch x:Name="MahAppSwitch_UIAnimation" Header="UI Animation" Margin="20,0,0,15" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="UIAnimation_IsCheckedChanged"/>
+                        <Controls:ToggleSwitch x:Name="MahAppSwitch_DarkTheme" Header="Dark Theme" Margin="20,0,0,15" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="DarkTheme_IsCheckedChanged"/>
+                        <Controls:ToggleSwitch x:Name="MahAppSwitch_StartOnBoot" Header="Start WindowsGSM on Login" Margin="20,0,0,15" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="StartOnLogin_IsCheckedChanged"/>
+                        <Controls:ToggleSwitch x:Name="MahAppSwitch_RestartOnCrash" Header="Auto Restart WindowsGSM on Crash" Margin="20,0,0,15" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="RestartOnCrash_IsCheckedChanged"/>
+                        <Controls:ToggleSwitch x:Name="MahAppSwitch_SendStatistics" Header="Send Statistics" Margin="20,0,0,15" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="SendStatistics_IsCheckedChanged"/>
+                        <Controls:ToggleSwitch x:Name="MahAppSwitch_DonorConnect" Header="Donor Connect (Patreon)" Margin="20,0,0,15" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" IsCheckedChanged="DonorConnect_IsCheckedChanged"/>
                         <DockPanel Margin="20,0,20,20">
                             <Label Content="WindowsGSM Theme (Donor Only)" FontSize="15" Padding="0" DockPanel.Dock="Top"></Label>
                             <ComboBox x:Name="comboBox_Themes" Margin="0,5,0,0" Height="25" DockPanel.Dock="Top" SelectionChanged="ComboBox_Themes_SelectionChanged" IsEnabled="False"></ComboBox>
@@ -531,6 +532,7 @@
             <Grid Height="40" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="0,0,0,0">
                 <Label x:Name="label_select" Content="Select a server" HorizontalAlignment="Left" Margin="10,2,0,0" VerticalAlignment="Top" Height="33"/>
                 <DockPanel x:Name="grid_action">
+                    <!--<Button x:Name="button_Crash" Cursor="Hand" Content="CRASH" HorizontalAlignment="Left" Margin="10,5,0,5" Width="101" Height="26" Background="Purple" Foreground="White" Click="Actions_Crash_Click"/>-->
                     <Button x:Name="button_Start" Cursor="Hand" Content="START" HorizontalAlignment="Left" Margin="10,5,0,5" Width="101" Height="26" Click="Actions_Start_Click" Background="LimeGreen" Foreground="White"/>
                     <Button x:Name="button_Stop" Cursor="Hand" Content="STOP" HorizontalAlignment="Left" Margin="5,5,0,5" Width="101" Height="26" Click="Actions_Stop_Click" Background="Orange" Foreground="White"/>
                     <Button x:Name="button_Restart" Cursor="Hand" Content="RESTART" HorizontalAlignment="Left" Margin="5,5,0,5" Width="101" Height="26" Click="Actions_Restart_Click" Background="DeepSkyBlue" Foreground="White"/>
@@ -642,6 +644,16 @@
                             <ColumnDefinition Width="48" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
+                        <Image Grid.Column="0" VerticalAlignment="Center" Source="{Binding Thumbnail}" Height="20" Width="20"/>
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="16" Foreground="White" Text="{Binding Label}"/>
+                    </Grid>
+                </DataTemplate>
+                <DataTemplate x:Key="OptionsMenuItemTemplate" DataType="{x:Type Controls:HamburgerMenuImageItem}">
+                    <Grid Height="48">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
                         <Image Grid.Column="0" Source="{Binding Thumbnail}" Height="20" Width="20"/>
                         <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="16" Foreground="White" Text="{Binding Label}"/>
                     </Grid>
@@ -651,11 +663,13 @@
                                     DisplayMode="CompactInline"
                                     IsPaneOpen="False"
                                     ItemTemplate="{StaticResource MenuItemTemplate}"
+                                    OptionsItemTemplate="{StaticResource OptionsMenuItemTemplate}"
                                     ItemClick="HamburgerMenu_ItemClick"
                                     Loaded="HamburgerMenu_Loaded"
                                     MinWidth="49"
                                     HorizontalAlignment="Left"
-                                    Visibility="Hidden">
+                                    Visibility="Hidden"
+                                    Padding="0" OptionsItemClick="HamburgerMenu_OptionsItemClick">
 
                 <!--  Items  -->
                 <Controls:HamburgerMenu.ItemsSource>
@@ -677,6 +691,16 @@
                         </Controls:HamburgerMenuImageItem>
                     </Controls:HamburgerMenuItemCollection>
                 </Controls:HamburgerMenu.ItemsSource>
+
+                <Controls:HamburgerMenu.OptionsItemsSource>
+                    <Controls:HamburgerMenuItemCollection>
+                        <Controls:HamburgerMenuImageItem Label="Settings">
+                            <Controls:HamburgerMenuImageItem.Thumbnail>
+                                <BitmapImage UriSource="pack://application:,,,/WindowsGSM;component/Images/HMenu/Settings.ico" />
+                            </Controls:HamburgerMenuImageItem.Thumbnail>
+                        </Controls:HamburgerMenuImageItem>
+                    </Controls:HamburgerMenuItemCollection>
+                </Controls:HamburgerMenu.OptionsItemsSource>
             </Controls:HamburgerMenu>
         </Grid>
     </Grid>
