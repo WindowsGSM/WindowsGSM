@@ -3411,6 +3411,26 @@ namespace WindowsGSM
             return true;
         }
 
+        public async Task<bool> BackupServerById(string serverId, string adminID, string adminName)
+        {
+            var server = GetServerTableById(serverId);
+            if (server == null) { return false; }
+
+            DiscordBotLog($"Discord: Receive BACKUP action | {adminName} ({adminID})");
+            await GameServer_Backup(server);
+            return g_iServerStatus[int.Parse(serverId)] == ServerStatus.Stopped;
+        }
+
+        public async Task<bool> UpdateServerById(string serverId, string adminID, string adminName)
+        {
+            var server = GetServerTableById(serverId);
+            if (server == null) { return false; }
+
+            DiscordBotLog($"Discord: Receive UPDATE action | {adminName} ({adminID})");
+            await GameServer_Update(server);
+            return g_iServerStatus[int.Parse(serverId)] == ServerStatus.Stopped;
+        }
+
         private void Switch_DiscordBotAutoStart_Click(object sender, RoutedEventArgs e)
         {
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
