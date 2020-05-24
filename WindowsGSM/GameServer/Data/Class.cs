@@ -47,6 +47,7 @@
                 case TF.FullName: return new TF(serverData);
                 case SQ.FullName: return new SQ(serverData);
                 case BT.FullName: return new BT(serverData);
+                case PS.FullName: return new PS(serverData);
                 default: return null;
             }
         }

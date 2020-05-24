@@ -331,6 +331,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/ps.png.
+        /// </summary>
+        public static string Post_Scriptum_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Post Scriptum Dedicated Server", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/rok.png.
         /// </summary>
         public static string Reign_Of_Kings_Dedicated_Server {
