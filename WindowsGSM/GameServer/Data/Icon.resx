@@ -159,6 +159,9 @@
   <data name="Deathmatch Classic Dedicated Server" xml:space="preserve">
     <value>Images/Games/dmc.png</value>
   </data>
+  <data name="Eco Dedicated Server" xml:space="preserve">
+    <value>Images/Games/eco.png</value>
+  </data>
   <data name="Empyrion - Galactic Survival Dedicated Server" xml:space="preserve">
     <value>Images/Games/egs.png</value>
   </data>

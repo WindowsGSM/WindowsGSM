@@ -350,6 +350,7 @@
     <Compile Include="GameServer\HEAT.cs" />
     <Compile Include="GameServer\HLOF.cs" />
     <Compile Include="GameServer\INSS.cs" />
+    <Compile Include="GameServer\ECO.cs" />
     <Compile Include="GameServer\ONSET.cs" />
     <Compile Include="GameServer\Query\A2S.cs" />
     <Compile Include="GameServer\Query\FIVEM.cs" />
@@ -709,6 +710,7 @@
     <Resource Include="Images\HMenu\Settings.ico" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Images\Games\eco.png" />
     <Resource Include="Images\Games\ps.png" />
   </ItemGroup>
   <ItemGroup>
