@@ -9,9 +9,17 @@ namespace WindowsGSM.Functions
             return Path.Combine(MainWindow.WGSM_PATH, path);
         }
 
-        public static string GetBackups(string serverid)
+        public static string GetBackups(string serverId)
         {
-            return Path.Combine(MainWindow.WGSM_PATH, "Backups", serverid);
+            var backupConfig = new BackupConfig(serverId);
+            if (Directory.Exists(backupConfig.BackupLocation))
+            {
+                return backupConfig.BackupLocation;
+            }
+
+            string defaultBackupPath = Path.Combine(MainWindow.WGSM_PATH, "Backups", serverId);
+            Directory.CreateDirectory(defaultBackupPath);
+            return defaultBackupPath;
         }
 
         public static string GetInstaller(string path = "")

@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Collections;
 using LiveCharts;
 using LiveCharts.Wpf;
+using System.Management;
 
 namespace WindowsGSM
 {
@@ -94,6 +95,7 @@ namespace WindowsGSM
         private static readonly bool[] g_bAutoStart = new bool[MAX_SERVER + 1];
         private static readonly bool[] g_bAutoUpdate = new bool[MAX_SERVER + 1];
         private static readonly bool[] g_bUpdateOnStart = new bool[MAX_SERVER + 1];
+        private static readonly bool[] g_bBackupOnStart = new bool[MAX_SERVER + 1];
 
         private static readonly bool[] g_bDiscordAlert = new bool[MAX_SERVER + 1];
         private static readonly string[] g_DiscordMessage = new string[MAX_SERVER + 1];
@@ -330,6 +332,14 @@ namespace WindowsGSM
                         g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Started;
                         SetServerStatus(server, "Started");
 
+                        /*// Get Console process - untested
+                        Process console = GetConsoleProcess(pid);
+                        if (console != null)
+                        {
+                            ReadConsoleOutput(server.ID, console);
+                        }
+                        */
+
                         g_MainWindow[int.Parse(server.ID)] = Functions.ServerCache.GetWindowsIntPtr(server.ID);
                         p.Exited += (sender, e) => OnGameServerExited(server);
 
@@ -357,6 +367,45 @@ namespace WindowsGSM
             StartConsoleRefresh();
 
             StartDashBoardRefresh();
+        }
+
+        private Process GetConsoleProcess(int processId)
+        {
+            try
+            {
+                ManagementObjectSearcher mos = new ManagementObjectSearcher($"Select * From Win32_Process Where ParentProcessID={processId}");
+                foreach (ManagementObject mo in mos.Get())
+                {
+                    Process p = Process.GetProcessById(Convert.ToInt32(mo["ProcessID"]));
+                    if (Equals(p, "conhost"))
+                    {
+                        return p;
+                    }
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+
+            return null;
+        }
+
+        // Read console redirect output - not tested
+        private async void ReadConsoleOutput(string serverId, Process p)
+        {
+            await Task.Run(() =>
+            {
+                var reader = p.StandardOutput;
+                while (!reader.EndOfStream)
+                {
+                    string line = reader.ReadLine();
+                    System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+                    {
+                        g_ServerConsoles[int.Parse(serverId)].Add(line);
+                    });
+                }
+            });
         }
 
         public void LoadServerTable()
@@ -428,6 +477,7 @@ namespace WindowsGSM
                     g_bAutoStart[i] = serverConfig.AutoStart;
                     g_bAutoUpdate[i] = serverConfig.AutoUpdate;
                     g_bUpdateOnStart[i] = serverConfig.UpdateOnStart;
+                    g_bBackupOnStart[i] = serverConfig.BackupOnStart;
                     g_bDiscordAlert[i] = serverConfig.DiscordAlert;
                     g_DiscordMessage[i] = serverConfig.DiscordMessage;
                     g_DiscordWebhook[i] = serverConfig.DiscordWebhook;
@@ -735,6 +785,7 @@ namespace WindowsGSM
                 switch_autostart.IsChecked = g_bAutoStart[int.Parse(row.ID)];
                 switch_autoupdate.IsChecked = g_bAutoUpdate[int.Parse(row.ID)];
                 switch_updateonstart.IsChecked = g_bUpdateOnStart[int.Parse(row.ID)];
+                switch_backuponstart.IsChecked = g_bBackupOnStart[int.Parse(row.ID)];
 
                 button_discordtest.IsEnabled = g_bDiscordAlert[int.Parse(row.ID)] ? true : false;
 
@@ -1082,7 +1133,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            string webhookUrl = Functions.ServerConfig.GetSetting(server.ID, Functions.SettingName.DiscordWebhook);
+            string webhookUrl = Functions.ServerConfig.GetSetting(server.ID, Functions.ServerConfig.SettingName.DiscordWebhook);
 
             var settings = new MetroDialogSettings
             {
@@ -1094,7 +1145,7 @@ namespace WindowsGSM
             if (webhookUrl == null) { return; } //If pressed cancel
 
             g_DiscordWebhook[Int32.Parse(server.ID)] = webhookUrl;
-            Functions.ServerConfig.SetSetting(server.ID, Functions.SettingName.DiscordWebhook, webhookUrl);
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.DiscordWebhook, webhookUrl);
         }
 
         private async void Button_DiscordSetMessage_Click(object sender, RoutedEventArgs e)
@@ -1102,7 +1153,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            string message = Functions.ServerConfig.GetSetting(server.ID, Functions.SettingName.DiscordMessage);
+            string message = Functions.ServerConfig.GetSetting(server.ID, Functions.ServerConfig.SettingName.DiscordMessage);
 
             var settings = new MetroDialogSettings
             {
@@ -1114,7 +1165,7 @@ namespace WindowsGSM
             if (message == null) { return; } //If pressed cancel
 
             g_DiscordMessage[int.Parse(server.ID)] = message;
-            Functions.ServerConfig.SetSetting(server.ID, Functions.SettingName.DiscordMessage, message);
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.DiscordMessage, message);
         }
 
         private async void Button_DiscordWebhookTest_Click(object sender, RoutedEventArgs e)
@@ -1188,6 +1239,7 @@ namespace WindowsGSM
             g_bAutoStart[i] = serverConfig.AutoStart;
             g_bAutoUpdate[i] = serverConfig.AutoUpdate;
             g_bUpdateOnStart[i] = serverConfig.UpdateOnStart;
+            g_bBackupOnStart[i] = serverConfig.BackupOnStart;
             g_bDiscordAlert[i] = serverConfig.DiscordAlert;
             g_DiscordMessage[i] = serverConfig.DiscordMessage;
             g_DiscordWebhook[i] = serverConfig.DiscordWebhook;
@@ -1355,10 +1407,38 @@ namespace WindowsGSM
 
             if (g_iServerStatus[int.Parse(server.ID)] != ServerStatus.Stopped) { return; }
 
-            MessageBoxResult result = System.Windows.MessageBox.Show("Do you want to restore backup on this server?\n(All server files will be overwritten)", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (result != MessageBoxResult.Yes) { return; }
+            listbox_RestoreBackup.Items.Clear();
+            var backupConfig = new Functions.BackupConfig(server.ID);
+            if (Directory.Exists(backupConfig.BackupLocation))
+            {
+                string zipFileName = $"WGSM-Backup-Server-{server.ID}-";
+                foreach (var fi in new DirectoryInfo(backupConfig.BackupLocation).GetFiles("*.zip").Where(x => x.Name.Contains(zipFileName)).OrderByDescending(x => x.LastWriteTime))
+                {
+                    listbox_RestoreBackup.Items.Add(fi.Name);
+                }
+            }
 
-            await GameServer_RestoreBackup(server);
+            if (listbox_RestoreBackup.Items.Count > 0)
+            {
+                listbox_RestoreBackup.SelectedIndex = 0;
+            }
+
+            label_RestoreBackupServerName.Content = server.Name;
+            MahAppFlyout_RestoreBackup.IsOpen = true;
+        }
+
+        private async void Button_RestoreBackup_Click(object sender, RoutedEventArgs e)
+        {
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
+
+            if (g_iServerStatus[int.Parse(server.ID)] != ServerStatus.Stopped) { return; }
+
+            if (listbox_RestoreBackup.SelectedIndex >= 0)
+            {
+                MahAppFlyout_RestoreBackup.IsOpen = false;
+                await GameServer_RestoreBackup(server, listbox_RestoreBackup.SelectedItem.ToString());
+            }
         }
 
         private void Actions_ManageAddons_Click(object sender, RoutedEventArgs e)
@@ -1651,6 +1731,11 @@ namespace WindowsGSM
             Process p = g_Process[int.Parse(server.ID)];
             if (p != null) { return; }
 
+            if (g_bBackupOnStart[int.Parse(server.ID)])
+            {
+                await GameServer_Backup(server, " | Backup on Start");
+            }
+
             if (g_bUpdateOnStart[int.Parse(server.ID)])
             {
                 await GameServer_Update(server, " | Update on Start");
@@ -1703,15 +1788,15 @@ namespace WindowsGSM
 
         private async Task GameServer_Restart(Functions.ServerTable server)
         {
-            if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Started) { return; }
+            if (g_iServerStatus[int.Parse(server.ID)] != ServerStatus.Started) { return; }
 
-            Process p = g_Process[Int32.Parse(server.ID)];
+            Process p = g_Process[int.Parse(server.ID)];
             if (p == null) { return; }
 
-            g_Process[Int32.Parse(server.ID)] = null;
+            g_Process[int.Parse(server.ID)] = null;
 
             //Begin Restart
-            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Restarting;
+            g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Restarting;
             Log(server.ID, "Action: Restart");
             SetServerStatus(server, "Restarting");
 
@@ -1722,12 +1807,12 @@ namespace WindowsGSM
             var gameServer = await Server_BeginStart(server);
             if (gameServer == null)
             {
-                g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
+                g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                 SetServerStatus(server, "Stopped");
                 return;
             }
 
-            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Started;
+            g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Started;
             Log(server.ID, "Server: Restarted");
             if (!string.IsNullOrWhiteSpace(gameServer.Notice))
             {
@@ -1766,127 +1851,163 @@ namespace WindowsGSM
             return true;
         }
 
-        private async Task<bool> GameServer_Backup(Functions.ServerTable server)
+        private async Task<bool> GameServer_Backup(Functions.ServerTable server, string notes = "")
         {
-            if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped)
+            if (g_iServerStatus[int.Parse(server.ID)] != ServerStatus.Stopped)
             {
                 return false;
             }
 
             //Begin backup
-            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Backuping;
-            Log(server.ID, "Action: Backup");
+            g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Backuping;
+            Log(server.ID, "Action: Backup" + notes);
             SetServerStatus(server, "Backuping");
 
             //End All Running Process
             await EndAllRunningProcess(server.ID);
             await Task.Delay(1000);
 
-            string startPath = Functions.ServerPath.GetServers(server.ID);
-            string zipPath = Functions.ServerPath.GetBackups(server.ID);
-            string zipFile = Path.Combine(zipPath, $"Backup-id-{server.ID}.zip");
-
-            if (!Directory.Exists(zipPath))
+            string backupLocation = Functions.ServerPath.GetBackups(server.ID);
+            if (!Directory.Exists(backupLocation))
             {
-                Directory.CreateDirectory(zipPath);
+                g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
+                Log(server.ID, "Server: Fail to backup");
+                Log(server.ID, "[ERROR] Backup location not found");
+                SetServerStatus(server, "Stopped");
+                return false;
             }
 
-            if (File.Exists(zipFile))
+            string zipFileName = $"WGSM-Backup-Server-{server.ID}-";
+
+            // Remove the oldest Backup file
+            var backupConfig = new Functions.BackupConfig(server.ID);
+            foreach (var fi in new DirectoryInfo(backupLocation).GetFiles("*.zip").Where(x => x.Name.Contains(zipFileName)).OrderByDescending(x => x.LastWriteTime).Skip(backupConfig.MaximumBackups - 1))
             {
+                string ex = string.Empty;
                 await Task.Run(() =>
                 {
                     try
                     {
-                        File.Delete(zipFile);
+                        fi.Delete();
                     }
-                    catch
+                    catch (Exception e)
                     {
-
+                        ex = e.Message;
                     }
                 });
 
-                if (File.Exists(zipFile))
+                if (ex != string.Empty)
                 {
-                    g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
+                    g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                     Log(server.ID, "Server: Fail to backup");
-                    Log(server.ID, "[ERROR] Fail to delete old backup");
+                    Log(server.ID, $"[ERROR] {ex}");
                     SetServerStatus(server, "Stopped");
-
                     return false;
                 }
             }
 
-            await Task.Run(() => ZipFile.CreateFromDirectory(startPath, zipFile));
+            string startPath = Functions.ServerPath.GetServers(server.ID);
+            string zipFile = Path.Combine(Functions.ServerPath.GetBackups(server.ID), $"{zipFileName}{DateTime.Now.ToString("yyyyMMddHHmmss")}.zip");
 
-            if (!File.Exists(zipFile))
+            string error = string.Empty;
+            await Task.Run(() =>
             {
-                g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
+                try
+                {
+                    ZipFile.CreateFromDirectory(startPath, zipFile);
+                }
+                catch (Exception e)
+                {
+                    error = e.Message;
+                }
+            });
+
+            if (error != string.Empty)
+            {
+                g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                 Log(server.ID, "Server: Fail to backup");
-                Log(server.ID, "[ERROR] Cannot create zipfile");
+                Log(server.ID, $"[ERROR] {error}");
                 SetServerStatus(server, "Stopped");
 
                 return false;
             }
 
-            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
+            g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
             Log(server.ID, "Server: Backuped");
             SetServerStatus(server, "Stopped");
 
             return true;
         }
 
-        private async Task<bool> GameServer_RestoreBackup(Functions.ServerTable server)
+        private async Task<bool> GameServer_RestoreBackup(Functions.ServerTable server, string backupFile)
         {
-            if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped)
+            if (g_iServerStatus[int.Parse(server.ID)] != ServerStatus.Stopped)
             {
                 return false;
             }
 
-            string zipFile = WGSM_PATH + @"\Backups\" + server.ID + @"\backup-id-" + server.ID + ".zip";
-            string extractPath = WGSM_PATH + @"\Servers\" + server.ID;
-
-            if (!File.Exists(zipFile))
+            string backupLocation = Functions.ServerPath.GetBackups(server.ID);
+            string backupPath = Path.Combine(backupLocation, backupFile);
+            if (!File.Exists(backupPath))
             {
                 Log(server.ID, "Server: Fail to restore backup");
                 Log(server.ID, "[ERROR] Backup not found");
-
                 return false;
             }
 
-            //End All Running Process
-            await EndAllRunningProcess(server.ID);
-            await Task.Delay(1000);
+            g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Restoring;
+            Log(server.ID, "Action: Restore Backup");
+            SetServerStatus(server, "Restoring");
 
+            string extractPath = Functions.ServerPath.GetServers(server.ID);
             if (Directory.Exists(extractPath))
             {
+                string ex = string.Empty;
                 await Task.Run(() =>
                 {
                     try
                     {
                         Directory.Delete(extractPath, true);
                     }
-                    catch
+                    catch (Exception e)
                     {
-
+                        ex = e.Message;
                     }
                 });
 
-                if (Directory.Exists(extractPath))
+                if (ex != string.Empty)
                 {
+                    g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                     Log(server.ID, "Server: Fail to restore backup");
-                    Log(server.ID, "[ERROR] Extract path is not accessible");
-
+                    Log(server.ID, $"[ERROR] {ex}");
+                    SetServerStatus(server, "Stopped");
                     return false;
                 }
             }
 
-            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Restoring;
-            Log(server.ID, "Action: Restore Backup");
-            SetServerStatus(server, "Restoring");
+            string error = string.Empty;
+            await Task.Run(() =>
+            {
+                try
+                {
+                    ZipFile.ExtractToDirectory(backupPath, extractPath);
+                }
+                catch (Exception e)
+                {
+                    error = e.Message;
+                }
+            });
 
-            await Task.Run(() => ZipFile.ExtractToDirectory(zipFile, extractPath));
+            if (error != string.Empty)
+            {
+                g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
+                Log(server.ID, "Server: Fail to restore backup");
+                Log(server.ID, $"[ERROR] {error}");
+                SetServerStatus(server, "Stopped");
+                return false;
+            }
 
-            g_iServerStatus[Int32.Parse(server.ID)] = ServerStatus.Stopped;
+            g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
             Log(server.ID, "Server: Restored");
             SetServerStatus(server, "Stopped");
 
@@ -2407,10 +2528,16 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            string path = Functions.ServerPath.GetBackups(server.ID);
-            Directory.CreateDirectory(path);
+            Process.Start(Functions.ServerPath.GetBackups(server.ID));
+        }
 
-            Process.Start(path);
+        private void Browse_BackupFiles_Click(object sender, RoutedEventArgs e)
+        {
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
+
+            var backupConfig = new Functions.BackupConfig(server.ID);
+            backupConfig.Open();
         }
 
         private void Browse_ServerConfigs_Click(object sender, RoutedEventArgs e)
@@ -2989,7 +3116,7 @@ namespace WindowsGSM
             if (server == null) { return; }
 
             g_CPUPriority[int.Parse(server.ID)] = ((int)slider_ProcessPriority.Value).ToString();
-            Functions.ServerConfig.SetSetting(server.ID, Functions.SettingName.CPUPriority, g_CPUPriority[int.Parse(server.ID)]);
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.CPUPriority, g_CPUPriority[int.Parse(server.ID)]);
             textBox_ProcessPriority.Text = Functions.CPU.Priority.GetPriorityByInteger((int)slider_ProcessPriority.Value);
 
             if (g_Process[int.Parse(server.ID)] != null && !g_Process[int.Parse(server.ID)].HasExited)
@@ -3012,7 +3139,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bRestartCrontab[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.RestartCrontab);
+            g_bRestartCrontab[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.RestartCrontab);
             switch_restartcrontab.IsChecked = g_bRestartCrontab[int.Parse(server.ID)];
         }
 
@@ -3021,7 +3148,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bEmbedConsole[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.EmbedConsole);
+            g_bEmbedConsole[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.EmbedConsole);
             switch_embedconsole.IsChecked = g_bEmbedConsole[int.Parse(server.ID)];
         }
 
@@ -3030,7 +3157,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bAutoRestart[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.AutoRestart);
+            g_bAutoRestart[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.AutoRestart);
             switch_autorestart.IsChecked = g_bAutoRestart[int.Parse(server.ID)];
         }
 
@@ -3039,7 +3166,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bAutoStart[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.AutoStart);
+            g_bAutoStart[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.AutoStart);
             switch_autostart.IsChecked = g_bAutoStart[int.Parse(server.ID)];
         }
 
@@ -3048,7 +3175,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bAutoUpdate[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.AutoUpdate);
+            g_bAutoUpdate[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.AutoUpdate);
             switch_autoupdate.IsChecked = g_bAutoUpdate[int.Parse(server.ID)];
         }
 
@@ -3066,8 +3193,17 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bUpdateOnStart[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.UpdateOnStart);
+            g_bUpdateOnStart[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.UpdateOnStart);
             switch_updateonstart.IsChecked = g_bUpdateOnStart[int.Parse(server.ID)];
+        }
+
+        private void Button_BackupOnStart_Click(object sender, RoutedEventArgs e)
+        {
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
+
+            g_bBackupOnStart[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.BackupOnStart);
+            switch_backuponstart.IsChecked = g_bBackupOnStart[int.Parse(server.ID)];
         }
 
         private void Button_DiscordAlert_Click(object sender, RoutedEventArgs e)
@@ -3075,7 +3211,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bDiscordAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.DiscordAlert);
+            g_bDiscordAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.DiscordAlert);
             switch_discordalert.IsChecked = g_bDiscordAlert[int.Parse(server.ID)];
             button_discordtest.IsEnabled = (g_bDiscordAlert[int.Parse(server.ID)]) ? true : false;
         }
@@ -3085,7 +3221,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            string crontabFormat = Functions.ServerConfig.GetSetting(server.ID, Functions.SettingName.CrontabFormat);
+            string crontabFormat = Functions.ServerConfig.GetSetting(server.ID, Functions.ServerConfig.SettingName.CrontabFormat);
 
             var settings = new MetroDialogSettings
             {
@@ -3097,7 +3233,7 @@ namespace WindowsGSM
             if (crontabFormat == null) { return; } //If pressed cancel
 
             g_CrontabFormat[int.Parse(server.ID)] = crontabFormat;
-            Functions.ServerConfig.SetSetting(server.ID, Functions.SettingName.CrontabFormat, crontabFormat);
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.CrontabFormat, crontabFormat);
 
             textBox_restartcrontab.Text = crontabFormat;
             textBox_nextcrontab.Text = CrontabSchedule.TryParse(crontabFormat)?.GetNextOccurrence(DateTime.Now).ToString("ddd, MM/dd/yyyy HH:mm:ss");
@@ -3110,7 +3246,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bAutoStartAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.AutoStartAlert);
+            g_bAutoStartAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.AutoStartAlert);
             MahAppSwitch_AutoStartAlert.IsChecked = g_bAutoStartAlert[int.Parse(server.ID)];
         }
 
@@ -3119,7 +3255,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bAutoRestartAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.AutoRestartAlert);
+            g_bAutoRestartAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.AutoRestartAlert);
             MahAppSwitch_AutoRestartAlert.IsChecked = g_bAutoRestartAlert[int.Parse(server.ID)];
         }
 
@@ -3128,7 +3264,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bAutoUpdateAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.AutoUpdateAlert);
+            g_bAutoUpdateAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.AutoUpdateAlert);
             MahAppSwitch_AutoUpdateAlert.IsChecked = g_bAutoUpdateAlert[int.Parse(server.ID)];
         }
 
@@ -3137,7 +3273,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bRestartCrontabAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.RestartCrontabAlert);
+            g_bRestartCrontabAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.RestartCrontabAlert);
             MahAppSwitch_RestartCrontabAlert.IsChecked = g_bRestartCrontabAlert[int.Parse(server.ID)];
         }
 
@@ -3146,7 +3282,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            g_bCrashAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.SettingName.CrashAlert);
+            g_bCrashAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.CrashAlert);
             MahAppSwitch_CrashAlert.IsChecked = g_bCrashAlert[int.Parse(server.ID)];
         }
         #endregion

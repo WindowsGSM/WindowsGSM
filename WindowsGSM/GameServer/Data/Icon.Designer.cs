@@ -338,7 +338,7 @@ namespace WindowsGSM.GameServer.Data {
                 return ResourceManager.GetString("Post Scriptum Dedicated Server", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Images/Games/rok.png.
         /// </summary>

@@ -325,6 +325,7 @@
     <Compile Include="DiscordBot\Bot.cs" />
     <Compile Include="DiscordBot\Commands.cs" />
     <Compile Include="DiscordBot\Configs.cs" />
+    <Compile Include="Functions\BackupConfig.cs" />
     <Compile Include="Functions\CPU\Affinity.cs" />
     <Compile Include="Functions\CPU\Priority.cs" />
     <Compile Include="Functions\Github.cs" />
@@ -374,7 +375,7 @@
     <Compile Include="GameServer\Engine\GoldSource.cs" />
     <Compile Include="GameServer\Engine\Source.cs" />
     <Compile Include="GameServer\SQ.cs" />
-	<Compile Include="GameServer\PS.cs" />
+    <Compile Include="GameServer\PS.cs" />
     <Compile Include="GameServer\SW.cs" />
     <Compile Include="GameServer\TF.cs" />
     <Compile Include="GameServer\TFC.cs" />
@@ -706,6 +707,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\HMenu\Settings.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\ps.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Restore.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
