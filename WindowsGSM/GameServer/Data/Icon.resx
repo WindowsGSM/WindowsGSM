@@ -208,13 +208,16 @@
     <value>Images/Games/olow.png</value>
   </data>
   <data name="Post Scriptum Dedicated Server" xml:space="preserve">
-    <value>Images/Games/sq.png</value>
+    <value>Images/Games/ps.png</value>
   </data>
   <data name="Reign Of Kings Dedicated Server" xml:space="preserve">
     <value>Images/Games/rok.png</value>
   </data>
   <data name="Ricochet Dedicated Server" xml:space="preserve">
     <value>Images/Games/rcc.png</value>
+  </data>
+  <data name="Risk of Rain 2 Dedicated Server" xml:space="preserve">
+    <value>Images/Games/ror2.png</value>
   </data>
   <data name="Rust Dedicated Server" xml:space="preserve">
     <value>Images/Games/rust.png</value>

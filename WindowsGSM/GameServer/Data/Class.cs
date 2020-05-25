@@ -48,6 +48,7 @@
                 case SQ.FullName: return new SQ(serverData);
                 case BT.FullName: return new BT(serverData);
                 case PS.FullName: return new PS(serverData);
+                case ROR2.FullName: return new ROR2(serverData);
                 default: return null;
             }
         }

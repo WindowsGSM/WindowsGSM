@@ -1,4 +1,4 @@
-![Screenshot](https://windowsgsm.com/assets/images/WindowsGSM-v1.18.0.png)
+﻿![Screenshot](https://windowsgsm.com/assets/images/WindowsGSM-v1.18.0.png)
 
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/WindowsGSM/WindowsGSM/)
 [![Build status](https://ci.appveyor.com/api/projects/status/ttaomnayo3gidf2g?svg=true)](https://ci.appveyor.com/project/WindowsGSM/windowsgsm)
@@ -42,9 +42,10 @@ WindowsGSM is a powerful tool to manage game servers. Equipped with a GUI for se
 | ![logo](WindowsGSM/Images/Games/nmrih.png?raw=true)  | No More Room in Hell Dedicated Server             |✅| A2S  |
 | ![logo](WindowsGSM/Images/Games/onset.png?raw=true)  | Onset Dedicated Server                            |✅|      |
 | ![logo](WindowsGSM/Images/Games/olow.png?raw=true)   | Outlaws of the Old West Dedicated Server          |✅| A2S  |
-| ![logo](WindowsGSM/Images/Games/sq.png?raw=true)     | Post Scriptum Dedicated Server                    |✅| A2S  |
+| ![logo](WindowsGSM/Images/Games/ps.png?raw=true)     | Post Scriptum Dedicated Server                    |✅| A2S  |
 | ![logo](WindowsGSM/Images/Games/rok.png?raw=true)    | Reign Of Kings Dedicated Server                   |✅|      |
 | ![logo](WindowsGSM/Images/Games/rcc.png?raw=true)    | Ricochet Dedicated Server                         |✅| A2S  |
+| ![logo](WindowsGSM/Images/Games/rcc.png?raw=true)    | Risk of Rain 2 Dedicated Server                   |✅| A2S  |
 | ![logo](WindowsGSM/Images/Games/rust.png?raw=true)   | Rust Dedicated Server                             |✅| A2S  |
 | ![logo](WindowsGSM/Images/Games/se.png?raw=true)     | Space Engineers Dedicated Server                  |✅| A2S  |
 | ![logo](WindowsGSM/Images/Games/sq.png?raw=true)     | Squad Dedicated Server                            |✅| A2S  |
