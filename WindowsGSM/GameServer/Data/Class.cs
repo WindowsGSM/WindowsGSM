@@ -49,6 +49,7 @@
                 case BT.FullName: return new BT(serverData);
                 case PS.FullName: return new PS(serverData);
                 case ROR2.FullName: return new ROR2(serverData);
+                case ECO.FullName: return new ECO(serverData);
                 default: return null;
             }
         }
