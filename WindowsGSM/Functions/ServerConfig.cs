@@ -5,38 +5,39 @@ using System.Net.Sockets;
 
 namespace WindowsGSM.Functions
 {
-    static class SettingName
-    {
-        public const string ServerGame = "servergame";
-        public const string ServerName = "servername";
-        public const string ServerIP = "serverip";
-        public const string ServerPort = "serverport";
-        public const string ServerQueryPort = "serverqueryport";
-        public const string ServerMap = "servermap";
-        public const string ServerMaxPlayer = "servermaxplayer";
-        public const string ServerGSLT = "servergslt";
-        public const string ServerParam = "serverparam";
-        public const string AutoRestart = "autorestart";
-        public const string AutoStart = "autostart";
-        public const string AutoUpdate = "autoupdate";
-        public const string UpdateOnStart = "updateonstart";
-        public const string DiscordAlert = "discordalert";
-        public const string DiscordMessage = "discordmessage";
-        public const string DiscordWebhook = "discordwebhook";
-        public const string RestartCrontab = "restartcrontab";
-        public const string CrontabFormat = "crontabformat";
-        public const string EmbedConsole = "embedconsole";
-        public const string AutoStartAlert = "autostartalert";
-        public const string AutoRestartAlert = "autorestartalert";
-        public const string AutoUpdateAlert = "autoupdatealert";
-        public const string RestartCrontabAlert = "restartcrontabalert";
-        public const string CrashAlert = "crashalert";
-        public const string CPUPriority = "cpupriority";
-        public const string CPUAffinity = "cpuaffinity";
-    }
-
     class ServerConfig
     {
+        public static class SettingName
+        {
+            public const string ServerGame = "servergame";
+            public const string ServerName = "servername";
+            public const string ServerIP = "serverip";
+            public const string ServerPort = "serverport";
+            public const string ServerQueryPort = "serverqueryport";
+            public const string ServerMap = "servermap";
+            public const string ServerMaxPlayer = "servermaxplayer";
+            public const string ServerGSLT = "servergslt";
+            public const string ServerParam = "serverparam";
+            public const string AutoRestart = "autorestart";
+            public const string AutoStart = "autostart";
+            public const string AutoUpdate = "autoupdate";
+            public const string UpdateOnStart = "updateonstart";
+            public const string BackupOnStart = "backuponstart";
+            public const string DiscordAlert = "discordalert";
+            public const string DiscordMessage = "discordmessage";
+            public const string DiscordWebhook = "discordwebhook";
+            public const string RestartCrontab = "restartcrontab";
+            public const string CrontabFormat = "crontabformat";
+            public const string EmbedConsole = "embedconsole";
+            public const string AutoStartAlert = "autostartalert";
+            public const string AutoRestartAlert = "autorestartalert";
+            public const string AutoUpdateAlert = "autoupdatealert";
+            public const string RestartCrontabAlert = "restartcrontabalert";
+            public const string CrashAlert = "crashalert";
+            public const string CPUPriority = "cpupriority";
+            public const string CPUAffinity = "cpuaffinity";
+        }
+
         public string ServerID;
         public string ServerGame;
         public string ServerName;
@@ -51,6 +52,7 @@ namespace WindowsGSM.Functions
         public bool AutoStart;
         public bool AutoUpdate;
         public bool UpdateOnStart;
+        public bool BackupOnStart;
         public bool DiscordAlert;
         public string DiscordMessage;
         public string DiscordWebhook;
@@ -120,6 +122,7 @@ namespace WindowsGSM.Functions
                             case SettingName.AutoStart: AutoStart = (keyvalue[1] == "1") ? true : false; break;
                             case SettingName.AutoUpdate: AutoUpdate = (keyvalue[1] == "1") ? true : false; break;
                             case SettingName.UpdateOnStart: UpdateOnStart = (keyvalue[1] == "1") ? true : false; break;
+                            case SettingName.BackupOnStart: BackupOnStart = (keyvalue[1] == "1") ? true : false; break;
                             case SettingName.DiscordAlert: DiscordAlert = (keyvalue[1] == "1") ? true : false; break;
                             case SettingName.DiscordMessage: DiscordMessage = keyvalue[1]; break;
                             case SettingName.DiscordWebhook: DiscordWebhook = keyvalue[1]; break;
@@ -156,6 +159,7 @@ namespace WindowsGSM.Functions
             AutoStart = false;
             AutoUpdate = false;
             UpdateOnStart = false;
+            BackupOnStart = false;
             DiscordAlert = false;
             DiscordMessage = string.Empty;
             DiscordWebhook = string.Empty;
@@ -198,6 +202,7 @@ namespace WindowsGSM.Functions
                     textwriter.WriteLine($"{SettingName.AutoStart}=\"0\"");
                     textwriter.WriteLine($"{SettingName.AutoUpdate}=\"0\"");
                     textwriter.WriteLine($"{SettingName.UpdateOnStart}=\"0\"");
+                    textwriter.WriteLine($"{SettingName.BackupOnStart}=\"0\"");
                     textwriter.WriteLine(string.Empty);
                     textwriter.WriteLine($"{SettingName.DiscordAlert}=\"0\"");
                     textwriter.WriteLine($"{SettingName.DiscordMessage}=\"{DiscordMessage}\"");

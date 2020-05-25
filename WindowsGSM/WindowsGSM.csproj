@@ -325,6 +325,7 @@
     <Compile Include="DiscordBot\Bot.cs" />
     <Compile Include="DiscordBot\Commands.cs" />
     <Compile Include="DiscordBot\Configs.cs" />
+    <Compile Include="Functions\BackupConfig.cs" />
     <Compile Include="Functions\CPU\Affinity.cs" />
     <Compile Include="Functions\CPU\Priority.cs" />
     <Compile Include="Functions\Github.cs" />
@@ -710,6 +711,10 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Games\eco.png" />
+    <Resource Include="Images\Games\ps.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Restore.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
