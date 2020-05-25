@@ -1611,7 +1611,7 @@ namespace WindowsGSM
             p = Functions.CPU.Priority.SetProcessWithPriority(p, Functions.CPU.Priority.GetPriorityInteger(g_CPUPriority[int.Parse(server.ID)]));
 
             // Set Affinity
-            p.ProcessorAffinity = Functions.CPU.Affinity.GetAffinityIntPtr(Functions.CPU.Affinity.GetAffinityValidatedString(g_CPUAffinity[int.Parse(server.ID)]));
+            p.ProcessorAffinity = Functions.CPU.Affinity.GetAffinityIntPtr(g_CPUAffinity[int.Parse(server.ID)]);
 
             // Save Cache
             Functions.ServerCache.SavePID(server.ID, p.Id);

@@ -28,7 +28,16 @@ namespace WindowsGSM.Functions.CPU
 
         public static IntPtr GetAffinityIntPtr(string bits)
         {
-            return (IntPtr)Convert.ToInt32(GetAffinityValidatedString(bits), 2);
+            string validatedBits = GetAffinityValidatedString(bits);
+            int affinity = 0;
+            for (int i = 0; i < validatedBits.Length; i++)
+            {
+                if (validatedBits[validatedBits.Length - 1 - i] == '1')
+                {
+                    affinity += 1 << i;
+                }
+            }
+            return (IntPtr)affinity;
         }
     }
 }
