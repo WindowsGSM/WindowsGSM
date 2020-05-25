@@ -48,6 +48,7 @@
                 case SQ.FullName: return new SQ(serverData);
                 case BT.FullName: return new BT(serverData);
                 case PS.FullName: return new PS(serverData);
+                case ECO.FullName: return new ECO(serverData);
                 default: return null;
             }
         }

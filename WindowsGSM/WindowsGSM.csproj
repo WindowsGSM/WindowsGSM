@@ -349,6 +349,7 @@
     <Compile Include="GameServer\HEAT.cs" />
     <Compile Include="GameServer\HLOF.cs" />
     <Compile Include="GameServer\INSS.cs" />
+    <Compile Include="GameServer\ECO.cs" />
     <Compile Include="GameServer\ONSET.cs" />
     <Compile Include="GameServer\Query\A2S.cs" />
     <Compile Include="GameServer\Query\FIVEM.cs" />
@@ -374,7 +375,7 @@
     <Compile Include="GameServer\Engine\GoldSource.cs" />
     <Compile Include="GameServer\Engine\Source.cs" />
     <Compile Include="GameServer\SQ.cs" />
-	<Compile Include="GameServer\PS.cs" />
+    <Compile Include="GameServer\PS.cs" />
     <Compile Include="GameServer\SW.cs" />
     <Compile Include="GameServer\TF.cs" />
     <Compile Include="GameServer\TFC.cs" />
@@ -706,6 +707,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\HMenu\Settings.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\eco.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

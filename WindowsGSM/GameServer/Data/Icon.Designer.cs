@@ -187,6 +187,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/eco.png.
+        /// </summary>
+        public static string Eco_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Eco Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/egs.png.
         /// </summary>
         public static string Empyrion___Galactic_Survival_Dedicated_Server {
@@ -331,14 +340,14 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Images/Games/ps.png.
+        ///   Looks up a localized string similar to Images/Games/sq.png.
         /// </summary>
         public static string Post_Scriptum_Dedicated_Server {
             get {
                 return ResourceManager.GetString("Post Scriptum Dedicated Server", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Images/Games/rok.png.
         /// </summary>
