@@ -352,6 +352,7 @@
     <Compile Include="GameServer\INSS.cs" />
     <Compile Include="GameServer\ECO.cs" />
     <Compile Include="GameServer\ONSET.cs" />
+    <Compile Include="GameServer\ROR2.cs" />
     <Compile Include="GameServer\Query\A2S.cs" />
     <Compile Include="GameServer\Query\FIVEM.cs" />
     <Compile Include="GameServer\Query\UT3.cs" />
@@ -710,8 +711,9 @@
     <Resource Include="Images\HMenu\Settings.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\Games\eco.png" />
     <Resource Include="Images\Games\ps.png" />
+    <Resource Include="Images\Games\ror2.png" />
+    <Resource Include="Images\Games\eco.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Restore.ico" />

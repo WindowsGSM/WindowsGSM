@@ -365,6 +365,17 @@ namespace WindowsGSM.GameServer.Data {
                 return ResourceManager.GetString("Ricochet Dedicated Server", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/ror2.png.
+        /// </summary>
+        public static string Risk_of_Rain_2_Dedicated_Server
+        {
+            get
+            {
+                return ResourceManager.GetString("Risk of Rain 2 Dedicated Server", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Images/Games/rust.png.
