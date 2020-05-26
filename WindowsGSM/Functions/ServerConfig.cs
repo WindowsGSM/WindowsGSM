@@ -171,7 +171,7 @@ namespace WindowsGSM.Functions
             RestartCrontabAlert = true;
             CrashAlert = true;
             CPUPriority = "2";
-            CPUAffinity = string.Concat(System.Linq.Enumerable.Repeat("1", Environment.ProcessorCount)).ToString();
+            CPUAffinity = string.Concat(System.Linq.Enumerable.Repeat("1", Environment.ProcessorCount));
         }
 
         public bool CreateWindowsGSMConfig()

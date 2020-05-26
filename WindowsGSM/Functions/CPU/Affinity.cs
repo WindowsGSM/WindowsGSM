@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 
 namespace WindowsGSM.Functions.CPU
 {
-    class Affinity
+    static class Affinity
     {
         public static string GetAffinityValidatedString(string bits)
         {
@@ -11,11 +12,12 @@ namespace WindowsGSM.Functions.CPU
             bits = (bits.Length < Environment.ProcessorCount) ? string.Concat(Enumerable.Repeat("1", Environment.ProcessorCount)) : bits;
             bits = (bits.Length > Environment.ProcessorCount) ? bits.Take(Environment.ProcessorCount).ToString() : bits;
 
-            string returnBits = string.Empty;
+            StringBuilder sb = new StringBuilder();
             foreach (char bit in bits)
             {
-                returnBits += (bit == '0') ? '0' : '1';
+                sb.Append((bit == '0') ? '0' : '1');
             }
+            string returnBits = sb.ToString();
 
             // Cannot all '0', at least one '1'
             if (!returnBits.Contains("1"))
