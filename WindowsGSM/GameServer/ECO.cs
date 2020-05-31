@@ -19,6 +19,7 @@ namespace WindowsGSM.GameServer
         private readonly Functions.ServerConfig _serverData;
 
         public string Error;
+        public string Notice;
 
         public const string FullName = "Eco Dedicated Server";
         public string StartPath = @"EcoServer.exe";
