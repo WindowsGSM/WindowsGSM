@@ -76,7 +76,17 @@ namespace WindowsGSM
                     bool shouldRestart = ((key.GetValue("RestartOnCrash") ?? false).ToString() == "True") ? true : false;
                     if (shouldRestart)
                     {
-                        Process.Start("WindowsGSM.exe", "/ForceStart /ShowCrashHint");
+                        Process p = new Process()
+                        {
+                            StartInfo =
+                            {
+                                WorkingDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName),
+                                FileName = "cmd.exe",
+                                Arguments = "/C echo WindowsGSM will auto restart after 10 seconds... & echo Close this windows to cancel... & ping 0 -w 1000 -n 10 > NUL & start WindowsGSM.exe /ForceStart /ShowCrashHint",
+                                UseShellExecute = false
+                            }
+                        };
+                        p.Start();
                         Process.GetCurrentProcess().Kill();
                     }
                 }

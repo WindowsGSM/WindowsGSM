@@ -111,8 +111,15 @@ namespace WindowsGSM.DiscordBot
 				if (_dashboardTextChannel != null)
 				{
 					// Delete WindowsGSM bot old messages
-					IEnumerable<IMessage> messages = await _dashboardTextChannel.GetMessagesAsync().FlattenAsync();
-					await _dashboardTextChannel.DeleteMessagesAsync(messages.Where(s => s.Author.Id == _client.CurrentUser.Id));
+					try
+					{
+						IEnumerable<IMessage> messages = await _dashboardTextChannel.GetMessagesAsync().FlattenAsync();
+						await _dashboardTextChannel.DeleteMessagesAsync(messages.Where(s => s.Author.Id == _client.CurrentUser.Id));
+					}
+					catch
+					{
+						// ignore
+					}
 					break;
 				}
 			}

@@ -140,7 +140,7 @@ namespace WindowsGSM.DiscordBot
 				var lines = File.ReadAllLines(Path.Combine(_botPath, "adminIDs.txt"));
 				foreach (var line in lines)
 				{
-					string[] items = line.Split(new char[] { ' ' }, 2);
+					string[] items = line.Split(new[] { ' ' }, 2);
 					adminList.Add((items[0], items.Length == 1 ? string.Empty : items[1]));
 				}
 				return adminList;
