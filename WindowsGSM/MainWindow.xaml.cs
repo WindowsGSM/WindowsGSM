@@ -2104,7 +2104,17 @@ namespace WindowsGSM
 
                     if (autoRestart)
                     {
-                        await Task.Delay(1000);
+                        if (g_bBackupOnStart[serverId])
+                        {
+                            g_iServerStatus[serverId] = ServerStatus.Stopped;
+                            await GameServer_Backup(server, " | Backup on Start");
+                        }
+
+                        if (g_bUpdateOnStart[serverId])
+                        {
+                            g_iServerStatus[serverId] = ServerStatus.Stopped;
+                            await GameServer_Update(server, " | Update on Start");
+                        }
 
                         var gameServer = await Server_BeginStart(server);
                         if (gameServer == null)
