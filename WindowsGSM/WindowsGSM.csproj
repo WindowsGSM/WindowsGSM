@@ -128,6 +128,10 @@
       <HintPath>..\packages\Discord.Net.WebSocket.2.1.1\lib\net46\Discord.Net.WebSocket.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=1.2.0.246, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpZipLib.1.2.0\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="LiveCharts, Version=0.9.7.0, Culture=neutral, PublicKeyToken=0bc1f845d1ebb8df, processorArchitecture=MSIL">
       <HintPath>..\packages\LiveCharts.0.9.7\lib\net45\LiveCharts.dll</HintPath>
       <Private>False</Private>
@@ -328,6 +332,8 @@
     <Compile Include="Functions\BackupConfig.cs" />
     <Compile Include="Functions\CPU\Affinity.cs" />
     <Compile Include="Functions\CPU\Priority.cs" />
+    <Compile Include="Functions\ManageDirectory.cs" />
+    <Compile Include="Functions\ManageFile.cs" />
     <Compile Include="Functions\Github.cs" />
     <Compile Include="Functions\GoogleAnalytics.cs" />
     <Compile Include="Functions\ServerAddon.cs" />
@@ -382,6 +388,7 @@
     <Compile Include="GameServer\TF.cs" />
     <Compile Include="GameServer\TFC.cs" />
     <Compile Include="GameServer\UNT.cs" />
+    <Compile Include="GameServer\VTS.cs" />
     <Compile Include="GameServer\ZPS.cs" />
     <Compile Include="Tools\GlobalServerList.cs" />
     <Compile Include="Tools\InstallAddons.cs" />
@@ -717,6 +724,14 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Restore.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\vts.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\packages\SharpZipLib.1.2.0\lib\net45\ICSharpCode.SharpZipLib.dll">
+      <Link>ReferencesEx\ICSharpCode.SharpZipLib.dll</Link>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

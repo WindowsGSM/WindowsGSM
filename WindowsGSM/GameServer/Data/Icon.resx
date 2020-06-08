@@ -246,6 +246,9 @@
   <data name="Unturned Dedicated Server" xml:space="preserve">
     <value>Images/Games/unt.png</value>
   </data>
+  <data name="Vintage Story Dedicated Server" xml:space="preserve">
+    <value>Images/Games/vts.png</value>
+  </data>
   <data name="Zombie Panic Source Dedicated Server" xml:space="preserve">
     <value>Images/Games/zps.png</value>
   </data>

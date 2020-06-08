@@ -340,7 +340,7 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Images/Games/sq.png.
+        ///   Looks up a localized string similar to Images/Games/ps.png.
         /// </summary>
         public static string Post_Scriptum_Dedicated_Server {
             get {
@@ -365,14 +365,12 @@ namespace WindowsGSM.GameServer.Data {
                 return ResourceManager.GetString("Ricochet Dedicated Server", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Images/Games/ror2.png.
         /// </summary>
-        public static string Risk_of_Rain_2_Dedicated_Server
-        {
-            get
-            {
+        public static string Risk_of_Rain_2_Dedicated_Server {
+            get {
                 return ResourceManager.GetString("Risk of Rain 2 Dedicated Server", resourceCulture);
             }
         }
@@ -446,6 +444,15 @@ namespace WindowsGSM.GameServer.Data {
         public static string Unturned_Dedicated_Server {
             get {
                 return ResourceManager.GetString("Unturned Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/vts.png.
+        /// </summary>
+        public static string Vintage_Story_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Vintage Story Dedicated Server", resourceCulture);
             }
         }
         

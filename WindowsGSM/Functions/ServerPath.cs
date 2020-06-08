@@ -32,9 +32,9 @@ namespace WindowsGSM.Functions
             return Path.Combine(MainWindow.WGSM_PATH, "Logs");
         }
 
-        public static string GetServers(string serverid)
+        public static string GetServers(string serverid, string path1 = "", string path2 = "")
         {
-            return Path.Combine(MainWindow.WGSM_PATH, "servers", serverid);
+            return Path.Combine(MainWindow.WGSM_PATH, "servers", serverid, path1, path2);
         }
 
         public static string GetServersConfigs(string serverid, string path1 = "", string path2 = "")

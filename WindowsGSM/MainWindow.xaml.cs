@@ -1072,7 +1072,7 @@ namespace WindowsGSM
                 }
                 catch (Exception ex)
                 {
-                    return ex.Message;         
+                    return ex.Message;
                 }
             });
 
