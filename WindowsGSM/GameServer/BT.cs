@@ -20,7 +20,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Barotrauma Dedicated Server";
         public string StartPath = "DedicatedServer.exe";
-        public bool ToggleConsole = true;
+        public bool AllowsEmbedConsole = false;
         public int PortIncrements = 2;
         public dynamic QueryMethod = new Query.A2S();
 

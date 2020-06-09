@@ -13,14 +13,14 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "BlackWake Dedicated Server";
         public string StartPath = "BlackwakeServer.exe";
-        public bool ToggleConsole = true;
+        public bool AllowsEmbedConsole = false;
         public int PortIncrements = 3;
-        public dynamic QueryMethod = null;
+        public dynamic QueryMethod = new Query.A2S();
 
         public string Port = "25001";
-        public string QueryPort = "27015";
+        public string QueryPort = "25002";
         public string Defaultmap = "Island";
-        public string Maxplayers = "6";
+        public string Maxplayers = "54";
         public string Additional = string.Empty;
 
         public string AppId = "376030";
@@ -39,7 +39,7 @@ namespace WindowsGSM.GameServer
                 configText = configText.Replace("{{serverName}}", _serverData.ServerName);
                 configText = configText.Replace("{{serverIP}}", _serverData.ServerIP);
                 configText = configText.Replace("{{serverPort}}", _serverData.ServerPort);
-                configText = configText.Replace("{{steamPort}}", _serverData.ServerQueryPort);
+                configText = configText.Replace("{{steamPort}}", (int.Parse(_serverData.ServerPort) + 2014).ToString());
                 File.WriteAllText(configPath, configText);
             }
         }

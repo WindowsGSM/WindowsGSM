@@ -13,7 +13,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Stormworks Dedicated Server";
         public string StartPath = "server.exe";
-        public bool ToggleConsole = true;
+        public bool AllowsEmbedConsole = false;
         public int PortIncrements = 3;
         public dynamic QueryMethod = null;
 

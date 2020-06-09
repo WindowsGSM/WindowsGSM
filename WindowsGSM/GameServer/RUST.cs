@@ -7,7 +7,7 @@ namespace WindowsGSM.GameServer
     /// <summary>
     /// 
     /// Notes:
-    /// Rust server is the most user-unfriendly server in my opinion. Both RedirectStandardInput or RedirectStandardOutput cannot use on WindowsGSM.
+    /// Both RedirectStandardInput or RedirectStandardOutput cannot use on WindowsGSM.
     /// RedirectStandardOutput is possible but it will break the input, if used both, the server can run successfully but the input become useless again.
     /// 
     /// The solution for this is don't use neither RedirectStandardInput nor RedirectStandardOutput.
@@ -23,7 +23,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Rust Dedicated Server";
         public string StartPath = "RustDedicated.exe";
-        public bool ToggleConsole = true;
+        public bool AllowsEmbedConsole = false;
         public int PortIncrements = 1;
         public dynamic QueryMethod = new Query.A2S();
 

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace WindowsGSM.Functions
 {
-    static class ManageFile
+    static class FileManagement
     {
         public static async Task<bool> ExtractTarGZ(string sourceArchiveFileName, string destinationDirectoryName)
         {

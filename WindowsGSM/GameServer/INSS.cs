@@ -13,7 +13,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Insurgency: Sandstorm Dedicated Server";
         public string StartPath = @"Insurgency\Binaries\Win64\InsurgencyServer-Win64-Shipping.exe";
-        public bool ToggleConsole = false;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 2;
         public dynamic QueryMethod = new Query.A2S();
 
@@ -51,10 +51,10 @@ namespace WindowsGSM.GameServer
             param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? string.Empty : $" -QueryPort={_serverData.ServerQueryPort}";
             param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? string.Empty : $" -MultiHome={_serverData.ServerIP}";
             param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? string.Empty : $" -hostname={_serverData.ServerName}";
-            param += ToggleConsole ? " -log" : string.Empty;
+            param += !AllowsEmbedConsole ? " -log" : string.Empty;
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {

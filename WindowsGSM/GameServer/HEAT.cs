@@ -13,7 +13,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Heat Dedicated Server";
         public string StartPath = "Heat.exe";
-        public bool ToggleConsole = true;
+        public bool AllowsEmbedConsole = false;
         public int PortIncrements = 1;
         public dynamic QueryMethod = null;
 
@@ -70,7 +70,8 @@ namespace WindowsGSM.GameServer
                     WorkingDirectory = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID),
                     FileName = serverPath,
                     Arguments = param,
-                    WindowStyle = ProcessWindowStyle.Minimized
+                    WindowStyle = ProcessWindowStyle.Minimized,
+                    UseShellExecute = false
                 },
                 EnableRaisingEvents = true
             };

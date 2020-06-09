@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace WindowsGSM.GameServer
 {
@@ -13,7 +15,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Empyrion - Galactic Survival Dedicated Server";
         public string StartPath = "EmpyrionLauncher.exe";
-        public bool ToggleConsole = true;
+        public bool AllowsEmbedConsole = false;
         public int PortIncrements = 5;
         public dynamic QueryMethod = null;
 
@@ -69,13 +71,40 @@ namespace WindowsGSM.GameServer
                     Arguments = "-startDedi " + _serverData.ServerParam,
                     CreateNoWindow = true,
                     WindowStyle = ProcessWindowStyle.Minimized,
-                    UseShellExecute = false,
+                    UseShellExecute = false
                 },
                 EnableRaisingEvents = true
             };
             p.Start();
+            
+            // Search UnityCrashHandler64.exe and return its commandline and get the dedicated process
+            string crashHandler = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "DedicatedServer", "UnityCrashHandler64.exe");
+            await Task.Delay(3000);
+            for (int i = 0; i < 5; i++)
+            {
+                string commandLine = await Functions.ProcessManagement.GetCommandLineByApproximatePath(crashHandler);
+                if (commandLine != null)
+                {
+                    try
+                    {
+                        Regex regex = new Regex(@" --attach (\d{1,})"); // Match " --attach 7144"
+                        string dedicatedProcessId = regex.Match(commandLine).Groups[1].Value; // Get first group -> "7144"
+                        Process dedicatedProcess = await Task.Run(() => Process.GetProcessById(int.Parse(dedicatedProcessId)));
+                        dedicatedProcess.StartInfo.CreateNoWindow = true; // Just set as metadata
+                        return dedicatedProcess;
+                    }
+                    catch
+                    {
+                        Error = $"Fail to find {Path.GetFileName(exePath)}";
+                        return null;
+                    }
+                }
 
-            return p;
+                await Task.Delay(5000);
+            }
+
+            Error = "Fail to find UnityCrashHandler64.exe";
+            return null;
         }
 
         public async Task Stop(Process p)

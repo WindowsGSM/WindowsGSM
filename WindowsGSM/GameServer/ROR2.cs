@@ -14,7 +14,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Risk of Rain 2 Dedicated Server";
         public string StartPath = @"Risk of Rain 2.exe";
-        public bool ToggleConsole = true;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 2;
         public dynamic QueryMethod = null;
 
@@ -52,7 +52,7 @@ namespace WindowsGSM.GameServer
         {
             string param = $"-batchmode -nographics -silent-crashes {_serverData.ServerParam}";
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {

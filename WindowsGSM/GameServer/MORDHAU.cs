@@ -12,11 +12,11 @@ namespace WindowsGSM.GameServer
     /// 
     /// RedirectStandardOutput works, but there is a problem figure out by ! AssaultLine who is a server owner of Mordhau community.
     /// when changing a map to a custom map, the redirect output is stucked in p.OutputDataReceived and the whole WindowsGSM and Mordhau freeze.
-    /// Therefore, I give up to use RedirectStandardOutput and use the traditional method to handle this server which is ToggleConsole=true.
+    /// Therefore, I give up to use RedirectStandardOutput and use the traditional method to handle this server which is AllowsEmbedConsole=false.
     /// Although this may not cool as the server output is not within WindowsGSM, but that is the only choice to keep Mordhau stable.
     /// 
     /// The freezing issue is cause by heavy loading of custom map and output deadlocked, I think there is no fix for this until Mordhau developer fix the between output and load.
-    /// The issue can reproduce by change ToggleConsole=false. Then start a server and join the server, type ChangeMap <custommap> command in the terminal in Mordhau, the freeze issue occur.
+    /// The issue can reproduce by change AllowsEmbedConsole=true. Then start a server and join the server, type ChangeMap <custommap> command in the terminal in Mordhau, the freeze issue occur.
     /// 
     /// </summary>
     class MORDHAU : Engine.UnrealEngine
@@ -28,7 +28,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Mordhau Dedicated Server";
         public string StartPath = @"Mordhau\Binaries\Win64\MordhauServer-Win64-Shipping.exe";
-        public bool ToggleConsole = false;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 2;
         public dynamic QueryMethod = new Query.A2S();
 
@@ -88,10 +88,10 @@ namespace WindowsGSM.GameServer
             param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? string.Empty : $" -MultiHome={_serverData.ServerIP}";
             param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $" -Port={_serverData.ServerPort}";
             param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? string.Empty : $" -QueryPort={_serverData.ServerQueryPort}";
-            param += $" {_serverData.ServerParam}" + (ToggleConsole ? " -log" : string.Empty);
+            param += $" {_serverData.ServerParam}" + (!AllowsEmbedConsole ? " -log" : string.Empty);
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {

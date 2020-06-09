@@ -332,10 +332,11 @@
     <Compile Include="Functions\BackupConfig.cs" />
     <Compile Include="Functions\CPU\Affinity.cs" />
     <Compile Include="Functions\CPU\Priority.cs" />
-    <Compile Include="Functions\ManageDirectory.cs" />
-    <Compile Include="Functions\ManageFile.cs" />
+    <Compile Include="Functions\DirectoryManagement.cs" />
+    <Compile Include="Functions\FileManagement.cs" />
     <Compile Include="Functions\Github.cs" />
     <Compile Include="Functions\GoogleAnalytics.cs" />
+    <Compile Include="Functions\ProcessManagement.cs" />
     <Compile Include="Functions\ServerAddon.cs" />
     <Compile Include="Functions\ServerCache.cs" />
     <Compile Include="Functions\ServerConsole.cs" />
@@ -729,9 +730,9 @@
     <Resource Include="Images\Games\vts.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\packages\SharpZipLib.1.2.0\lib\net45\ICSharpCode.SharpZipLib.dll">
+    <EmbeddedResource Include="..\packages\SharpZipLib.1.2.0\lib\net45\ICSharpCode.SharpZipLib.dll">
       <Link>ReferencesEx\ICSharpCode.SharpZipLib.dll</Link>
-    </Content>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

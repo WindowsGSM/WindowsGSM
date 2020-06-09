@@ -7,19 +7,20 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using WindowsGSM.Functions;
 
 namespace WindowsGSM.GameServer
 {
     class VTS
     {
-        private readonly Functions.ServerConfig _serverData;
+        private readonly ServerConfig _serverData;
 
         public string Error;
         public string Notice;
 
         public const string FullName = "Vintage Story Dedicated Server";
         public string StartPath = "VintageStoryServer.exe";
-        public bool ToggleConsole = false;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 1;
         public dynamic QueryMethod = null;
 
@@ -29,7 +30,7 @@ namespace WindowsGSM.GameServer
         public string Maxplayers = "16";
         public string Additional = "--dataPath ./data";
 
-        public VTS(Functions.ServerConfig serverData)
+        public VTS(ServerConfig serverData)
         {
             _serverData = serverData;
         }
@@ -37,25 +38,19 @@ namespace WindowsGSM.GameServer
         public async void CreateServerCFG()
         {
             //Download serverconfig.json
-            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "data", "serverconfig.json");
-            if (await Functions.Github.DownloadGameServerConfig(configPath, FullName))
+            var replaceValues = new List<(string, string)>()
             {
-                var values = new List<(string, string)>()
-                {
-                    ("{{ServerName}}", _serverData.ServerName),
-                    ("{{Port}}", _serverData.ServerPort),
-                    ("{{MaxClients}}", _serverData.ServerMaxPlayer)
-                };
+                ("{{ServerName}}", _serverData.ServerName),
+                ("{{Port}}", _serverData.ServerPort),
+                ("{{MaxClients}}", _serverData.ServerMaxPlayer)
+            };
 
-                string configText = File.ReadAllText(configPath);
-                values.ForEach(x => configText = configText.Replace(x.Item1, x.Item2));
-                File.WriteAllText(configPath, configText);
-            }
+            await Github.DownloadGameServerConfig(ServerPath.GetServersServerFiles(_serverData.ServerID, "data", "serverconfig.json"), FullName, replaceValues);
         }
 
         public async Task<Process> Start()
         {
-            string exePath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath);
+            string exePath = ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath);
             if (!File.Exists(exePath))
             {
                 Error = $"{Path.GetFileName(exePath)} not found ({exePath})";
@@ -75,13 +70,13 @@ namespace WindowsGSM.GameServer
                 EnableRaisingEvents = true
             };
 
-            if (!ToggleConsole)
+            if (AllowsEmbedConsole)
             {
                 p.StartInfo.CreateNoWindow = true;
                 p.StartInfo.RedirectStandardInput = true;
                 p.StartInfo.RedirectStandardOutput = true;
                 p.StartInfo.RedirectStandardError = true;
-                var serverConsole = new Functions.ServerConsole(_serverData.ServerID);
+                var serverConsole = new ServerConsole(_serverData.ServerID);
                 p.OutputDataReceived += serverConsole.AddOutput;
                 p.ErrorDataReceived += serverConsole.AddOutput;
                 p.Start();
@@ -104,7 +99,7 @@ namespace WindowsGSM.GameServer
                 }
                 else
                 {
-                    Functions.ServerConsole.SendMessageToMainWindow(p.MainWindowHandle, "/stop");
+                    ServerConsole.SendMessageToMainWindow(p.MainWindowHandle, "/stop");
                 }
             });
         }
@@ -115,7 +110,7 @@ namespace WindowsGSM.GameServer
             if (version == null) { return null; }
             string tarName = $"vs_server_{version}.tar.gz";
             string address = $"https://cdn.vintagestory.at/gamefiles/stable/{tarName}";
-            string tarPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, tarName);
+            string tarPath = ServerPath.GetServersServerFiles(_serverData.ServerID, tarName);
 
             // Download vs_server_{version}.tar.gz from https://cdn.vintagestory.at/gamefiles/stable/
             using (WebClient webClient = new WebClient())
@@ -129,14 +124,14 @@ namespace WindowsGSM.GameServer
             }
 
             // Extract vs_server_{version}.tar.gz
-            if (!await Functions.ManageFile.ExtractTarGZ(tarPath, Directory.GetParent(tarPath).FullName))
+            if (!await FileManagement.ExtractTarGZ(tarPath, Directory.GetParent(tarPath).FullName))
             {
                 Error = $"Fail to extract {tarName}";
                 return null;
             }
 
             // Delete vs_server_{version}.tar.gz, leave it if fail to delete
-            await Functions.ManageFile.DeleteAsync(tarPath);
+            await FileManagement.DeleteAsync(tarPath);
 
             return null;
         }
@@ -144,14 +139,14 @@ namespace WindowsGSM.GameServer
         public async Task<bool> Update()
         {
             // Backup the data folder
-            string dataPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "data");
-            string tempPath = Functions.ServerPath.GetServers(_serverData.ServerID, "__temp");
+            string dataPath = ServerPath.GetServersServerFiles(_serverData.ServerID, "data");
+            string tempPath = ServerPath.GetServers(_serverData.ServerID, "__temp");
             bool needBackup = Directory.Exists(dataPath);
             if (needBackup)
             {
                 if (Directory.Exists(tempPath))
                 {
-                    if (!await Functions.ManageDirectory.DeleteAsync(tempPath, true))
+                    if (!await Functions.DirectoryManagement.DeleteAsync(tempPath, true))
                     {
                         Error = $"Fail to delete the temp folder";
                         return false;
@@ -177,14 +172,14 @@ namespace WindowsGSM.GameServer
             }
 
             // Delete the serverfiles folder
-            if (!await Functions.ManageDirectory.DeleteAsync(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID), true))
+            if (!await DirectoryManagement.DeleteAsync(ServerPath.GetServersServerFiles(_serverData.ServerID), true))
             {
                 Error = $"Fail to delete the serverfiles";
                 return false;
             }
 
             // Recreate the serverfiles folder
-            Directory.CreateDirectory(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID));
+            Directory.CreateDirectory(ServerPath.GetServersServerFiles(_serverData.ServerID));
 
             if (needBackup)
             {
@@ -206,7 +201,7 @@ namespace WindowsGSM.GameServer
                     return false;
                 }
 
-                await Functions.ManageDirectory.DeleteAsync(tempPath, true);
+                await DirectoryManagement.DeleteAsync(tempPath, true);
             }
 
             // Update the server by install again
@@ -218,7 +213,7 @@ namespace WindowsGSM.GameServer
 
         public bool IsInstallValid()
         {
-            string exePath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath);
+            string exePath = ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath);
             return File.Exists(exePath);
         }
 
@@ -232,7 +227,7 @@ namespace WindowsGSM.GameServer
         public string GetLocalBuild()
         {
             // Get local version in VintageStoryServer.exe
-            string exePath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath);
+            string exePath = ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath);
             if (!File.Exists(exePath))
             {
                 Error = $"{StartPath} is missing.";

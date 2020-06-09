@@ -18,7 +18,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Minecraft: Bedrock Edition Server";
         public string StartPath = "bedrock_server.exe";
-        public bool ToggleConsole = false;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 2;
         public dynamic QueryMethod = null;
 
@@ -69,7 +69,7 @@ namespace WindowsGSM.GameServer
             }
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {

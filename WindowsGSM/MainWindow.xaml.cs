@@ -779,13 +779,17 @@ namespace WindowsGSM
                 button_Status.Content = row.Status.ToUpper();
                 button_Status.Background = (g_iServerStatus[int.Parse(row.ID)] == ServerStatus.Started) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Orange;
 
-                switch_restartcrontab.IsChecked = g_bRestartCrontab[int.Parse(row.ID)];
-                switch_embedconsole.IsChecked = g_bEmbedConsole[int.Parse(row.ID)];
+                var gameServer = GameServer.Data.Class.Get(row.Game, null);
+                switch_embedconsole.IsEnabled = gameServer.AllowsEmbedConsole;
+                switch_embedconsole.IsChecked = gameServer.AllowsEmbedConsole ? g_bEmbedConsole[int.Parse(row.ID)] : false;
+
                 switch_autorestart.IsChecked = g_bAutoRestart[int.Parse(row.ID)];
+                switch_restartcrontab.IsChecked = g_bRestartCrontab[int.Parse(row.ID)];
                 switch_autostart.IsChecked = g_bAutoStart[int.Parse(row.ID)];
                 switch_autoupdate.IsChecked = g_bAutoUpdate[int.Parse(row.ID)];
                 switch_updateonstart.IsChecked = g_bUpdateOnStart[int.Parse(row.ID)];
                 switch_backuponstart.IsChecked = g_bBackupOnStart[int.Parse(row.ID)];
+                switch_discordalert.IsChecked = g_bDiscordAlert[int.Parse(row.ID)];
 
                 button_discordtest.IsEnabled = g_bDiscordAlert[int.Parse(row.ID)] ? true : false;
 
@@ -1144,7 +1148,7 @@ namespace WindowsGSM
             webhookUrl = await this.ShowInputAsync("Discord Webhook URL", "Please enter the discord webhook url.", settings);
             if (webhookUrl == null) { return; } //If pressed cancel
 
-            g_DiscordWebhook[Int32.Parse(server.ID)] = webhookUrl;
+            g_DiscordWebhook[int.Parse(server.ID)] = webhookUrl;
             Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.DiscordWebhook, webhookUrl);
         }
 
@@ -1547,7 +1551,7 @@ namespace WindowsGSM
                 }
             }
 
-            gameServer.ToggleConsole = !g_bEmbedConsole[int.Parse(server.ID)];
+            gameServer.AllowsEmbedConsole = g_bEmbedConsole[int.Parse(server.ID)];
             Process p = await gameServer.Start();
 
             //Fail to start
@@ -1611,7 +1615,14 @@ namespace WindowsGSM
             p = Functions.CPU.Priority.SetProcessWithPriority(p, Functions.CPU.Priority.GetPriorityInteger(g_CPUPriority[int.Parse(server.ID)]));
 
             // Set Affinity
-            p.ProcessorAffinity = Functions.CPU.Affinity.GetAffinityIntPtr(g_CPUAffinity[int.Parse(server.ID)]);
+            try
+            {
+                p.ProcessorAffinity = Functions.CPU.Affinity.GetAffinityIntPtr(g_CPUAffinity[int.Parse(server.ID)]);
+            }
+            catch (Exception e)
+            {
+                Log(server.ID, $"[NOTICE] Fail to set affinity. ({e.Message})");
+            }
 
             // Save Cache
             Functions.ServerCache.SavePID(server.ID, p.Id);

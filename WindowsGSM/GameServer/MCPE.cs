@@ -16,7 +16,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Minecraft: Pocket Edition Server (PocketMine-MP)";
         public string StartPath = @"bin\php\php.exe";
-        public bool ToggleConsole = false;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 1;
         public dynamic QueryMethod = new Query.UT3();
 
@@ -72,7 +72,7 @@ namespace WindowsGSM.GameServer
             }
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {

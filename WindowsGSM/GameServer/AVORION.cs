@@ -13,7 +13,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Avorion Dedicated Server";
         public string StartPath = @"bin\AvorionServer.exe";
-        public bool ToggleConsole = true;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 1;
         public dynamic QueryMethod = null;
 
@@ -50,7 +50,7 @@ namespace WindowsGSM.GameServer
             param += $" {_serverData.ServerParam}";
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {
@@ -59,7 +59,8 @@ namespace WindowsGSM.GameServer
                         WorkingDirectory = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID),
                         FileName = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath),
                         Arguments = param,
-                        WindowStyle = ProcessWindowStyle.Minimized
+                        WindowStyle = ProcessWindowStyle.Minimized,
+                        UseShellExecute = false
                     },
                     EnableRaisingEvents = true
                 };

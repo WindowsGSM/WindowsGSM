@@ -13,7 +13,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "The Forest Dedicated Server";
         public string StartPath = "TheForestDedicatedServer.exe";
-        public bool ToggleConsole = true;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 2;
         public dynamic QueryMethod = null;
 
@@ -57,7 +57,7 @@ namespace WindowsGSM.GameServer
             string param = $"-batchmode -nographics {_serverData.ServerParam}";
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {

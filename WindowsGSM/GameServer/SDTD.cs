@@ -34,7 +34,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "7 Days to Die Dedicated Server";
         public string StartPath = "7DaysToDieServer.exe";
-        public bool ToggleConsole = true;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 1;
         public dynamic QueryMethod = null;
 
@@ -97,7 +97,7 @@ namespace WindowsGSM.GameServer
             }
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {

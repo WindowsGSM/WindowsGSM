@@ -14,7 +14,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Post Scriptum Dedicated Server";
         public string StartPath = @"PostScriptum\Binaries\Win64\PostScriptumServer.exe";
-        public bool ToggleConsole = true;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 2;
         public dynamic QueryMethod = new Query.A2S();
 
@@ -73,7 +73,7 @@ namespace WindowsGSM.GameServer
             string param = sb.ToString();
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {

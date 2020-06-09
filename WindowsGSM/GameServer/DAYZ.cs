@@ -14,7 +14,7 @@ namespace WindowsGSM.GameServer
     /// RedirectStandardError:  NO WORKING
     /// SendKeys Input Method:  NO WORKING
     /// 
-    /// Therefore, traditional method is used. ToggleConsole = true;
+    /// Therefore, traditional method is used.
     /// 
     /// </summary>
     class DAYZ
@@ -26,7 +26,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "DayZ Dedicated Server";
         public string StartPath = "DayZServer_x64.exe";
-        public bool ToggleConsole = true;
+        public bool AllowsEmbedConsole = false;
         public int PortIncrements = 2;
         public dynamic QueryMethod = new Query.A2S();
         public bool requireSteamAccount = true;

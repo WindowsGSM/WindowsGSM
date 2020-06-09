@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace WindowsGSM.Functions
 {
-    static class ManageDirectory
+    static class DirectoryManagement
     {
         public static async Task<bool> DeleteAsync(string path, bool recursive)
         {

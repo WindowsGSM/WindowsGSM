@@ -21,7 +21,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Space Engineers Dedicated Server";
         public string StartPath = @"DedicatedServer64\SpaceEngineersDedicated.exe";
-        public bool ToggleConsole = false;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 2;
         public dynamic QueryMethod = new Query.A2S();
 
@@ -82,13 +82,13 @@ namespace WindowsGSM.GameServer
                 Notice = $"{Path.GetFileName(configPath)} not found ({configPath})";
             }
 
-            string param = (ToggleConsole ? "-console" : "-noconsole") + " -ignorelastsession";
+            string param = (!AllowsEmbedConsole ? "-console" : "-noconsole") + " -ignorelastsession";
             param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? string.Empty : $" -ip {_serverData.ServerIP}";
             param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $" -port {_serverData.ServerPort}";
             param += $" {_serverData.ServerParam}";
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {
@@ -97,7 +97,8 @@ namespace WindowsGSM.GameServer
                         WorkingDirectory = Path.GetDirectoryName(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath)),
                         FileName = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath),
                         Arguments = param,
-                        WindowStyle = ProcessWindowStyle.Minimized
+                        WindowStyle = ProcessWindowStyle.Minimized,
+                        UseShellExecute = false
                     },
                     EnableRaisingEvents = true
                 };

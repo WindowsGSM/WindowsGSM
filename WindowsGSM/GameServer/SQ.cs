@@ -14,7 +14,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Squad Dedicated Server";
         public string StartPath = @"SquadGame\Binaries\Win64\SquadGameServer.exe";
-        public bool ToggleConsole = true;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 2;
         public dynamic QueryMethod = new Query.A2S();
 
@@ -61,7 +61,7 @@ namespace WindowsGSM.GameServer
             string param = sb.ToString();
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {

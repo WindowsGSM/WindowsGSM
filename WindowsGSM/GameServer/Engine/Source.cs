@@ -27,7 +27,7 @@ namespace WindowsGSM.GameServer.Engine
         public string Notice;
 
         public string StartPath = "srcds.exe";
-        public bool ToggleConsole = false;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 1;
         public dynamic QueryMethod = new Query.A2S();
 
@@ -71,7 +71,7 @@ namespace WindowsGSM.GameServer.Engine
             string param = sb.ToString();
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {
@@ -80,6 +80,7 @@ namespace WindowsGSM.GameServer.Engine
                         FileName = srcdsPath,
                         Arguments = param,
                         WindowStyle = ProcessWindowStyle.Minimized,
+                        UseShellExecute = false,
                     },
                     EnableRaisingEvents = true
                 };

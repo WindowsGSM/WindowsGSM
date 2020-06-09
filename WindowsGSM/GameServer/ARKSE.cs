@@ -13,7 +13,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "ARK: Survival Evolved Dedicated Server";
         public string StartPath = @"ShooterGame\Binaries\Win64\ShooterGameServer.exe";
-        public bool ToggleConsole = true;
+        public bool AllowsEmbedConsole = false;
         public int PortIncrements = 2;
         public dynamic QueryMethod = new Query.A2S();
 

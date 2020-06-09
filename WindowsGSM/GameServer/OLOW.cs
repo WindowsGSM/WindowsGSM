@@ -23,7 +23,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Outlaws of the Old West Dedicated Server";
         public string StartPath = @"Outlaws\Binaries\Win64\OutlawsServer-Win64-Shipping.exe";
-        public bool ToggleConsole = false;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 2;
         public dynamic QueryMethod = new Query.A2S();
 
@@ -57,10 +57,10 @@ namespace WindowsGSM.GameServer
             param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? string.Empty : $" -servername=\"{_serverData.ServerName}\"";
             param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? string.Empty : $" -PlayerCount={_serverData.ServerMaxPlayer}";
             param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? string.Empty : $" -queryport={_serverData.ServerQueryPort}";
-            param += $" {_serverData.ServerParam}" + ((ToggleConsole) ? " -log" : string.Empty);
+            param += $" {_serverData.ServerParam}" + (!AllowsEmbedConsole ? " -log" : string.Empty);
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {
@@ -69,6 +69,7 @@ namespace WindowsGSM.GameServer
                         FileName = shipExePath,
                         Arguments = param,
                         WindowStyle = ProcessWindowStyle.Minimized,
+                        UseShellExecute = false
                     },
                     EnableRaisingEvents = true
                 };

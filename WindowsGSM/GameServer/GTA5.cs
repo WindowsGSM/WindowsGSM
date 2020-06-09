@@ -16,7 +16,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Grand Theft Auto V Dedicated Server (FiveM)";
         public string StartPath = @"server\FXServer.exe";
-        public bool ToggleConsole = false;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 1;
         public dynamic QueryMethod = new Query.FIVEM();
 
@@ -81,7 +81,7 @@ namespace WindowsGSM.GameServer
             }
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {
@@ -90,7 +90,8 @@ namespace WindowsGSM.GameServer
                         WorkingDirectory = serverDataPath,
                         FileName = fxServerPath,
                         Arguments = $"+set citizen_dir \"{citizenPath}\" {_serverData.ServerParam}",
-                        WindowStyle = ProcessWindowStyle.Minimized
+                        WindowStyle = ProcessWindowStyle.Minimized,
+                        UseShellExecute = false
                     },
                     EnableRaisingEvents = true
                 };
