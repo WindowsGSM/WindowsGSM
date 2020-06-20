@@ -1451,10 +1451,7 @@ namespace WindowsGSM
             if (server == null) { return; }
 
             ListBox_ManageAddons_Refresh();
-
-            MahAppFlyout_DiscordAlert.IsOpen = false;
-            MahAppFlyout_SetAffinity.IsOpen = false;
-            MahAppFlyout_ManageAddons.IsOpen = !MahAppFlyout_ManageAddons.IsOpen;
+            ToggleMahappFlyout(MahAppFlyout_ManageAddons);
         }
         #endregion
 
@@ -2604,9 +2601,7 @@ namespace WindowsGSM
 
         private void Button_Settings_Click(object sender, RoutedEventArgs e)
         {
-            MahAppFlyout_DiscordAlert.IsOpen = false;
-            MahAppFlyout_SetAffinity.IsOpen = false;
-            MahAppFlyout_Settings.IsOpen = !MahAppFlyout_Settings.IsOpen;
+            ToggleMahappFlyout(MahAppFlyout_Settings);
         }
 
         private void Button_Hide_Click(object sender, RoutedEventArgs e)
@@ -3151,8 +3146,60 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            MahAppFlyout_DiscordAlert.IsOpen = false;
-            MahAppFlyout_SetAffinity.IsOpen = !MahAppFlyout_SetAffinity.IsOpen;
+            ToggleMahappFlyout(MahAppFlyout_SetAffinity);
+        }
+
+        private void Button_EditConfig_Click(object sender, RoutedEventArgs e)
+        {
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
+
+            if (Refresh_EditConfig_Data(server.ID))
+            {
+                ToggleMahappFlyout(MahAppFlyout_EditConfig);
+            }
+            else
+            {
+                MahAppFlyout_EditConfig.IsOpen = false;
+            }
+        }
+
+        private bool Refresh_EditConfig_Data(string serverId)
+        {     
+            var serverConfig = new Functions.ServerConfig(serverId);
+            if (string.IsNullOrWhiteSpace(serverConfig.ServerGame)) { return false; }
+            var gameServer = GameServer.Data.Class.Get(serverConfig.ServerGame);
+            if (gameServer == null) { return false; }
+
+            textbox_EC_ServerGame.Text = serverConfig.ServerGame;
+            textbox_EC_ServerName.Text = serverConfig.ServerName;
+            textbox_EC_ServerIP.Text = serverConfig.ServerIP;
+            numericUpDown_EC_ServerMaxplayer.Value = int.TryParse(serverConfig.ServerMaxPlayer, out int maxplayer) ? maxplayer : int.Parse(gameServer.Maxplayers);
+            numericUpDown_EC_ServerPort.Value = int.TryParse(serverConfig.ServerPort, out int port) ? port : int.Parse(gameServer.Port);
+            numericUpDown_EC_ServerQueryPort.Value = int.TryParse(serverConfig.ServerQueryPort, out int queryPort) ? queryPort : int.Parse(gameServer.QueryPort);
+            textbox_EC_ServerMap.Text = serverConfig.ServerMap;
+            textbox_EC_ServerGSLT.Text = serverConfig.ServerGSLT;
+            textbox_EC_ServerParam.Text = serverConfig.ServerParam;
+            return true;
+        }
+
+        private void Button_EditConfig_Save_Click(object sender, RoutedEventArgs e)
+        {
+            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
+
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.ServerGame, textbox_EC_ServerGame.Text.Trim());
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.ServerName, textbox_EC_ServerName.Text.Trim());
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.ServerIP, textbox_EC_ServerIP.Text.Trim());
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.ServerMaxPlayer, numericUpDown_EC_ServerMaxplayer.Value.ToString());
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.ServerPort, numericUpDown_EC_ServerPort.Value.ToString());
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.ServerQueryPort, numericUpDown_EC_ServerQueryPort.Value.ToString());
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.ServerMap, textbox_EC_ServerMap.Text.Trim());
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.ServerGSLT, textbox_EC_ServerGSLT.Text.Trim());
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.ServerParam, textbox_EC_ServerParam.Text.Trim());
+
+            LoadServerTable();
+            MahAppFlyout_EditConfig.IsOpen = false;
         }
 
         private void Button_RestartCrontab_Click(object sender, RoutedEventArgs e)
@@ -3204,9 +3251,7 @@ namespace WindowsGSM
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-
-            MahAppFlyout_SetAffinity.IsOpen = false;
-            MahAppFlyout_DiscordAlert.IsOpen = !MahAppFlyout_DiscordAlert.IsOpen;
+            ToggleMahappFlyout(MahAppFlyout_DiscordAlert);
         }
 
         private void Button_UpdateOnStart_Click(object sender, RoutedEventArgs e)
@@ -3608,6 +3653,20 @@ namespace WindowsGSM
         }
         #endregion
 
+        /// <summary>Hide others Flyout and toggle the flyout</summary>
+        /// <param name="flyout"></param>
+        private void ToggleMahappFlyout(Flyout flyout)
+        {
+            MahAppFlyout_DiscordAlert.IsOpen = (flyout == MahAppFlyout_DiscordAlert) ? !MahAppFlyout_DiscordAlert.IsOpen : false;
+            MahAppFlyout_EditConfig.IsOpen = (flyout == MahAppFlyout_EditConfig) ? !MahAppFlyout_EditConfig.IsOpen : false;
+            MahAppFlyout_ImportGameServer.IsOpen = (flyout == MahAppFlyout_ImportGameServer) ? !MahAppFlyout_ImportGameServer.IsOpen : false;
+            MahAppFlyout_InstallGameServer.IsOpen = (flyout == MahAppFlyout_InstallGameServer) ? !MahAppFlyout_InstallGameServer.IsOpen : false;
+            MahAppFlyout_ManageAddons.IsOpen = (flyout == MahAppFlyout_ManageAddons) ? !MahAppFlyout_ManageAddons.IsOpen : false;
+            MahAppFlyout_RestoreBackup.IsOpen = (flyout == MahAppFlyout_RestoreBackup) ? !MahAppFlyout_RestoreBackup.IsOpen : false;
+            MahAppFlyout_SetAffinity.IsOpen = (flyout == MahAppFlyout_SetAffinity) ? !MahAppFlyout_SetAffinity.IsOpen : false;
+            MahAppFlyout_Settings.IsOpen = (flyout == MahAppFlyout_Settings) ? !MahAppFlyout_Settings.IsOpen : false;
+        }
+
         private void HamburgerMenu_ItemClick(object sender, ItemClickEventArgs e)
         {
             HamburgerMenuControl.IsPaneOpen = false;
@@ -3642,9 +3701,7 @@ namespace WindowsGSM
         {
             if (HamburgerMenuControl.SelectedOptionsIndex == 0)
             {
-                MahAppFlyout_DiscordAlert.IsOpen = false;
-                MahAppFlyout_SetAffinity.IsOpen = false;
-                MahAppFlyout_Settings.IsOpen = !MahAppFlyout_Settings.IsOpen;
+                ToggleMahappFlyout(MahAppFlyout_Settings);
             }
 
             HamburgerMenuControl.SelectedOptionsIndex = -1;

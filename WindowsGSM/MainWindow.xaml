@@ -75,6 +75,59 @@
                     <StackPanel x:Name="StackPanel_SetAffinity" Orientation="Horizontal" VerticalAlignment="Center" Margin="20"/>
                 </ScrollViewer>
             </Controls:Flyout>
+            <Controls:Flyout x:Name="MahAppFlyout_EditConfig" Header="Edit WindowsGSM.cfg" Position="Right" Theme="Adapt" IsModal="True">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Margin="15,0,15,0">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <Label Content="Server ID:" FontFamily="Consolas"></Label>
+                            <Label Content="1" FontFamily="Consolas"></Label>
+                        </StackPanel>
+                        <StackPanel Margin="0,0,0,10">
+                            <Label Content="Server Game" FontFamily="Consolas"></Label>
+                            <TextBox x:Name="textbox_EC_ServerGame" Height="23" Width="300" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="True"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,0,0,10">
+                            <Label Content="Server Name" FontFamily="Consolas"></Label>
+                            <TextBox x:Name="textbox_EC_ServerName" Height="23" Width="300" TextWrapping="Wrap" Text="" VerticalAlignment="Top"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <StackPanel>
+                                <Label Content="Server IP Address" FontFamily="Consolas"></Label>
+                                <TextBox x:Name="textbox_EC_ServerIP" Height="23" Width="147.5" TextWrapping="Wrap" Text="" VerticalAlignment="Top"/>
+                            </StackPanel>
+                            <StackPanel Margin="5,0,0,0">
+                                <Label Content="Server Maxplayer" FontFamily="Consolas"></Label>
+                                <Controls:NumericUpDown x:Name="numericUpDown_EC_ServerMaxplayer" Minimum="1" Maximum="100000" Interval="1" Height="5" Width="147.5"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <StackPanel>
+                                <Label Content="Server Port" FontFamily="Consolas"></Label>
+                                <Controls:NumericUpDown x:Name="numericUpDown_EC_ServerPort" Minimum="1" Maximum="65535" Interval="1" Height="5" Width="147.5"/>
+                            </StackPanel>
+                            <StackPanel Margin="5,0,0,0">
+                                <Label Content="Server Query Port" FontFamily="Consolas"></Label>
+                                <Controls:NumericUpDown x:Name="numericUpDown_EC_ServerQueryPort" Minimum="1" Maximum="65535" Interval="1" Height="5" Width="147.5"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <StackPanel Margin="0,0,0,10">
+                            <Label Content="Server Start Map" FontFamily="Consolas"></Label>
+                            <TextBox x:Name="textbox_EC_ServerMap" Height="23" Width="300" TextWrapping="Wrap" Text="" VerticalAlignment="Top"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,0,0,10">
+                            <Label Content="Server GSLT" FontFamily="Consolas"></Label>
+                            <TextBox x:Name="textbox_EC_ServerGSLT" Height="23" Width="300" TextWrapping="Wrap" Text="" VerticalAlignment="Top"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,0,0,10">
+                            <Label Content="Server Start Param" FontFamily="Consolas"></Label>
+                            <TextBox x:Name="textbox_EC_ServerParam" Height="23" Width="300" TextWrapping="Wrap" Text="" VerticalAlignment="Top"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,10,0,10">
+                            <Button x:Name="button_EC_SaveConfig" Content="Save" Width="300" Height="25" Click="Button_EditConfig_Save_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+                </DockPanel>
+            </Controls:Flyout>
             <Controls:Flyout x:Name="MahAppFlyout_ManageAddons" Header="Manage Addons" Position="Right" Theme="Adapt" IsModal="True">
                 <DockPanel VerticalAlignment="Stretch" Height="Auto">
                     <DockPanel Margin="20,0,0,0">
@@ -611,7 +664,8 @@
                         <TextBox x:Name="textBox_ProcessPriority" Height="11" Margin="213,10,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="95" FontFamily="Consolas"/>
 
                         <Button x:Name="button_SetAffinity" Content="Set Affinity" HorizontalAlignment="Left" Margin="313,10,0,0" VerticalAlignment="Top" Width="77" Height="26" Click="Button_SetAffinity_Click"/>
-                        <TextBox x:Name="textBox_SetAffinity" Height="11" Margin="395,10,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="95" FontFamily="Consolas"/>
+                        <TextBox x:Name="textBox_SetAffinity" Height="11" Margin="400,10,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="86" FontFamily="Consolas"/>
+                        <Button x:Name="button_EditConfig" Content="Edit Config" HorizontalAlignment="Left" Margin="395,10,0,0" VerticalAlignment="Top" Width="95" Height="26" Click="Button_EditConfig_Click"/>
 
                         <Label x:Name="label_restartcrontab" Content="Restart Crontab" HorizontalAlignment="Left" Margin="5,40,0,0" VerticalAlignment="Top" Height="26"/>
                         <Controls:ToggleSwitch x:Name="switch_restartcrontab" Margin="97,43,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_RestartCrontab_Click" Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}" Width="70"/>
