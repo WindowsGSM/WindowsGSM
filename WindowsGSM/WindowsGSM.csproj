@@ -394,6 +394,7 @@
     <Compile Include="Tools\GlobalServerList.cs" />
     <Compile Include="Tools\InstallAddons.cs" />
     <Compile Include="Functions\UdpClientHandler.cs" />
+    <Compile Include="Tools\JavaHelper.cs" />
     <Compile Include="WindowsFirewall.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
