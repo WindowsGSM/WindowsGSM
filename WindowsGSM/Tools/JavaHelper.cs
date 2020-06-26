@@ -166,7 +166,7 @@ namespace WindowsGSM.Tools
 
             public int CompareTo(JavaExecutable other)
             {
-                return javaVersionString.Compare(other.javaVersionString);
+                return String.Compare(javaVersionString, other.javaVersionString);
             }
         };
 
