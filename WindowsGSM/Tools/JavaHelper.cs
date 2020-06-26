@@ -123,14 +123,22 @@ namespace WindowsGSM.Tools
 
         private static string QueryJavaVersion(string javaExecutablePath)
         {
-            ProcessStartInfo psi = new ProcessStartInfo("cmd.exe");
-            psi.RedirectStandardOutput = true;
-            psi.RedirectStandardError = true;
-            psi.UseShellExecute = false;
-            psi.CreateNoWindow = true;
-            psi.Arguments = string.Join(" ", "/c", javaExecutablePath, "-version");
-            Process p = Process.Start(psi);
-            p.WaitForExit();
+            Process p;
+            try
+            {
+                ProcessStartInfo psi = new ProcessStartInfo("cmd.exe");
+                psi.RedirectStandardOutput = true;
+                psi.RedirectStandardError = true;
+                psi.UseShellExecute = false;
+                psi.CreateNoWindow = true;
+                psi.Arguments = string.Join(" ", "/c", javaExecutablePath, "-version");
+                p = Process.Start(psi);
+                p.WaitForExit();
+            }
+            catch
+            {
+                return string.Empty;
+            }
 
             // some java version write to stderr on default, apparently even for non error messages
             string output = p.StandardOutput.ReadToEnd();
