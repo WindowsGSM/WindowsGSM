@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Net;
+using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 
@@ -28,6 +29,75 @@ namespace WindowsGSM.GameServer
         public string Maxplayers = "20";
         public string Additional = "-Xmx1024M -Xms1024M";
 
+        private static bool isJavaInPath()
+        {
+            ProcessStartInfo psi = new ProcessStartInfo("cmd.exe");
+            psi.RedirectStandardOutput = true;
+            psi.RedirectStandardError = true;
+            psi.UseShellExecute = false;
+            psi.CreateNoWindow = true;
+            psi.Arguments = "/c java -version";
+            Process p = Process.Start(psi);
+            string output = p.StandardOutput.ReadToEnd();
+            string error = p.StandardError.ReadToEnd();
+
+            return (p.ExitCode == 0);
+        }
+
+        private static string findNewestJavaRuntimeInDirectory(string javaDirectory)
+        {
+            if (!Directory.Exists(javaDirectory))
+            {
+                return string.Empty;
+            }
+
+            List<string> javaDirectories = new List<string>(Directory.EnumerateDirectories(javaDirectory));
+            if (javaDirectories.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            javaDirectories.Sort();
+            return javaDirectories[0];
+        }
+
+        private static string findJavaExecutableInJavaRuntimeDirectory(string javaRuntimeAbsolutePath)
+        {
+            string javaExecutableAbsolutePath = Path.Combine(javaRuntimeAbsolutePath, "java.exe");
+            if( File.Exists(javaExecutableAbsolutePath))
+            {
+                return javaExecutableAbsolutePath;
+            }
+            
+            javaExecutableAbsolutePath = Path.Combine(javaRuntimeAbsolutePath, "bin", "java.exe");
+            return javaExecutableAbsolutePath;
+        }
+
+        private static string findNewestJavaExecutable()
+        {
+            if (isJavaInPath())
+            {
+                //assume that the newest version is part of $PATH
+                return "java.exe";
+            }
+
+            string javaDirectoryAbsolutePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Java");
+            string javaRuntimeAbsolutePath = findNewestJavaRuntimeInDirectory(javaDirectoryAbsolutePath);
+
+            if (javaRuntimeAbsolutePath.Length == 0)
+            {
+                if(!Environment.Is64BitOperatingSystem)
+                {
+                    return string.Empty;
+                }
+
+                string javaDirectoryAbsolutePathX86 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Java");
+                javaRuntimeAbsolutePath = findNewestJavaRuntimeInDirectory(javaDirectoryAbsolutePathX86);
+            }
+
+            return findJavaExecutableInJavaRuntimeDirectory(javaRuntimeAbsolutePath);
+        }
+
         private enum Java : int
         {
             NotInstall = 0,
@@ -36,13 +106,12 @@ namespace WindowsGSM.GameServer
         }
 
         private static string[] _JavaData =
-        { 
+        {
             $"jre-8u241-windows-{(Environment.Is64BitOperatingSystem ? "x64" : "i586")}.exe",
             Environment.Is64BitOperatingSystem ?
                 "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=241536_1f5b5a70bf22433b84d0e960903adac8" :
                 "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=241534_1f5b5a70bf22433b84d0e960903adac8",
-            $"C:\\Program Files{(Environment.Is64BitOperatingSystem ? string.Empty : " (x86)")}\\Java\\jre1.8.0_241\\bin\\java.exe",
-            $"C:\\Program Files{(Environment.Is64BitOperatingSystem ? string.Empty : " (x86)")}\\Java\\jre1.8.0_241"
+            findNewestJavaExecutable()
         };
 
         public MC(Functions.ServerConfig serverData)
@@ -401,17 +470,7 @@ namespace WindowsGSM.GameServer
         {
             try
             {
-                ProcessStartInfo psi = new ProcessStartInfo("cmd.exe");
-                psi.RedirectStandardOutput = true;
-                psi.RedirectStandardError = true;
-                psi.UseShellExecute = false;
-                psi.CreateNoWindow = true;
-                psi.Arguments = "/c java -version";
-                Process p = Process.Start(psi);
-                string output = p.StandardOutput.ReadToEnd();
-                string error = p.StandardError.ReadToEnd();
-
-                if (!output.Contains("is not recognized"))
+                if (isJavaInPath())
                 {
                     return Java.InstalledGlobal;
                 }
@@ -433,7 +492,7 @@ namespace WindowsGSM.GameServer
                 string output = p.StandardOutput.ReadToEnd();
                 string error = p.StandardError.ReadToEnd();
 
-                if (!output.Contains("is not recognized"))
+                if (p.ExitCode == 0)
                 {
                     return Java.InstalledAbsolute;
                 }
