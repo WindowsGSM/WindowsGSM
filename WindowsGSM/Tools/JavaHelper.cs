@@ -19,10 +19,15 @@ namespace WindowsGSM.Tools
                 "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=241536_1f5b5a70bf22433b84d0e960903adac8" :
                 "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=241534_1f5b5a70bf22433b84d0e960903adac8";
 
-        public struct JREDownloadTaskResult
+        public struct JREDownloadTaskResult : IEquatable<JREDownloadTaskResult>
         {
             public bool installed;
             public string error;
+
+            public bool Equals(JREDownloadTaskResult other)
+            {
+                return installed == other.installed && error == other.error;
+            }
         };
 
         public static string FindJavaExecutableAbsolutePath()
@@ -38,10 +43,6 @@ namespace WindowsGSM.Tools
             JREDownloadTaskResult result;
             result.installed = true;
             result.error = String.Empty;
-
-            result.error = String.Concat("Could not download & install JRE '", JreInstallFileName, "'");
-            result.installed = false;
-            return result;
 
             try
             {
@@ -64,7 +65,6 @@ namespace WindowsGSM.Tools
                     while (FindJavaExecutableAbsolutePathInJavaRuntimeDirectory(JreAbsoluteInstallPath).Length == 0)
                     {
                         await Task.Delay(100);
-                        continue;
                     }
                 }
             }
@@ -166,7 +166,7 @@ namespace WindowsGSM.Tools
 
             public int CompareTo(JavaExecutable other)
             {
-                return javaVersionString.CompareTo(other.javaVersionString);
+                return javaVersionString.Compare(other.javaVersionString);
             }
         };
 
