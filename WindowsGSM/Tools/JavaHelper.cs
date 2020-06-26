@@ -169,8 +169,14 @@ namespace WindowsGSM.Tools
 
         private class JavaExecutable : IComparable<JavaExecutable>
         {
-            public string javaExecutableAbsolutePath;
-            public string javaVersionString;
+            public readonly string javaExecutableAbsolutePath;
+            public readonly string javaVersionString;
+
+            public JavaExecutable(string javaExecutableAbsolutePath, string javaVersionString)
+            {
+                this.javaExecutableAbsolutePath = javaExecutableAbsolutePath;
+                this.javaVersionString = javaVersionString;
+            }
 
             public int CompareTo(JavaExecutable other)
             {
@@ -211,6 +217,18 @@ namespace WindowsGSM.Tools
             {
                 return left.CompareTo(right) > 0;
             }
+
+            public static bool operator <= (JavaExecutable left, JavaExecutable right)
+            {
+                return left.CompareTo(right) <= 0;
+
+            }
+
+            public static bool operator >=(JavaExecutable left, JavaExecutable right)
+            {
+                return left.CompareTo(right) >= 0;
+
+            }
         };
 
         private static string FindJavaExecutableAbsolutePath(string javaDirectoryAbsolutePath)
@@ -232,10 +250,7 @@ namespace WindowsGSM.Tools
                 string javaExecutableAbsolutePath = FindJavaExecutableAbsolutePathInJavaRuntimeDirectory(javaRuntimePath);
                 if (javaExecutableAbsolutePath.Length > 0)
                 {
-                    JavaExecutable javaExecutable = new JavaExecutable();
-                    javaExecutable.javaExecutableAbsolutePath = javaExecutableAbsolutePath;
-                    javaExecutable.javaVersionString = QueryJavaVersion(javaExecutableAbsolutePath);
-
+                    JavaExecutable javaExecutable = new JavaExecutable(javaExecutableAbsolutePath, QueryJavaVersion(javaExecutableAbsolutePath));
                     if (javaExecutable.javaVersionString.Length == 0)
                     {
                         continue;
