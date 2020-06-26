@@ -174,7 +174,42 @@ namespace WindowsGSM.Tools
 
             public int CompareTo(JavaExecutable other)
             {
-                return String.Compare(javaVersionString, other.javaVersionString);
+                return String.Compare(javaVersionString, other.javaVersionString, true, System.Globalization.CultureInfo.InvariantCulture);
+            }
+
+            public override bool Equals(object obj)
+            {
+                var other = obj as JavaExecutable;
+                if (ReferenceEquals(other, null))
+                {
+                    return false;
+                }
+                return CompareTo(other) == 0;
+            }
+
+            public override int GetHashCode()
+            {
+                return javaVersionString.GetHashCode();
+            }
+
+            public static bool operator == (JavaExecutable left, JavaExecutable right)
+            {
+                return left.javaVersionString == right.javaVersionString;
+            }
+
+            public static bool operator != (JavaExecutable left, JavaExecutable right)
+            {
+                return left.javaVersionString != right.javaVersionString;
+            }
+
+            public static bool operator < (JavaExecutable left, JavaExecutable right)
+            {
+                return left.CompareTo(right) < 0;
+            }
+
+            public static bool operator > (JavaExecutable left, JavaExecutable right)
+            {
+                return left.CompareTo(right) > 0;
             }
         };
 
