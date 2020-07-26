@@ -391,6 +391,7 @@
     <Compile Include="GameServer\UNT.cs" />
     <Compile Include="GameServer\VTS.cs" />
     <Compile Include="GameServer\ZPS.cs" />
+    <Compile Include="MainConsole.cs" />
     <Compile Include="Tools\GlobalServerList.cs" />
     <Compile Include="Tools\InstallAddons.cs" />
     <Compile Include="Functions\UdpClientHandler.cs" />

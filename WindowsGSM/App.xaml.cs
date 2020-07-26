@@ -18,16 +18,14 @@ namespace WindowsGSM
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            bool forceStart = false, showCrashHint = false;
-            for (int i = 0; i < e.Args.Length; i++)
+            bool forceStart = false, showCrashHint = false, commandLine = false;
+            foreach (string arg in e.Args)
             {
-                if (e.Args[i] == "/ForceStart")
+                switch (arg.ToLower())
                 {
-                    forceStart = true;
-                }
-                else if (e.Args[i] == "/ShowCrashHint")
-                {
-                    showCrashHint = true;
+                    case "/forcestart": forceStart = true; break;
+                    case "/showcrashhint": showCrashHint = true; break;
+                    case "/cli": commandLine = true; break;
                 }
             }
 
@@ -61,14 +59,15 @@ namespace WindowsGSM
                 }
             }
 
+            string version = string.Concat(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString().Reverse().Skip(2).Reverse());
+
             AppDomain.CurrentDomain.UnhandledException += (s, args) =>
             {
-                string version = string.Concat(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString().Reverse().Skip(2).Reverse());
                 string logPath = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Logs");
                 Directory.CreateDirectory(logPath);
 
                 string logFile = Path.Combine(logPath, $"CRASH_{DateTime.Now.ToString("yyyyMMdd")}.log");
-                File.AppendAllText(logFile, $"WindowsGSM v{version}\n\n" + args.ExceptionObject.ToString());
+                File.AppendAllText(logFile, $"WindowsGSM v{version}{(commandLine ? " - CLI version" : "")}\n\n" + args.ExceptionObject.ToString());
 
                 RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM");
                 if (key != null)
@@ -82,7 +81,7 @@ namespace WindowsGSM
                             {
                                 WorkingDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName),
                                 FileName = "cmd.exe",
-                                Arguments = "/C echo WindowsGSM will auto restart after 10 seconds... & echo Close this windows to cancel... & ping 0 -w 1000 -n 10 > NUL & start WindowsGSM.exe /ForceStart /ShowCrashHint",
+                                Arguments = $"/C echo WindowsGSM will auto restart after 10 seconds... & echo Close this windows to cancel... & ping 0 -w 1000 -n 10 > NUL & start WindowsGSM.exe /ForceStart /ShowCrashHint{(commandLine ? " /CLI" : "")}",
                                 UseShellExecute = false
                             }
                         };
@@ -92,8 +91,16 @@ namespace WindowsGSM
                 }
             };
 
-            MainWindow mainwindow = new MainWindow(showCrashHint);
-            mainwindow.Show();
+            if (commandLine)
+            {
+                MainConsole.Show();
+                Console.Title = $"WindowsGSM v{version} - CLI version";
+            }
+            else
+            {
+                MainWindow mainwindow = new MainWindow(showCrashHint);
+                mainwindow.Show();
+            }
         }
     }
 }
