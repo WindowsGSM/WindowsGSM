@@ -4,11 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Net;
-using System.Threading;
-using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
-using WindowsGSM.Tools;
 
 namespace WindowsGSM.GameServer
 {
@@ -30,6 +27,23 @@ namespace WindowsGSM.GameServer
         public string Defaultmap = "world";
         public string Maxplayers = "20";
         public string Additional = "-Xmx1024M -Xms1024M";
+
+        private enum Java : int
+        {
+            NotInstall = 0,
+            InstalledGlobal = 1, //(java)
+            InstalledAbsolute = 2 //Path: (C:\Program Files (x86)\Java\jre1.8.0_231\bin\java.exe)
+        }
+
+        private static string[] _JavaData =
+        { 
+            $"jre-8u241-windows-{(Environment.Is64BitOperatingSystem ? "x64" : "i586")}.exe",
+            Environment.Is64BitOperatingSystem ?
+                "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=241536_1f5b5a70bf22433b84d0e960903adac8" :
+                "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=241534_1f5b5a70bf22433b84d0e960903adac8",
+            $"C:\\Program Files{(Environment.Is64BitOperatingSystem ? string.Empty : " (x86)")}\\Java\\jre1.8.0_241\\bin\\java.exe",
+            $"C:\\Program Files{(Environment.Is64BitOperatingSystem ? string.Empty : " (x86)")}\\Java\\jre1.8.0_241"
+        };
 
         public MC(Functions.ServerConfig serverData)
         {
@@ -56,8 +70,8 @@ namespace WindowsGSM.GameServer
 
         public async Task<Process> Start()
         {
-            string javaPath = JavaHelper.FindJavaExecutableAbsolutePath();
-            if (javaPath.Length == 0)
+            Java isJavaInstalled = IsJavaJREInstalled();
+            if (isJavaInstalled == Java.NotInstall)
             {
                 Error = "Java is not installed";
                 return null;
@@ -78,10 +92,15 @@ namespace WindowsGSM.GameServer
                 Notice = $"server.properties not found ({configPath}). Generated a new one.";
             }
 
-            WindowsFirewall firewall = new WindowsFirewall("java.exe", javaPath);
-            if (!await firewall.IsRuleExist())
+            string javaPath = (isJavaInstalled == Java.InstalledGlobal) ? "java" : _JavaData[2];
+
+            if (isJavaInstalled == Java.InstalledAbsolute)
             {
-                firewall.AddRule();
+                WindowsFirewall firewall = new WindowsFirewall("java.exe", javaPath);
+                if (!await firewall.IsRuleExist())
+                {
+                    firewall.AddRule();
+                }
             }
 
             Process p;
@@ -156,7 +175,7 @@ namespace WindowsGSM.GameServer
             }
 
             //Install JAVA if not installed
-            if (!JavaHelper.IsJREInstalled())
+            if (IsJavaJREInstalled() == 0)
             {
                 //Java
                 result = MessageBox.Show("Java is not installed\n\nWould you like to install?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
@@ -166,10 +185,8 @@ namespace WindowsGSM.GameServer
                     return null;
                 }
 
-                JavaHelper.JREDownloadTaskResult taskResult = await JavaHelper.DownloadJREToServer(_serverData.ServerID);
-                if (!taskResult.installed)
+                if (!await DownloadJavaJRE())
                 {
-                    Error = taskResult.error;
                     return null;
                 }
             }
@@ -230,12 +247,10 @@ namespace WindowsGSM.GameServer
         public async Task<bool> Update()
         {
             //Install JAVA if not installed
-            if (!JavaHelper.IsJREInstalled())
+            if (IsJavaJREInstalled() == Java.NotInstall)
             {
-                JavaHelper.JREDownloadTaskResult taskResult = await JavaHelper.DownloadJREToServer(_serverData.ServerID);
-                if (!taskResult.installed)
+                if (!await DownloadJavaJRE())
                 {
-                    Error = taskResult.error;
                     return false;
                 }
             }
@@ -380,6 +395,96 @@ namespace WindowsGSM.GameServer
 
             Error = $"Fail to get remote build";
             return string.Empty;
+        }
+
+        private static Java IsJavaJREInstalled()
+        {
+            try
+            {
+                ProcessStartInfo psi = new ProcessStartInfo("cmd.exe");
+                psi.RedirectStandardOutput = true;
+                psi.RedirectStandardError = true;
+                psi.UseShellExecute = false;
+                psi.CreateNoWindow = true;
+                psi.Arguments = "/c java -version";
+                Process p = Process.Start(psi);
+                string output = p.StandardOutput.ReadToEnd();
+                string error = p.StandardError.ReadToEnd();
+
+                if (!output.Contains("is not recognized"))
+                {
+                    return Java.InstalledGlobal;
+                }
+            }
+            catch
+            {
+                //ignore
+            }
+
+            try
+            {
+                ProcessStartInfo psi = new ProcessStartInfo("cmd.exe");
+                psi.RedirectStandardOutput = true;
+                psi.RedirectStandardError = true;
+                psi.UseShellExecute = false;
+                psi.CreateNoWindow = true;
+                psi.Arguments = $"/c \"{_JavaData[2]}\" -version";
+                Process p = Process.Start(psi);
+                string output = p.StandardOutput.ReadToEnd();
+                string error = p.StandardError.ReadToEnd();
+
+                if (!output.Contains("is not recognized"))
+                {
+                    return Java.InstalledAbsolute;
+                }
+            }
+            catch
+            {
+                //ignore
+            }
+
+            return Java.NotInstall;
+        }
+
+        private async Task<bool> DownloadJavaJRE()
+        {
+            string serverFilesPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
+            string filename = _JavaData[0];
+            string installLink = _JavaData[1];
+
+            //Download jre-8u231-windows-i586-iftw.exe from https://www.java.com/en/download/manual.jsp
+            string jrePath = Path.Combine(serverFilesPath, filename);
+            try
+            {
+                using (WebClient webClient = new WebClient())
+                {
+                    //Run jre-8u231-windows-i586-iftw.exe to install Java
+                    await webClient.DownloadFileTaskAsync(installLink, jrePath);
+                    string installPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
+                    ProcessStartInfo psi = new ProcessStartInfo(jrePath);
+                    psi.WorkingDirectory = installPath;
+                    psi.Arguments = $"INSTALL_SILENT=Enable INSTALLDIR=\"{_JavaData[3]}\"";
+                    Process p = new Process
+                    {
+                        StartInfo = psi,
+                        EnableRaisingEvents = true
+                    };
+                    p.Start();
+
+                    while (!File.Exists(_JavaData[2]))
+                    {
+                        await Task.Delay(100);
+                        continue;
+                    }
+                }
+            }
+            catch
+            {
+                Error = "Fail to download " + filename;
+                return false;
+            }
+
+            return true;
         }
     }
 }
