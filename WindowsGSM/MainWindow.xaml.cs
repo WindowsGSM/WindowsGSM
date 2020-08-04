@@ -12,7 +12,6 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft.Win32;
-using MahApps.Metro;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using Newtonsoft.Json.Linq;
@@ -22,6 +21,7 @@ using System.Collections;
 using LiveCharts;
 using LiveCharts.Wpf;
 using System.Management;
+using ControlzEx.Theming;
 
 namespace WindowsGSM
 {
@@ -52,6 +52,36 @@ namespace WindowsGSM
             public const string DiscordBotAutoStart = "DiscordBotAutoStart";
         }
 
+        private class ServerSettings
+        {
+            // Basic Game Server Settings
+            public bool AutoRestart;
+            public bool AutoStart;
+            public bool AutoUpdate;
+            public bool UpdateOnStart;
+            public bool BackupOnStart;
+
+            // Discord Alert Settings
+            public bool DiscordAlert;
+            public string DiscordMessage;
+            public string DiscordWebhook;
+            public bool AutoRestartAlert;
+            public bool AutoStartAlert;
+            public bool AutoUpdateAlert;
+            public bool RestartCrontabAlert;
+            public bool CrashAlert;
+
+            // Restart Crontab Settings
+            public bool RestartCrontab;
+            public string CrontabFormat;
+
+            // Game Server Start Priority and Affinity
+            public string CPUPriority;
+            public string CPUAffinity;
+
+            public bool EmbedConsole;
+        }
+
         private enum WindowShowStyle : uint
         {
             Hide = 0,
@@ -80,7 +110,8 @@ namespace WindowsGSM
 
         public static readonly string WGSM_VERSION = "v" + string.Concat(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString().Reverse().Skip(2).Reverse());
         public static readonly int MAX_SERVER = 50;
-        public static readonly string WGSM_PATH = Process.GetCurrentProcess().MainModule.FileName.Replace(@"\WindowsGSM.exe", "");
+        public static readonly string WGSM_PATH = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+        public static readonly string DEFAULT_THEME = "Cyan";
 
         private readonly NotifyIcon notifyIcon;
 
@@ -90,6 +121,9 @@ namespace WindowsGSM
 
         private static readonly Process[] g_Process = new Process[MAX_SERVER + 1];
         private static readonly IntPtr[] g_MainWindow = new IntPtr[MAX_SERVER + 1];
+
+        private static readonly Dictionary<int, ServerSettings> g_ServerSettings = new Dictionary<int, ServerSettings>();
+        private ServerSettings GetServerSettings(int serverId) => g_ServerSettings.TryGetValue(serverId, out var s) ? s : null;
 
         private static readonly bool[] g_bAutoRestart = new bool[MAX_SERVER + 1];
         private static readonly bool[] g_bAutoStart = new bool[MAX_SERVER + 1];
@@ -127,18 +161,16 @@ namespace WindowsGSM
             //Add SplashScreen
             SplashScreen splashScreen = new SplashScreen("Images/SplashScreen.png");
             splashScreen.Show(false, true);
+            Functions.DiscordWebhook.SendErrorLog();
 
             InitializeComponent();
+            Title = $"WindowsGSM {WGSM_VERSION}";
 
             //Close SplashScreen
             splashScreen.Close(new TimeSpan(0, 0, 1));
 
-            Title = $"WindowsGSM {WGSM_VERSION}";
-
-            ThemeManager.Accents.ToList().ForEach(delegate (Accent accent)
-            {
-                comboBox_Themes.Items.Add(accent.Name);
-            });
+            // Add all themes to comboBox_Themes
+            ThemeManager.Current.Themes.Select(t => Path.GetExtension(t.Name).Trim('.')).Distinct().OrderBy(x => x).ToList().ForEach(delegate (string name) { comboBox_Themes.Items.Add(name); });
 
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM");
             if (key == null)
@@ -150,58 +182,50 @@ namespace WindowsGSM
                 key.SetValue(RegistryKeyName.StartOnBoot, "False");
                 key.SetValue(RegistryKeyName.RestartOnCrash, "False");
                 key.SetValue(RegistryKeyName.DonorTheme, "False");
-                key.SetValue(RegistryKeyName.DonorColor, "Blue");
+                key.SetValue(RegistryKeyName.DonorColor, DEFAULT_THEME);
                 key.SetValue(RegistryKeyName.DonorAuthKey, "");
                 key.SetValue(RegistryKeyName.SendStatistics, "True");
-                key.SetValue(RegistryKeyName.Height, "540");
-                key.SetValue(RegistryKeyName.Width, "960");
+                key.SetValue(RegistryKeyName.Height, Height);
+                key.SetValue(RegistryKeyName.Width, Width);
                 key.SetValue(RegistryKeyName.DiscordBotAutoStart, "False");
-
-                MahAppSwitch_HardWareAcceleration.IsChecked = true;
-                MahAppSwitch_UIAnimation.IsChecked = true;
-                MahAppSwitch_DarkTheme.IsChecked = false;
-                MahAppSwitch_StartOnBoot.IsChecked = false;
-                MahAppSwitch_RestartOnCrash.IsChecked = false;
-                MahAppSwitch_DonorConnect.IsChecked = false;
-                comboBox_Themes.Text = "Blue";
-                MahAppSwitch_SendStatistics.IsChecked = true;
-                MahAppSwitch_DiscordBotAutoStart.IsChecked = false;
             }
-            else
+
+            MahAppSwitch_HardWareAcceleration.IsOn = (key.GetValue(RegistryKeyName.HardWareAcceleration) ?? true).ToString() == "True";
+            MahAppSwitch_UIAnimation.IsOn = (key.GetValue(RegistryKeyName.UIAnimation) ?? true).ToString() == "True";
+            MahAppSwitch_DarkTheme.IsOn = (key.GetValue(RegistryKeyName.DarkTheme) ?? false).ToString() == "True";
+            MahAppSwitch_StartOnBoot.IsOn = (key.GetValue(RegistryKeyName.StartOnBoot) ?? false).ToString() == "True";
+            MahAppSwitch_RestartOnCrash.IsOn = (key.GetValue(RegistryKeyName.RestartOnCrash) ?? false).ToString() == "True";
+            MahAppSwitch_DonorConnect.Toggled -= DonorConnect_IsCheckedChanged;
+            MahAppSwitch_DonorConnect.IsOn = (key.GetValue(RegistryKeyName.DonorTheme) ?? false).ToString() == "True";
+            MahAppSwitch_DonorConnect.Toggled += DonorConnect_IsCheckedChanged;
+            MahAppSwitch_SendStatistics.IsOn = (key.GetValue(RegistryKeyName.SendStatistics) ?? true).ToString() == "True";
+            MahAppSwitch_DiscordBotAutoStart.IsOn = (key.GetValue(RegistryKeyName.DiscordBotAutoStart) ?? false).ToString() == "True";
+            string color = (key.GetValue(RegistryKeyName.DonorColor) ?? string.Empty).ToString();
+            comboBox_Themes.SelectionChanged -= ComboBox_Themes_SelectionChanged;
+            comboBox_Themes.SelectedItem = comboBox_Themes.Items.Contains(color) ? color : DEFAULT_THEME;
+            comboBox_Themes.SelectionChanged += ComboBox_Themes_SelectionChanged;
+
+            if (MahAppSwitch_DonorConnect.IsOn)
             {
-                MahAppSwitch_HardWareAcceleration.IsChecked = ((key.GetValue(RegistryKeyName.HardWareAcceleration) ?? true).ToString() == "True") ? true : false;
-                MahAppSwitch_UIAnimation.IsChecked = ((key.GetValue(RegistryKeyName.UIAnimation) ?? true).ToString() == "True") ? true : false;
-                MahAppSwitch_DarkTheme.IsChecked = ((key.GetValue(RegistryKeyName.DarkTheme) ?? false).ToString() == "True") ? true : false;
-                MahAppSwitch_StartOnBoot.IsChecked = ((key.GetValue(RegistryKeyName.StartOnBoot) ?? false).ToString() == "True") ? true : false;
-                MahAppSwitch_RestartOnCrash.IsChecked = ((key.GetValue(RegistryKeyName.RestartOnCrash) ?? false).ToString() == "True") ? true : false;
-                MahAppSwitch_DonorConnect.IsChecked = ((key.GetValue(RegistryKeyName.DonorTheme) ?? false).ToString() == "True") ? true : false;
-                var theme = ThemeManager.GetAccent((key.GetValue(RegistryKeyName.DonorColor) ?? string.Empty).ToString());
-                comboBox_Themes.Text = (theme == null || !(MahAppSwitch_DonorConnect.IsChecked ?? false)) ? "Blue" : theme.Name;
-                MahAppSwitch_SendStatistics.IsChecked = ((key.GetValue(RegistryKeyName.SendStatistics) ?? true).ToString() == "True") ? true : false;
-                MahAppSwitch_DiscordBotAutoStart.IsChecked = ((key.GetValue(RegistryKeyName.DiscordBotAutoStart) ?? false).ToString() == "True") ? true : false;
-
-                if (MahAppSwitch_DonorConnect.IsChecked ?? false)
+                string authKey = (key.GetValue(RegistryKeyName.DonorAuthKey) == null) ? string.Empty : key.GetValue(RegistryKeyName.DonorAuthKey).ToString();
+                if (!string.IsNullOrWhiteSpace(authKey))
                 {
-                    string authKey = (key.GetValue(RegistryKeyName.DonorAuthKey) == null) ? string.Empty : key.GetValue(RegistryKeyName.DonorAuthKey).ToString();
-                    if (!string.IsNullOrWhiteSpace(authKey))
-                    {
 #pragma warning disable 4014
-                        AuthenticateDonor(authKey);
+                    AuthenticateDonor(authKey);
 #pragma warning restore
-                    }
                 }
-
-                Height = (key.GetValue(RegistryKeyName.Height) == null) ? 540 : double.Parse(key.GetValue(RegistryKeyName.Height).ToString());
-                Width = (key.GetValue(RegistryKeyName.Width) == null) ? 960 : double.Parse(key.GetValue(RegistryKeyName.Width).ToString());
             }
+
+            Height = (key.GetValue(RegistryKeyName.Height) == null) ? Height : double.Parse(key.GetValue(RegistryKeyName.Height).ToString());
+            Width = (key.GetValue(RegistryKeyName.Width) == null) ? Width : double.Parse(key.GetValue(RegistryKeyName.Width).ToString());
             key.Close();
 
-            RenderOptions.ProcessRenderMode = (MahAppSwitch_HardWareAcceleration.IsChecked ?? false) ? System.Windows.Interop.RenderMode.SoftwareOnly : System.Windows.Interop.RenderMode.Default;
-            WindowTransitionsEnabled = MahAppSwitch_UIAnimation.IsChecked ?? false;
-            ThemeManager.ChangeAppTheme(App.Current, (MahAppSwitch_DarkTheme.IsChecked ?? false) ? "BaseDark" : "BaseLight");
+            RenderOptions.ProcessRenderMode = MahAppSwitch_HardWareAcceleration.IsOn ? System.Windows.Interop.RenderMode.SoftwareOnly : System.Windows.Interop.RenderMode.Default;
+            WindowTransitionsEnabled = MahAppSwitch_UIAnimation.IsOn;
+            ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem}");
             //Not required - it is set in windows settings
             //SetStartOnBoot(MahAppSwitch_StartOnBoot.IsChecked ?? false);
-            if (MahAppSwitch_DiscordBotAutoStart.IsChecked ?? false)
+            if (MahAppSwitch_DiscordBotAutoStart.IsOn)
             {
                 AutoStartDiscordBot();
             }
@@ -359,7 +383,7 @@ namespace WindowsGSM
 
             AutoStartServer();
 
-            if (MahAppSwitch_SendStatistics.IsChecked ?? false)
+            if (MahAppSwitch_SendStatistics.IsOn)
             {
                 SendGoogleAnalytics();
             }
@@ -513,8 +537,8 @@ namespace WindowsGSM
 
         private async void AutoStartDiscordBot()
         {
-            switch_DiscordBot.IsChecked = await g_DiscordBot.Start();
-            DiscordBotLog("Discord Bot " + ((switch_DiscordBot.IsChecked ?? false) ? "started." : "fail to start. Reason: Bot Token is invalid."));
+            switch_DiscordBot.IsOn = await g_DiscordBot.Start();
+            DiscordBotLog("Discord Bot " + (switch_DiscordBot.IsOn ? "started." : "fail to start. Reason: Bot Token is invalid."));
         }
 
         private async void AutoStartServer()
@@ -781,26 +805,26 @@ namespace WindowsGSM
 
                 var gameServer = GameServer.Data.Class.Get(row.Game, null);
                 switch_embedconsole.IsEnabled = gameServer.AllowsEmbedConsole;
-                switch_embedconsole.IsChecked = gameServer.AllowsEmbedConsole ? g_bEmbedConsole[int.Parse(row.ID)] : false;
+                switch_embedconsole.IsOn = gameServer.AllowsEmbedConsole ? g_bEmbedConsole[int.Parse(row.ID)] : false;
 
-                switch_autorestart.IsChecked = g_bAutoRestart[int.Parse(row.ID)];
-                switch_restartcrontab.IsChecked = g_bRestartCrontab[int.Parse(row.ID)];
-                switch_autostart.IsChecked = g_bAutoStart[int.Parse(row.ID)];
-                switch_autoupdate.IsChecked = g_bAutoUpdate[int.Parse(row.ID)];
-                switch_updateonstart.IsChecked = g_bUpdateOnStart[int.Parse(row.ID)];
-                switch_backuponstart.IsChecked = g_bBackupOnStart[int.Parse(row.ID)];
-                switch_discordalert.IsChecked = g_bDiscordAlert[int.Parse(row.ID)];
+                switch_autorestart.IsOn = g_bAutoRestart[int.Parse(row.ID)];
+                switch_restartcrontab.IsOn = g_bRestartCrontab[int.Parse(row.ID)];
+                switch_autostart.IsOn = g_bAutoStart[int.Parse(row.ID)];
+                switch_autoupdate.IsOn = g_bAutoUpdate[int.Parse(row.ID)];
+                switch_updateonstart.IsOn = g_bUpdateOnStart[int.Parse(row.ID)];
+                switch_backuponstart.IsOn = g_bBackupOnStart[int.Parse(row.ID)];
+                switch_discordalert.IsOn = g_bDiscordAlert[int.Parse(row.ID)];
 
                 button_discordtest.IsEnabled = g_bDiscordAlert[int.Parse(row.ID)] ? true : false;
 
                 textBox_restartcrontab.Text = g_CrontabFormat[int.Parse(row.ID)];
                 textBox_nextcrontab.Text = CrontabSchedule.TryParse(g_CrontabFormat[int.Parse(row.ID)])?.GetNextOccurrence(DateTime.Now).ToString("ddd, MM/dd/yyyy HH:mm:ss");
 
-                MahAppSwitch_AutoStartAlert.IsChecked = g_bAutoStartAlert[int.Parse(row.ID)];
-                MahAppSwitch_AutoRestartAlert.IsChecked = g_bAutoRestartAlert[int.Parse(row.ID)];
-                MahAppSwitch_AutoUpdateAlert.IsChecked = g_bAutoUpdateAlert[int.Parse(row.ID)];
-                MahAppSwitch_RestartCrontabAlert.IsChecked = g_bRestartCrontabAlert[int.Parse(row.ID)];
-                MahAppSwitch_CrashAlert.IsChecked = g_bCrashAlert[int.Parse(row.ID)];
+                MahAppSwitch_AutoStartAlert.IsOn = g_bAutoStartAlert[int.Parse(row.ID)];
+                MahAppSwitch_AutoRestartAlert.IsOn = g_bAutoRestartAlert[int.Parse(row.ID)];
+                MahAppSwitch_AutoUpdateAlert.IsOn = g_bAutoUpdateAlert[int.Parse(row.ID)];
+                MahAppSwitch_RestartCrontabAlert.IsOn = g_bRestartCrontabAlert[int.Parse(row.ID)];
+                MahAppSwitch_CrashAlert.IsOn = g_bCrashAlert[int.Parse(row.ID)];
             }
         }
 
@@ -926,7 +950,7 @@ namespace WindowsGSM
                 comboBox_InstallGameServer.IsEnabled = true;
                 progressbar_InstallProgress.IsIndeterminate = false;
 
-                if (MahAppSwitch_SendStatistics.IsChecked ?? false)
+                if (MahAppSwitch_SendStatistics.IsOn)
                 {
                     var analytics = new Functions.GoogleAnalytics();
                     analytics.SendGameServerInstall(newServerConfig.ServerID, servergame);
@@ -1638,7 +1662,7 @@ namespace WindowsGSM
 
             StartQuery(server);
 
-            if (MahAppSwitch_SendStatistics.IsChecked ?? false)
+            if (MahAppSwitch_SendStatistics.IsOn)
             {
                 var analytics = new Functions.GoogleAnalytics();
                 analytics.SendGameServerStart(server.ID, server.Game);
@@ -2335,7 +2359,7 @@ namespace WindowsGSM
 
             while (p != null && !p.HasExited)
             {
-                if (MahAppSwitch_SendStatistics.IsChecked ?? false)
+                if (MahAppSwitch_SendStatistics.IsOn)
                 {
                     var analytics = new Functions.GoogleAnalytics();
                     analytics.SendGameServerHeartBeat(server.Game, server.Name);
@@ -2620,11 +2644,11 @@ namespace WindowsGSM
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
             if (key != null)
             {
-                key.SetValue(RegistryKeyName.HardWareAcceleration, (MahAppSwitch_HardWareAcceleration.IsChecked ?? false).ToString());
+                key.SetValue(RegistryKeyName.HardWareAcceleration, MahAppSwitch_HardWareAcceleration.IsOn.ToString());
                 key.Close();
             }
 
-            RenderOptions.ProcessRenderMode = (MahAppSwitch_HardWareAcceleration.IsChecked ?? false) ? System.Windows.Interop.RenderMode.SoftwareOnly : System.Windows.Interop.RenderMode.Default;
+            RenderOptions.ProcessRenderMode = MahAppSwitch_HardWareAcceleration.IsOn ? System.Windows.Interop.RenderMode.SoftwareOnly : System.Windows.Interop.RenderMode.Default;
         }
 
         private void UIAnimation_IsCheckedChanged(object sender, EventArgs e)
@@ -2632,11 +2656,11 @@ namespace WindowsGSM
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
             if (key != null)
             {
-                key.SetValue(RegistryKeyName.UIAnimation, (MahAppSwitch_UIAnimation.IsChecked ?? false).ToString());
+                key.SetValue(RegistryKeyName.UIAnimation, MahAppSwitch_UIAnimation.IsOn.ToString());
                 key.Close();
             }
 
-            WindowTransitionsEnabled = MahAppSwitch_UIAnimation.IsChecked ?? false;
+            WindowTransitionsEnabled = MahAppSwitch_UIAnimation.IsOn;
         }
 
         private void DarkTheme_IsCheckedChanged(object sender, EventArgs e)
@@ -2644,11 +2668,11 @@ namespace WindowsGSM
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
             if (key != null)
             {
-                key.SetValue(RegistryKeyName.DarkTheme, (MahAppSwitch_DarkTheme.IsChecked ?? false).ToString());
+                key.SetValue(RegistryKeyName.DarkTheme, MahAppSwitch_DarkTheme.IsOn.ToString());
                 key.Close();
             }
 
-            ThemeManager.ChangeAppTheme(App.Current, (MahAppSwitch_DarkTheme.IsChecked ?? false) ? "BaseDark" : "BaseLight");
+            ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem ?? DEFAULT_THEME}");
         }
 
         private void StartOnLogin_IsCheckedChanged(object sender, EventArgs e)
@@ -2656,11 +2680,11 @@ namespace WindowsGSM
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
             if (key != null)
             {
-                key.SetValue(RegistryKeyName.StartOnBoot, (MahAppSwitch_StartOnBoot.IsChecked ?? false).ToString());
+                key.SetValue(RegistryKeyName.StartOnBoot, MahAppSwitch_StartOnBoot.IsOn.ToString());
                 key.Close();
             }
 
-            SetStartOnBoot(MahAppSwitch_StartOnBoot.IsChecked ?? false);
+            SetStartOnBoot(MahAppSwitch_StartOnBoot.IsOn);
         }
 
         private void RestartOnCrash_IsCheckedChanged(object sender, EventArgs e)
@@ -2668,7 +2692,7 @@ namespace WindowsGSM
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
             if (key != null)
             {
-                key.SetValue(RegistryKeyName.RestartOnCrash, (MahAppSwitch_RestartOnCrash.IsChecked ?? false).ToString());
+                key.SetValue(RegistryKeyName.RestartOnCrash, MahAppSwitch_RestartOnCrash.IsOn.ToString());
                 key.Close();
             }
         }
@@ -2678,7 +2702,7 @@ namespace WindowsGSM
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
             if (key != null)
             {
-                key.SetValue(RegistryKeyName.SendStatistics, (MahAppSwitch_SendStatistics.IsChecked ?? false).ToString());
+                key.SetValue(RegistryKeyName.SendStatistics, MahAppSwitch_SendStatistics.IsOn.ToString());
                 key.Close();
             }
         }
@@ -2708,18 +2732,17 @@ namespace WindowsGSM
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
 
             //If switch is checked
-            if (!MahAppSwitch_DonorConnect.IsChecked ?? false)
+            if (!MahAppSwitch_DonorConnect.IsOn)
             {
                 g_DonorType = string.Empty;
-                comboBox_Themes.Text = "Blue";
+                comboBox_Themes.SelectedItem = DEFAULT_THEME;
                 comboBox_Themes.IsEnabled = false;
 
                 //Set theme
-                AppTheme theme = ThemeManager.GetAppTheme((MahAppSwitch_DarkTheme.IsChecked ?? false) ? "BaseDark" : "BaseLight");
-                ThemeManager.ChangeAppStyle(System.Windows.Application.Current, ThemeManager.GetAccent(comboBox_Themes.SelectedItem.ToString()), theme);
+                ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem}");
 
-                key.SetValue(RegistryKeyName.DonorTheme, (MahAppSwitch_DonorConnect.IsChecked ?? false).ToString());
-                key.SetValue(RegistryKeyName.DonorColor, "Blue");
+                key.SetValue(RegistryKeyName.DonorTheme, MahAppSwitch_DonorConnect.IsOn.ToString());
+                key.SetValue(RegistryKeyName.DonorColor, DEFAULT_THEME);
                 key.Close();
                 return;
             }
@@ -2739,7 +2762,7 @@ namespace WindowsGSM
             //If pressed cancel or key is null or whitespace
             if (string.IsNullOrWhiteSpace(authKey))
             {
-                MahAppSwitch_DonorConnect.IsChecked = false;
+                MahAppSwitch_DonorConnect.IsOn = false;
                 key.Close();
                 return;
             }
@@ -2761,7 +2784,7 @@ namespace WindowsGSM
                 key.SetValue(RegistryKeyName.DonorAuthKey, "");
                 await this.ShowMessageAsync("Fail to activate.", "Please visit https://windowsgsm.com/patreon/ to get the key.");
 
-                MahAppSwitch_DonorConnect.IsChecked = false;
+                MahAppSwitch_DonorConnect.IsOn = false;
             }
             key.Close();
         }
@@ -2773,7 +2796,7 @@ namespace WindowsGSM
                 using (WebClient webClient = new WebClient())
                 {
                     string json = await webClient.DownloadStringTaskAsync($"https://windowsgsm.com/patreon/patreonAuth.php?auth={authKey}");
-                    bool success = (JObject.Parse(json)["success"].ToString() == "True") ? true : false;
+                    bool success = JObject.Parse(json)["success"].ToString() == "True";
 
                     if (success)
                     {
@@ -2784,22 +2807,24 @@ namespace WindowsGSM
                         g_DiscordBot.SetDonorType(g_DonorType);
                         comboBox_Themes.IsEnabled = true;
 
+                        ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem}");
+
                         return (true, name);
                     }
-                    else
-                    {                
-                        MahAppSwitch_DonorConnect.IsChecked = false;
+            
+                    MahAppSwitch_DonorConnect.IsOn = false;
 
-                        //Set theme
-                        AppTheme theme = ThemeManager.GetAppTheme((MahAppSwitch_DarkTheme.IsChecked ?? false) ? "BaseDark" : "BaseLight");
-                        ThemeManager.ChangeAppStyle(System.Windows.Application.Current, ThemeManager.GetAccent("Blue"), theme);
-                    }
+                    //Set theme
+                    ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem}");
                 }
             }
             catch
             {
                 // ignore
             }
+
+            //Set theme
+            ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem}");
 
             return (false, string.Empty);
         }
@@ -2811,8 +2836,7 @@ namespace WindowsGSM
             key.Close();
 
             //Set theme
-            AppTheme theme = ThemeManager.GetAppTheme((MahAppSwitch_DarkTheme.IsChecked ?? false) ? "BaseDark" : "BaseLight");
-            ThemeManager.ChangeAppStyle(System.Windows.Application.Current, ThemeManager.GetAccent(comboBox_Themes.SelectedItem.ToString()), theme);
+            ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem}");
         }
         #endregion
 
@@ -3171,6 +3195,7 @@ namespace WindowsGSM
             var gameServer = GameServer.Data.Class.Get(serverConfig.ServerGame);
             if (gameServer == null) { return false; }
 
+            textbox_EC_ServerID.Text = serverConfig.ServerID;
             textbox_EC_ServerGame.Text = serverConfig.ServerGame;
             textbox_EC_ServerName.Text = serverConfig.ServerName;
             textbox_EC_ServerIP.Text = serverConfig.ServerIP;
@@ -3206,45 +3231,40 @@ namespace WindowsGSM
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-
-            g_bRestartCrontab[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.RestartCrontab);
-            switch_restartcrontab.IsChecked = g_bRestartCrontab[int.Parse(server.ID)];
+            g_bRestartCrontab[int.Parse(server.ID)] = switch_restartcrontab.IsOn;
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.RestartCrontab, g_bRestartCrontab[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private void Button_EmbedConsole_Click(object sender, RoutedEventArgs e)
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-
-            g_bEmbedConsole[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.EmbedConsole);
-            switch_embedconsole.IsChecked = g_bEmbedConsole[int.Parse(server.ID)];
+            g_bEmbedConsole[int.Parse(server.ID)] = switch_embedconsole.IsOn;
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.EmbedConsole, g_bEmbedConsole[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private void Button_AutoRestart_Click(object sender, RoutedEventArgs e)
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-
-            g_bAutoRestart[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.AutoRestart);
-            switch_autorestart.IsChecked = g_bAutoRestart[int.Parse(server.ID)];
+            g_bAutoRestart[int.Parse(server.ID)] = switch_autorestart.IsOn;
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.AutoRestart, g_bAutoRestart[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private void Button_AutoStart_Click(object sender, RoutedEventArgs e)
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-
-            g_bAutoStart[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.AutoStart);
-            switch_autostart.IsChecked = g_bAutoStart[int.Parse(server.ID)];
+            g_bAutoStart[int.Parse(server.ID)] = switch_autostart.IsOn;
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.AutoStart, g_bAutoStart[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private void Button_AutoUpdate_Click(object sender, RoutedEventArgs e)
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-
-            g_bAutoUpdate[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.AutoUpdate);
-            switch_autoupdate.IsChecked = g_bAutoUpdate[int.Parse(server.ID)];
+            g_bAutoUpdate[int.Parse(server.ID)] = switch_autoupdate.IsOn;
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.AutoUpdate, g_bAutoUpdate[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private async void Button_DiscordAlertSettings_Click(object sender, RoutedEventArgs e)
@@ -3258,28 +3278,25 @@ namespace WindowsGSM
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-
-            g_bUpdateOnStart[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.UpdateOnStart);
-            switch_updateonstart.IsChecked = g_bUpdateOnStart[int.Parse(server.ID)];
+            g_bUpdateOnStart[int.Parse(server.ID)] = switch_updateonstart.IsOn;
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.UpdateOnStart, g_bUpdateOnStart[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private void Button_BackupOnStart_Click(object sender, RoutedEventArgs e)
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-
-            g_bBackupOnStart[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.BackupOnStart);
-            switch_backuponstart.IsChecked = g_bBackupOnStart[int.Parse(server.ID)];
+            g_bBackupOnStart[int.Parse(server.ID)] = switch_backuponstart.IsOn;
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.BackupOnStart, g_bBackupOnStart[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private void Button_DiscordAlert_Click(object sender, RoutedEventArgs e)
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-
-            g_bDiscordAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.DiscordAlert);
-            switch_discordalert.IsChecked = g_bDiscordAlert[int.Parse(server.ID)];
-            button_discordtest.IsEnabled = (g_bDiscordAlert[int.Parse(server.ID)]) ? true : false;
+            g_bDiscordAlert[int.Parse(server.ID)] = switch_discordalert.IsOn;
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.DiscordAlert, g_bDiscordAlert[int.Parse(server.ID)] ? "1" : "0");
+            button_discordtest.IsEnabled = g_bDiscordAlert[int.Parse(server.ID)] ? true : false;
         }
 
         private async void Button_CrontabEdit_Click(object sender, RoutedEventArgs e)
@@ -3311,45 +3328,40 @@ namespace WindowsGSM
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-
-            g_bAutoStartAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.AutoStartAlert);
-            MahAppSwitch_AutoStartAlert.IsChecked = g_bAutoStartAlert[int.Parse(server.ID)];
+            g_bAutoStartAlert[int.Parse(server.ID)] = MahAppSwitch_AutoStartAlert.IsOn;
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.AutoStartAlert, g_bAutoStartAlert[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private void Switch_AutoRestartAlert_Click(object sender, RoutedEventArgs e)
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-
-            g_bAutoRestartAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.AutoRestartAlert);
-            MahAppSwitch_AutoRestartAlert.IsChecked = g_bAutoRestartAlert[int.Parse(server.ID)];
+            g_bAutoRestartAlert[int.Parse(server.ID)] = MahAppSwitch_AutoRestartAlert.IsOn;
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.AutoRestartAlert, g_bAutoRestartAlert[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private void Switch_AutoUpdateAlert_Click(object sender, RoutedEventArgs e)
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-
-            g_bAutoUpdateAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.AutoUpdateAlert);
-            MahAppSwitch_AutoUpdateAlert.IsChecked = g_bAutoUpdateAlert[int.Parse(server.ID)];
+            g_bAutoUpdateAlert[int.Parse(server.ID)] = MahAppSwitch_AutoUpdateAlert.IsOn;
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.AutoUpdateAlert, g_bAutoUpdateAlert[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private void Switch_RestartCrontabAlert_Click(object sender, RoutedEventArgs e)
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-
-            g_bRestartCrontabAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.RestartCrontabAlert);
-            MahAppSwitch_RestartCrontabAlert.IsChecked = g_bRestartCrontabAlert[int.Parse(server.ID)];
+            g_bRestartCrontabAlert[int.Parse(server.ID)] = MahAppSwitch_RestartCrontabAlert.IsOn;
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.RestartCrontabAlert, g_bRestartCrontabAlert[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private void Switch_CrashAlert_Click(object sender, RoutedEventArgs e)
         {
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-
-            g_bCrashAlert[int.Parse(server.ID)] = Functions.ServerConfig.ToggleSetting(server.ID, Functions.ServerConfig.SettingName.CrashAlert);
-            MahAppSwitch_CrashAlert.IsChecked = g_bCrashAlert[int.Parse(server.ID)];
+            g_bCrashAlert[int.Parse(server.ID)] = MahAppSwitch_CrashAlert.IsOn;
+            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.CrashAlert, g_bCrashAlert[int.Parse(server.ID)] ? "1" : "0");
         }
         #endregion
 
@@ -3372,11 +3384,11 @@ namespace WindowsGSM
         #region Discord Bot
         private async void Switch_DiscordBot_Click(object sender, RoutedEventArgs e)
         {
-            if (switch_DiscordBot.IsChecked ?? false)
+            if (switch_DiscordBot.IsOn)
             {
                 switch_DiscordBot.IsEnabled = false;
-                switch_DiscordBot.IsChecked = await g_DiscordBot.Start();
-                DiscordBotLog("Discord Bot " + ((switch_DiscordBot.IsChecked ?? false) ? "started." : "fail to start. Reason: Bot Token is invalid."));
+                switch_DiscordBot.IsOn = await g_DiscordBot.Start();
+                DiscordBotLog("Discord Bot " + (switch_DiscordBot.IsOn ? "started." : "fail to start. Reason: Bot Token is invalid."));
                 switch_DiscordBot.IsEnabled = true;
             }
             else
@@ -3425,7 +3437,7 @@ namespace WindowsGSM
             }
         }
 
-        private void button_DiscordBotDashboardEdit_Click(object sender, RoutedEventArgs e)
+        private void Button_DiscordBotDashboardEdit_Click(object sender, RoutedEventArgs e)
         {
             if (button_DiscordBotDashboardEdit.Content.ToString() == "Edit")
             {
@@ -3638,7 +3650,7 @@ namespace WindowsGSM
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
             if (key != null)
             {
-                key.SetValue("DiscordBotAutoStart", (MahAppSwitch_DiscordBotAutoStart.IsChecked ?? false).ToString());
+                key.SetValue("DiscordBotAutoStart", MahAppSwitch_DiscordBotAutoStart.IsOn.ToString());
                 key.Close();
             }
         }
@@ -3697,14 +3709,16 @@ namespace WindowsGSM
             }
         }
 
-        private void HamburgerMenu_OptionsItemClick(object sender, ItemClickEventArgs e)
+        private async void HamburgerMenu_OptionsItemClick(object sender, ItemClickEventArgs e)
         {
             if (HamburgerMenuControl.SelectedOptionsIndex == 0)
             {
                 ToggleMahappFlyout(MahAppFlyout_Settings);
             }
-
+            
             HamburgerMenuControl.SelectedOptionsIndex = -1;
+
+            await Task.Delay(1); // Delay 0.001 sec due to UI not sync
             if (hMenu_Home.Visibility == Visibility.Visible)
             {
                 HamburgerMenuControl.SelectedIndex = 0;

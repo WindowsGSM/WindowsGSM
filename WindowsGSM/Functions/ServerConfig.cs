@@ -70,14 +70,14 @@ namespace WindowsGSM.Functions
         public ServerConfig(string serverid)
         {
             //Get next available ServerID
-            if (serverid == null || serverid == string.Empty)
+            if (string.IsNullOrEmpty(serverid))
             {
                 for (int id = 1; id <= MainWindow.MAX_SERVER; id++)
                 {
-                    string serverid_dir = MainWindow.WGSM_PATH + @"\servers\" + id.ToString();
+                    string serverid_dir = MainWindow.WGSM_PATH + @"\servers\" + id;
                     if (Directory.Exists(serverid_dir))
                     {
-                        string config = MainWindow.WGSM_PATH + @"\servers\" + id.ToString() + @"\configs\WindowsGSM.cfg";
+                        string config = MainWindow.WGSM_PATH + @"\servers\" + id + @"\configs\WindowsGSM.cfg";
                         if (!File.Exists(config))
                         {
                             ServerID = id.ToString();
@@ -102,7 +102,7 @@ namespace WindowsGSM.Functions
             {
                 foreach (string line in File.ReadLines(configpath))
                 {
-                    string[] keyvalue = line.Split(new char[] { '=' }, 2);
+                    string[] keyvalue = line.Split(new[] {'='}, 2);
                     if (keyvalue.Length == 2)
                     {
                         keyvalue[1] = keyvalue[1].Trim('\"');
@@ -118,22 +118,22 @@ namespace WindowsGSM.Functions
                             case SettingName.ServerMaxPlayer: ServerMaxPlayer = keyvalue[1]; break;
                             case SettingName.ServerGSLT: ServerGSLT = keyvalue[1]; break;
                             case SettingName.ServerParam: ServerParam = keyvalue[1]; break;
-                            case SettingName.AutoRestart: AutoRestart = (keyvalue[1] == "1") ? true : false; break;
-                            case SettingName.AutoStart: AutoStart = (keyvalue[1] == "1") ? true : false; break;
-                            case SettingName.AutoUpdate: AutoUpdate = (keyvalue[1] == "1") ? true : false; break;
-                            case SettingName.UpdateOnStart: UpdateOnStart = (keyvalue[1] == "1") ? true : false; break;
-                            case SettingName.BackupOnStart: BackupOnStart = (keyvalue[1] == "1") ? true : false; break;
-                            case SettingName.DiscordAlert: DiscordAlert = (keyvalue[1] == "1") ? true : false; break;
+                            case SettingName.AutoRestart: AutoRestart = keyvalue[1] == "1"; break;
+                            case SettingName.AutoStart: AutoStart = keyvalue[1] == "1"; break;
+                            case SettingName.AutoUpdate: AutoUpdate = keyvalue[1] == "1"; break;
+                            case SettingName.UpdateOnStart: UpdateOnStart = keyvalue[1] == "1"; break;
+                            case SettingName.BackupOnStart: BackupOnStart = keyvalue[1] == "1"; break;
+                            case SettingName.DiscordAlert: DiscordAlert = keyvalue[1] == "1"; break;
                             case SettingName.DiscordMessage: DiscordMessage = keyvalue[1]; break;
                             case SettingName.DiscordWebhook: DiscordWebhook = keyvalue[1]; break;
-                            case SettingName.RestartCrontab: RestartCrontab = (keyvalue[1] == "1") ? true : false; break;
+                            case SettingName.RestartCrontab: RestartCrontab = keyvalue[1] == "1"; break;
                             case SettingName.CrontabFormat: CrontabFormat = keyvalue[1]; break;
-                            case SettingName.EmbedConsole: EmbedConsole = (keyvalue[1] == "1") ? true : false; break;
-                            case SettingName.AutoStartAlert: AutoStartAlert = (keyvalue[1] == "1") ? true : false; break;
-                            case SettingName.AutoRestartAlert: AutoRestartAlert = (keyvalue[1] == "1") ? true : false; break;
-                            case SettingName.AutoUpdateAlert: AutoUpdateAlert = (keyvalue[1] == "1") ? true : false; break;
-                            case SettingName.RestartCrontabAlert: RestartCrontabAlert = (keyvalue[1] == "1") ? true : false; break;
-                            case SettingName.CrashAlert: CrashAlert = (keyvalue[1] == "1") ? true : false; break;
+                            case SettingName.EmbedConsole: EmbedConsole = keyvalue[1] == "1"; break;
+                            case SettingName.AutoStartAlert: AutoStartAlert = keyvalue[1] == "1"; break;
+                            case SettingName.AutoRestartAlert: AutoRestartAlert = keyvalue[1] == "1"; break;
+                            case SettingName.AutoUpdateAlert: AutoUpdateAlert = keyvalue[1] == "1"; break;
+                            case SettingName.RestartCrontabAlert: RestartCrontabAlert = keyvalue[1] == "1"; break;
+                            case SettingName.CrashAlert: CrashAlert = keyvalue[1] == "1"; break;
                             case SettingName.CPUPriority: CPUPriority = keyvalue[1]; break;
                             case SettingName.CPUAffinity: CPUAffinity = keyvalue[1]; break;
                         }
@@ -252,12 +252,6 @@ namespace WindowsGSM.Functions
             return false;
         }
 
-        public bool IsWindowsGSMConfigExist()
-        {
-            string configpath = ServerPath.GetServersConfigs(ServerID, "WindowsGSM.cfg");
-            return File.Exists(configpath);
-        }
-
         public string GetIPAddress()
         {
             using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
@@ -308,53 +302,6 @@ namespace WindowsGSM.Functions
             return new string(chars);
         }
 
-        public static bool ToggleSetting(string serverId, string settingName)
-        {
-            string configFile = ServerPath.GetServersConfigs(serverId, "WindowsGSM.cfg");
-
-            if (File.Exists(configFile))
-            {
-                bool? returnBool = null;
-
-                //Read the config lines
-                string[] lines = File.ReadAllLines(configFile);
-
-                //Overwrite the config file
-                File.Create(configFile).Dispose();
-
-                //Create the TextWriter
-                using (TextWriter textwriter = new StreamWriter(configFile))
-                {
-                    //Write all lines
-                    foreach (string line in lines)
-                    {
-                        string[] keyvalue = line.Split(new char[] { '=' }, 2);
-                        if (keyvalue.Length == 2 && settingName == keyvalue[0])
-                        {
-                            keyvalue[1] = keyvalue[1].Trim('\"');
-                            returnBool = (keyvalue[1] == "1") ? false : true;
-                            string nextBool = (keyvalue[1] == "1") ? "0" : "1";
-                            textwriter.WriteLine($"{keyvalue[0]}=\"{nextBool}\"");
-                        }
-                        else
-                        {
-                            textwriter.WriteLine(line);
-                        }
-                    }
-
-                    if (returnBool == null)
-                    {
-                        returnBool = true;
-                        textwriter.WriteLine($"{settingName}=\"1\"");
-                    }
-                }
-
-                return returnBool ?? true;
-            }
-
-            return false;
-        }
-
         public static string GetSetting(string serverId, string settingName)
         {
             string configFile = ServerPath.GetServersConfigs(serverId, "WindowsGSM.cfg");
@@ -401,7 +348,7 @@ namespace WindowsGSM.Functions
                     //Write lines
                     foreach (string line in lines)
                     {
-                        string[] keyvalue = line.Split(new char[] { '=' }, 2);
+                        string[] keyvalue = line.Split(new[] { '=' }, 2);
                         if (keyvalue.Length == 2 && settingName == keyvalue[0])
                         {
                             textwriter.WriteLine($"{settingName}=\"{data}\"");

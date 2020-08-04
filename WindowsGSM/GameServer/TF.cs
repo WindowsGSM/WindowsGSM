@@ -54,7 +54,7 @@ namespace WindowsGSM.GameServer
                 Notice = $"{Path.GetFileName(configPath)} not found ({configPath})";
             }
 
-            string param = $"-batchmode -nographics {_serverData.ServerParam}";
+            string param = $"-batchmode -dedicated {_serverData.ServerParam}";
 
             Process p;
             if (!AllowsEmbedConsole)

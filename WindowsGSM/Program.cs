@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Documents;
 
 namespace WindowsGSM
 {
@@ -12,42 +14,13 @@ namespace WindowsGSM
         [STAThread]
         public static void Main()
         {
-            #region Install MahApps.Metro.dll
-            string mahappsPath = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "MahApps.Metro.dll");
-            bool shouldInstall = false;
-
-            //Check file size
-            if (File.Exists(mahappsPath))
+            // Due to a weird error, MahApps.Metro.dll cannot be embed inside WindowsGSM.exe,
+            // therefore, MahApps.Metro.dll is stored in Resources, and copy the file to the WindowsGSM directory.
+            string mahAppPath = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "MahApps.Metro.dll");
+            if (!File.Exists(mahAppPath) || new FileInfo(mahAppPath).Length != 3425392) // Latest MahApps.Metro.dll byte size is 3425392
             {
-                if (new FileInfo(mahappsPath).Length < 1097216)
-                {
-                    File.Delete(mahappsPath);
-                    shouldInstall = true;
-                }
+                File.WriteAllBytes(mahAppPath, Properties.Resources.MahApps_Metro);
             }
-
-            if (!File.Exists(mahappsPath) || shouldInstall)
-            {
-                try
-                {
-                    using (WebClient webClient = new WebClient())
-                    {
-                        webClient.DownloadFile("https://github.com/WindowsGSM/WindowsGSM/raw/master/packages/MahApps.Metro.1.6.5/lib/net47/MahApps.Metro.dll", mahappsPath);
-                    }
-                }
-                catch
-                {
-                    // ignore
-                }
-                
-                if (new FileInfo(mahappsPath).Length < 1097216)
-                {
-                    File.Delete(mahappsPath);
-                    MessageBox.Show("Fail to download MahApps.Metro.dll, please try again later", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-            }
-            #endregion
 
             AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
             {

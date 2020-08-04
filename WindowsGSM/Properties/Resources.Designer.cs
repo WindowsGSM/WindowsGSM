@@ -59,5 +59,15 @@ namespace WindowsGSM.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] MahApps_Metro {
+            get {
+                object obj = ResourceManager.GetObject("MahApps_Metro", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

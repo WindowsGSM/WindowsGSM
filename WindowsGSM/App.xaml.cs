@@ -4,7 +4,12 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Linq;
 using System.IO;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web;
 using Microsoft.Win32;
+using Newtonsoft.Json.Linq;
 
 namespace WindowsGSM
 {
@@ -19,15 +24,12 @@ namespace WindowsGSM
         protected override void OnStartup(StartupEventArgs e)
         {
             bool forceStart = false, showCrashHint = false;
-            for (int i = 0; i < e.Args.Length; i++)
+            foreach (string arg in e.Args)
             {
-                if (e.Args[i] == "/ForceStart")
+                switch (arg)
                 {
-                    forceStart = true;
-                }
-                else if (e.Args[i] == "/ShowCrashHint")
-                {
-                    showCrashHint = true;
+                    case "/ForceStart": forceStart = true; break;
+                    case "/ShowCrashHint": showCrashHint = true; break;
                 }
             }
 
@@ -61,35 +63,35 @@ namespace WindowsGSM
                 }
             }
 
-            AppDomain.CurrentDomain.UnhandledException += (s, args) =>
+            AppDomain.CurrentDomain.UnhandledException += async (s, args) =>
             {
                 string version = string.Concat(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString().Reverse().Skip(2).Reverse());
                 string logPath = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Logs");
                 Directory.CreateDirectory(logPath);
 
                 string logFile = Path.Combine(logPath, $"CRASH_{DateTime.Now.ToString("yyyyMMdd")}.log");
-                File.AppendAllText(logFile, $"WindowsGSM v{version}\n\n" + args.ExceptionObject.ToString());
+                File.AppendAllText(logFile, $"WindowsGSM v{version}\n\n" + args.ExceptionObject);
 
+                string latestLogFile = Path.Combine(logPath, "latest_crash_wgsm_temp.log");
+                File.AppendAllText(latestLogFile, $"WindowsGSM v{version}\n\n" + args.ExceptionObject);
+#if !DEBUG
                 RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM");
-                if (key != null)
+                if (key != null && (key.GetValue("RestartOnCrash") ?? false).ToString() == "True")
                 {
-                    bool shouldRestart = ((key.GetValue("RestartOnCrash") ?? false).ToString() == "True") ? true : false;
-                    if (shouldRestart)
+                    Process p = new Process
                     {
-                        Process p = new Process()
+                        StartInfo =
                         {
-                            StartInfo =
-                            {
-                                WorkingDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName),
-                                FileName = "cmd.exe",
-                                Arguments = "/C echo WindowsGSM will auto restart after 10 seconds... & echo Close this windows to cancel... & ping 0 -w 1000 -n 10 > NUL & start WindowsGSM.exe /ForceStart /ShowCrashHint",
-                                UseShellExecute = false
-                            }
-                        };
-                        p.Start();
-                        Process.GetCurrentProcess().Kill();
-                    }
+                            WorkingDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName),
+                            FileName = "cmd.exe",
+                            Arguments = "/C echo WindowsGSM will auto restart after 10 seconds... & echo Close this windows to cancel... & ping 0 -w 1000 -n 10 > NUL & start WindowsGSM.exe /ForceStart /ShowCrashHint",
+                            UseShellExecute = false
+                        }
+                    };
+                    p.Start();
+                    Process.GetCurrentProcess().Kill();
                 }
+#endif
             };
 
             MainWindow mainwindow = new MainWindow(showCrashHint);
