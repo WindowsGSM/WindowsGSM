@@ -197,6 +197,8 @@ namespace WindowsGSM.Installer
         {
             try
             {
+                await Task.Delay(300000);
+
                 // Send enter 3 times per 3 seconds
                 for (int i = 0; i < 3; i++)
                 {

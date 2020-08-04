@@ -369,6 +369,7 @@
     <Compile Include="GameServer\Addon\AMXModX.cs" />
     <Compile Include="GameServer\Addon\SourceMod.cs" />
     <Compile Include="GameServer\ARKSE.cs" />
+    <Compile Include="GameServer\ARMA3.cs" />
     <Compile Include="GameServer\AVORION.cs" />
     <Compile Include="GameServer\BT.cs" />
     <Compile Include="GameServer\BW.cs" />
@@ -692,7 +693,9 @@
   <ItemGroup>
     <Resource Include="Images\HMenu\Discord.ico" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Images\Games\arma3.png" />
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Games\sq.png" />
     <Resource Include="Images\Games\tf.png" />

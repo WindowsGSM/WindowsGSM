@@ -198,7 +198,7 @@
                             <Label Content="Install Log" DockPanel.Dock="Left"></Label>
                             <DockPanel HorizontalAlignment="Right">
                                 <TextBox x:Name="textBox_InstallToken" Height="23" TextWrapping="Wrap" DockPanel.Dock="Left" MaxLines="1" Margin="5,0,5,0" Width="100"/>
-                                <Button x:Name="button_InstallSendToken" Content="Send Token" DockPanel.Dock="Right" Width="100"/>
+                                <Button x:Name="button_InstallSendToken" Content="Send Token" DockPanel.Dock="Right" Width="100" Click="Button_SendToken_Click"/>
                             </DockPanel>
                         </DockPanel>
                         <TextBox x:Name="textbox_InstallLog" Margin="0,0,0,20" DockPanel.Dock="Top" TextWrapping="Wrap" IsReadOnly="true"/>

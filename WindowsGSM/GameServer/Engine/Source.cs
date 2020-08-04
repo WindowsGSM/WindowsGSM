@@ -40,10 +40,7 @@ namespace WindowsGSM.GameServer.Engine
         public virtual string Game { get { return string.Empty; } }
         public virtual string AppId { get { return string.Empty; } }
 
-        public Source(Functions.ServerConfig serverData)
-        {
-            this.serverData = serverData;
-        }
+        public Source(Functions.ServerConfig serverData) => this.serverData = serverData;
 
         public async Task<Process> Start()
         {
@@ -68,6 +65,7 @@ namespace WindowsGSM.GameServer.Engine
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerGSLT) ? string.Empty : $" +sv_setsteamaccount {serverData.ServerGSLT}");
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerParam) ? string.Empty : $" {serverData.ServerParam}");
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerMap) ? string.Empty : $" +map {serverData.ServerMap}");
+            if (serverData.ServerParam.Contains("-game ")) { sb.Replace($" -game {Game}", ""); }
             string param = sb.ToString();
 
             Process p;

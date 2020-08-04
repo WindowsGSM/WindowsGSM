@@ -79,6 +79,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/arma3.png.
+        /// </summary>
+        public static string Arma_3_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Arma 3 Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/avorion.png.
         /// </summary>
         public static string Avorion_Dedicated_Server {

@@ -105,7 +105,7 @@ namespace WindowsGSM.Functions
                     string[] keyvalue = line.Split(new[] {'='}, 2);
                     if (keyvalue.Length == 2)
                     {
-                        keyvalue[1] = keyvalue[1].Trim('\"');
+                        keyvalue[1] = keyvalue[1].Substring(1, keyvalue[1].Length - 2);
 
                         switch (keyvalue[0])
                         {
@@ -319,7 +319,7 @@ namespace WindowsGSM.Functions
                     {
                         if (settingName == keyvalue[0])
                         {
-                            return keyvalue[1].Trim('\"');
+                            return keyvalue[1].Substring(1, keyvalue[1].Length - 2);
                         }
                     }
                 }
