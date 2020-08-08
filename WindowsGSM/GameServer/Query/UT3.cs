@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using WindowsGSM.Functions;
 
 namespace WindowsGSM.GameServer.Query
 {
-    class UT3
+    public class UT3
     {
         private static readonly byte[] UT3_MAGIC = { 0xFE, 0xFD };
         private static readonly byte[] UT3_HANDSHAKE = { 0x09 };

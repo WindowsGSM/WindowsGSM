@@ -66,15 +66,14 @@ namespace WindowsGSM
             AppDomain.CurrentDomain.UnhandledException += async (s, args) =>
             {
                 string version = string.Concat(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString().Reverse().Skip(2).Reverse());
-                string logPath = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Logs");
+                string logPath = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "logs");
                 Directory.CreateDirectory(logPath);
 
                 string logFile = Path.Combine(logPath, $"CRASH_{DateTime.Now.ToString("yyyyMMdd")}.log");
                 File.AppendAllText(logFile, $"WindowsGSM v{version}\n\n" + args.ExceptionObject);
-
+#if !DEBUG
                 string latestLogFile = Path.Combine(logPath, "latest_crash_wgsm_temp.log");
                 File.AppendAllText(latestLogFile, $"WindowsGSM v{version}\n\n" + args.ExceptionObject);
-#if !DEBUG
                 RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM");
                 if (key != null && (key.GetValue("RestartOnCrash") ?? false).ToString() == "True")
                 {

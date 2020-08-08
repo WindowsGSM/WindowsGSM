@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using WindowsGSM.Functions;
 
 namespace WindowsGSM.GameServer.Query
 {
-    class FIVEM
+    public class FIVEM
     {
         private static readonly byte[] FIVEM_INFO = Encoding.Default.GetBytes("getinfo windowsgsm");
 

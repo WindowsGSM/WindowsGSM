@@ -134,7 +134,7 @@ namespace WindowsGSM.GameServer
             return null;
         }
 
-        public async Task<bool> Update()
+        public async Task<Process> Update()
         {
             // Backup the data folder
             string dataPath = ServerPath.GetServersServerFiles(_serverData.ServerID, "data");
@@ -144,10 +144,10 @@ namespace WindowsGSM.GameServer
             {
                 if (Directory.Exists(tempPath))
                 {
-                    if (!await Functions.DirectoryManagement.DeleteAsync(tempPath, true))
+                    if (!await DirectoryManagement.DeleteAsync(tempPath, true))
                     {
-                        Error = $"Fail to delete the temp folder";
-                        return false;
+                        Error = "Fail to delete the temp folder";
+                        return null;
                     }
                 }
 
@@ -165,15 +165,15 @@ namespace WindowsGSM.GameServer
                     }
                 }))
                 {
-                    return false;
+                    return null;
                 }
             }
 
             // Delete the serverfiles folder
             if (!await DirectoryManagement.DeleteAsync(ServerPath.GetServersServerFiles(_serverData.ServerID), true))
             {
-                Error = $"Fail to delete the serverfiles";
-                return false;
+                Error = "Fail to delete the serverfiles";
+                return null;
             }
 
             // Recreate the serverfiles folder
@@ -196,7 +196,7 @@ namespace WindowsGSM.GameServer
                     }
                 }))
                 {
-                    return false;
+                    return null;
                 }
 
                 await DirectoryManagement.DeleteAsync(tempPath, true);
@@ -206,7 +206,13 @@ namespace WindowsGSM.GameServer
             await Install();
 
             // Return is valid
-            return IsInstallValid();
+            if (IsInstallValid())
+            {
+                return null;
+            }
+
+            Error = "Update fail";
+            return null;
         }
 
         public bool IsInstallValid()

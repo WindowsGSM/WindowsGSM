@@ -23,7 +23,7 @@ namespace WindowsGSM.GameServer
         public string Maxplayers = "54";
         public string Additional = string.Empty;
 
-        public string AppId = "376030";
+        public string AppId = "423410";
 
         public BW(Functions.ServerConfig serverData)
         {
@@ -90,19 +90,17 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, "423410");
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, AppId);
             Error = steamCMD.Error;
 
             return p;
         }
 
-        public async Task<bool> Update(bool validate = false)
+        public async Task<Process> Update(bool validate = false, string custom = null)
         {
-            var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, string.Empty, "423410", validate);
-            Error = steamCMD.Error;
-
-            return updateSuccess;
+            var (p, error) = await Installer.SteamCMD.UpdateEx(_serverData.ServerID, AppId, validate, custom: custom);
+            Error = error;
+            return p;
         }
 
         public bool IsInstallValid()
@@ -119,13 +117,13 @@ namespace WindowsGSM.GameServer
         public string GetLocalBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return steamCMD.GetLocalBuild(_serverData.ServerID, "423410");
+            return steamCMD.GetLocalBuild(_serverData.ServerID, AppId);
         }
 
         public async Task<string> GetRemoteBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return await steamCMD.GetRemoteBuild("423410");
+            return await steamCMD.GetRemoteBuild(AppId);
         }
     }
 }

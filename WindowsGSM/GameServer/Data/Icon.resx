@@ -123,9 +123,6 @@
   <data name="ARK: Survival Evolved Dedicated Server" xml:space="preserve">
     <value>Images/Games/arkse.png</value>
   </data>
-  <data name="Arma 3 Dedicated Server" xml:space="preserve">
-    <value>Images/Games/arma3.png</value>
-  </data>
   <data name="Avorion Dedicated Server" xml:space="preserve">
     <value>Images/Games/avorion.png</value>
   </data>

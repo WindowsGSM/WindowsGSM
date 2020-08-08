@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using WindowsGSM.Functions;
 
 namespace WindowsGSM.GameServer.Query
 {
-    class A2S
+    public class A2S
     {
         private static readonly byte[] A2S_INFO = Encoding.Default.GetBytes("TSource Engine Query");
         private static readonly byte[] A2S_PLAYER = Encoding.Default.GetBytes("U");

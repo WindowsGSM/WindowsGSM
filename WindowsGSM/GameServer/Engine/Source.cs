@@ -19,7 +19,7 @@ using System.Text;
 
 namespace WindowsGSM.GameServer.Engine
 {
-    class Source
+    public class Source
     {
         public Functions.ServerConfig serverData;
 
@@ -61,7 +61,7 @@ namespace WindowsGSM.GameServer.Engine
             sb.Append($"-console -game {Game}");
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerIP) ? string.Empty : $" -ip {serverData.ServerIP}");
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerPort) ? string.Empty : $" -port {serverData.ServerPort}");
-            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerMaxPlayer) ? string.Empty : $" -maxplayers{(Game == CSGO.FullName ? "_override" : "")} {serverData.ServerMaxPlayer}");
+            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerMaxPlayer) ? string.Empty : $" -maxplayers{(AppId == "740" ? "_override" : "")} {serverData.ServerMaxPlayer}");
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerGSLT) ? string.Empty : $" +sv_setsteamaccount {serverData.ServerGSLT}");
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerParam) ? string.Empty : $" {serverData.ServerParam}");
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerMap) ? string.Empty : $" +map {serverData.ServerMap}");
@@ -151,13 +151,11 @@ namespace WindowsGSM.GameServer.Engine
             return p;
         }
 
-        public async Task<bool> Update(bool validate = false)
+        public async Task<Process> Update(bool validate = false, string custom = null)
         {
-            var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(serverData.ServerID, string.Empty, AppId, validate);
-            Error = steamCMD.Error;
-
-            return updateSuccess;
+            var (p, error) = await Installer.SteamCMD.UpdateEx(serverData.ServerID, AppId, validate, custom: custom);
+            Error = error;
+            return p;
         }
 
         public bool IsInstallValid()

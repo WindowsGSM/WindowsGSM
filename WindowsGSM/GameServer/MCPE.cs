@@ -175,7 +175,7 @@ namespace WindowsGSM.GameServer
             return null;
         }
 
-        public async Task<bool> Update()
+        public async Task<Process> Update()
         {
             //Delete PocketMine-MP.phar
             string fileName = "PocketMine-MP.phar";
@@ -190,7 +190,7 @@ namespace WindowsGSM.GameServer
             catch
             {
                 Error = $"Fail to delete {fileName}";
-                return false;
+                return null;
             }
 
             //Download PocketMine-MP.phar
@@ -205,10 +205,10 @@ namespace WindowsGSM.GameServer
             catch
             {
                 Error = $"Fail to download {fileName}";
-                return false;
+                return null;
             }
 
-            return true;
+            return null;
         }
 
         public bool IsInstallValid()

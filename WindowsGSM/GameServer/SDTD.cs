@@ -44,6 +44,8 @@ namespace WindowsGSM.GameServer
         public string Maxplayers = "8";
         public string Additional = string.Empty;
 
+        public string AppId = "294420";
+
         public SDTD(Functions.ServerConfig serverData)
         {
             _serverData = serverData;
@@ -93,7 +95,7 @@ namespace WindowsGSM.GameServer
             WindowsFirewall firewall = new WindowsFirewall(exeName, exePath);
             if (!await firewall.IsRuleExist())
             {
-                firewall.AddRule();
+                await firewall.AddRule();
             }
 
             Process p;
@@ -152,19 +154,17 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, "294420");
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, AppId);
             Error = steamCMD.Error;
 
             return p;
         }
 
-        public async Task<bool> Update(bool validate = false)
+        public async Task<Process> Update(bool validate = false, string custom = null)
         {
-            var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, string.Empty, "294420", validate);
-            Error = steamCMD.Error;
-
-            return updateSuccess;
+            var (p, error) = await Installer.SteamCMD.UpdateEx(_serverData.ServerID, AppId, validate, custom: custom);
+            Error = error;
+            return p;
         }
 
         public bool IsInstallValid()
@@ -187,13 +187,13 @@ namespace WindowsGSM.GameServer
         public string GetLocalBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return steamCMD.GetLocalBuild(_serverData.ServerID, "294420");
+            return steamCMD.GetLocalBuild(_serverData.ServerID, AppId);
         }
 
         public async Task<string> GetRemoteBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return await steamCMD.GetRemoteBuild("294420");
+            return await steamCMD.GetRemoteBuild(AppId);
         }
     }
 }

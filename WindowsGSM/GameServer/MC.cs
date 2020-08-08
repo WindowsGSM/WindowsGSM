@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Net;
-using System.Threading;
-using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using WindowsGSM.Tools;
@@ -81,7 +79,7 @@ namespace WindowsGSM.GameServer
             WindowsFirewall firewall = new WindowsFirewall("java.exe", javaPath);
             if (!await firewall.IsRuleExist())
             {
-                firewall.AddRule();
+                await firewall.AddRule();
             }
 
             Process p;
@@ -227,7 +225,7 @@ namespace WindowsGSM.GameServer
             return null;
         }
 
-        public async Task<bool> Update()
+        public async Task<Process> Update()
         {
             //Install JAVA if not installed
             if (!JavaHelper.IsJREInstalled())
@@ -236,7 +234,7 @@ namespace WindowsGSM.GameServer
                 if (!taskResult.installed)
                 {
                     Error = taskResult.error;
-                    return false;
+                    return null;
                 }
             }
 
@@ -250,7 +248,7 @@ namespace WindowsGSM.GameServer
                 catch
                 {
                     Error = "Fail to delete server.jar";
-                    return false;
+                    return null;
                 }
             }
 
@@ -276,7 +274,7 @@ namespace WindowsGSM.GameServer
                     if (packageUrl == null)
                     {
                         Error = $"Fail to fetch packageUrl from {manifestUrl}";
-                        return false;
+                        return null;
                     }
 
                     //packageUrl example: https://launchermeta.mojang.com/v1/packages/6876d19c096de56d1aa2cf434ec6b0e66e0aba00/1.15.json
@@ -301,10 +299,10 @@ namespace WindowsGSM.GameServer
             catch
             {
                 Error = $"Fail to install {FullName}";
-                return false;
+                return null;
             }
 
-            return true;
+            return null;
         }
 
         public bool IsInstallValid()

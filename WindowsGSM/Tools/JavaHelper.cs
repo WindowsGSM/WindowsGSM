@@ -3,14 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.IO;
-using System.Web;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace WindowsGSM.Tools
 {
-    class JavaHelper
+    public class JavaHelper
     {
         private static string JavaAbsoluteInstallPath = Path.Combine(GetProgramFilesAbsolutePath(), "Java");
         private static string JreAbsoluteInstallPath = Path.Combine(JavaAbsoluteInstallPath, "jre1.8.0_241");

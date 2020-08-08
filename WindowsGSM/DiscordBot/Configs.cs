@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using WindowsGSM.Functions;
 
 namespace WindowsGSM.DiscordBot
 {
     static class Configs
     {
-		private static readonly string _botPath = Functions.ServerPath.Get("DiscordBot");
+		private static readonly string _botPath = ServerPath.Get(ServerPath.FolderName.Configs, "discordbot");
 
 		public static void CreateConfigs()
 		{

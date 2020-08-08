@@ -29,13 +29,15 @@ namespace WindowsGSM.GameServer
         public bool AllowsEmbedConsole = false;
         public int PortIncrements = 2;
         public dynamic QueryMethod = new Query.A2S();
-        public bool requireSteamAccount = true;
+        public bool loginAnonymous = false;
 
         public string Port = "2302";
         public string QueryPort = "27016";
         public string Defaultmap = "dayzOffline.chernarusplus";
         public string Maxplayers = "60";
         public string Additional = "-config=serverDZ.cfg -doLogs -adminLog -netLog";
+
+        public string AppId = "223350";
 
         public DAYZ(Functions.ServerConfig serverData)
         {
@@ -66,7 +68,7 @@ namespace WindowsGSM.GameServer
                 WindowsFirewall firewall = new WindowsFirewall(StartPath, dzsaPath);
                 if (!await firewall.IsRuleExist())
                 {
-                    firewall.AddRule();
+                    await firewall.AddRule();
                 }
             }
             else
@@ -132,19 +134,17 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, "223350", true, loginAnonymous: false);
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, AppId, true, loginAnonymous);
             Error = steamCMD.Error;
 
             return p;
         }
 
-        public async Task<bool> Update(bool validate = false)
+        public async Task<Process> Update(bool validate = false, string custom = null)
         {
-            var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, string.Empty, "223350", validate, loginAnonymous: false);
-            Error = steamCMD.Error;
-
-            return updateSuccess;
+            var (p, error) = await Installer.SteamCMD.UpdateEx(_serverData.ServerID, AppId, validate, custom: custom, loginAnonymous: loginAnonymous);
+            Error = error;
+            return p;
         }
 
         public bool IsInstallValid()
@@ -162,13 +162,13 @@ namespace WindowsGSM.GameServer
         public string GetLocalBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return steamCMD.GetLocalBuild(_serverData.ServerID, "223350");
+            return steamCMD.GetLocalBuild(_serverData.ServerID, AppId);
         }
 
         public async Task<string> GetRemoteBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return await steamCMD.GetRemoteBuild("223350");
+            return await steamCMD.GetRemoteBuild(AppId);
         }
     }
 }

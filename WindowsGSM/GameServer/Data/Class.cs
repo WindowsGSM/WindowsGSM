@@ -1,8 +1,11 @@
-﻿namespace WindowsGSM.GameServer.Data
+﻿using System.Collections.Generic;
+using WindowsGSM.Functions;
+
+namespace WindowsGSM.GameServer.Data
 {
     static class Class
     {
-        public static dynamic Get(string serverGame, Functions.ServerConfig serverData = null)
+        public static dynamic Get(string serverGame, ServerConfig serverData = null, List<PluginMetadata> pluginList = null)
         {
             switch (serverGame)
             {
@@ -51,8 +54,20 @@
                 case ROR2.FullName: return new ROR2(serverData);
                 case ECO.FullName: return new ECO(serverData);
                 case VTS.FullName: return new VTS(serverData);
-                case ARMA3.FullName: return new ARMA3(serverData);
-                default: return null;
+                default: // Load Plugin
+                {
+                    if (pluginList == null) { return null; }
+
+                    foreach (var plugin in pluginList)
+                    {
+                        if (plugin.IsLoaded && plugin.FullName == serverGame)
+                        {
+                            return PluginManagement.GetPluginClass(plugin, serverData);
+                        }
+                    }
+
+                    return null;
+                };
             }
         }
     }

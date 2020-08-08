@@ -1,0 +1,158 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Microsoft.CodeDom.Providers.DotNetCompilerPlatform</name>
+    </assembly>
+    <members>
+        <member name="T:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.CSharpCodeProvider">
+            <summary>
+            Provides access to instances of the .NET Compiler Platform C# code generator and code compiler.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.CSharpCodeProvider.#ctor">
+            <summary>
+            Default Constructor
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.CSharpCodeProvider.#ctor(Microsoft.CodeDom.Providers.DotNetCompilerPlatform.ICompilerSettings)">
+            <summary>
+            Creates an instance using the given ICompilerSettings
+            </summary>
+            <param name="compilerSettings"></param>
+        </member>
+        <member name="M:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.CSharpCodeProvider.#ctor(Microsoft.CodeDom.Providers.DotNetCompilerPlatform.IProviderOptions)">
+            <summary>
+            Creates an instance using the given IProviderOptions
+            </summary>
+            <param name="providerOptions"></param>
+        </member>
+        <member name="M:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.CSharpCodeProvider.CreateCompiler">
+            <summary>
+            Gets an instance of the .NET Compiler Platform C# code compiler.
+            </summary>
+            <returns>An instance of the .NET Compiler Platform C# code compiler</returns>
+        </member>
+        <member name="T:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.IProviderOptions">
+            <summary>
+            Provides settings for the C# and VB CodeProviders
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.IProviderOptions.CompilerVersion">
+            <summary>
+            A string representing the in-box .Net Framework compiler version to be used.
+            Not applicable to this Roslyn-based package which contains it's own compiler.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.IProviderOptions.WarnAsError">
+            <summary>
+            Returns true if the codedom provider has warnAsError set to true
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.IProviderOptions.UseAspNetSettings">
+            <summary>
+            Returns true if the codedom provider is requesting to use similar default
+            compiler options as ASP.Net does with in-box .Net Framework compilers.
+            These options are programatically enforced on top of parameters passed
+            in to the codedom provider.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.IProviderOptions.AllOptions">
+            <summary>
+            Returns the entire set of options - known or not - as configured in &lt;providerOptions&gt;
+            </summary>
+        </member>
+        <member name="T:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.ProviderOptions">
+            <summary>
+            A set of options for the C# and VB CodeProviders.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.ProviderOptions.#ctor">
+            <summary>
+            Create a default set of options for the C# and VB CodeProviders.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.ProviderOptions.#ctor(Microsoft.CodeDom.Providers.DotNetCompilerPlatform.IProviderOptions)">
+            <summary>
+            Create a set of options for the C# or VB CodeProviders using the specified inputs.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.ProviderOptions.#ctor(System.String,System.Int32)">
+            <summary>
+            Create a set of options for the C# or VB CodeProviders using some specified inputs.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.ProviderOptions.CompilerFullPath">
+            <summary>
+            The full path to csc.exe or vbc.exe
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.ProviderOptions.CompilerServerTimeToLive">
+            <summary>
+            TTL in seconds
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.ProviderOptions.CompilerVersion">
+            <summary>
+            Used by in-box framework code providers to determine which compat version of the compiler to use.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.ProviderOptions.WarnAsError">
+            <summary>
+            Treat all warnings as errors. Will override defaults and command-line options given for a compiler.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.ProviderOptions.UseAspNetSettings">
+            <summary>
+            Use the set of compiler options that was traditionally added programatically for ASP.Net.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.ProviderOptions.AllOptions">
+            <summary>
+            A collection of all &lt;providerOptions&gt; specified in config for the given CodeDomProvider.
+            </summary>
+        </member>
+        <member name="T:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.ICompilerSettings">
+            <summary>
+            Provides settings for the C# and VB CodeProviders
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.ICompilerSettings.CompilerFullPath">
+            <summary>
+            The full path to csc.exe or vbc.exe
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.ICompilerSettings.CompilerServerTimeToLive">
+            <summary>
+            TTL in seconds
+            </summary>
+        </member>
+        <member name="T:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.VBCodeProvider">
+            <summary>
+            Provides access to instances of the .NET Compiler Platform VB code generator and code compiler.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.VBCodeProvider.#ctor">
+            <summary>
+            Default Constructor
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.VBCodeProvider.#ctor(Microsoft.CodeDom.Providers.DotNetCompilerPlatform.ICompilerSettings)">
+            <summary>
+            Creates an instance using the given ICompilerSettings
+            </summary>
+            <param name="compilerSettings"></param>
+        </member>
+        <member name="M:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.VBCodeProvider.#ctor(Microsoft.CodeDom.Providers.DotNetCompilerPlatform.IProviderOptions)">
+            <summary>
+            Creates an instance using the given ICompilerSettings
+            </summary>
+            <param name="providerOptions"></param>
+        </member>
+        <member name="M:Microsoft.CodeDom.Providers.DotNetCompilerPlatform.VBCodeProvider.CreateCompiler">
+            <summary>
+            Gets an instance of the .NET Compiler Platform VB code compiler.
+            </summary>
+            <returns>An instance of the .NET Compiler Platform VB code compiler</returns>
+        </member>
+    </members>
+</doc>

@@ -195,7 +195,7 @@ namespace WindowsGSM.GameServer
             }
         }
 
-        public async Task<bool> Update()
+        public async Task<Process> Update()
         {
             try
             {
@@ -219,7 +219,8 @@ namespace WindowsGSM.GameServer
 
                     if (Directory.Exists(serverPath))
                     {
-                        return false;
+                        Error = $"Unable to delete server folder. Path: {serverPath}";
+                        return null;
                     }
 
                     Directory.CreateDirectory(serverPath);
@@ -242,11 +243,11 @@ namespace WindowsGSM.GameServer
                     File.WriteAllText(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "FiveM-version.txt"), remoteBuild);
                 }
 
-                return true;
+                return null;
             }
             catch
             {
-                return false;
+                return null;
             }
         }
 

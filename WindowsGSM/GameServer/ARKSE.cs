@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace WindowsGSM.GameServer
 {
@@ -86,13 +87,11 @@ namespace WindowsGSM.GameServer
             return p;
         }
 
-        public async Task<bool> Update(bool validate = false)
+        public async Task<Process> Update(bool validate = false, string custom = null)
         {
-            var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, string.Empty, AppId, validate);
-            Error = steamCMD.Error;
-
-            return updateSuccess;
+            var (p, error) = await Installer.SteamCMD.UpdateEx(_serverData.ServerID, AppId, validate, custom: custom);
+            Error = error;
+            return p;
         }
 
         public bool IsInstallValid()

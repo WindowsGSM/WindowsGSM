@@ -5,7 +5,7 @@ using System.Net.Sockets;
 
 namespace WindowsGSM.Functions
 {
-    class ServerConfig
+    public class ServerConfig
     {
         public static class SettingName
         {

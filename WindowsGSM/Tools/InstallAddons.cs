@@ -1,7 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using System.IO;
 using System.Net;
 using System.IO.Compression;
+using Newtonsoft.Json.Linq;
+using System.Linq;
 
 namespace WindowsGSM.Tools
 {
@@ -76,7 +79,6 @@ namespace WindowsGSM.Tools
             try
             {
                 string zipPath = Functions.ServerPath.GetServersServerFiles(server.ID, "dzsalmodserver.zip");
-
                 using (WebClient webClient = new WebClient())
                 {
                     await webClient.DownloadFileTaskAsync("http://dayzsalauncher.com/releases/dzsalmodserver.zip", zipPath);
@@ -89,6 +91,73 @@ namespace WindowsGSM.Tools
             catch
             {
                 return false;
+            }
+        }
+
+        public static bool? IsOxideModExists(Functions.ServerTable server)
+        {
+            if (server.Game != GameServer.RUST.FullName)
+            {
+                // Game Type not supported
+                return null;
+            }
+
+            return File.Exists(Functions.ServerPath.GetServersServerFiles(server.ID, "RustDedicated_Data", "Managed", "Oxide.Core.dll"));
+        }
+
+        public static async Task<bool> OxideMod(Functions.ServerTable server)
+        {
+            try
+            {
+                string basePath = Functions.ServerPath.GetServersServerFiles(server.ID);
+                string zipPath = Functions.ServerPath.GetServersServerFiles(server.ID, "Oxide.Rust.zip");
+                using (WebClient webClient = new WebClient())
+                {
+                    await webClient.DownloadFileTaskAsync("https://github.com/OxideMod/Oxide.Rust/releases/latest/download/Oxide.Rust.zip", zipPath);
+                }
+
+                bool success = await Task.Run(() =>
+                {
+                    try
+                    {
+                        using (var f = File.OpenRead(zipPath))
+                        using (var a = new ZipArchive(f))
+                        {
+                            a.Entries.Where(o => o.Name == string.Empty && !Directory.Exists(Path.Combine(basePath, o.FullName))).ToList().ForEach(o => Directory.CreateDirectory(Path.Combine(basePath, o.FullName)));
+                            a.Entries.Where(o => o.Name != string.Empty).ToList().ForEach(e => e.ExtractToFile(Path.Combine(basePath, e.FullName), true));
+                        }
+                        return true;
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                });
+
+                await Task.Run(() => { try { File.Delete(zipPath); } catch { } });
+                return success;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static async Task<string> GetOxideModLatestVersion()
+        {
+            try
+            {
+                var webRequest = WebRequest.Create("https://api.github.com/repos/OxideMod/Oxide.Rust/releases/latest") as HttpWebRequest;
+                webRequest.Method = "GET";
+                webRequest.UserAgent = "Anything";
+                webRequest.ServicePoint.Expect100Continue = false;
+                var response = await webRequest.GetResponseAsync();
+                using (var responseReader = new StreamReader(response.GetResponseStream()))
+                return JObject.Parse(responseReader.ReadToEnd())["tag_name"].ToString();
+            }
+            catch
+            {
+                return null;
             }
         }
     }

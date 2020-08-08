@@ -176,7 +176,7 @@ namespace WindowsGSM.Functions
         public static async void SendErrorLog()
         {
             const int MAX_MESSAGE_LENGTH = 2000 - 10;
-            string latestLogFile = Path.Combine(MainWindow.WGSM_PATH, "Logs", "latest_crash_wgsm_temp.log");
+            string latestLogFile = Path.Combine(MainWindow.WGSM_PATH, "logs", "latest_crash_wgsm_temp.log");
             if (!File.Exists(latestLogFile)) { return; }
 
             string errorLog = HttpUtility.JavaScriptStringEncode(File.ReadAllText(latestLogFile)).Replace(@"\r\n", "\n").Replace(@"\n", "\n");

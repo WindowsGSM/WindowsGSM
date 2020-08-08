@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WindowsGSM.GameServer.Engine
 {
-    class GoldSource
+    public class GoldSource
     {
         public Functions.ServerConfig serverData;
 
@@ -132,13 +132,11 @@ namespace WindowsGSM.GameServer.Engine
             return p;
         }
 
-        public async Task<bool> Update(bool validate = false)
+        public async Task<Process> Update(bool validate = false, string custom = null)
         {
-            var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(serverData.ServerID, Game, "90", validate, true);
-            Error = steamCMD.Error;
-
-            return updateSuccess;
+            var (p, error) = await Installer.SteamCMD.UpdateEx(serverData.ServerID, "90", validate, custom: custom, modName: Game);
+            Error = error;
+            return p;
         }
 
         public bool IsInstallValid()

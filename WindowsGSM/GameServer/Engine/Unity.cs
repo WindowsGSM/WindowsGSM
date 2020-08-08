@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace WindowsGSM.GameServer.Engine
 {
-    class Unity
+    public class Unity
     {
     }
 }

@@ -29,6 +29,61 @@
 
     <mah:MetroWindow.Flyouts>
         <mah:FlyoutsControl>
+            <mah:Flyout x:Name="MahAppFlyout_ViewPlugins" Header="Plugins" Position="Right" Width="600" Theme="Dark" IsModal="True">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Orientation="Vertical">
+                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                            <Label Content="Installed:" Margin="12,0,0,10" FontSize="14" FontWeight="SemiBold" Padding="5,5.5,0,5"></Label>
+                            <Label x:Name="Label_PluginInstalled" Content=" 0" Margin="0,0,10,10" FontSize="15" FontWeight="SemiBold" Foreground="Aqua"></Label>
+                            <Label Content="Loaded:" Margin="0,0,0,10" FontSize="14" FontWeight="SemiBold" Padding="5,5.5,0,5"></Label>
+                            <Label x:Name="Label_PluginLoaded" Content="0" Margin="0,0,10,10" FontSize="15" FontWeight="SemiBold" Foreground="GreenYellow"></Label>
+                            <Label Content="Failed:" Margin="0,0,0,10" FontSize="14" FontWeight="SemiBold" Padding="5,5.5,0,5"></Label>
+                            <Label x:Name="Label_PluginFailed" Content="0" Margin="0,0,10,10" FontSize="15" FontWeight="SemiBold" Foreground="Red"></Label>
+                        </StackPanel>
+                        <Button x:Name="Button_RefreshPlugins" Content="Reload Plugins" Height="29" Width="130" HorizontalAlignment="Right" Margin="-20,-50,12,0" Click="RefreshPlugins_Click"></Button>
+                    </StackPanel>
+
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                        <Label Content="✔️" Margin="10,0,0,10" FontSize="17" FontWeight="SemiBold" Foreground="GreenYellow"></Label>
+                        <Label Content="Loaded Plugin List" Margin="0,0,10,10" FontSize="17" FontWeight="SemiBold"></Label>
+                    </StackPanel>
+
+                    <mah:MetroProgressBar x:Name="ProgressRing_LoadPlugins" IsIndeterminate="True" Foreground="{DynamicResource MahApps.Brushes.AccentBase}" Margin="10,0,10,10" DockPanel.Dock="Top" Visibility="Collapsed"/>
+
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel x:Name="StackPanel_PluginList">
+                            <!--
+                            <Border BorderBrush="GreenYellow" Background="SlateGray" BorderThickness="1.5" CornerRadius="5" Padding="6" Margin="10,0,10,10">
+                                <DockPanel>
+                                    <Border BorderBrush="White" BorderThickness="0" CornerRadius="5" Padding="10" Width="61" Height="61" Margin="0,0,10,0">
+                                        <Border.Background><ImageBrush Stretch="Fill" ImageSource="Images/Games/arma3.png"></ImageBrush></Border.Background>
+                                    </Border>
+
+                                    <DockPanel DockPanel.Dock="Top" Margin="0,0,3,0">
+                                        <Label Content="v1.0" DockPanel.Dock="Right" Padding="0"></Label>
+                                        <Label Content="WindowsGSM.ARMA3" DockPanel.Dock="Left" FontSize="14" FontWeight="Bold" Padding="0"></Label>
+                                    </DockPanel>
+
+                                    <TextBlock Text="WindowsGSM Plugin - Arma 3 Dedicated Server" DockPanel.Dock="Top"></TextBlock>
+
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
+                                        <Border BorderBrush="DimGray" BorderThickness="0" CornerRadius="30" Padding="10" Width="25" Height="25" Margin="0,0,5,0">
+                                            <Border.Background><ImageBrush Stretch="Fill" ImageSource="Images/Games/tf2.png"></ImageBrush></Border.Background>
+                                        </Border>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Label Content="BattlefieldDuck" DockPanel.Dock="Top" Padding="0" ></Label>
+                                            <Label Content="•" DockPanel.Dock="Top" Padding="0" Margin="5,0,5,0" ></Label>
+                                            <TextBlock><Hyperlink Foreground="GreenYellow">https://github.com/BattlefieldDuck</Hyperlink></TextBlock>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DockPanel>
+                            </Border>
+                            -->
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+            </mah:Flyout>
             <mah:Flyout x:Name="MahAppFlyout_Settings" Header="WindowsGSM Settings" Position="Right" Width="300" Theme="Dark" IsModal="True">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
@@ -156,7 +211,7 @@
                     </DockPanel>
                 </DockPanel>
             </mah:Flyout>
-            <mah:Flyout x:Name="MahAppFlyout_InstallGameServer" Header="Install Game Server" Position="Left" Theme="Adapt" IsModal="True">
+            <mah:Flyout x:Name="MahAppFlyout_InstallGameServer" Header="Install Game Server" Width="500" Position="Left" Theme="Adapt" IsModal="True">
                 <DockPanel VerticalAlignment="Stretch" Height="Auto">
                     <DockPanel Margin="20,0,20,0">
                         <DockPanel DockPanel.Dock="Top">
@@ -205,7 +260,7 @@
                     </DockPanel>
                 </DockPanel>
             </mah:Flyout>
-            <mah:Flyout x:Name="MahAppFlyout_ImportGameServer" Header="Import Game Server" Position="Left" Theme="Adapt" IsModal="True">
+            <mah:Flyout x:Name="MahAppFlyout_ImportGameServer" Header="Import Game Server" Width="500" Position="Left" Theme="Adapt" IsModal="True">
                 <DockPanel VerticalAlignment="Stretch" Height="Auto">
                     <DockPanel Margin="20,0,20,0">
 
@@ -257,7 +312,7 @@
     </mah:MetroWindow.Flyouts>
 
     <Grid>
-        <DockPanel Name="hMenu_Discordbot" Margin="48,0,0,0" Visibility="Hidden">
+        <DockPanel Name="hMenu_Discordbot" Margin="48,0,0,0" Visibility="Visible">
             <Grid DockPanel.Dock="Top">
                 <DockPanel Margin="10,10,10,10" DockPanel.Dock="Top">
                     <DockPanel>
@@ -268,7 +323,7 @@
                                 </DockPanel>
                                 <DockPanel DockPanel.Dock="Top">
                                     <Label Content="Usage: Remote control the game servers with Discord" DockPanel.Dock="Left"/>
-                                    <Button x:Name="button_DiscordBotInvite" DockPanel.Dock="Right" HorizontalAlignment="Right" Content="Invite" Width="75" Height="23" Click="Button_DiscordBotInvite_Click"/>
+                                    <Button x:Name="button_DiscordBotInvite" DockPanel.Dock="Right" HorizontalAlignment="Right" Content="Invite" Width="75" Height="23" Click="Button_DiscordBotInvite_Click" IsEnabled="False"/>
                                 </DockPanel>
                                 <Label Content="Available commands:" DockPanel.Dock="Top"/>
                                 <Label x:Name="label_DiscordBotCommands" Content="" FontFamily="Consolas" DockPanel.Dock="Top"/>
@@ -286,7 +341,7 @@
                             </DockPanel>
 
                             <DockPanel DockPanel.Dock="Top" Margin="0,10,0,0">
-                                <Label Content="Bot Token"/>
+                                <Label Content="Discord Bot Token"/>
                                 <Button x:Name="button_DiscordBotTokenEdit" Content="Edit" Margin="0,0,0,5" HorizontalAlignment="Right" Width="75" Height="23" Click="Button_DiscordBotTokenEdit_Click"/>
                             </DockPanel>
                             <Grid DockPanel.Dock="Top">
@@ -297,14 +352,14 @@
                             <DockPanel DockPanel.Dock="Top" Margin="0,10,0,0">
                                 <DockPanel DockPanel.Dock="Left">
                                     <DockPanel DockPanel.Dock="Top">
-                                        <Label Content="Dashboard Channel"/>
+                                        <Label Content="Dashboard Channel ID"/>
                                         <Button x:Name="button_DiscordBotDashboardEdit" Content="Edit" Margin="35,0,0,5" HorizontalAlignment="Right" Width="75" Height="23" Click="Button_DiscordBotDashboardEdit_Click"/>
                                     </DockPanel>
                                     <TextBox x:Name="textBox_DiscordBotDashboard" Height="11" DockPanel.Dock="Top" Text="" IsEnabled="False" FontFamily="Consolas"/>
                                 </DockPanel>
                                 <DockPanel DockPanel.Dock="Right" Margin="10,0,0,0">
                                     <Label Content="Dashboard Refresh Rate (Second)" DockPanel.Dock="Top"/>
-                                    <mah:NumericUpDown x:Name="numericUpDown_DiscordRefreshRate" Minimum="2" Maximum="900" Interval="1" Height="5" Margin="0,4,0,0" ValueChanged="NumericUpDown_DiscordRefreshRate_ValueChanged"/>
+                                    <mah:NumericUpDown x:Name="numericUpDown_DiscordRefreshRate" Minimum="30" Maximum="900" Interval="1" Height="5" Margin="0,4,0,0" ValueChanged="NumericUpDown_DiscordRefreshRate_ValueChanged"/>
                                 </DockPanel>
                             </DockPanel>
 
@@ -459,7 +514,7 @@
             </Grid>
         </DockPanel>
 
-        <DockPanel Name="hMenu_Home" Margin="48,0,0,0" Visibility="Visible">
+        <DockPanel Name="hMenu_Home" Margin="48,0,0,0" Visibility="Hidden">
             <Grid DockPanel.Dock="Top">
                 <Menu x:Name="menu" Height="30" DockPanel.Dock="Top" Margin="1,0,0,0">
                     <MenuItem Header="Servers" Height="30">
@@ -573,6 +628,11 @@
                                     <Image Source="/WindowsGSM;component/Images/Tools/DayZSAL.ico" Width="23" Margin="3"/>
                                 </MenuItem.Icon>
                             </MenuItem>
+                            <MenuItem Header="OxideMod" Click="Tools_InstallOxideMod_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/WindowsGSM;component/Images/Tools/OxideMod.ico" Width="23" Margin="3"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
                         </MenuItem>
                     </MenuItem>
                     <MenuItem Header="Help" Height="30">
@@ -602,7 +662,7 @@
             </Grid>
             <Grid Height="1" Background="Black" DockPanel.Dock="Top"/>
             <Grid Height="40" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="0,0,0,0">
-                <Label x:Name="label_select" Content="Select a server" HorizontalAlignment="Left" Margin="10,2,0,0" VerticalAlignment="Top" Height="33"/>
+                <Label x:Name="label_select" Content="Select or Install or Import a server" HorizontalAlignment="Left" Margin="10,2,0,0" VerticalAlignment="Center" Height="33"/>
                 <DockPanel x:Name="grid_action">
                     <!--<Button x:Name="button_Crash" Cursor="Hand" Content="CRASH" HorizontalAlignment="Left" Margin="10,5,0,5" Width="101" Height="26" Background="Purple" Foreground="White" Click="Actions_Crash_Click"/>-->
                     <Button x:Name="button_Start" Cursor="Hand" Content="START" HorizontalAlignment="Left" Margin="10,5,0,5" Width="101" Height="26" Click="Actions_Start_Click" Background="LimeGreen" Foreground="White"/>
@@ -786,6 +846,11 @@
 
                 <mah:HamburgerMenu.OptionsItemsSource>
                     <mah:HamburgerMenuItemCollection>
+                        <mah:HamburgerMenuImageItem Label="Plugins">
+                            <mah:HamburgerMenuImageItem.Thumbnail>
+                                <BitmapImage UriSource="pack://application:,,,/WindowsGSM;component/Images/HMenu/ViewPlugins.ico" />
+                            </mah:HamburgerMenuImageItem.Thumbnail>
+                        </mah:HamburgerMenuImageItem>
                         <mah:HamburgerMenuImageItem Label="Settings">
                             <mah:HamburgerMenuImageItem.Thumbnail>
                                 <BitmapImage UriSource="pack://application:,,,/WindowsGSM;component/Images/HMenu/Settings.ico" />

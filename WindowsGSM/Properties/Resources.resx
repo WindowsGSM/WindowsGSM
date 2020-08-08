@@ -121,4 +121,7 @@
   <data name="MahApps_Metro" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\..\packages\MahApps.Metro.2.1.1\lib\net47\MahApps.Metro.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="roslyn" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\roslyn.zip;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
 </root>

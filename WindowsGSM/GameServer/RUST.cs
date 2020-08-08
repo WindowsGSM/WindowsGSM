@@ -33,6 +33,8 @@ namespace WindowsGSM.GameServer
         public string Maxplayers = "50";
         public string Additional = string.Empty;
 
+        public string AppId = "258550";
+
         public RUST(Functions.ServerConfig serverData)
         {
             _serverData = serverData;
@@ -62,7 +64,7 @@ namespace WindowsGSM.GameServer
             string workingDir = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
             string srcdsPath = Path.Combine(workingDir, "RustDedicated.exe");
 
-            string param = $"-nographics -batchmode -silent-crashes";
+            string param = "-nographics -batchmode -silent-crashes";
             param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? string.Empty : $" +server.hostname \"{_serverData.ServerName}\"";
             param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? string.Empty : $" +server.ip {_serverData.ServerIP}";
             param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $" +server.port {_serverData.ServerPort}";
@@ -102,19 +104,17 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, "258550");
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, AppId);
             Error = steamCMD.Error;
 
             return p;
         }
 
-        public async Task<bool> Update(bool validate = false)
+        public async Task<Process> Update(bool validate = false, string custom = null)
         {
-            var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, string.Empty, "258550", validate);
-            Error = steamCMD.Error;
-
-            return updateSuccess;
+            var (p, error) = await Installer.SteamCMD.UpdateEx(_serverData.ServerID, AppId, validate, custom: custom);
+            Error = error;
+            return p;
         }
 
         public bool IsInstallValid()
@@ -131,13 +131,13 @@ namespace WindowsGSM.GameServer
         public string GetLocalBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return steamCMD.GetLocalBuild(_serverData.ServerID, "258550");
+            return steamCMD.GetLocalBuild(_serverData.ServerID, AppId);
         }
 
         public async Task<string> GetRemoteBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return await steamCMD.GetRemoteBuild("258550");
+            return await steamCMD.GetRemoteBuild(AppId);
         }
     }
 }

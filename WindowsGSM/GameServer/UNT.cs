@@ -16,7 +16,7 @@ namespace WindowsGSM.GameServer
         public bool AllowsEmbedConsole = true;
         public int PortIncrements = 2;
         public dynamic QueryMethod = new Query.A2S();
-        public bool requireSteamAccount = true;
+        public bool loginAnonymous = false;
 
         public string Port = "27015";
         public string QueryPort = "27016";
@@ -114,19 +114,17 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, AppId, true, loginAnonymous: false);
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, AppId, true, loginAnonymous);
             Error = steamCMD.Error;
 
             return p;
         }
 
-        public async Task<bool> Update(bool validate = false)
+        public async Task<Process> Update(bool validate = false, string custom = null)
         {
-            var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, string.Empty, AppId, validate, loginAnonymous: false);
-            Error = steamCMD.Error;
-
-            return updateSuccess;
+            var (p, error) = await Installer.SteamCMD.UpdateEx(_serverData.ServerID, AppId, validate, custom: custom, loginAnonymous: loginAnonymous);
+            Error = error;
+            return p;
         }
 
         public bool IsInstallValid()

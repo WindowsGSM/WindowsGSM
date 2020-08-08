@@ -171,7 +171,7 @@ namespace WindowsGSM.GameServer
             return null;
         }
 
-        public async Task<bool> Update()
+        public async Task<Process> Update()
         {
             try
             {
@@ -185,7 +185,8 @@ namespace WindowsGSM.GameServer
 
                     if (matches.Count <= 0)
                     {
-                        return false;
+                        Error = "Fail to get latest build from https://minecraft.azureedge.net";
+                        return null;
                     }
 
                     string downloadUrl = matches[0].Value; //https://minecraft.azureedge.net/bin-win/bedrock-server-1.14.21.0.zip
@@ -241,12 +242,12 @@ namespace WindowsGSM.GameServer
                     File.WriteAllText(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "MCBE-version.txt"), version);
                 }
 
-                return true;
+                return null;
             }
             catch (Exception e)
             {
-                Error = e.ToString();
-                return false;
+                Error = e.Message;
+                return null;
             }
         }
 

@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Net;
+using System.IO.Compression;
 using System.Reflection;
-using System.Windows;
-using System.Windows.Documents;
+using WindowsGSM.Functions;
 
 namespace WindowsGSM
 {
@@ -20,6 +18,19 @@ namespace WindowsGSM
             if (!File.Exists(mahAppPath) || new FileInfo(mahAppPath).Length != 3425392) // Latest MahApps.Metro.dll byte size is 3425392
             {
                 File.WriteAllBytes(mahAppPath, Properties.Resources.MahApps_Metro);
+            }
+
+            string roslynBase = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), ServerPath.FolderName.Bin);
+            Directory.CreateDirectory(roslynBase);
+            if (!Directory.Exists(Path.Combine(roslynBase, "roslyn")))
+            {
+                string roslynZipPath = Path.Combine(roslynBase, "roslyn.zip");
+                if (!File.Exists(roslynZipPath) || new FileInfo(roslynZipPath).Length != 7529158) // Latest roslyn.zip byte size is 7529158
+                {
+                    File.WriteAllBytes(roslynZipPath, Properties.Resources.roslyn);
+                    ZipFile.ExtractToDirectory(roslynZipPath, roslynBase);
+                    File.Delete(roslynZipPath);
+                }
             }
 
             AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
