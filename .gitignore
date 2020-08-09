@@ -1,4 +1,6 @@
 .vs
 WindowsGSM/bin/
 WindowsGSM/obj/
+WindowsGSM-Plugin-Development/bin/
+WindowsGSM-Plugin-Development/obj/
 WindowsGSM.sln.DotSettings.user
