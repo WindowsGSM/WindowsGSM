@@ -314,7 +314,7 @@ namespace WindowsGSM
 
             ServerPath.CreateAndFixDirectories();
 
-            LoadPlugins();
+            LoadPlugins(shouldAwait: false);
             AddGamesToComboBox();
 
             for (int i = 0; i <= MAX_SERVER; i++)
@@ -462,10 +462,10 @@ namespace WindowsGSM
             }
         }
 
-        public async void LoadPlugins()
+        public async void LoadPlugins(bool shouldAwait = true)
         {
             var pm = new PluginManagement();
-            PluginsList = await pm.LoadPlugins();
+            PluginsList = await pm.LoadPlugins(shouldAwait);
 
             int loadedCount = 0;
             PluginsList.ForEach(delegate(PluginMetadata plugin)
@@ -3208,7 +3208,7 @@ namespace WindowsGSM
             }
 
             string messageText = $"Server Name: {row.Name}\nPublic IP: {publicIP}\nQuery Port: {row.QueryPort}";
-            if (Tools.GlobalServerList.IsServerOnSteamServerList(publicIP, row.QueryPort))
+            if (Functions.GlobalServerList.IsServerOnSteamServerList(publicIP, row.QueryPort))
             {
                 System.Windows.MessageBox.Show(messageText + "\n\nResult: Online\n\nYour server is on the global server list!", "Global Server List Check", MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -3223,7 +3223,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            bool? existed = Tools.InstallAddons.IsAMXModXAndMetaModPExists(server);
+            bool? existed = Functions.InstallAddons.IsAMXModXAndMetaModPExists(server);
             if (existed == null)
             {
                 await this.ShowMessageAsync("Tools - Install AMX Mod X & MetaMod-P", $"Doesn't support on {server.Game} (ID: {server.ID})");
@@ -3241,7 +3241,7 @@ namespace WindowsGSM
             {
                 ProgressDialogController controller = await this.ShowProgressAsync("Installing...", "Please wait...");
                 controller.SetIndeterminate();
-                bool installed = await Tools.InstallAddons.AMXModXAndMetaModP(server);
+                bool installed = await Functions.InstallAddons.AMXModXAndMetaModP(server);
                 await controller.CloseAsync();
 
                 string message = installed ? $"Installed successfully" : $"Fail to install";
@@ -3254,7 +3254,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            bool? existed = Tools.InstallAddons.IsSourceModAndMetaModExists(server);
+            bool? existed = Functions.InstallAddons.IsSourceModAndMetaModExists(server);
             if (existed == null)
             {
                 await this.ShowMessageAsync("Tools - Install SourceMod & MetaMod", $"Doesn't support on {server.Game} (ID: {server.ID})");
@@ -3272,7 +3272,7 @@ namespace WindowsGSM
             {
                 ProgressDialogController controller = await this.ShowProgressAsync("Installing...", "Please wait...");
                 controller.SetIndeterminate();
-                bool installed = await Tools.InstallAddons.SourceModAndMetaMod(server);
+                bool installed = await Functions.InstallAddons.SourceModAndMetaMod(server);
                 await controller.CloseAsync();
 
                 string message = installed ? $"Installed successfully" : $"Fail to install";
@@ -3285,7 +3285,7 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            bool? existed = Tools.InstallAddons.IsDayZSALModServerExists(server);
+            bool? existed = Functions.InstallAddons.IsDayZSALModServerExists(server);
             if (existed == null)
             {
                 await this.ShowMessageAsync("Tools - Install DayZSAL Mod Server", $"Doesn't support on {server.Game} (ID: {server.ID})");
@@ -3303,7 +3303,7 @@ namespace WindowsGSM
             {
                 ProgressDialogController controller = await this.ShowProgressAsync("Installing...", "Please wait...");
                 controller.SetIndeterminate();
-                bool installed = await Tools.InstallAddons.DayZSALModServer(server);
+                bool installed = await Functions.InstallAddons.DayZSALModServer(server);
                 await controller.CloseAsync();
 
                 string message = installed ? $"Installed successfully" : $"Fail to install";
@@ -3318,7 +3318,7 @@ namespace WindowsGSM
 
             string messageTitle = "Tools - Install OxideMod";
 
-            bool? existed = Tools.InstallAddons.IsOxideModExists(server);
+            bool? existed = Functions.InstallAddons.IsOxideModExists(server);
             if (existed == null)
             {
                 await this.ShowMessageAsync(messageTitle, $"Doesn't support on {server.Game} (ID: {server.ID})");
@@ -3336,7 +3336,7 @@ namespace WindowsGSM
             {
                 ProgressDialogController controller = await this.ShowProgressAsync("Installing...", "Please wait...");
                 controller.SetIndeterminate();
-                bool installed = await Tools.InstallAddons.OxideMod(server);
+                bool installed = await Functions.InstallAddons.OxideMod(server);
                 await controller.CloseAsync();
 
                 string message = installed ? $"Installed successfully" : $"Fail to install";

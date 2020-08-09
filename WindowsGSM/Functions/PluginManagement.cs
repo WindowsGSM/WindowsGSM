@@ -29,7 +29,7 @@ namespace WindowsGSM.Functions
             Directory.CreateDirectory(ServerPath.GetPlugins());
         }
 
-        public async Task<List<PluginMetadata>> LoadPlugins()
+        public async Task<List<PluginMetadata>> LoadPlugins(bool shouldAwait = true)
         {
             var plugins = new List<PluginMetadata>();
             foreach (var pluginFolder in Directory.GetDirectories(ServerPath.GetPlugins(), "*.cs", SearchOption.TopDirectoryOnly).ToList())
@@ -37,7 +37,7 @@ namespace WindowsGSM.Functions
                 var pluginFile = Path.Combine(pluginFolder, Path.GetFileName(pluginFolder));
                 if (File.Exists(pluginFile))
                 {
-                    var plugin = await LoadPlugin(pluginFile);
+                    var plugin = await LoadPlugin(pluginFile, shouldAwait);
                     if (plugin != null)
                     {
                         plugins.Add(plugin);
@@ -48,7 +48,7 @@ namespace WindowsGSM.Functions
             return plugins;
         }
 
-        public async Task<PluginMetadata> LoadPlugin(string path)
+        public async Task<PluginMetadata> LoadPlugin(string path, bool shouldAwait = true)
         {
             var pluginMetadata = new PluginMetadata
             {
@@ -58,10 +58,13 @@ namespace WindowsGSM.Functions
             var options = new CompilerParameters();
             options.ReferencedAssemblies.Add(Assembly.GetEntryAssembly().Location);
             options.ReferencedAssemblies.Add("System.dll");
+            options.ReferencedAssemblies.Add("System.Core.dll");
+            options.ReferencedAssemblies.Add("System.Data.dll");
+            options.ReferencedAssemblies.Add(ServerPath.GetBin("Newtonsoft.Json.dll"));
             options.GenerateInMemory = true;
 
             var c = new Microsoft.CodeDom.Providers.DotNetCompilerPlatform.CSharpCodeProvider();
-            var cr = c.CompileAssemblyFromSource(options, File.ReadAllText(path));
+            var cr = shouldAwait ? await Task.Run(() => c.CompileAssemblyFromSource(options, File.ReadAllText(path))) : c.CompileAssemblyFromSource(options, File.ReadAllText(path));
             if (cr.Errors.HasErrors)
             {
                 var sb = new StringBuilder();
@@ -76,7 +79,7 @@ namespace WindowsGSM.Functions
 
             try
             {
-                pluginMetadata.Type = cr.CompiledAssembly.GetType($"WindowsGSM.Plugins.{Path.GetFileNameWithoutExtension(path)}");
+                pluginMetadata.Type = shouldAwait ? await Task.Run(() => cr.CompiledAssembly.GetType($"WindowsGSM.Plugins.{Path.GetFileNameWithoutExtension(path)}")) : cr.CompiledAssembly.GetType($"WindowsGSM.Plugins.{Path.GetFileNameWithoutExtension(path)}");
                 var plugin = GetPluginClass(pluginMetadata);
                 pluginMetadata.FullName = $"{plugin.FullName} [{pluginMetadata.FileName}]";
                 pluginMetadata.Plugin = plugin.Plugin;

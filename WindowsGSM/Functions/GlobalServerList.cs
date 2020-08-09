@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Net;
 
-namespace WindowsGSM.Tools
+namespace WindowsGSM.Functions
 {
     static class GlobalServerList
     {

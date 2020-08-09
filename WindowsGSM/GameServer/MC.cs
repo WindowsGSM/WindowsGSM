@@ -6,7 +6,7 @@ using System.Windows;
 using System.Net;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
-using WindowsGSM.Tools;
+using WindowsGSM.Functions;
 
 namespace WindowsGSM.GameServer
 {

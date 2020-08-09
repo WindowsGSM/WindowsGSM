@@ -374,6 +374,7 @@
     <Compile Include="Functions\ServerCache.cs" />
     <Compile Include="Functions\ServerConsole.cs" />
     <Compile Include="Functions\SystemMetrics.cs" />
+    <Compile Include="Functions\UI.cs" />
     <Compile Include="GameServer\Addon\AMXModX.cs" />
     <Compile Include="GameServer\Addon\SourceMod.cs" />
     <Compile Include="GameServer\ARKSE.cs" />
@@ -425,10 +426,10 @@
     <Compile Include="GameServer\UNT.cs" />
     <Compile Include="GameServer\VTS.cs" />
     <Compile Include="GameServer\ZPS.cs" />
-    <Compile Include="Tools\GlobalServerList.cs" />
-    <Compile Include="Tools\InstallAddons.cs" />
+    <Compile Include="Functions\GlobalServerList.cs" />
+    <Compile Include="Functions\InstallAddons.cs" />
     <Compile Include="Functions\UdpClientHandler.cs" />
-    <Compile Include="Tools\JavaHelper.cs" />
+    <Compile Include="Functions\JavaHelper.cs" />
     <Compile Include="WindowsFirewall.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

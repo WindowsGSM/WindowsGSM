@@ -6,7 +6,7 @@ using System.IO.Compression;
 using Newtonsoft.Json.Linq;
 using System.Linq;
 
-namespace WindowsGSM.Tools
+namespace WindowsGSM.Functions
 {
     class InstallAddons
     {
