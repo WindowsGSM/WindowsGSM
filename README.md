@@ -1,4 +1,4 @@
-﻿![Screenshot](https://windowsgsm.com/assets/images/WindowsGSM-v1.19.0.png)
+﻿![Screenshot](https://windowsgsm.com/assets/images/WindowsGSM-v1.21.0.png)
 
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/WindowsGSM/WindowsGSM/)
 [![Build status](https://ci.appveyor.com/api/projects/status/ttaomnayo3gidf2g?svg=true)](https://ci.appveyor.com/project/WindowsGSM/windowsgsm)
@@ -71,12 +71,25 @@ WindowsGSM is a powerful tool to manage game servers. Equipped with a GUI for se
   * **CPU Priority and Affinity** - Set and save the cpu priority and affinity!
   * **Mod Manager** - Manage your server custom mods with WindowsGSM!
   * **Remote Control** - Remote control your game servers with Discord!
+  * **Plugins** - Allow support more game servers by installing plugins
 
 ### Dashboard
+Easily view the statistics information of your servers!
+
 ![Screenshot DashBoard](https://windowsgsm.com/assets/images/WindowsGSM-Dashboard-v1.18.0.png)
 
 ### Discord Bot Remote Control
+Effortlessly remote control your game servers with Discord!
+
 ![Screenshot DiscordBot](https://windowsgsm.com/assets/images/WindowsGSM-DiscordBot-v1.18.0.png)
+
+### Plugins
+Allow support more game servers by installing plugins!
+##### Some available plugins (Made by [BattlefieldDuck](https://github.com/BattlefieldDuck)):
+1. [WindowsGSM.ARMA3](https://github.com/BattlefieldDuck/WindowsGSM.ARMA3)
+1. [WindowsGSM.PaperMC](https://github.com/BattlefieldDuck/WindowsGSM.PaperMC)
+
+![Screenshot Plugins](https://windowsgsm.com/assets/images/WindowsGSM-Plugins-v1.21.0.png)
 
 ## Documentation
   * Website: <https://docs.windowsgsm.com/>
