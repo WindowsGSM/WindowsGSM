@@ -167,9 +167,9 @@ namespace WindowsGSM
         public MainWindow(bool showCrashHint)
         {
             //Add SplashScreen
-            SplashScreen splashScreen = new SplashScreen("Images/SplashScreen.png");
+            var splashScreen = new SplashScreen("Images/SplashScreen.png");
             splashScreen.Show(false, true);
-            Functions.DiscordWebhook.SendErrorLog();
+            DiscordWebhook.SendErrorLog();
 
             InitializeComponent();
             Title = $"WindowsGSM {WGSM_VERSION}";
@@ -180,7 +180,7 @@ namespace WindowsGSM
             // Add all themes to comboBox_Themes
             ThemeManager.Current.Themes.Select(t => Path.GetExtension(t.Name).Trim('.')).Distinct().OrderBy(x => x).ToList().ForEach(delegate (string name) { comboBox_Themes.Items.Add(name); });
 
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM");
+            var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM");
             if (key == null)
             {
                 key = Registry.CurrentUser.CreateSubKey(@"SOFTWARE\WindowsGSM");
@@ -243,14 +243,14 @@ namespace WindowsGSM
             {
                 StackPanel stackPanel = new StackPanel
                 {
-                    Orientation = System.Windows.Controls.Orientation.Horizontal,
+                    Orientation = Orientation.Horizontal,
                     VerticalAlignment = VerticalAlignment.Center,
                     Margin = new Thickness(15, 0, 0, 0)
                 };
 
                 _checkBoxes.Add(new System.Windows.Controls.CheckBox());
                 _checkBoxes[i].Focusable = false;
-                var label = new System.Windows.Controls.Label
+                var label = new Label
                 {
                     Content = $"CPU {i}",
                     Padding = new Thickness(0, 5, 0, 5)
@@ -266,7 +266,7 @@ namespace WindowsGSM
             {
                 checkBox.Click += (sender, e) =>
                 {
-                    var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+                    var server = (ServerTable)ServerGrid.SelectedItem;
                     if (server == null) { return; }
 
                     CheckPrioity:
@@ -285,7 +285,7 @@ namespace WindowsGSM
                     textBox_SetAffinity.Text = Functions.CPU.Affinity.GetAffinityValidatedString(priority);
 
                     g_CPUAffinity[int.Parse(server.ID)] = priority;
-                    Functions.ServerConfig.SetSetting(server.ID, "cpuaffinity", priority);
+                    ServerConfig.SetSetting(server.ID, "cpuaffinity", priority);
 
                     if (g_Process[int.Parse(server.ID)] != null && !g_Process[int.Parse(server.ID)].HasExited)
                     {
@@ -881,7 +881,7 @@ namespace WindowsGSM
             }
 
             // Add ServerType Series if not exist
-            foreach ((string, int) item in typePlayers)
+            foreach (var item in typePlayers)
             {
                 livechart_players.Series.Add(new ColumnSeries
                 {
@@ -904,12 +904,10 @@ namespace WindowsGSM
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             // Save height and width
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
-            if (key != null)
+            using (var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true))
             {
-                key.SetValue("Height", Height.ToString());
-                key.SetValue("Width", Width.ToString());
-                key.Close();
+                key?.SetValue("Height", Height.ToString());
+                key?.SetValue("Width", Width.ToString());
             }
 
             // Stop Discord Bot
@@ -1312,7 +1310,7 @@ namespace WindowsGSM
                 button_Browse.IsEnabled = true;
                 progressbar_ImportProgress.IsIndeterminate = false;
                 textblock_ImportProgress.Text = "[ERROR] Fail to import";
-                System.Windows.MessageBox.Show($"Fail to copy the directory.\n{textbox_ServerDir.Text}\nto\n{importPath}\n\nYou may install a new server and copy the old servers file to the new server.\n\nException: {importLog}", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Fail to copy the directory.\n{textbox_ServerDir.Text}\nto\n{importPath}\n\nYou may install a new server and copy the old servers file to the new server.\n\nException: {importLog}", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -1345,12 +1343,12 @@ namespace WindowsGSM
 
         private async void Delete_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            if (g_iServerStatus[Int32.Parse(server.ID)] != ServerStatus.Stopped) { return; }
+            if (g_iServerStatus[int.Parse(server.ID)] != ServerStatus.Stopped) { return; }
 
-            MessageBoxResult result = System.Windows.MessageBox.Show("Do you want to delete this server?\n(There is no comeback)", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            MessageBoxResult result = MessageBox.Show("Do you want to delete this server?\n(There is no comeback)", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result != MessageBoxResult.Yes) { return; }
 
             await GameServer_Delete(server);
@@ -1358,10 +1356,10 @@ namespace WindowsGSM
 
         private async void Button_DiscordEdit_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            string webhookUrl = Functions.ServerConfig.GetSetting(server.ID, Functions.ServerConfig.SettingName.DiscordWebhook);
+            string webhookUrl = ServerConfig.GetSetting(server.ID, Functions.ServerConfig.SettingName.DiscordWebhook);
 
             var settings = new MetroDialogSettings
             {
@@ -1373,15 +1371,15 @@ namespace WindowsGSM
             if (webhookUrl == null) { return; } //If pressed cancel
 
             g_DiscordWebhook[int.Parse(server.ID)] = webhookUrl;
-            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.DiscordWebhook, webhookUrl);
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.DiscordWebhook, webhookUrl);
         }
 
         private async void Button_DiscordSetMessage_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            string message = Functions.ServerConfig.GetSetting(server.ID, Functions.ServerConfig.SettingName.DiscordMessage);
+            var message = ServerConfig.GetSetting(server.ID, ServerConfig.SettingName.DiscordMessage);
 
             var settings = new MetroDialogSettings
             {
@@ -1393,18 +1391,18 @@ namespace WindowsGSM
             if (message == null) { return; } //If pressed cancel
 
             g_DiscordMessage[int.Parse(server.ID)] = message;
-            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.DiscordMessage, message);
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.DiscordMessage, message);
         }
 
         private async void Button_DiscordWebhookTest_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
             int serverId = int.Parse(server.ID);
             if (!g_bDiscordAlert[serverId]) { return; }
 
-            var webhook = new Functions.DiscordWebhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
+            var webhook = new DiscordWebhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
             await webhook.Send(server.ID, server.Game, "Webhook Test Alert", server.Name, server.IP, server.Port);
         }
 
@@ -1415,7 +1413,7 @@ namespace WindowsGSM
 
             if (string.IsNullOrWhiteSpace(command)) { return; }
 
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
             SendCommand(server, command);
@@ -2440,9 +2438,9 @@ namespace WindowsGSM
                         SetServerStatus(server, "Updating");
 
                         //Update the server
-                        bool updated = await gameServer.Update();
+                        await gameServer.Update();
 
-                        if (updated)
+                        if (string.IsNullOrWhiteSpace(gameServer.Error))
                         {
                             Log(server.ID, $"Server: Updated ({remoteVersion})");
 
@@ -2482,7 +2480,7 @@ namespace WindowsGSM
             }
         }
 
-        private async void StartRestartCrontabCheck(Functions.ServerTable server)
+        private async void StartRestartCrontabCheck(ServerTable server)
         {
             int serverId = int.Parse(server.ID);
 
@@ -2557,7 +2555,7 @@ namespace WindowsGSM
             }
         }
 
-        private async void StartSendHeartBeat(Functions.ServerTable server)
+        private async void StartSendHeartBeat(ServerTable server)
         {
             //Save the process of game server
             Process p = g_Process[int.Parse(server.ID)];
@@ -2658,7 +2656,7 @@ namespace WindowsGSM
             });
         }
 
-        private void SetServerStatus(Functions.ServerTable server, string status)
+        private void SetServerStatus(ServerTable server, string status)
         {
             server.Status = status;
 
@@ -2701,7 +2699,7 @@ namespace WindowsGSM
         public void DiscordBotLog(string logText)
         {
             string log = $"[{DateTime.Now.ToString("MM/dd/yyyy-HH:mm:ss")}] {logText}" + Environment.NewLine;
-            string logPath = Functions.ServerPath.GetLogs();
+            string logPath = ServerPath.GetLogs();
             Directory.CreateDirectory(logPath);
 
             string logFile = Path.Combine(logPath, $"L{DateTime.Now.ToString("yyyyMMdd")}-DiscordBot.log");
@@ -2721,7 +2719,7 @@ namespace WindowsGSM
 
         private void Button_ClearServerConsole_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
             g_ServerConsoles[int.Parse(server.ID)].Clear();
@@ -2733,7 +2731,7 @@ namespace WindowsGSM
             textBox_wgsmlog.Clear();
         }
 
-        private void SendCommand(Functions.ServerTable server, string command)
+        private void SendCommand(ServerTable server, string command)
         {
             Process p = g_Process[int.Parse(server.ID)];
             if (p == null) { return; }
@@ -2847,11 +2845,9 @@ namespace WindowsGSM
         #region Settings Flyout
         private void HardWareAcceleration_IsCheckedChanged(object sender, EventArgs e)
         {
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
-            if (key != null)
+            using (var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true))
             {
-                key.SetValue(RegistryKeyName.HardWareAcceleration, MahAppSwitch_HardWareAcceleration.IsOn.ToString());
-                key.Close();
+                key?.SetValue(RegistryKeyName.HardWareAcceleration, MahAppSwitch_HardWareAcceleration.IsOn.ToString());
             }
 
             RenderOptions.ProcessRenderMode = MahAppSwitch_HardWareAcceleration.IsOn ? System.Windows.Interop.RenderMode.SoftwareOnly : System.Windows.Interop.RenderMode.Default;
@@ -2859,11 +2855,9 @@ namespace WindowsGSM
 
         private void UIAnimation_IsCheckedChanged(object sender, EventArgs e)
         {
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
-            if (key != null)
+            using (var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true))
             {
-                key.SetValue(RegistryKeyName.UIAnimation, MahAppSwitch_UIAnimation.IsOn.ToString());
-                key.Close();
+                key?.SetValue(RegistryKeyName.UIAnimation, MahAppSwitch_UIAnimation.IsOn.ToString());
             }
 
             WindowTransitionsEnabled = MahAppSwitch_UIAnimation.IsOn;
@@ -2871,11 +2865,9 @@ namespace WindowsGSM
 
         private void DarkTheme_IsCheckedChanged(object sender, EventArgs e)
         {
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
-            if (key != null)
+            using (var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true))
             {
-                key.SetValue(RegistryKeyName.DarkTheme, MahAppSwitch_DarkTheme.IsOn.ToString());
-                key.Close();
+                key?.SetValue(RegistryKeyName.DarkTheme, MahAppSwitch_DarkTheme.IsOn.ToString());
             }
 
             ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem ?? DEFAULT_THEME}");
@@ -2883,11 +2875,9 @@ namespace WindowsGSM
 
         private void StartOnLogin_IsCheckedChanged(object sender, EventArgs e)
         {
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
-            if (key != null)
+            using (var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true))
             {
-                key.SetValue(RegistryKeyName.StartOnBoot, MahAppSwitch_StartOnBoot.IsOn.ToString());
-                key.Close();
+                key?.SetValue(RegistryKeyName.StartOnBoot, MahAppSwitch_StartOnBoot.IsOn.ToString());
             }
 
             SetStartOnBoot(MahAppSwitch_StartOnBoot.IsOn);
@@ -2895,21 +2885,17 @@ namespace WindowsGSM
 
         private void RestartOnCrash_IsCheckedChanged(object sender, EventArgs e)
         {
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
-            if (key != null)
+            using (var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true))
             {
-                key.SetValue(RegistryKeyName.RestartOnCrash, MahAppSwitch_RestartOnCrash.IsOn.ToString());
-                key.Close();
+                key?.SetValue(RegistryKeyName.RestartOnCrash, MahAppSwitch_RestartOnCrash.IsOn.ToString());
             }
         }
 
         private void SendStatistics_IsCheckedChanged(object sender, EventArgs e)
         {
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
-            if (key != null)
+            using (var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true))
             {
-                key.SetValue(RegistryKeyName.SendStatistics, MahAppSwitch_SendStatistics.IsOn.ToString());
-                key.Close();
+                key?.SetValue(RegistryKeyName.SendStatistics, MahAppSwitch_SendStatistics.IsOn.ToString());
             }
         }
 
@@ -3037,9 +3023,10 @@ namespace WindowsGSM
 
         private void ComboBox_Themes_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
-            key.SetValue(RegistryKeyName.DonorColor, comboBox_Themes.SelectedItem.ToString());
-            key.Close();
+            using (var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true))
+            {
+                key?.SetValue(RegistryKeyName.DonorColor, comboBox_Themes.SelectedItem.ToString());
+            }
 
             //Set theme
             ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem}");
@@ -3191,7 +3178,7 @@ namespace WindowsGSM
         #region Menu - Tools
         private void Tools_GlobalServerListCheck_Click(object sender, RoutedEventArgs e)
         {
-            var row = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var row = (ServerTable)ServerGrid.SelectedItem;
             if (row == null) { return; }
 
             if (row.Game == GameServer.MCPE.FullName || row.Game == GameServer.MC.FullName)
@@ -3208,22 +3195,22 @@ namespace WindowsGSM
             }
 
             string messageText = $"Server Name: {row.Name}\nPublic IP: {publicIP}\nQuery Port: {row.QueryPort}";
-            if (Functions.GlobalServerList.IsServerOnSteamServerList(publicIP, row.QueryPort))
+            if (GlobalServerList.IsServerOnSteamServerList(publicIP, row.QueryPort))
             {
-                System.Windows.MessageBox.Show(messageText + "\n\nResult: Online\n\nYour server is on the global server list!", "Global Server List Check", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(messageText + "\n\nResult: Online\n\nYour server is on the global server list!", "Global Server List Check", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
-                System.Windows.MessageBox.Show(messageText + "\n\nResult: Offline\n\nYour server is not on the global server list.", "Global Server List Check", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(messageText + "\n\nResult: Offline\n\nYour server is not on the global server list.", "Global Server List Check", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private async void Tool_InstallAMXModXMetamodP_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            bool? existed = Functions.InstallAddons.IsAMXModXAndMetaModPExists(server);
+            bool? existed = InstallAddons.IsAMXModXAndMetaModPExists(server);
             if (existed == null)
             {
                 await this.ShowMessageAsync("Tools - Install AMX Mod X & MetaMod-P", $"Doesn't support on {server.Game} (ID: {server.ID})");
@@ -3241,7 +3228,7 @@ namespace WindowsGSM
             {
                 ProgressDialogController controller = await this.ShowProgressAsync("Installing...", "Please wait...");
                 controller.SetIndeterminate();
-                bool installed = await Functions.InstallAddons.AMXModXAndMetaModP(server);
+                bool installed = await InstallAddons.AMXModXAndMetaModP(server);
                 await controller.CloseAsync();
 
                 string message = installed ? $"Installed successfully" : $"Fail to install";
@@ -3251,10 +3238,10 @@ namespace WindowsGSM
 
         private async void Tools_InstallSourcemodMetamod_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            bool? existed = Functions.InstallAddons.IsSourceModAndMetaModExists(server);
+            bool? existed = InstallAddons.IsSourceModAndMetaModExists(server);
             if (existed == null)
             {
                 await this.ShowMessageAsync("Tools - Install SourceMod & MetaMod", $"Doesn't support on {server.Game} (ID: {server.ID})");
@@ -3270,22 +3257,22 @@ namespace WindowsGSM
             var result = await this.ShowMessageAsync("Tools - Install SourceMod & MetaMod", $"Are you sure to install? (ID: {server.ID})", MessageDialogStyle.AffirmativeAndNegative);
             if (result == MessageDialogResult.Affirmative)
             {
-                ProgressDialogController controller = await this.ShowProgressAsync("Installing...", "Please wait...");
+                var controller = await this.ShowProgressAsync("Installing...", "Please wait...");
                 controller.SetIndeterminate();
-                bool installed = await Functions.InstallAddons.SourceModAndMetaMod(server);
+                bool installed = await InstallAddons.SourceModAndMetaMod(server);
                 await controller.CloseAsync();
 
-                string message = installed ? $"Installed successfully" : $"Fail to install";
+                var message = installed ? $"Installed successfully" : $"Fail to install";
                 await this.ShowMessageAsync("Tools - Install SourceMod & MetaMod", $"{message} (ID: {server.ID})");
             }
         }
 
         private async void Tools_InstallDayZSALModServer_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            bool? existed = Functions.InstallAddons.IsDayZSALModServerExists(server);
+            bool? existed = InstallAddons.IsDayZSALModServerExists(server);
             if (existed == null)
             {
                 await this.ShowMessageAsync("Tools - Install DayZSAL Mod Server", $"Doesn't support on {server.Game} (ID: {server.ID})");
@@ -3303,7 +3290,7 @@ namespace WindowsGSM
             {
                 ProgressDialogController controller = await this.ShowProgressAsync("Installing...", "Please wait...");
                 controller.SetIndeterminate();
-                bool installed = await Functions.InstallAddons.DayZSALModServer(server);
+                bool installed = await InstallAddons.DayZSALModServer(server);
                 await controller.CloseAsync();
 
                 string message = installed ? $"Installed successfully" : $"Fail to install";
@@ -3313,12 +3300,12 @@ namespace WindowsGSM
 
         private async void Tools_InstallOxideMod_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
             string messageTitle = "Tools - Install OxideMod";
 
-            bool? existed = Functions.InstallAddons.IsOxideModExists(server);
+            bool? existed = InstallAddons.IsOxideModExists(server);
             if (existed == null)
             {
                 await this.ShowMessageAsync(messageTitle, $"Doesn't support on {server.Game} (ID: {server.ID})");
@@ -3336,7 +3323,7 @@ namespace WindowsGSM
             {
                 ProgressDialogController controller = await this.ShowProgressAsync("Installing...", "Please wait...");
                 controller.SetIndeterminate();
-                bool installed = await Functions.InstallAddons.OxideMod(server);
+                bool installed = await InstallAddons.OxideMod(server);
                 await controller.CloseAsync();
 
                 string message = installed ? $"Installed successfully" : $"Fail to install";
@@ -3349,7 +3336,7 @@ namespace WindowsGSM
         {
             try
             {
-                using (WebClient webClient = new WebClient())
+                using (var webClient = new WebClient())
                 {
                     return webClient.DownloadString("https://ipinfo.io/ip").Replace("\n", string.Empty);
                 }
@@ -3427,9 +3414,9 @@ namespace WindowsGSM
             textbox_EC_ServerGame.Text = serverConfig.ServerGame;
             textbox_EC_ServerName.Text = serverConfig.ServerName;
             textbox_EC_ServerIP.Text = serverConfig.ServerIP;
-            numericUpDown_EC_ServerMaxplayer.Value = int.TryParse(serverConfig.ServerMaxPlayer, out int maxplayer) ? maxplayer : int.Parse(gameServer.Maxplayers);
-            numericUpDown_EC_ServerPort.Value = int.TryParse(serverConfig.ServerPort, out int port) ? port : int.Parse(gameServer.Port);
-            numericUpDown_EC_ServerQueryPort.Value = int.TryParse(serverConfig.ServerQueryPort, out int queryPort) ? queryPort : int.Parse(gameServer.QueryPort);
+            numericUpDown_EC_ServerMaxplayer.Value = int.TryParse(serverConfig.ServerMaxPlayer, out var maxplayer) ? maxplayer : int.Parse(gameServer.Maxplayers);
+            numericUpDown_EC_ServerPort.Value = int.TryParse(serverConfig.ServerPort, out var port) ? port : int.Parse(gameServer.Port);
+            numericUpDown_EC_ServerQueryPort.Value = int.TryParse(serverConfig.ServerQueryPort, out var queryPort) ? queryPort : int.Parse(gameServer.QueryPort);
             textbox_EC_ServerMap.Text = serverConfig.ServerMap;
             textbox_EC_ServerGSLT.Text = serverConfig.ServerGSLT;
             textbox_EC_ServerParam.Text = serverConfig.ServerParam;
@@ -3457,18 +3444,18 @@ namespace WindowsGSM
 
         private void Button_RestartCrontab_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
             g_bRestartCrontab[int.Parse(server.ID)] = switch_restartcrontab.IsOn;
-            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.RestartCrontab, g_bRestartCrontab[int.Parse(server.ID)] ? "1" : "0");
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.RestartCrontab, g_bRestartCrontab[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private void Button_EmbedConsole_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
             g_bEmbedConsole[int.Parse(server.ID)] = switch_embedconsole.IsOn;
-            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.EmbedConsole, g_bEmbedConsole[int.Parse(server.ID)] ? "1" : "0");
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.EmbedConsole, g_bEmbedConsole[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private void Button_AutoRestart_Click(object sender, RoutedEventArgs e)
@@ -3476,63 +3463,63 @@ namespace WindowsGSM
             var server = (Functions.ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
             g_bAutoRestart[int.Parse(server.ID)] = switch_autorestart.IsOn;
-            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.AutoRestart, g_bAutoRestart[int.Parse(server.ID)] ? "1" : "0");
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.AutoRestart, g_bAutoRestart[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private void Button_AutoStart_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
             g_bAutoStart[int.Parse(server.ID)] = switch_autostart.IsOn;
-            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.AutoStart, g_bAutoStart[int.Parse(server.ID)] ? "1" : "0");
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.AutoStart, g_bAutoStart[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private void Button_AutoUpdate_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
             g_bAutoUpdate[int.Parse(server.ID)] = switch_autoupdate.IsOn;
-            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.AutoUpdate, g_bAutoUpdate[int.Parse(server.ID)] ? "1" : "0");
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.AutoUpdate, g_bAutoUpdate[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private async void Button_DiscordAlertSettings_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
             ToggleMahappFlyout(MahAppFlyout_DiscordAlert);
         }
 
         private void Button_UpdateOnStart_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
             g_bUpdateOnStart[int.Parse(server.ID)] = switch_updateonstart.IsOn;
-            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.UpdateOnStart, g_bUpdateOnStart[int.Parse(server.ID)] ? "1" : "0");
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.UpdateOnStart, g_bUpdateOnStart[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private void Button_BackupOnStart_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
             g_bBackupOnStart[int.Parse(server.ID)] = switch_backuponstart.IsOn;
-            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.BackupOnStart, g_bBackupOnStart[int.Parse(server.ID)] ? "1" : "0");
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.BackupOnStart, g_bBackupOnStart[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private void Button_DiscordAlert_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
             g_bDiscordAlert[int.Parse(server.ID)] = switch_discordalert.IsOn;
-            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.DiscordAlert, g_bDiscordAlert[int.Parse(server.ID)] ? "1" : "0");
-            button_discordtest.IsEnabled = g_bDiscordAlert[int.Parse(server.ID)] ? true : false;
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.DiscordAlert, g_bDiscordAlert[int.Parse(server.ID)] ? "1" : "0");
+            button_discordtest.IsEnabled = g_bDiscordAlert[int.Parse(server.ID)];
         }
 
         private async void Button_CrontabEdit_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            string crontabFormat = Functions.ServerConfig.GetSetting(server.ID, Functions.ServerConfig.SettingName.CrontabFormat);
+            string crontabFormat = ServerConfig.GetSetting(server.ID, ServerConfig.SettingName.CrontabFormat);
 
             var settings = new MetroDialogSettings
             {
@@ -3544,52 +3531,52 @@ namespace WindowsGSM
             if (crontabFormat == null) { return; } //If pressed cancel
 
             g_CrontabFormat[int.Parse(server.ID)] = crontabFormat;
-            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.CrontabFormat, crontabFormat);
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.CrontabFormat, crontabFormat);
 
             textBox_restartcrontab.Text = crontabFormat;
-            textBox_nextcrontab.Text = CrontabSchedule.TryParse(crontabFormat)?.GetNextOccurrence(DateTime.Now).ToString("ddd, MM/dd/yyyy HH:mm:ss");
+            textBox_nextcrontab.Text = CrontabSchedule.TryParse(crontabFormat)?.GetNextOccurrence(DateTime.Now).ToString("ddd, MM/dd/yyyy HH:mm:ss") ?? string.Empty;
         }
         #endregion
 
         #region Switches
         private void Switch_AutoStartAlert_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
             g_bAutoStartAlert[int.Parse(server.ID)] = MahAppSwitch_AutoStartAlert.IsOn;
-            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.AutoStartAlert, g_bAutoStartAlert[int.Parse(server.ID)] ? "1" : "0");
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.AutoStartAlert, g_bAutoStartAlert[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private void Switch_AutoRestartAlert_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
             g_bAutoRestartAlert[int.Parse(server.ID)] = MahAppSwitch_AutoRestartAlert.IsOn;
-            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.AutoRestartAlert, g_bAutoRestartAlert[int.Parse(server.ID)] ? "1" : "0");
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.AutoRestartAlert, g_bAutoRestartAlert[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private void Switch_AutoUpdateAlert_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
             g_bAutoUpdateAlert[int.Parse(server.ID)] = MahAppSwitch_AutoUpdateAlert.IsOn;
-            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.AutoUpdateAlert, g_bAutoUpdateAlert[int.Parse(server.ID)] ? "1" : "0");
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.AutoUpdateAlert, g_bAutoUpdateAlert[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private void Switch_RestartCrontabAlert_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
             g_bRestartCrontabAlert[int.Parse(server.ID)] = MahAppSwitch_RestartCrontabAlert.IsOn;
-            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.RestartCrontabAlert, g_bRestartCrontabAlert[int.Parse(server.ID)] ? "1" : "0");
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.RestartCrontabAlert, g_bRestartCrontabAlert[int.Parse(server.ID)] ? "1" : "0");
         }
 
         private void Switch_CrashAlert_Click(object sender, RoutedEventArgs e)
         {
-            var server = (Functions.ServerTable)ServerGrid.SelectedItem;
+            var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
             g_bCrashAlert[int.Parse(server.ID)] = MahAppSwitch_CrashAlert.IsOn;
-            Functions.ServerConfig.SetSetting(server.ID, Functions.ServerConfig.SettingName.CrashAlert, g_bCrashAlert[int.Parse(server.ID)] ? "1" : "0");
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.CrashAlert, g_bCrashAlert[int.Parse(server.ID)] ? "1" : "0");
         }
         #endregion
 
@@ -3755,7 +3742,7 @@ namespace WindowsGSM
         public void Refresh_DiscordBotAdminList(int selectIndex = 0)
         {
             listBox_DiscordBotAdminList.Items.Clear();
-            foreach ((string adminID, string serverIDs) in DiscordBot.Configs.GetBotAdminList())
+            foreach (var (adminID, serverIDs) in DiscordBot.Configs.GetBotAdminList())
             {
                 listBox_DiscordBotAdminList.Items.Add(new DiscordBot.AdminListItem { AdminId = adminID, ServerIds = serverIDs });
             }
@@ -3773,7 +3760,7 @@ namespace WindowsGSM
 
             for (int i = 0; i < ServerGrid.Items.Count; i++)
             {
-                var server = (Functions.ServerTable)ServerGrid.Items[i];
+                var server = (ServerTable)ServerGrid.Items[i];
                 list.Add((server.ID, server.Status, server.Name));
             }
 
@@ -3784,7 +3771,7 @@ namespace WindowsGSM
         {
             for (int i = 0; i < ServerGrid.Items.Count; i++)
             {
-                var server = (Functions.ServerTable)ServerGrid.Items[i];
+                var server = (ServerTable)ServerGrid.Items[i];
                 if (server.ID == serverId) { return true; }
             }
 
@@ -3799,14 +3786,14 @@ namespace WindowsGSM
         public string GetServerName(string serverId)
         {
             var server = GetServerTableById(serverId);
-            return (server == null) ? string.Empty : server.Name;
+            return server?.Name ?? string.Empty;
         }
 
-        private Functions.ServerTable GetServerTableById(string serverId)
+        private ServerTable GetServerTableById(string serverId)
         {
             for (int i = 0; i < ServerGrid.Items.Count; i++)
             {
-                var server = (Functions.ServerTable)ServerGrid.Items[i];
+                var server = (ServerTable)ServerGrid.Items[i];
                 if (server.ID == serverId) { return server; }
             }
 
@@ -3875,11 +3862,9 @@ namespace WindowsGSM
 
         private void Switch_DiscordBotAutoStart_Click(object sender, RoutedEventArgs e)
         {
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
-            if (key != null)
+            using (var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true))
             {
-                key.SetValue("DiscordBotAutoStart", MahAppSwitch_DiscordBotAutoStart.IsOn.ToString());
-                key.Close();
+                key?.SetValue("DiscordBotAutoStart", MahAppSwitch_DiscordBotAutoStart.IsOn.ToString());
             }
         }
 
@@ -3897,15 +3882,15 @@ namespace WindowsGSM
         /// <param name="flyout"></param>
         private void ToggleMahappFlyout(Flyout flyout)
         {
-            MahAppFlyout_DiscordAlert.IsOpen = (flyout == MahAppFlyout_DiscordAlert) ? !MahAppFlyout_DiscordAlert.IsOpen : false;
-            MahAppFlyout_EditConfig.IsOpen = (flyout == MahAppFlyout_EditConfig) ? !MahAppFlyout_EditConfig.IsOpen : false;
-            MahAppFlyout_ImportGameServer.IsOpen = (flyout == MahAppFlyout_ImportGameServer) ? !MahAppFlyout_ImportGameServer.IsOpen : false;
-            MahAppFlyout_InstallGameServer.IsOpen = (flyout == MahAppFlyout_InstallGameServer) ? !MahAppFlyout_InstallGameServer.IsOpen : false;
-            MahAppFlyout_ManageAddons.IsOpen = (flyout == MahAppFlyout_ManageAddons) ? !MahAppFlyout_ManageAddons.IsOpen : false;
-            MahAppFlyout_RestoreBackup.IsOpen = (flyout == MahAppFlyout_RestoreBackup) ? !MahAppFlyout_RestoreBackup.IsOpen : false;
-            MahAppFlyout_SetAffinity.IsOpen = (flyout == MahAppFlyout_SetAffinity) ? !MahAppFlyout_SetAffinity.IsOpen : false;
-            MahAppFlyout_Settings.IsOpen = (flyout == MahAppFlyout_Settings) ? !MahAppFlyout_Settings.IsOpen : false;
-            MahAppFlyout_ViewPlugins.IsOpen = (flyout == MahAppFlyout_ViewPlugins) ? !MahAppFlyout_ViewPlugins.IsOpen : false;
+            MahAppFlyout_DiscordAlert.IsOpen = flyout == MahAppFlyout_DiscordAlert && !MahAppFlyout_DiscordAlert.IsOpen;
+            MahAppFlyout_EditConfig.IsOpen = flyout == MahAppFlyout_EditConfig && !MahAppFlyout_EditConfig.IsOpen;
+            MahAppFlyout_ImportGameServer.IsOpen = flyout == MahAppFlyout_ImportGameServer && !MahAppFlyout_ImportGameServer.IsOpen;
+            MahAppFlyout_InstallGameServer.IsOpen = flyout == MahAppFlyout_InstallGameServer && !MahAppFlyout_InstallGameServer.IsOpen;
+            MahAppFlyout_ManageAddons.IsOpen = flyout == MahAppFlyout_ManageAddons && !MahAppFlyout_ManageAddons.IsOpen;
+            MahAppFlyout_RestoreBackup.IsOpen = flyout == MahAppFlyout_RestoreBackup && !MahAppFlyout_RestoreBackup.IsOpen;
+            MahAppFlyout_SetAffinity.IsOpen = flyout == MahAppFlyout_SetAffinity && !MahAppFlyout_SetAffinity.IsOpen;
+            MahAppFlyout_Settings.IsOpen = flyout == MahAppFlyout_Settings && !MahAppFlyout_Settings.IsOpen;
+            MahAppFlyout_ViewPlugins.IsOpen = flyout == MahAppFlyout_ViewPlugins && !MahAppFlyout_ViewPlugins.IsOpen;
         }
 
         private void HamburgerMenu_ItemClick(object sender, ItemClickEventArgs e)
