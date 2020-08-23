@@ -378,6 +378,7 @@
     <Compile Include="GameServer\Addon\AMXModX.cs" />
     <Compile Include="GameServer\Addon\SourceMod.cs" />
     <Compile Include="GameServer\ARKSE.cs" />
+    <Compile Include="GameServer\ASTRONEER.cs" />
     <Compile Include="GameServer\AVORION.cs" />
     <Compile Include="GameServer\BT.cs" />
     <Compile Include="GameServer\BW.cs" />
@@ -810,7 +811,9 @@
   <ItemGroup>
     <Resource Include="Images\HMenu\ViewPlugins.ico" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Images\Games\astroneer.png" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll">
       <Link>ReferencesEx\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</Link>

@@ -79,6 +79,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/games/astroneer.png.
+        /// </summary>
+        public static string Astroneer_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Astroneer Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/avorion.png.
         /// </summary>
         public static string Avorion_Dedicated_Server {
