@@ -24,8 +24,7 @@ namespace WindowsGSM.Functions
             {
                 using (WebClient webClient = new WebClient())
                 {
-                    await webClient.DownloadFileTaskAsync($"https://github.com/1stian/Game-Server-Configs/raw/master/{gameFullName.Replace(":", "")}/{System.IO.Path.GetFileName(filePath)}", filePath);
-                    //await webClient.DownloadFileTaskAsync($"https://github.com/WindowsGSM/Game-Server-Configs/raw/master/{gameFullName.Replace(":", "")}/{System.IO.Path.GetFileName(filePath)}", filePath);
+                    await webClient.DownloadFileTaskAsync($"https://github.com/WindowsGSM/Game-Server-Configs/raw/master/{gameFullName.Replace(":", "")}/{System.IO.Path.GetFileName(filePath)}", filePath);
                 }
             }
             catch (Exception e)
