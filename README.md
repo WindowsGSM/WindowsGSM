@@ -16,6 +16,7 @@ WindowsGSM is a powerful tool to manage game servers. Equipped with a GUI for se
 | ![logo](WindowsGSM/Images/Games/7dtd.png?raw=true)   | 7 Days to Die Dedicated Server                    |✅|      |
 | ![logo](WindowsGSM/Images/Games/arkse.png?raw=true)  | ARK: Survival Evolved Dedicated Server            |✅| A2S  |
 | ![logo](WindowsGSM/Images/Games/avorion.png?raw=true)| Avorion Dedicated Server                          |✅|      |
+| ![logo](WindowsGSM/Images/Games/astroneer.png?raw=true)| Astroneer Dedicated Server                      |✅|      |
 | ![logo](WindowsGSM/Images/Games/bt.png?raw=true)     | Barotrauma Dedicated Server                       |✅|      |
 | ![logo](WindowsGSM/Images/Games/bw.png?raw=true)     | BlackWake Dedicated Server                        |✅|      |
 | ![logo](WindowsGSM/Images/Games/ce.png?raw=true)     | Conan Exiles Dedicated Server                     |✅| A2S  |
