@@ -12,13 +12,15 @@ namespace WindowsGSM.GameServer
         public string Notice;
 
         public const string FullName = "Astroneer Dedicated Server";
-        public string StartPath = "AstroServer.exe";
+        public string StartPath = "Astro\\Binaries\\Win64\\AstroServer-Win64-Shipping.exe";
         public bool AllowsEmbedConsole = false;
         public int PortIncrements = 1;
         public dynamic QueryMethod = new Query.A2S();
 
-        public string Port = "8777";
-        public string Maxplayers = "8";
+        public string Port = "7777";
+        public string QueryPort = "7777";
+        public string Defaultmap = "map";
+        public string Maxplayers = "4";
         public string Additional = string.Empty;
 
         public string AppId = "728470";
@@ -30,11 +32,22 @@ namespace WindowsGSM.GameServer
 
         public async void CreateServerCFG()
         {
-            //Download server.cfg
+            //Download ini files
             string AstroServerSettings = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "Astro\\Saved\\Config\\WindowsServer\\AstroServerSettings.ini");
+
+            //Checking for saved directory that contains INI files.
+            string workingDir = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
+            if (!Directory.Exists(workingDir + "\\Astro\\Saved"))
+            {
+                Directory.CreateDirectory(workingDir + "\\Astro\\Saved");
+                Directory.CreateDirectory(workingDir + "\\Astro\\Saved\\Config");
+                Directory.CreateDirectory(workingDir + "\\Astro\\Saved\\Config\\WindowsServer");
+            }
+
             if (await Functions.Github.DownloadGameServerConfig(AstroServerSettings, FullName))
             {
                 string configText = File.ReadAllText(AstroServerSettings);
+                configText = configText.Replace("{{serverip}}", _serverData.ServerIP);
                 configText = configText.Replace("{{console_pw}}", _serverData.GetRCONPassword());
                 File.WriteAllText(AstroServerSettings, configText);
             }
@@ -43,7 +56,7 @@ namespace WindowsGSM.GameServer
             if (await Functions.Github.DownloadGameServerConfig(Engine, FullName))
             {
                 string configText = File.ReadAllText(Engine);
-                configText = configText.Replace("{{port}}", _serverData.GetAvailablePort("8777", 1));
+                configText = configText.Replace("{{port}}", _serverData.ServerPort);
                 File.WriteAllText(Engine, configText);
             }
         }
@@ -56,17 +69,30 @@ namespace WindowsGSM.GameServer
             if (!File.Exists(AstroServerSettings) && !File.Exists(Engine))
             {
                 Notice = $"Server ini files not found ({AstroServerSettings} or {Engine})";
+                CreateServerCFG();
             }
 
             string workingDir = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
-            string runPath = Path.Combine(workingDir, "AstroServer.exe");
+            string runPath = Path.Combine(workingDir, "Astro\\Binaries\\Win64\\AstroServer-Win64-Shipping.exe");
+
+            string param = "-log";
+            QueryPort = Port;
+
+            param += $" {_serverData.ServerParam}";
 
             Process p = new Process
             {
                 StartInfo =
                 {
                     WorkingDirectory = workingDir,
-                    FileName = runPath
+                    FileName = runPath,
+                    Arguments = param.TrimEnd(),
+                    WindowStyle = ProcessWindowStyle.Minimized,
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+
                 },
                 EnableRaisingEvents = true
             };
