@@ -48,6 +48,7 @@ namespace WindowsGSM.GameServer
             {
                 string configText = File.ReadAllText(AstroServerSettings);
                 configText = configText.Replace("{{serverip}}", _serverData.ServerIP);
+                configText = configText.Replace("{{ServerName}}", _serverData.ServerName);
                 configText = configText.Replace("{{console_pw}}", _serverData.GetRCONPassword());
                 File.WriteAllText(AstroServerSettings, configText);
             }
