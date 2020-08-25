@@ -47,9 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Examples\Skeleton-SteamCMDAgent.cs" />
-    <Compile Include="Examples\Skeleton.cs" />
-    <Compile Include="Plugins\NewPlugin.cs" />
+    <Compile Include="Plugins\ASTRONEER.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -63,6 +61,9 @@
       <Name>WindowsGSM</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Plugins\ASTRONEER.png" />
+    <Content Include="Plugins\author.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
