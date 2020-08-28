@@ -269,7 +269,7 @@ namespace WindowsGSM
                     var server = (ServerTable)ServerGrid.SelectedItem;
                     if (server == null) { return; }
 
-                    CheckPrioity:
+                CheckPrioity:
                     string priority = string.Empty;
                     for (int i = _checkBoxes.Count - 1; i >= 0; i--)
                     {
@@ -339,8 +339,7 @@ namespace WindowsGSM
                     try
                     {
                         p = Process.GetProcessById(pid);
-                    }
-                    catch
+                    } catch
                     {
                         continue;
                     }
@@ -350,7 +349,7 @@ namespace WindowsGSM
                     {
                         g_Process[int.Parse(server.ID)] = p;
                         g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Started;
-                        SetServerStatus(server, "Started", null);
+                        SetServerStatus(server, "Started");
 
                         /*// Get Console process - untested
                         Process console = GetConsoleProcess(pid);
@@ -402,8 +401,7 @@ namespace WindowsGSM
                         return p;
                     }
                 }
-            }
-            catch
+            } catch
             {
                 // ignore
             }
@@ -436,9 +434,9 @@ namespace WindowsGSM
             //Add games to ComboBox
             SortedList sortedList = new SortedList();
             List<DictionaryEntry> gameName = GameServer.Data.Icon.ResourceManager.GetResourceSet(System.Globalization.CultureInfo.CurrentUICulture, true, true).Cast<DictionaryEntry>().ToList();
-            gameName.ForEach(delegate(DictionaryEntry entry) { sortedList.Add(entry.Key, $"/WindowsGSM;component/{entry.Value}"); });
+            gameName.ForEach(delegate (DictionaryEntry entry) { sortedList.Add(entry.Key, $"/WindowsGSM;component/{entry.Value}"); });
             int pluginLoaded = 0;
-            PluginsList.ForEach(delegate(PluginMetadata plugin)
+            PluginsList.ForEach(delegate (PluginMetadata plugin)
             {
                 if (plugin.IsLoaded)
                 {
@@ -468,7 +466,7 @@ namespace WindowsGSM
             PluginsList = await pm.LoadPlugins(shouldAwait);
 
             int loadedCount = 0;
-            PluginsList.ForEach(delegate(PluginMetadata plugin)
+            PluginsList.ForEach(delegate (PluginMetadata plugin)
             {
                 if (!plugin.IsLoaded)
                 {
@@ -476,8 +474,7 @@ namespace WindowsGSM
                     string logFile = ServerPath.GetLogs(ServerPath.FolderName.Plugins, $"{plugin.FileName}.log");
                     File.WriteAllText(ServerPath.GetLogs(logFile), plugin.Error);
                     Log("Plugins", $"{plugin.FileName} fail to load. Please view the log: {logFile.Replace(WGSM_PATH, string.Empty)}");
-                }
-                else
+                } else
                 {
                     loadedCount++;
                     var converter = new BrushConverter();
@@ -485,8 +482,7 @@ namespace WindowsGSM
                     try
                     {
                         brush = (Brush)converter.ConvertFromString(plugin.Plugin.color);
-                    }
-                    catch
+                    } catch
                     {
                         brush = Brushes.DimGray;
                     }
@@ -564,8 +560,7 @@ namespace WindowsGSM
                     {
                         hyperlink.NavigateUri = new Uri(plugin.Plugin.url);
                         hyperlink.RequestNavigate += Hyperlink_RequestNavigate;
-                    }
-                    catch { }
+                    } catch { }
 
                     textBlock.Inlines.Add(hyperlink);
                     stackPanel.Children.Add(textBlock);
@@ -669,7 +664,7 @@ namespace WindowsGSM
                     string icon = GameServer.Data.Icon.ResourceManager.GetString(serverConfig.ServerGame);
                     if (icon == null)
                     {
-                        PluginsList.ForEach(delegate(PluginMetadata plugin)
+                        PluginsList.ForEach(delegate (PluginMetadata plugin)
                         {
                             if (plugin.IsLoaded)
                             {
@@ -731,8 +726,7 @@ namespace WindowsGSM
                             ServerGrid.SelectedItem = server;
                         }
                     }
-                }
-                catch
+                } catch
                 {
                     // ignore
                 }
@@ -882,8 +876,7 @@ namespace WindowsGSM
                     }
 
                     typePlayers.Remove((livechart_players.Series[i].Title, currentPlayers));
-                }
-                else
+                } else
                 {
                     livechart_players.Series.RemoveAt(i--);
                 }
@@ -950,8 +943,7 @@ namespace WindowsGSM
 
                     textbox_servercommand.IsEnabled = false;
                     button_servercommand.IsEnabled = false;
-                }
-                else if (g_iServerStatus[int.Parse(row.ID)] == ServerStatus.Started)
+                } else if (g_iServerStatus[int.Parse(row.ID)] == ServerStatus.Started)
                 {
                     button_Start.IsEnabled = false;
                     button_Stop.IsEnabled = true;
@@ -963,8 +955,7 @@ namespace WindowsGSM
 
                     textbox_servercommand.IsEnabled = true;
                     button_servercommand.IsEnabled = true;
-                }
-                else
+                } else
                 {
                     button_Start.IsEnabled = false;
                     button_Stop.IsEnabled = false;
@@ -1076,8 +1067,7 @@ namespace WindowsGSM
                 try
                 {
                     Directory.Delete(installPath, true);
-                }
-                catch
+                } catch
                 {
                     System.Windows.Forms.MessageBox.Show(installPath + " is not accessible!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
@@ -1141,8 +1131,7 @@ namespace WindowsGSM
                 {
                     gameServer = GameServer.Data.Class.Get(servergame, newServerConfig, PluginsList);
                     gameServer.CreateServerCFG();
-                }
-                catch
+                } catch
                 {
                     // ignore
                 }
@@ -1160,8 +1149,7 @@ namespace WindowsGSM
                     var analytics = new GoogleAnalytics();
                     analytics.SendGameServerInstall(newServerConfig.ServerID, servergame);
                 }
-            }
-            else
+            } else
             {
                 textbox_InstallServerName.IsEnabled = true;
                 comboBox_InstallGameServer.IsEnabled = true;
@@ -1172,8 +1160,7 @@ namespace WindowsGSM
                 if (Installer != null)
                 {
                     textblock_InstallProgress.Text = "Fail to install [ERROR] Exit code: " + Installer.ExitCode;
-                }
-                else
+                } else
                 {
                     textblock_InstallProgress.Text = $"Fail to install [ERROR] {gameServer.Error}";
                 }
@@ -1198,8 +1185,7 @@ namespace WindowsGSM
                     textBox_InstallToken.Visibility = Visibility.Visible;
                     button_InstallSendToken.Visibility = Visibility.Visible;
                 }
-            }
-            catch
+            } catch
             {
                 // ignore
             }
@@ -1274,8 +1260,7 @@ namespace WindowsGSM
                 try
                 {
                     Directory.Delete(importPath, true);
-                }
-                catch
+                } catch
                 {
                     System.Windows.Forms.MessageBox.Show(importPath + " is not accessible!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
@@ -1304,8 +1289,7 @@ namespace WindowsGSM
                     //Directory.Move(sourcePath, importPath);
 
                     return null;
-                }
-                catch (Exception ex)
+                } catch (Exception ex)
                 {
                     return ex.Message;
                 }
@@ -1447,8 +1431,7 @@ namespace WindowsGSM
             {
                 e.Handled = true;
                 textbox_servercommand.Text = g_ServerConsoles[0].GetPreviousCommand();
-            }
-            else if (e.IsDown && e.Key == Key.Down)
+            } else if (e.IsDown && e.Key == Key.Down)
             {
                 e.Handled = true;
                 textbox_servercommand.Text = g_ServerConsoles[0].GetNextCommand();
@@ -1528,7 +1511,7 @@ namespace WindowsGSM
 
                         g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                         Log(server.ID, "Server: Killed");
-                        SetServerStatus(server, "Stopped", null);
+                        SetServerStatus(server, "Stopped");
                         g_ServerConsoles[int.Parse(server.ID)].Clear();
                         g_Process[int.Parse(server.ID)] = null;
                     }
@@ -1689,7 +1672,7 @@ namespace WindowsGSM
         private void ListBox_ManageAddonsLeft_DoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (listBox_ManageAddonsLeft.SelectedItem != null)
-            { 
+            {
                 var server = (Functions.ServerTable)ServerGrid.SelectedItem;
                 if (server == null) { return; }
 
@@ -1788,7 +1771,7 @@ namespace WindowsGSM
                 g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                 Log(server.ID, "Server: Fail to start");
                 Log(server.ID, "[ERROR] " + gameServer.Error);
-                SetServerStatus(server, "Stopped", null);
+                SetServerStatus(server, "Stopped");
 
                 return null;
             }
@@ -1819,8 +1802,7 @@ namespace WindowsGSM
                     {
                         ShowWindow(p.MainWindowHandle, WindowShowStyle.Hide);
                     }
-                }
-                catch
+                } catch
                 {
                     Debug.WriteLine("No Window require to hide");
                 }
@@ -1834,7 +1816,7 @@ namespace WindowsGSM
                 g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                 Log(server.ID, "Server: Fail to start");
                 Log(server.ID, "[ERROR] Exit Code: " + p.ExitCode.ToString());
-                SetServerStatus(server, "Stopped", null);
+                SetServerStatus(server, "Stopped");
 
                 return null;
             }
@@ -1846,8 +1828,7 @@ namespace WindowsGSM
             try
             {
                 p.ProcessorAffinity = Functions.CPU.Affinity.GetAffinityIntPtr(g_CPUAffinity[int.Parse(server.ID)]);
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 Log(server.ID, $"[NOTICE] Fail to set affinity. ({e.Message})");
             }
@@ -1891,7 +1872,7 @@ namespace WindowsGSM
             }
 
             g_ServerConsoles[int.Parse(server.ID)].Clear();
-            
+
             // Save Cache
             ServerCache.SavePID(server.ID, -1);
             ServerCache.SaveProcessName(server.ID, string.Empty);
@@ -1932,8 +1913,7 @@ namespace WindowsGSM
                 try
                 {
                     return (await gameServer.Update(validate, custum), remoteVersion, gameServer);
-                }
-                catch
+                } catch
                 {
                     return (await gameServer.Update(), remoteVersion, gameServer);
                 }
@@ -1981,14 +1961,14 @@ namespace WindowsGSM
 
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Starting;
             Log(server.ID, "Action: Start" + notes);
-            SetServerStatus(server, "Starting", null);
+            SetServerStatus(server, "Starting");
 
             var gameServer = await Server_BeginStart(server);
             if (gameServer == null)
             {
                 g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                 Log(server.ID, "Server: Fail to start");
-                SetServerStatus(server, "Stopped", null);
+                SetServerStatus(server, "Stopped");
                 return;
             }
 
@@ -2011,7 +1991,7 @@ namespace WindowsGSM
             //Begin stop
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopping;
             Log(server.ID, "Action: Stop");
-            SetServerStatus(server, "Stopping", null);
+            SetServerStatus(server, "Stopping");
 
             bool stopGracefully = await Server_BeginStop(server, p);
 
@@ -2021,7 +2001,7 @@ namespace WindowsGSM
                 Log(server.ID, "[NOTICE] Server fail to stop gracefully");
             }
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
-            SetServerStatus(server, "Stopped", null);
+            SetServerStatus(server, "Stopped");
         }
 
         private async Task GameServer_Restart(ServerTable server)
@@ -2036,7 +2016,7 @@ namespace WindowsGSM
             //Begin Restart
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Restarting;
             Log(server.ID, "Action: Restart");
-            SetServerStatus(server, "Restarting", null);
+            SetServerStatus(server, "Restarting");
 
             await Server_BeginStop(server, p);
 
@@ -2046,7 +2026,7 @@ namespace WindowsGSM
             if (gameServer == null)
             {
                 g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
-                SetServerStatus(server, "Stopped", null);
+                SetServerStatus(server, "Stopped");
                 return;
             }
 
@@ -2058,7 +2038,7 @@ namespace WindowsGSM
             }
             SetServerStatus(server, "Started", ServerCache.GetPID(server.ID).ToString());
         }
-       
+
         private async Task<bool> GameServer_Update(ServerTable server, string notes = "", bool validate = false)
         {
             if (g_iServerStatus[int.Parse(server.ID)] != ServerStatus.Stopped)
@@ -2069,27 +2049,25 @@ namespace WindowsGSM
             //Begin Update
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Updating;
             Log(server.ID, "Action: Update" + notes);
-            SetServerStatus(server, "Updating", null);
+            SetServerStatus(server, "Updating");
 
             var (p, remoteVersion, gameServer) = await Server_BeginUpdate(server, silenceCheck: validate, forceUpdate: true, validate: validate);
 
             if (p == null && string.IsNullOrEmpty(gameServer.Error)) // Update success (non-steamcmd server)
             {
                 Log(server.ID, $"Server: Updated {(validate ? "Validate " : string.Empty)}({remoteVersion})");
-            }
-            else if (p != null) // p stores process of steamcmd
+            } else if (p != null) // p stores process of steamcmd
             {
                 await Task.Run(() => { p.WaitForExit(); });
                 Log(server.ID, $"Server: Updated {(validate ? "Validate " : string.Empty)}({remoteVersion})");
-            }
-            else
+            } else
             {
                 Log(server.ID, "Server: Fail to update");
                 Log(server.ID, "[ERROR] " + gameServer.Error);
             }
 
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
-            SetServerStatus(server, "Stopped", null);
+            SetServerStatus(server, "Stopped");
 
             return true;
         }
@@ -2104,7 +2082,7 @@ namespace WindowsGSM
             //Begin backup
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Backuping;
             Log(server.ID, "Action: Backup" + notes);
-            SetServerStatus(server, "Backuping", null);
+            SetServerStatus(server, "Backuping");
 
             //End All Running Process
             await EndAllRunningProcess(server.ID);
@@ -2116,7 +2094,7 @@ namespace WindowsGSM
                 g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                 Log(server.ID, "Server: Fail to backup");
                 Log(server.ID, "[ERROR] Backup location not found");
-                SetServerStatus(server, "Stopped", null);
+                SetServerStatus(server, "Stopped");
                 return false;
             }
 
@@ -2132,8 +2110,7 @@ namespace WindowsGSM
                     try
                     {
                         fi.Delete();
-                    }
-                    catch (Exception e)
+                    } catch (Exception e)
                     {
                         ex = e.Message;
                     }
@@ -2144,7 +2121,7 @@ namespace WindowsGSM
                     g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                     Log(server.ID, "Server: Fail to backup");
                     Log(server.ID, $"[ERROR] {ex}");
-                    SetServerStatus(server, "Stopped", null);
+                    SetServerStatus(server, "Stopped");
                     return false;
                 }
             }
@@ -2158,8 +2135,7 @@ namespace WindowsGSM
                 try
                 {
                     ZipFile.CreateFromDirectory(startPath, zipFile);
-                }
-                catch (Exception e)
+                } catch (Exception e)
                 {
                     error = e.Message;
                 }
@@ -2170,14 +2146,14 @@ namespace WindowsGSM
                 g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                 Log(server.ID, "Server: Fail to backup");
                 Log(server.ID, $"[ERROR] {error}");
-                SetServerStatus(server, "Stopped", null);
+                SetServerStatus(server, "Stopped");
 
                 return false;
             }
 
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
             Log(server.ID, "Server: Backuped");
-            SetServerStatus(server, "Stopped", null);
+            SetServerStatus(server, "Stopped");
 
             return true;
         }
@@ -2200,7 +2176,7 @@ namespace WindowsGSM
 
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Restoring;
             Log(server.ID, "Action: Restore Backup");
-            SetServerStatus(server, "Restoring", null);
+            SetServerStatus(server, "Restoring");
 
             string extractPath = Functions.ServerPath.GetServers(server.ID);
             if (Directory.Exists(extractPath))
@@ -2211,8 +2187,7 @@ namespace WindowsGSM
                     try
                     {
                         Directory.Delete(extractPath, true);
-                    }
-                    catch (Exception e)
+                    } catch (Exception e)
                     {
                         ex = e.Message;
                     }
@@ -2223,7 +2198,7 @@ namespace WindowsGSM
                     g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                     Log(server.ID, "Server: Fail to restore backup");
                     Log(server.ID, $"[ERROR] {ex}");
-                    SetServerStatus(server, "Stopped", null);
+                    SetServerStatus(server, "Stopped");
                     return false;
                 }
             }
@@ -2234,8 +2209,7 @@ namespace WindowsGSM
                 try
                 {
                     ZipFile.ExtractToDirectory(backupPath, extractPath);
-                }
-                catch (Exception e)
+                } catch (Exception e)
                 {
                     error = e.Message;
                 }
@@ -2246,13 +2220,13 @@ namespace WindowsGSM
                 g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                 Log(server.ID, "Server: Fail to restore backup");
                 Log(server.ID, $"[ERROR] {error}");
-                SetServerStatus(server, "Stopped", null);
+                SetServerStatus(server, "Stopped");
                 return false;
             }
 
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
             Log(server.ID, "Server: Restored");
-            SetServerStatus(server, "Stopped", null);
+            SetServerStatus(server, "Stopped");
 
             return true;
         }
@@ -2267,7 +2241,7 @@ namespace WindowsGSM
             //Begin delete
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Deleting;
             Log(server.ID, "Action: Delete");
-            SetServerStatus(server, "Deleting", null);
+            SetServerStatus(server, "Deleting");
 
             //Remove firewall rule
             var firewall = new WindowsFirewall(null, Functions.ServerPath.GetServers(server.ID));
@@ -2287,8 +2261,7 @@ namespace WindowsGSM
                     {
                         Directory.Delete(serverPath, true);
                     }
-                }
-                catch
+                } catch
                 {
 
                 }
@@ -2305,7 +2278,7 @@ namespace WindowsGSM
                     Log(server.ID, "[ERROR] Directory is not accessible");
 
                     g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
-                    SetServerStatus(server, "Stopped", null);
+                    SetServerStatus(server, "Stopped");
 
                     return false;
                 }
@@ -2314,7 +2287,7 @@ namespace WindowsGSM
             Log(server.ID, "Server: Deleted server");
 
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
-            SetServerStatus(server, "Stopped", null);
+            SetServerStatus(server, "Stopped");
 
             LoadServerTable();
 
@@ -2335,7 +2308,7 @@ namespace WindowsGSM
                     bool autoRestart = g_bAutoRestart[serverId];
                     g_iServerStatus[serverId] = autoRestart ? ServerStatus.Restarting : ServerStatus.Stopped;
                     Log(server.ID, "Server: Crashed");
-                    SetServerStatus(server, autoRestart ? "Restarting" : "Stopped", null);
+                    SetServerStatus(server, autoRestart ? "Restarting" : "Stopped");
 
                     if (g_bDiscordAlert[serverId] && g_bCrashAlert[serverId])
                     {
@@ -2432,7 +2405,7 @@ namespace WindowsGSM
 
                         //Begin stop
                         g_iServerStatus[serverId] = ServerStatus.Stopping;
-                        SetServerStatus(server, "Stopping", null);
+                        SetServerStatus(server, "Stopping");
 
                         //Stop the server
                         await Server_BeginStop(server, p);
@@ -2443,7 +2416,7 @@ namespace WindowsGSM
                         }
 
                         g_iServerStatus[serverId] = ServerStatus.Updating;
-                        SetServerStatus(server, "Updating", null);
+                        SetServerStatus(server, "Updating");
 
                         //Update the server
                         await gameServer.Update();
@@ -2457,8 +2430,7 @@ namespace WindowsGSM
                                 var webhook = new Functions.DiscordWebhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
                                 await webhook.Send(server.ID, server.Game, "Updated | Auto Update", server.Name, server.IP, server.Port);
                             }
-                        }
-                        else
+                        } else
                         {
                             Log(server.ID, "Server: Fail to update");
                             Log(server.ID, "[ERROR] " + gameServer.Error);
@@ -2466,7 +2438,7 @@ namespace WindowsGSM
 
                         //Start the server
                         g_iServerStatus[serverId] = ServerStatus.Starting;
-                        SetServerStatus(server, "Starting", null);
+                        SetServerStatus(server, "Starting");
 
                         var gameServerStart = await Server_BeginStart(server);
                         if (gameServerStart == null) { return; }
@@ -2476,12 +2448,10 @@ namespace WindowsGSM
 
                         break;
                     }
-                }
-                else if (string.IsNullOrWhiteSpace(localVersion))
+                } else if (string.IsNullOrWhiteSpace(localVersion))
                 {
                     Log(server.ID, $"[NOTICE] Fail to get local build.");
-                }
-                else if (string.IsNullOrWhiteSpace(remoteVersion))
+                } else if (string.IsNullOrWhiteSpace(remoteVersion))
                 {
                     Log(server.ID, $"[NOTICE] Fail to get remote build.");
                 }
@@ -2537,7 +2507,7 @@ namespace WindowsGSM
                         //Begin Restart
                         g_iServerStatus[serverId] = ServerStatus.Restarting;
                         Log(server.ID, "Action: Restart");
-                        SetServerStatus(server, "Restarting", null);
+                        SetServerStatus(server, "Restarting");
 
                         await Server_BeginStop(server, p);
                         var gameServer = await Server_BeginStart(server);
@@ -2625,7 +2595,7 @@ namespace WindowsGSM
                         }
                     }
                 }
-               
+
                 await Task.Delay(5000);
             }
         }
@@ -2641,8 +2611,7 @@ namespace WindowsGSM
                                      try
                                      {
                                          return p_.MainModule.FileName.Contains(Path.Combine(WGSM_PATH, "servers", serverId) + "\\");
-                                     }
-                                     catch
+                                     } catch
                                      {
                                          return false;
                                      }
@@ -2655,8 +2624,7 @@ namespace WindowsGSM
                     try
                     {
                         process.Kill();
-                    }
-                    catch
+                    } catch
                     {
                         //ignore
                     }
@@ -2664,7 +2632,7 @@ namespace WindowsGSM
             });
         }
 
-        private void SetServerStatus(ServerTable server, string status, string pid)
+        private void SetServerStatus(ServerTable server, string status, string pid = null)
         {
             server.Status = status;
             if (pid != null)
@@ -2984,8 +2952,7 @@ namespace WindowsGSM
                 key.SetValue(RegistryKeyName.DonorTheme, "True");
                 key.SetValue(RegistryKeyName.DonorAuthKey, authKey);
                 await this.ShowMessageAsync("Success!", $"Thanks for your donation {name}, your support help us a lot!\nYou can choose any theme you like on the Settings!");
-            }
-            else
+            } else
             {
                 key.SetValue(RegistryKeyName.DonorTheme, "False");
                 key.SetValue(RegistryKeyName.DonorAuthKey, "");
@@ -3018,14 +2985,13 @@ namespace WindowsGSM
 
                         return (true, name);
                     }
-            
+
                     MahAppSwitch_DonorConnect.IsOn = false;
 
                     //Set theme
                     ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem}");
                 }
-            }
-            catch
+            } catch
             {
                 // ignore
             }
@@ -3070,8 +3036,7 @@ namespace WindowsGSM
             {
                 await this.ShowMessageAsync("Software Updates", "WindowsGSM is up to date.");
                 return;
-            }
-            else
+            } else
             {
                 var settings = new MetroDialogSettings
                 {
@@ -3126,8 +3091,7 @@ namespace WindowsGSM
                         updater.Start();
 
                         Close();
-                    }
-                    else
+                    } else
                     {
                         await this.ShowMessageAsync("Software Updates", $"Fail to download WindowsGSM-Updater.exe");
                     }
@@ -3145,9 +3109,8 @@ namespace WindowsGSM
                 webRequest.ServicePoint.Expect100Continue = false;
                 var response = await webRequest.GetResponseAsync();
                 using (var responseReader = new StreamReader(response.GetResponseStream()))
-                return JObject.Parse(responseReader.ReadToEnd())["tag_name"].ToString();
-            }
-            catch
+                    return JObject.Parse(responseReader.ReadToEnd())["tag_name"].ToString();
+            } catch
             {
                 return null;
             }
@@ -3163,8 +3126,7 @@ namespace WindowsGSM
                 {
                     await webClient.DownloadFileTaskAsync("https://github.com/WindowsGSM/WindowsGSM-Updater/releases/latest/download/WindowsGSM-Updater.exe", filePath);
                 }
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 Debug.WriteLine($"Github.WindowsGSM-Updater.exe {e}");
             }
@@ -3178,7 +3140,7 @@ namespace WindowsGSM
             {
                 AffirmativeButtonText = "Patreon",
                 NegativeButtonText = "Ok",
-                DefaultButtonFocus = MessageDialogResult.Negative                
+                DefaultButtonFocus = MessageDialogResult.Negative
             };
 
             var result = await this.ShowMessageAsync("About WindowsGSM", $"Product:\t\tWindowsGSM\nVersion:\t\t{WGSM_VERSION.Substring(1)}\nCreator:\t\tTatLead\n\nIf you like WindowsGSM, consider becoming a Patron!", MessageDialogStyle.AffirmativeAndNegative, settings);
@@ -3213,8 +3175,7 @@ namespace WindowsGSM
             if (GlobalServerList.IsServerOnSteamServerList(publicIP, row.QueryPort))
             {
                 MessageBox.Show(messageText + "\n\nResult: Online\n\nYour server is on the global server list!", "Global Server List Check", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            else
+            } else
             {
                 MessageBox.Show(messageText + "\n\nResult: Offline\n\nYour server is not on the global server list.", "Global Server List Check", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -3355,8 +3316,7 @@ namespace WindowsGSM
                 {
                     return webClient.DownloadString("https://ipinfo.io/ip").Replace("\n", string.Empty);
                 }
-            }
-            catch
+            } catch
             {
                 return null;
             }
@@ -3371,8 +3331,7 @@ namespace WindowsGSM
             if (IsVisible)
             {
                 Hide();
-            }
-            else
+            } else
             {
                 WindowState = WindowState.Normal;
                 Show();
@@ -3411,15 +3370,14 @@ namespace WindowsGSM
             if (Refresh_EditConfig_Data(server.ID))
             {
                 ToggleMahappFlyout(MahAppFlyout_EditConfig);
-            }
-            else
+            } else
             {
                 MahAppFlyout_EditConfig.IsOpen = false;
             }
         }
 
         private bool Refresh_EditConfig_Data(string serverId)
-        {     
+        {
             var serverConfig = new ServerConfig(serverId);
             if (string.IsNullOrWhiteSpace(serverConfig.ServerGame)) { return false; }
             var gameServer = GameServer.Data.Class.Get(serverConfig.ServerGame, pluginList: PluginsList);
@@ -3620,8 +3578,7 @@ namespace WindowsGSM
                 button_DiscordBotInvite.IsEnabled = switch_DiscordBot.IsOn = await g_DiscordBot.Start();
                 DiscordBotLog("Discord Bot " + (switch_DiscordBot.IsOn ? "started." : "fail to start. Reason: Bot Token is invalid."));
                 switch_DiscordBot.IsEnabled = true;
-            }
-            else
+            } else
             {
                 button_DiscordBotInvite.IsEnabled = switch_DiscordBot.IsEnabled = false;
                 await g_DiscordBot.Stop();
@@ -3629,7 +3586,7 @@ namespace WindowsGSM
                 switch_DiscordBot.IsEnabled = true;
             }
         }
-        
+
         private void Button_DiscordBotPrefixEdit_Click(object sender, RoutedEventArgs e)
         {
             if (button_DiscordBotPrefixEdit.Content.ToString() == "Edit")
@@ -3638,8 +3595,7 @@ namespace WindowsGSM
                 textBox_DiscordBotPrefix.IsEnabled = true;
                 textBox_DiscordBotPrefix.Focus();
                 textBox_DiscordBotPrefix.SelectAll();
-            }
-            else
+            } else
             {
                 button_DiscordBotPrefixEdit.Content = "Edit";
                 textBox_DiscordBotPrefix.IsEnabled = false;
@@ -3657,8 +3613,7 @@ namespace WindowsGSM
                 textBox_DiscordBotToken.IsEnabled = true;
                 textBox_DiscordBotToken.Focus();
                 textBox_DiscordBotToken.SelectAll();
-            }
-            else
+            } else
             {
                 rectangle_DiscordBotTokenSpoiler.Visibility = Visibility.Visible;
                 button_DiscordBotTokenEdit.Content = "Edit";
@@ -3675,8 +3630,7 @@ namespace WindowsGSM
                 textBox_DiscordBotDashboard.IsEnabled = true;
                 textBox_DiscordBotDashboard.Focus();
                 textBox_DiscordBotDashboard.SelectAll();
-            }
-            else
+            } else
             {
                 button_DiscordBotDashboardEdit.Content = "Edit";
                 textBox_DiscordBotDashboard.IsEnabled = false;
@@ -3743,8 +3697,7 @@ namespace WindowsGSM
                 try
                 {
                     adminList.RemoveAt(listBox_DiscordBotAdminList.SelectedIndex);
-                }
-                catch
+                } catch
                 {
                     Console.WriteLine($"Fail to delete item {listBox_DiscordBotAdminList.SelectedIndex} in adminIDs.txt");
                 }
@@ -3943,24 +3896,21 @@ namespace WindowsGSM
             if (HamburgerMenuControl.SelectedOptionsIndex == 0)
             {
                 ToggleMahappFlyout(MahAppFlyout_ViewPlugins);
-            }
-            else if(HamburgerMenuControl.SelectedOptionsIndex == 1)
+            } else if (HamburgerMenuControl.SelectedOptionsIndex == 1)
             {
                 ToggleMahappFlyout(MahAppFlyout_Settings);
             }
-            
+
             HamburgerMenuControl.SelectedOptionsIndex = -1;
 
             await Task.Delay(1); // Delay 0.001 sec due to UI not sync
             if (hMenu_Home.Visibility == Visibility.Visible)
             {
                 HamburgerMenuControl.SelectedIndex = 0;
-            }
-            else if (hMenu_Dashboard.Visibility == Visibility.Visible)
+            } else if (hMenu_Dashboard.Visibility == Visibility.Visible)
             {
                 HamburgerMenuControl.SelectedIndex = 1;
-            }
-            else if (hMenu_Discordbot.Visibility == Visibility.Visible)
+            } else if (hMenu_Discordbot.Visibility == Visibility.Visible)
             {
                 HamburgerMenuControl.SelectedIndex = 2;
             }
