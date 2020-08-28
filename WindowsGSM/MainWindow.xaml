@@ -696,6 +696,7 @@
                           HorizontalScrollBarVisibility="Disabled">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding Path=ID}" Width="35" MinWidth="35" MaxWidth="35"/>
+                        <DataGridTextColumn Header="PID" IsReadOnly="True" Binding="{Binding Path=PID}" Width="65" MinWidth="55" MaxWidth="95"/>
                         <DataGridTemplateColumn Header="MOD" IsReadOnly="True" Width="53" MinWidth="53" MaxWidth="53">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>

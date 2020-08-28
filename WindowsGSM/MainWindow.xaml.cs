@@ -350,7 +350,7 @@ namespace WindowsGSM
                     {
                         g_Process[int.Parse(server.ID)] = p;
                         g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Started;
-                        SetServerStatus(server, "Started");
+                        SetServerStatus(server, "Started", null);
 
                         /*// Get Console process - untested
                         Process console = GetConsoleProcess(pid);
@@ -680,9 +680,18 @@ namespace WindowsGSM
                         });
                     }
 
+                    string serverId = i.ToString();
+                    string pid = ServerCache.GetPID(serverId).ToString();
+
+                    if (pid == "-1")
+                    {
+                        pid = "";
+                    }
+
                     var server = new ServerTable
                     {
                         ID = i.ToString(),
+                        PID = pid,
                         Game = serverConfig.ServerGame,
                         Icon = icon,
                         Status = status,
@@ -1519,7 +1528,7 @@ namespace WindowsGSM
 
                         g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                         Log(server.ID, "Server: Killed");
-                        SetServerStatus(server, "Stopped");
+                        SetServerStatus(server, "Stopped", null);
                         g_ServerConsoles[int.Parse(server.ID)].Clear();
                         g_Process[int.Parse(server.ID)] = null;
                     }
@@ -1779,7 +1788,7 @@ namespace WindowsGSM
                 g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                 Log(server.ID, "Server: Fail to start");
                 Log(server.ID, "[ERROR] " + gameServer.Error);
-                SetServerStatus(server, "Stopped");
+                SetServerStatus(server, "Stopped", null);
 
                 return null;
             }
@@ -1825,7 +1834,7 @@ namespace WindowsGSM
                 g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                 Log(server.ID, "Server: Fail to start");
                 Log(server.ID, "[ERROR] Exit Code: " + p.ExitCode.ToString());
-                SetServerStatus(server, "Stopped");
+                SetServerStatus(server, "Stopped", null);
 
                 return null;
             }
@@ -1865,7 +1874,6 @@ namespace WindowsGSM
                 var analytics = new GoogleAnalytics();
                 analytics.SendGameServerStart(server.ID, server.Game);
             }
-
             return gameServer;
         }
 
@@ -1883,7 +1891,7 @@ namespace WindowsGSM
             }
 
             g_ServerConsoles[int.Parse(server.ID)].Clear();
-
+            
             // Save Cache
             ServerCache.SavePID(server.ID, -1);
             ServerCache.SaveProcessName(server.ID, string.Empty);
@@ -1973,14 +1981,14 @@ namespace WindowsGSM
 
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Starting;
             Log(server.ID, "Action: Start" + notes);
-            SetServerStatus(server, "Starting");
+            SetServerStatus(server, "Starting", null);
 
             var gameServer = await Server_BeginStart(server);
             if (gameServer == null)
             {
                 g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                 Log(server.ID, "Server: Fail to start");
-                SetServerStatus(server, "Stopped");
+                SetServerStatus(server, "Stopped", null);
                 return;
             }
 
@@ -1990,7 +1998,7 @@ namespace WindowsGSM
             {
                 Log(server.ID, "[Notice] " + gameServer.Notice);
             }
-            SetServerStatus(server, "Started");
+            SetServerStatus(server, "Started", ServerCache.GetPID(server.ID).ToString());
         }
 
         private async Task GameServer_Stop(ServerTable server)
@@ -2003,7 +2011,7 @@ namespace WindowsGSM
             //Begin stop
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopping;
             Log(server.ID, "Action: Stop");
-            SetServerStatus(server, "Stopping");
+            SetServerStatus(server, "Stopping", null);
 
             bool stopGracefully = await Server_BeginStop(server, p);
 
@@ -2013,7 +2021,7 @@ namespace WindowsGSM
                 Log(server.ID, "[NOTICE] Server fail to stop gracefully");
             }
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
-            SetServerStatus(server, "Stopped");
+            SetServerStatus(server, "Stopped", null);
         }
 
         private async Task GameServer_Restart(ServerTable server)
@@ -2028,7 +2036,7 @@ namespace WindowsGSM
             //Begin Restart
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Restarting;
             Log(server.ID, "Action: Restart");
-            SetServerStatus(server, "Restarting");
+            SetServerStatus(server, "Restarting", null);
 
             await Server_BeginStop(server, p);
 
@@ -2038,7 +2046,7 @@ namespace WindowsGSM
             if (gameServer == null)
             {
                 g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
-                SetServerStatus(server, "Stopped");
+                SetServerStatus(server, "Stopped", null);
                 return;
             }
 
@@ -2048,7 +2056,7 @@ namespace WindowsGSM
             {
                 Log(server.ID, "[Notice] " + gameServer.Notice);
             }
-            SetServerStatus(server, "Started");
+            SetServerStatus(server, "Started", ServerCache.GetPID(server.ID).ToString());
         }
        
         private async Task<bool> GameServer_Update(ServerTable server, string notes = "", bool validate = false)
@@ -2061,7 +2069,7 @@ namespace WindowsGSM
             //Begin Update
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Updating;
             Log(server.ID, "Action: Update" + notes);
-            SetServerStatus(server, "Updating");
+            SetServerStatus(server, "Updating", null);
 
             var (p, remoteVersion, gameServer) = await Server_BeginUpdate(server, silenceCheck: validate, forceUpdate: true, validate: validate);
 
@@ -2081,7 +2089,7 @@ namespace WindowsGSM
             }
 
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
-            SetServerStatus(server, "Stopped");
+            SetServerStatus(server, "Stopped", null);
 
             return true;
         }
@@ -2096,7 +2104,7 @@ namespace WindowsGSM
             //Begin backup
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Backuping;
             Log(server.ID, "Action: Backup" + notes);
-            SetServerStatus(server, "Backuping");
+            SetServerStatus(server, "Backuping", null);
 
             //End All Running Process
             await EndAllRunningProcess(server.ID);
@@ -2108,7 +2116,7 @@ namespace WindowsGSM
                 g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                 Log(server.ID, "Server: Fail to backup");
                 Log(server.ID, "[ERROR] Backup location not found");
-                SetServerStatus(server, "Stopped");
+                SetServerStatus(server, "Stopped", null);
                 return false;
             }
 
@@ -2136,7 +2144,7 @@ namespace WindowsGSM
                     g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                     Log(server.ID, "Server: Fail to backup");
                     Log(server.ID, $"[ERROR] {ex}");
-                    SetServerStatus(server, "Stopped");
+                    SetServerStatus(server, "Stopped", null);
                     return false;
                 }
             }
@@ -2162,14 +2170,14 @@ namespace WindowsGSM
                 g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                 Log(server.ID, "Server: Fail to backup");
                 Log(server.ID, $"[ERROR] {error}");
-                SetServerStatus(server, "Stopped");
+                SetServerStatus(server, "Stopped", null);
 
                 return false;
             }
 
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
             Log(server.ID, "Server: Backuped");
-            SetServerStatus(server, "Stopped");
+            SetServerStatus(server, "Stopped", null);
 
             return true;
         }
@@ -2192,7 +2200,7 @@ namespace WindowsGSM
 
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Restoring;
             Log(server.ID, "Action: Restore Backup");
-            SetServerStatus(server, "Restoring");
+            SetServerStatus(server, "Restoring", null);
 
             string extractPath = Functions.ServerPath.GetServers(server.ID);
             if (Directory.Exists(extractPath))
@@ -2215,7 +2223,7 @@ namespace WindowsGSM
                     g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                     Log(server.ID, "Server: Fail to restore backup");
                     Log(server.ID, $"[ERROR] {ex}");
-                    SetServerStatus(server, "Stopped");
+                    SetServerStatus(server, "Stopped", null);
                     return false;
                 }
             }
@@ -2238,13 +2246,13 @@ namespace WindowsGSM
                 g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
                 Log(server.ID, "Server: Fail to restore backup");
                 Log(server.ID, $"[ERROR] {error}");
-                SetServerStatus(server, "Stopped");
+                SetServerStatus(server, "Stopped", null);
                 return false;
             }
 
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
             Log(server.ID, "Server: Restored");
-            SetServerStatus(server, "Stopped");
+            SetServerStatus(server, "Stopped", null);
 
             return true;
         }
@@ -2259,7 +2267,7 @@ namespace WindowsGSM
             //Begin delete
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Deleting;
             Log(server.ID, "Action: Delete");
-            SetServerStatus(server, "Deleting");
+            SetServerStatus(server, "Deleting", null);
 
             //Remove firewall rule
             var firewall = new WindowsFirewall(null, Functions.ServerPath.GetServers(server.ID));
@@ -2297,7 +2305,7 @@ namespace WindowsGSM
                     Log(server.ID, "[ERROR] Directory is not accessible");
 
                     g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
-                    SetServerStatus(server, "Stopped");
+                    SetServerStatus(server, "Stopped", null);
 
                     return false;
                 }
@@ -2306,7 +2314,7 @@ namespace WindowsGSM
             Log(server.ID, "Server: Deleted server");
 
             g_iServerStatus[int.Parse(server.ID)] = ServerStatus.Stopped;
-            SetServerStatus(server, "Stopped");
+            SetServerStatus(server, "Stopped", null);
 
             LoadServerTable();
 
@@ -2327,7 +2335,7 @@ namespace WindowsGSM
                     bool autoRestart = g_bAutoRestart[serverId];
                     g_iServerStatus[serverId] = autoRestart ? ServerStatus.Restarting : ServerStatus.Stopped;
                     Log(server.ID, "Server: Crashed");
-                    SetServerStatus(server, autoRestart ? "Restarting" : "Stopped");
+                    SetServerStatus(server, autoRestart ? "Restarting" : "Stopped", null);
 
                     if (g_bDiscordAlert[serverId] && g_bCrashAlert[serverId])
                     {
@@ -2364,7 +2372,7 @@ namespace WindowsGSM
                         {
                             Log(server.ID, "[Notice] " + gameServer.Notice);
                         }
-                        SetServerStatus(server, "Started");
+                        SetServerStatus(server, "Started", ServerCache.GetPID(server.ID).ToString());
 
                         if (g_bDiscordAlert[serverId] && g_bAutoRestartAlert[serverId])
                         {
@@ -2424,7 +2432,7 @@ namespace WindowsGSM
 
                         //Begin stop
                         g_iServerStatus[serverId] = ServerStatus.Stopping;
-                        SetServerStatus(server, "Stopping");
+                        SetServerStatus(server, "Stopping", null);
 
                         //Stop the server
                         await Server_BeginStop(server, p);
@@ -2435,7 +2443,7 @@ namespace WindowsGSM
                         }
 
                         g_iServerStatus[serverId] = ServerStatus.Updating;
-                        SetServerStatus(server, "Updating");
+                        SetServerStatus(server, "Updating", null);
 
                         //Update the server
                         await gameServer.Update();
@@ -2458,13 +2466,13 @@ namespace WindowsGSM
 
                         //Start the server
                         g_iServerStatus[serverId] = ServerStatus.Starting;
-                        SetServerStatus(server, "Starting");
+                        SetServerStatus(server, "Starting", null);
 
                         var gameServerStart = await Server_BeginStart(server);
                         if (gameServerStart == null) { return; }
 
                         g_iServerStatus[serverId] = ServerStatus.Started;
-                        SetServerStatus(server, "Started");
+                        SetServerStatus(server, "Started", ServerCache.GetPID(server.ID).ToString());
 
                         break;
                     }
@@ -2529,7 +2537,7 @@ namespace WindowsGSM
                         //Begin Restart
                         g_iServerStatus[serverId] = ServerStatus.Restarting;
                         Log(server.ID, "Action: Restart");
-                        SetServerStatus(server, "Restarting");
+                        SetServerStatus(server, "Restarting", null);
 
                         await Server_BeginStop(server, p);
                         var gameServer = await Server_BeginStart(server);
@@ -2541,7 +2549,7 @@ namespace WindowsGSM
                         {
                             Log(server.ID, "[Notice] " + gameServer.Notice);
                         }
-                        SetServerStatus(server, "Started");
+                        SetServerStatus(server, "Started", ServerCache.GetPID(server.ID).ToString());
 
                         if (g_bDiscordAlert[serverId] && g_bRestartCrontabAlert[serverId])
                         {
@@ -2656,9 +2664,16 @@ namespace WindowsGSM
             });
         }
 
-        private void SetServerStatus(ServerTable server, string status)
+        private void SetServerStatus(ServerTable server, string status, string pid)
         {
             server.Status = status;
+            if (pid != null)
+            {
+                server.PID = pid;
+            } else if (status == "Stopped")
+            {
+                server.PID = string.Empty;
+            }
 
             if (server.Status != "Started" && server.Maxplayers.Contains('/'))
             {

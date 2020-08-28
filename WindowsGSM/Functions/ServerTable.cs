@@ -3,6 +3,7 @@
     class ServerTable
     {
         public string ID { get; set; }
+        public string PID { get; set; }
         public string Game { get; set; }
         public string Icon { get; set; }
         public string Status { get; set; }
