@@ -339,7 +339,8 @@ namespace WindowsGSM
                     try
                     {
                         p = Process.GetProcessById(pid);
-                    } catch
+                    }
+                    catch
                     {
                         continue;
                     }
@@ -401,7 +402,8 @@ namespace WindowsGSM
                         return p;
                     }
                 }
-            } catch
+            }
+            catch
             {
                 // ignore
             }
@@ -474,7 +476,8 @@ namespace WindowsGSM
                     string logFile = ServerPath.GetLogs(ServerPath.FolderName.Plugins, $"{plugin.FileName}.log");
                     File.WriteAllText(ServerPath.GetLogs(logFile), plugin.Error);
                     Log("Plugins", $"{plugin.FileName} fail to load. Please view the log: {logFile.Replace(WGSM_PATH, string.Empty)}");
-                } else
+                }
+                else
                 {
                     loadedCount++;
                     var converter = new BrushConverter();
@@ -482,7 +485,8 @@ namespace WindowsGSM
                     try
                     {
                         brush = (Brush)converter.ConvertFromString(plugin.Plugin.color);
-                    } catch
+                    }
+                    catch
                     {
                         brush = Brushes.DimGray;
                     }
@@ -560,7 +564,8 @@ namespace WindowsGSM
                     {
                         hyperlink.NavigateUri = new Uri(plugin.Plugin.url);
                         hyperlink.RequestNavigate += Hyperlink_RequestNavigate;
-                    } catch { }
+                    }
+                    catch { }
 
                     textBlock.Inlines.Add(hyperlink);
                     stackPanel.Children.Add(textBlock);
@@ -726,7 +731,8 @@ namespace WindowsGSM
                             ServerGrid.SelectedItem = server;
                         }
                     }
-                } catch
+                }
+                catch
                 {
                     // ignore
                 }
@@ -876,7 +882,8 @@ namespace WindowsGSM
                     }
 
                     typePlayers.Remove((livechart_players.Series[i].Title, currentPlayers));
-                } else
+                }
+                else
                 {
                     livechart_players.Series.RemoveAt(i--);
                 }
@@ -943,7 +950,8 @@ namespace WindowsGSM
 
                     textbox_servercommand.IsEnabled = false;
                     button_servercommand.IsEnabled = false;
-                } else if (g_iServerStatus[int.Parse(row.ID)] == ServerStatus.Started)
+                }
+                else if (g_iServerStatus[int.Parse(row.ID)] == ServerStatus.Started)
                 {
                     button_Start.IsEnabled = false;
                     button_Stop.IsEnabled = true;
@@ -955,7 +963,8 @@ namespace WindowsGSM
 
                     textbox_servercommand.IsEnabled = true;
                     button_servercommand.IsEnabled = true;
-                } else
+                }
+                else
                 {
                     button_Start.IsEnabled = false;
                     button_Stop.IsEnabled = false;
@@ -1067,7 +1076,8 @@ namespace WindowsGSM
                 try
                 {
                     Directory.Delete(installPath, true);
-                } catch
+                }
+                catch
                 {
                     System.Windows.Forms.MessageBox.Show(installPath + " is not accessible!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
@@ -1131,7 +1141,8 @@ namespace WindowsGSM
                 {
                     gameServer = GameServer.Data.Class.Get(servergame, newServerConfig, PluginsList);
                     gameServer.CreateServerCFG();
-                } catch
+                }
+                catch
                 {
                     // ignore
                 }
@@ -1149,7 +1160,8 @@ namespace WindowsGSM
                     var analytics = new GoogleAnalytics();
                     analytics.SendGameServerInstall(newServerConfig.ServerID, servergame);
                 }
-            } else
+            }
+            else
             {
                 textbox_InstallServerName.IsEnabled = true;
                 comboBox_InstallGameServer.IsEnabled = true;
@@ -1160,7 +1172,8 @@ namespace WindowsGSM
                 if (Installer != null)
                 {
                     textblock_InstallProgress.Text = "Fail to install [ERROR] Exit code: " + Installer.ExitCode;
-                } else
+                }
+                else
                 {
                     textblock_InstallProgress.Text = $"Fail to install [ERROR] {gameServer.Error}";
                 }
@@ -1185,7 +1198,8 @@ namespace WindowsGSM
                     textBox_InstallToken.Visibility = Visibility.Visible;
                     button_InstallSendToken.Visibility = Visibility.Visible;
                 }
-            } catch
+            }
+            catch
             {
                 // ignore
             }
@@ -1260,7 +1274,8 @@ namespace WindowsGSM
                 try
                 {
                     Directory.Delete(importPath, true);
-                } catch
+                }
+                catch
                 {
                     System.Windows.Forms.MessageBox.Show(importPath + " is not accessible!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
@@ -1289,7 +1304,8 @@ namespace WindowsGSM
                     //Directory.Move(sourcePath, importPath);
 
                     return null;
-                } catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
                     return ex.Message;
                 }
@@ -1431,7 +1447,8 @@ namespace WindowsGSM
             {
                 e.Handled = true;
                 textbox_servercommand.Text = g_ServerConsoles[0].GetPreviousCommand();
-            } else if (e.IsDown && e.Key == Key.Down)
+            }
+            else if (e.IsDown && e.Key == Key.Down)
             {
                 e.Handled = true;
                 textbox_servercommand.Text = g_ServerConsoles[0].GetNextCommand();
@@ -1802,7 +1819,8 @@ namespace WindowsGSM
                     {
                         ShowWindow(p.MainWindowHandle, WindowShowStyle.Hide);
                     }
-                } catch
+                }
+                catch
                 {
                     Debug.WriteLine("No Window require to hide");
                 }
@@ -1828,7 +1846,8 @@ namespace WindowsGSM
             try
             {
                 p.ProcessorAffinity = Functions.CPU.Affinity.GetAffinityIntPtr(g_CPUAffinity[int.Parse(server.ID)]);
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 Log(server.ID, $"[NOTICE] Fail to set affinity. ({e.Message})");
             }
@@ -1913,7 +1932,8 @@ namespace WindowsGSM
                 try
                 {
                     return (await gameServer.Update(validate, custum), remoteVersion, gameServer);
-                } catch
+                }
+                catch
                 {
                     return (await gameServer.Update(), remoteVersion, gameServer);
                 }
@@ -2056,11 +2076,13 @@ namespace WindowsGSM
             if (p == null && string.IsNullOrEmpty(gameServer.Error)) // Update success (non-steamcmd server)
             {
                 Log(server.ID, $"Server: Updated {(validate ? "Validate " : string.Empty)}({remoteVersion})");
-            } else if (p != null) // p stores process of steamcmd
+            }
+            else if (p != null) // p stores process of steamcmd
             {
                 await Task.Run(() => { p.WaitForExit(); });
                 Log(server.ID, $"Server: Updated {(validate ? "Validate " : string.Empty)}({remoteVersion})");
-            } else
+            }
+            else
             {
                 Log(server.ID, "Server: Fail to update");
                 Log(server.ID, "[ERROR] " + gameServer.Error);
@@ -2110,7 +2132,8 @@ namespace WindowsGSM
                     try
                     {
                         fi.Delete();
-                    } catch (Exception e)
+                    }
+                    catch (Exception e)
                     {
                         ex = e.Message;
                     }
@@ -2135,7 +2158,8 @@ namespace WindowsGSM
                 try
                 {
                     ZipFile.CreateFromDirectory(startPath, zipFile);
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     error = e.Message;
                 }
@@ -2187,7 +2211,8 @@ namespace WindowsGSM
                     try
                     {
                         Directory.Delete(extractPath, true);
-                    } catch (Exception e)
+                    }
+                    catch (Exception e)
                     {
                         ex = e.Message;
                     }
@@ -2209,7 +2234,8 @@ namespace WindowsGSM
                 try
                 {
                     ZipFile.ExtractToDirectory(backupPath, extractPath);
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     error = e.Message;
                 }
@@ -2261,7 +2287,8 @@ namespace WindowsGSM
                     {
                         Directory.Delete(serverPath, true);
                     }
-                } catch
+                }
+                catch
                 {
 
                 }
@@ -2430,7 +2457,8 @@ namespace WindowsGSM
                                 var webhook = new Functions.DiscordWebhook(g_DiscordWebhook[serverId], g_DiscordMessage[serverId], g_DonorType);
                                 await webhook.Send(server.ID, server.Game, "Updated | Auto Update", server.Name, server.IP, server.Port);
                             }
-                        } else
+                        }
+                        else
                         {
                             Log(server.ID, "Server: Fail to update");
                             Log(server.ID, "[ERROR] " + gameServer.Error);
@@ -2448,10 +2476,12 @@ namespace WindowsGSM
 
                         break;
                     }
-                } else if (string.IsNullOrWhiteSpace(localVersion))
+                }
+                else if (string.IsNullOrWhiteSpace(localVersion))
                 {
                     Log(server.ID, $"[NOTICE] Fail to get local build.");
-                } else if (string.IsNullOrWhiteSpace(remoteVersion))
+                }
+                else if (string.IsNullOrWhiteSpace(remoteVersion))
                 {
                     Log(server.ID, $"[NOTICE] Fail to get remote build.");
                 }
@@ -2611,7 +2641,8 @@ namespace WindowsGSM
                                      try
                                      {
                                          return p_.MainModule.FileName.Contains(Path.Combine(WGSM_PATH, "servers", serverId) + "\\");
-                                     } catch
+                                     }
+                                     catch
                                      {
                                          return false;
                                      }
@@ -2624,7 +2655,8 @@ namespace WindowsGSM
                     try
                     {
                         process.Kill();
-                    } catch
+                    }
+                    catch
                     {
                         //ignore
                     }
@@ -2638,7 +2670,8 @@ namespace WindowsGSM
             if (pid != null)
             {
                 server.PID = pid;
-            } else if (status == "Stopped")
+            }
+            else if (status == "Stopped")
             {
                 server.PID = string.Empty;
             }
@@ -2952,7 +2985,8 @@ namespace WindowsGSM
                 key.SetValue(RegistryKeyName.DonorTheme, "True");
                 key.SetValue(RegistryKeyName.DonorAuthKey, authKey);
                 await this.ShowMessageAsync("Success!", $"Thanks for your donation {name}, your support help us a lot!\nYou can choose any theme you like on the Settings!");
-            } else
+            }
+            else
             {
                 key.SetValue(RegistryKeyName.DonorTheme, "False");
                 key.SetValue(RegistryKeyName.DonorAuthKey, "");
@@ -2991,7 +3025,8 @@ namespace WindowsGSM
                     //Set theme
                     ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem}");
                 }
-            } catch
+            }
+            catch
             {
                 // ignore
             }
@@ -3036,7 +3071,8 @@ namespace WindowsGSM
             {
                 await this.ShowMessageAsync("Software Updates", "WindowsGSM is up to date.");
                 return;
-            } else
+            }
+            else
             {
                 var settings = new MetroDialogSettings
                 {
@@ -3091,7 +3127,8 @@ namespace WindowsGSM
                         updater.Start();
 
                         Close();
-                    } else
+                    }
+                    else
                     {
                         await this.ShowMessageAsync("Software Updates", $"Fail to download WindowsGSM-Updater.exe");
                     }
@@ -3110,7 +3147,8 @@ namespace WindowsGSM
                 var response = await webRequest.GetResponseAsync();
                 using (var responseReader = new StreamReader(response.GetResponseStream()))
                     return JObject.Parse(responseReader.ReadToEnd())["tag_name"].ToString();
-            } catch
+            }
+            catch
             {
                 return null;
             }
@@ -3126,7 +3164,8 @@ namespace WindowsGSM
                 {
                     await webClient.DownloadFileTaskAsync("https://github.com/WindowsGSM/WindowsGSM-Updater/releases/latest/download/WindowsGSM-Updater.exe", filePath);
                 }
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 Debug.WriteLine($"Github.WindowsGSM-Updater.exe {e}");
             }
@@ -3175,7 +3214,8 @@ namespace WindowsGSM
             if (GlobalServerList.IsServerOnSteamServerList(publicIP, row.QueryPort))
             {
                 MessageBox.Show(messageText + "\n\nResult: Online\n\nYour server is on the global server list!", "Global Server List Check", MessageBoxButton.OK, MessageBoxImage.Information);
-            } else
+            }
+            else
             {
                 MessageBox.Show(messageText + "\n\nResult: Offline\n\nYour server is not on the global server list.", "Global Server List Check", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -3316,7 +3356,8 @@ namespace WindowsGSM
                 {
                     return webClient.DownloadString("https://ipinfo.io/ip").Replace("\n", string.Empty);
                 }
-            } catch
+            }
+            catch
             {
                 return null;
             }
@@ -3331,7 +3372,8 @@ namespace WindowsGSM
             if (IsVisible)
             {
                 Hide();
-            } else
+            }
+            else
             {
                 WindowState = WindowState.Normal;
                 Show();
@@ -3370,7 +3412,8 @@ namespace WindowsGSM
             if (Refresh_EditConfig_Data(server.ID))
             {
                 ToggleMahappFlyout(MahAppFlyout_EditConfig);
-            } else
+            }
+            else
             {
                 MahAppFlyout_EditConfig.IsOpen = false;
             }
@@ -3578,7 +3621,8 @@ namespace WindowsGSM
                 button_DiscordBotInvite.IsEnabled = switch_DiscordBot.IsOn = await g_DiscordBot.Start();
                 DiscordBotLog("Discord Bot " + (switch_DiscordBot.IsOn ? "started." : "fail to start. Reason: Bot Token is invalid."));
                 switch_DiscordBot.IsEnabled = true;
-            } else
+            }
+            else
             {
                 button_DiscordBotInvite.IsEnabled = switch_DiscordBot.IsEnabled = false;
                 await g_DiscordBot.Stop();
@@ -3595,7 +3639,8 @@ namespace WindowsGSM
                 textBox_DiscordBotPrefix.IsEnabled = true;
                 textBox_DiscordBotPrefix.Focus();
                 textBox_DiscordBotPrefix.SelectAll();
-            } else
+            }
+            else
             {
                 button_DiscordBotPrefixEdit.Content = "Edit";
                 textBox_DiscordBotPrefix.IsEnabled = false;
@@ -3613,7 +3658,8 @@ namespace WindowsGSM
                 textBox_DiscordBotToken.IsEnabled = true;
                 textBox_DiscordBotToken.Focus();
                 textBox_DiscordBotToken.SelectAll();
-            } else
+            }
+            else
             {
                 rectangle_DiscordBotTokenSpoiler.Visibility = Visibility.Visible;
                 button_DiscordBotTokenEdit.Content = "Edit";
@@ -3630,7 +3676,8 @@ namespace WindowsGSM
                 textBox_DiscordBotDashboard.IsEnabled = true;
                 textBox_DiscordBotDashboard.Focus();
                 textBox_DiscordBotDashboard.SelectAll();
-            } else
+            }
+            else
             {
                 button_DiscordBotDashboardEdit.Content = "Edit";
                 textBox_DiscordBotDashboard.IsEnabled = false;
@@ -3697,7 +3744,8 @@ namespace WindowsGSM
                 try
                 {
                     adminList.RemoveAt(listBox_DiscordBotAdminList.SelectedIndex);
-                } catch
+                }
+                catch
                 {
                     Console.WriteLine($"Fail to delete item {listBox_DiscordBotAdminList.SelectedIndex} in adminIDs.txt");
                 }
@@ -3896,7 +3944,8 @@ namespace WindowsGSM
             if (HamburgerMenuControl.SelectedOptionsIndex == 0)
             {
                 ToggleMahappFlyout(MahAppFlyout_ViewPlugins);
-            } else if (HamburgerMenuControl.SelectedOptionsIndex == 1)
+            }
+            else if (HamburgerMenuControl.SelectedOptionsIndex == 1)
             {
                 ToggleMahappFlyout(MahAppFlyout_Settings);
             }
@@ -3907,10 +3956,12 @@ namespace WindowsGSM
             if (hMenu_Home.Visibility == Visibility.Visible)
             {
                 HamburgerMenuControl.SelectedIndex = 0;
-            } else if (hMenu_Dashboard.Visibility == Visibility.Visible)
+            }
+            else if (hMenu_Dashboard.Visibility == Visibility.Visible)
             {
                 HamburgerMenuControl.SelectedIndex = 1;
-            } else if (hMenu_Discordbot.Visibility == Visibility.Visible)
+            }
+            else if (hMenu_Discordbot.Visibility == Visibility.Visible)
             {
                 HamburgerMenuControl.SelectedIndex = 2;
             }
