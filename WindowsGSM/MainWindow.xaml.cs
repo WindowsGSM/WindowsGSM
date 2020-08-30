@@ -269,7 +269,7 @@ namespace WindowsGSM
                     var server = (ServerTable)ServerGrid.SelectedItem;
                     if (server == null) { return; }
 
-                    CheckPrioity:
+                CheckPrioity:
                     string priority = string.Empty;
                     for (int i = _checkBoxes.Count - 1; i >= 0; i--)
                     {
@@ -436,9 +436,9 @@ namespace WindowsGSM
             //Add games to ComboBox
             SortedList sortedList = new SortedList();
             List<DictionaryEntry> gameName = GameServer.Data.Icon.ResourceManager.GetResourceSet(System.Globalization.CultureInfo.CurrentUICulture, true, true).Cast<DictionaryEntry>().ToList();
-            gameName.ForEach(delegate(DictionaryEntry entry) { sortedList.Add(entry.Key, $"/WindowsGSM;component/{entry.Value}"); });
+            gameName.ForEach(delegate (DictionaryEntry entry) { sortedList.Add(entry.Key, $"/WindowsGSM;component/{entry.Value}"); });
             int pluginLoaded = 0;
-            PluginsList.ForEach(delegate(PluginMetadata plugin)
+            PluginsList.ForEach(delegate (PluginMetadata plugin)
             {
                 if (plugin.IsLoaded)
                 {
@@ -468,7 +468,7 @@ namespace WindowsGSM
             PluginsList = await pm.LoadPlugins(shouldAwait);
 
             int loadedCount = 0;
-            PluginsList.ForEach(delegate(PluginMetadata plugin)
+            PluginsList.ForEach(delegate (PluginMetadata plugin)
             {
                 if (!plugin.IsLoaded)
                 {
@@ -669,7 +669,7 @@ namespace WindowsGSM
                     string icon = GameServer.Data.Icon.ResourceManager.GetString(serverConfig.ServerGame);
                     if (icon == null)
                     {
-                        PluginsList.ForEach(delegate(PluginMetadata plugin)
+                        PluginsList.ForEach(delegate (PluginMetadata plugin)
                         {
                             if (plugin.IsLoaded)
                             {
@@ -680,9 +680,18 @@ namespace WindowsGSM
                         });
                     }
 
+                    string serverId = i.ToString();
+                    string pid = ServerCache.GetPID(serverId).ToString();
+
+                    if (pid == "-1")
+                    {
+                        pid = "";
+                    }
+
                     var server = new ServerTable
                     {
                         ID = i.ToString(),
+                        PID = pid,
                         Game = serverConfig.ServerGame,
                         Icon = icon,
                         Status = status,
@@ -1680,7 +1689,7 @@ namespace WindowsGSM
         private void ListBox_ManageAddonsLeft_DoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (listBox_ManageAddonsLeft.SelectedItem != null)
-            { 
+            {
                 var server = (Functions.ServerTable)ServerGrid.SelectedItem;
                 if (server == null) { return; }
 
@@ -1865,7 +1874,6 @@ namespace WindowsGSM
                 var analytics = new GoogleAnalytics();
                 analytics.SendGameServerStart(server.ID, server.Game);
             }
-
             return gameServer;
         }
 
@@ -1990,7 +1998,7 @@ namespace WindowsGSM
             {
                 Log(server.ID, "[Notice] " + gameServer.Notice);
             }
-            SetServerStatus(server, "Started");
+            SetServerStatus(server, "Started", ServerCache.GetPID(server.ID).ToString());
         }
 
         private async Task GameServer_Stop(ServerTable server)
@@ -2048,9 +2056,9 @@ namespace WindowsGSM
             {
                 Log(server.ID, "[Notice] " + gameServer.Notice);
             }
-            SetServerStatus(server, "Started");
+            SetServerStatus(server, "Started", ServerCache.GetPID(server.ID).ToString());
         }
-       
+
         private async Task<bool> GameServer_Update(ServerTable server, string notes = "", bool validate = false)
         {
             if (g_iServerStatus[int.Parse(server.ID)] != ServerStatus.Stopped)
@@ -2364,7 +2372,7 @@ namespace WindowsGSM
                         {
                             Log(server.ID, "[Notice] " + gameServer.Notice);
                         }
-                        SetServerStatus(server, "Started");
+                        SetServerStatus(server, "Started", ServerCache.GetPID(server.ID).ToString());
 
                         if (g_bDiscordAlert[serverId] && g_bAutoRestartAlert[serverId])
                         {
@@ -2464,7 +2472,7 @@ namespace WindowsGSM
                         if (gameServerStart == null) { return; }
 
                         g_iServerStatus[serverId] = ServerStatus.Started;
-                        SetServerStatus(server, "Started");
+                        SetServerStatus(server, "Started", ServerCache.GetPID(server.ID).ToString());
 
                         break;
                     }
@@ -2541,7 +2549,7 @@ namespace WindowsGSM
                         {
                             Log(server.ID, "[Notice] " + gameServer.Notice);
                         }
-                        SetServerStatus(server, "Started");
+                        SetServerStatus(server, "Started", ServerCache.GetPID(server.ID).ToString());
 
                         if (g_bDiscordAlert[serverId] && g_bRestartCrontabAlert[serverId])
                         {
@@ -2617,7 +2625,7 @@ namespace WindowsGSM
                         }
                     }
                 }
-               
+
                 await Task.Delay(5000);
             }
         }
@@ -2656,9 +2664,17 @@ namespace WindowsGSM
             });
         }
 
-        private void SetServerStatus(ServerTable server, string status)
+        private void SetServerStatus(ServerTable server, string status, string pid = null)
         {
             server.Status = status;
+            if (pid != null)
+            {
+                server.PID = pid;
+            }
+            else if (status == "Stopped")
+            {
+                server.PID = string.Empty;
+            }
 
             if (server.Status != "Started" && server.Maxplayers.Contains('/'))
             {
@@ -3003,7 +3019,7 @@ namespace WindowsGSM
 
                         return (true, name);
                     }
-            
+
                     MahAppSwitch_DonorConnect.IsOn = false;
 
                     //Set theme
@@ -3130,7 +3146,7 @@ namespace WindowsGSM
                 webRequest.ServicePoint.Expect100Continue = false;
                 var response = await webRequest.GetResponseAsync();
                 using (var responseReader = new StreamReader(response.GetResponseStream()))
-                return JObject.Parse(responseReader.ReadToEnd())["tag_name"].ToString();
+                    return JObject.Parse(responseReader.ReadToEnd())["tag_name"].ToString();
             }
             catch
             {
@@ -3163,7 +3179,7 @@ namespace WindowsGSM
             {
                 AffirmativeButtonText = "Patreon",
                 NegativeButtonText = "Ok",
-                DefaultButtonFocus = MessageDialogResult.Negative                
+                DefaultButtonFocus = MessageDialogResult.Negative
             };
 
             var result = await this.ShowMessageAsync("About WindowsGSM", $"Product:\t\tWindowsGSM\nVersion:\t\t{WGSM_VERSION.Substring(1)}\nCreator:\t\tTatLead\n\nIf you like WindowsGSM, consider becoming a Patron!", MessageDialogStyle.AffirmativeAndNegative, settings);
@@ -3404,7 +3420,7 @@ namespace WindowsGSM
         }
 
         private bool Refresh_EditConfig_Data(string serverId)
-        {     
+        {
             var serverConfig = new ServerConfig(serverId);
             if (string.IsNullOrWhiteSpace(serverConfig.ServerGame)) { return false; }
             var gameServer = GameServer.Data.Class.Get(serverConfig.ServerGame, pluginList: PluginsList);
@@ -3614,7 +3630,7 @@ namespace WindowsGSM
                 switch_DiscordBot.IsEnabled = true;
             }
         }
-        
+
         private void Button_DiscordBotPrefixEdit_Click(object sender, RoutedEventArgs e)
         {
             if (button_DiscordBotPrefixEdit.Content.ToString() == "Edit")
@@ -3929,11 +3945,11 @@ namespace WindowsGSM
             {
                 ToggleMahappFlyout(MahAppFlyout_ViewPlugins);
             }
-            else if(HamburgerMenuControl.SelectedOptionsIndex == 1)
+            else if (HamburgerMenuControl.SelectedOptionsIndex == 1)
             {
                 ToggleMahappFlyout(MahAppFlyout_Settings);
             }
-            
+
             HamburgerMenuControl.SelectedOptionsIndex = -1;
 
             await Task.Delay(1); // Delay 0.001 sec due to UI not sync
