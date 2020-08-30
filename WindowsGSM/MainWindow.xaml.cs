@@ -526,7 +526,7 @@ namespace WindowsGSM
                     var label = new Label { Content = $"v{plugin.Plugin.version}", Padding = new Thickness(0) };
                     DockPanel.SetDock(label, Dock.Right);
                     dockPanel.Children.Add(label);
-                    label = new Label { Content = plugin.Plugin.name, Padding = new Thickness(0), FontSize = 14, FontWeight = FontWeights.Bold };
+                    label = new Label { Content = plugin.Plugin.name.Split('.')[1], Padding = new Thickness(0), FontSize = 14, FontWeight = FontWeights.Bold };
                     DockPanel.SetDock(label, Dock.Left);
                     dockPanel.Children.Add(label);
                     dockPanelBase.Children.Add(dockPanel);
