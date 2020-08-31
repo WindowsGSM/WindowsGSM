@@ -591,6 +591,60 @@ namespace WindowsGSM
             Process.Start(e.Uri.AbsoluteUri);
         }
 
+        private async void ImportPlugin_Click(object sender, RoutedEventArgs e) 
+        {
+            // If a server is installing or import => return
+            if (progressbar_InstallProgress.IsIndeterminate || progressbar_ImportProgress.IsIndeterminate)
+            {
+                MessageBox.Show("WindowsGSM is currently installing/importing server!", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            string pluginsDir = ServerPath.FolderName.Plugins;
+
+            System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog();
+            ofd.Filter = "zip files (*.zip)|*.zip";
+            ofd.InitialDirectory = pluginsDir;
+
+            DialogResult dr = ofd.ShowDialog();
+            if (dr == System.Windows.Forms.DialogResult.OK)
+            {
+                Button_ImportPlugin.IsEnabled = false;
+                ProgressRing_LoadPlugins.Visibility = Visibility.Visible;
+                Label_PluginInstalled.Content = "-";
+                Label_PluginLoaded.Content = "-";
+                Label_PluginFailed.Content = "-";
+                StackPanel_PluginList.Children.Clear();
+
+                /// This is relying on it keeps the naming shceme of the ZIP files that're downloaed from GitHub releases. Like WindowsGSM.Spigot-1.0.zip,
+                /// Just by following WindowsGSM naming of plugins, and this will be fine!
+                string zipPath = ofd.FileName;
+                string dirName = ofd.SafeFileName.Split('.')[1].Split('-')[0] + ".cs";
+                string knownPattern = ".cs";
+                // Unziping plugin
+                using (ZipArchive zip = System.IO.Compression.ZipFile.OpenRead(zipPath))
+                {
+                    var result = from entry in zip.Entries
+                                 where Path.GetDirectoryName(entry.FullName).Contains(knownPattern)
+                                 where !String.IsNullOrEmpty(entry.Name)
+                                 select entry;
+
+                    Directory.CreateDirectory(Path.Combine(pluginsDir, dirName));
+                    foreach (ZipArchiveEntry entryFile in result)
+                    {
+                        entryFile.ExtractToFile(Path.Combine(pluginsDir, dirName, entryFile.Name), true);
+                    }
+                }
+
+                await Task.Delay(500);
+                LoadPlugins();
+                LoadServerTable();
+
+                Button_ImportPlugin.IsEnabled = true;
+                ProgressRing_LoadPlugins.Visibility = Visibility.Collapsed;
+            }
+        }
+
         private async void RefreshPlugins_Click(object sender, RoutedEventArgs e)
         {
             // If a server is installing or import => return
