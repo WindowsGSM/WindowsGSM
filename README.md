@@ -58,6 +58,15 @@ WindowsGSM is a powerful tool to manage game servers. Equipped with a GUI for se
 | ![logo](WindowsGSM/Images/Games/unt.png?raw=true)    | Unturned Dedicated Server                         |✅| A2S  |
 | ![logo](WindowsGSM/Images/Games/zps.png?raw=true)    | Zombie Panic Source Dedicated Server              |✅| A2S  |
 
+|               | 🎮 Game Server  | Plugin supported | Query |
+| ------------- | --------------- | --------- | ----- |
+| ![logo](WindowsGSM/Images/Games/7dtd.png?raw=true)   | Arma3   |✅|      |
+| ![logo](WindowsGSM/Images/Games/7dtd.png?raw=true)   | PaperMC   |✅|      |
+| ![logo](WindowsGSM/Images/Games/7dtd.png?raw=true)   | PaperMC: Waterfall   |✅|      |
+| ![logo](WindowsGSM/Images/Games/7dtd.png?raw=true)   | ASTRONEER   |✅|      |
+| ![logo](WindowsGSM/Images/Games/7dtd.png?raw=true)   | Spigot   |✅|      |
+| ![logo](WindowsGSM/Images/Games/7dtd.png?raw=true)   | Dead Matter   |✅|      |
+
 ## Features
   * **Easy Install** - No installation knowledge is required, download any game server by one-click install.
   * **Manage multiple servers** - Manage multiple servers with the same software. No more messy server files!
