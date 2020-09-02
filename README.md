@@ -60,12 +60,12 @@ WindowsGSM is a powerful tool to manage game servers. Equipped with a GUI for se
 
 |               | 🎮 Game Server  | Plugin supported | Query |
 | ------------- | --------------- | --------- | ----- |
-| ![logo](WindowsGSM/Images/Games/arma3.png?raw=true)   | Arma3   |✅|      |
-| ![logo](WindowsGSM/Images/Games/papermc.png?raw=true)   | PaperMC   |✅| A2S     |
-| ![logo](WindowsGSM/Images/Games/waterfall.png?raw=true)   | PaperMC: Waterfall   |✅| A2S     |
-| ![logo](WindowsGSM/Images/Games/astroneer.png?raw=true)   | ASTRONEER   |✅|      |
-| ![logo](WindowsGSM/Images/Games/spigot.png?raw=true)   | Spigot   |✅| A2S     |
-| ![logo](WindowsGSM/Images/Games/deadmatter.png?raw=true)   | Dead Matter   |✅| UT3     |
+| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/arma3.png?raw=true)   | Arma3   |✅|      |
+| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/papermc.png?raw=true)   | PaperMC   |✅| A2S     |
+| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/waterfall.png?raw=true)   | PaperMC: Waterfall   |✅| A2S     |
+| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/astroneer.png?raw=true)   | ASTRONEER   |✅|      |
+| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/spigot.png?raw=true)   | Spigot   |✅| A2S     |
+| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/deadmatter.png?raw=true)   | Dead Matter   |✅| UT3     |
 
 ## Features
   * **Easy Install** - No installation knowledge is required, download any game server by one-click install.
