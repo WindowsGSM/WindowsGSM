@@ -72,7 +72,7 @@ namespace WindowsGSM.GameServer.Query
             try
             {
                 Dictionary<string, string> kv = await GetInfo();
-                return kv["clients"] + '/' + kv["sv_maxclients"];
+                return kv?["clients"] + '/' + kv?["sv_maxclients"];
             }
             catch
             {
