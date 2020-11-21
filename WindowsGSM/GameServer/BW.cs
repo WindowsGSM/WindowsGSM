@@ -13,17 +13,17 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "BlackWake Dedicated Server";
         public string StartPath = "BlackwakeServer.exe";
-        public bool ToggleConsole = true;
+        public bool AllowsEmbedConsole = false;
         public int PortIncrements = 3;
-        public dynamic QueryMethod = null;
+        public dynamic QueryMethod = new Query.A2S();
 
         public string Port = "25001";
-        public string QueryPort = "27015";
+        public string QueryPort = "25002";
         public string Defaultmap = "Island";
-        public string Maxplayers = "6";
-        public string Additional = "";
+        public string Maxplayers = "54";
+        public string Additional = string.Empty;
 
-        public string AppId = "376030";
+        public string AppId = "423410";
 
         public BW(Functions.ServerConfig serverData)
         {
@@ -39,7 +39,7 @@ namespace WindowsGSM.GameServer
                 configText = configText.Replace("{{serverName}}", _serverData.ServerName);
                 configText = configText.Replace("{{serverIP}}", _serverData.ServerIP);
                 configText = configText.Replace("{{serverPort}}", _serverData.ServerPort);
-                configText = configText.Replace("{{steamPort}}", _serverData.ServerQueryPort);
+                configText = configText.Replace("{{steamPort}}", (int.Parse(_serverData.ServerPort) + 2014).ToString());
                 File.WriteAllText(configPath, configText);
             }
         }
@@ -90,19 +90,17 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", "423410");
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, AppId);
             Error = steamCMD.Error;
 
             return p;
         }
 
-        public async Task<bool> Update(bool validate = false)
+        public async Task<Process> Update(bool validate = false, string custom = null)
         {
-            var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "423410", validate);
-            Error = steamCMD.Error;
-
-            return updateSuccess;
+            var (p, error) = await Installer.SteamCMD.UpdateEx(_serverData.ServerID, AppId, validate, custom: custom);
+            Error = error;
+            return p;
         }
 
         public bool IsInstallValid()
@@ -119,13 +117,13 @@ namespace WindowsGSM.GameServer
         public string GetLocalBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return steamCMD.GetLocalBuild(_serverData.ServerID, "423410");
+            return steamCMD.GetLocalBuild(_serverData.ServerID, AppId);
         }
 
         public async Task<string> GetRemoteBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return await steamCMD.GetRemoteBuild("423410");
+            return await steamCMD.GetRemoteBuild(AppId);
         }
     }
 }

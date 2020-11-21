@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using WindowsGSM.Functions;
 
 namespace WindowsGSM.GameServer.Query
 {
-    class A2S
+    public class A2S
     {
         private static readonly byte[] A2S_INFO = Encoding.Default.GetBytes("TSource Engine Query");
         private static readonly byte[] A2S_PLAYER = Encoding.Default.GetBytes("U");
@@ -18,7 +18,6 @@ namespace WindowsGSM.GameServer.Query
         private const byte SOURCE_RESPONSE = 0x49;
         private const byte GOLDSOURCE_RESPONSE = 0x6D;
 
-        private UdpClient _udpClient;
         private IPEndPoint _IPEndPoint;
         private int _timeout;
 
@@ -32,7 +31,7 @@ namespace WindowsGSM.GameServer.Query
         public void SetAddressPort(string address, int port, int timeout = 5)
         {
             _IPEndPoint = new IPEndPoint(IPAddress.Parse(address), port);
-            _timeout = timeout;
+            _timeout = timeout * 1000;
         }
 
         /// <summary>Retrieves information about the server including, but not limited to: its name, the map currently being played, and the number of players.</summary>
@@ -43,22 +42,25 @@ namespace WindowsGSM.GameServer.Query
             {
                 try
                 {
-                    _udpClient = new UdpClient();
-                    _udpClient.Client.SendTimeout = _udpClient.Client.ReceiveTimeout = _timeout * 1000;
-                    _udpClient.Connect(_IPEndPoint);
+                    byte[] requestData;
+                    byte[] responseData;
+                    using (UdpClientHandler udpHandler = new UdpClientHandler(_IPEndPoint))
+                    {
+                        requestData = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }
+                            .Concat(A2S_INFO)
+                            .Concat(new byte[] { 0x00 })
+                            .ToArray();
 
-                    // Send A2S_INFO request
-                    byte[] request = new byte[0].Concat(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }).Concat(A2S_INFO).Concat(new byte[] { 0x00 }).ToArray();
-                    _udpClient.Send(request, request.Length);
-
-                    // Receive response
-                    byte[] response = _udpClient.Receive(ref _IPEndPoint).Skip(4).ToArray();
+                        responseData = udpHandler.GetResponse(requestData, requestData.Length, _timeout, _timeout)
+                            .Skip(4)
+                            .ToArray();
+                    }
 
                     // Store response's data
                     var keys = new Dictionary<string, string>();
 
                     // Load response's data
-                    using (var br = new BinaryReader(new MemoryStream(response), Encoding.UTF8))
+                    using (var br = new BinaryReader(new MemoryStream(responseData), Encoding.UTF8))
                     {
                         byte header = br.ReadByte();
 
@@ -153,29 +155,37 @@ namespace WindowsGSM.GameServer.Query
             {
                 try
                 {
-                    _udpClient = new UdpClient();
-                    _udpClient.Client.SendTimeout = _udpClient.Client.ReceiveTimeout = _timeout * 1000;
-                    _udpClient.Connect(_IPEndPoint);
+                    byte[] requestData;
+                    byte[] responseData;
+                    using (UdpClientHandler udpHandler = new UdpClientHandler(_IPEndPoint))
+                    {
+                        // Send A2S_PLAYER request
+                        requestData = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }
+                            .Concat(A2S_INFO)
+                            .Concat(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF })
+                            .ToArray();
 
-                    // Send A2S_PLAYER request
-                    byte[] request = new byte[0].Concat(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }).Concat(A2S_PLAYER).Concat(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }).ToArray();
-                    _udpClient.Send(request, request.Length);
+                        responseData = udpHandler.GetResponse(requestData, requestData.Length, _timeout, _timeout)
+                            .Skip(5)
+                            .ToArray();
 
-                    // Receive response
-                    byte[] response = _udpClient.Receive(ref _IPEndPoint).Skip(5).ToArray();
+                        // Send A2S_PLAYER request with challenge
+                        requestData = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }
+                            .Concat(A2S_PLAYER)
+                            .Concat(responseData)
+                            .ToArray();
 
-                    // Send A2S_PLAYER request with challenge
-                    request = new byte[0].Concat(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }).Concat(A2S_PLAYER).Concat(response).ToArray();
-                    _udpClient.Send(request, request.Length);
-
-                    // Receive response
-                    response = _udpClient.Receive(ref _IPEndPoint).Skip(4).ToArray();
+                        // Receive response
+                        responseData = udpHandler.GetResponse(requestData, requestData.Length, _timeout, _timeout)
+                            .Skip(4)
+                            .ToArray();
+                    }
 
                     // Store response's data
                     var keys = new Dictionary<int, (string, long, TimeSpan)>();
 
                     // Load response's data
-                    using (var br = new BinaryReader(new MemoryStream(response), Encoding.UTF8))
+                    using (var br = new BinaryReader(new MemoryStream(responseData), Encoding.UTF8))
                     {
                         br.ReadByte(); // Header
                         int players = br.ReadByte();
@@ -207,12 +217,25 @@ namespace WindowsGSM.GameServer.Query
             // Get all bytes until 0x00
             do
             {
-                bytes = bytes.Concat(new byte[] { br.ReadByte() }).ToArray();
+                bytes = bytes.Concat(new[] { br.ReadByte() }).ToArray();
             }
             while (bytes[bytes.Length - 1] != 0x00);
 
             // Return bytes in UTF8 except the last byte because it is 0x00
             return Encoding.UTF8.GetString(bytes.Take(bytes.Length - 1).ToArray());
+        }
+
+        public async Task<string> GetPlayersAndMaxPlayers()
+        {
+            try
+            {
+                Dictionary<string, string> kv = await GetInfo();
+                return kv["Players"] + '/' + kv["MaxPlayers"];
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

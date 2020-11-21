@@ -1,25 +1,23 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using WindowsGSM.Functions;
 
 namespace WindowsGSM.DiscordBot
 {
     static class Configs
     {
-		private static readonly string _botPath = Functions.ServerPath.Get("DiscordBot");
+		private static readonly string _botPath = ServerPath.Get(ServerPath.FolderName.Configs, "discordbot");
 
 		public static void CreateConfigs()
 		{
 			Directory.CreateDirectory(_botPath);
-			File.AppendText(Path.Combine(_botPath, "token.txt"));
-			File.AppendText(Path.Combine(_botPath, "adminIDs.txt"));
-			File.AppendText(Path.Combine(_botPath, "prefix.txt"));
 		}
 
 		public static string GetCommandsList()
 		{
 			string prefix = GetBotPrefix();
-			return $"{prefix}wgsm check\n{prefix}wgsm list\n{prefix}wgsm start <SERVERID>\n{prefix}wgsm stop <SERVERID>\n{prefix}wgsm restart <SERVERID>\n{prefix}wgsm send <SERVERID> <COMMAND>";
+			return $"{prefix}wgsm check\n{prefix}wgsm list\n{prefix}wgsm start <SERVERID>\n{prefix}wgsm stop <SERVERID>\n{prefix}wgsm restart <SERVERID>\n{prefix}wgsm send <SERVERID> <COMMAND>\n{prefix}wgsm backup <SERVERID>\n{prefix}wgsm update <SERVERID>";
 		}
 
 		public static string GetBotPrefix()
@@ -30,7 +28,7 @@ namespace WindowsGSM.DiscordBot
 			}
 			catch
 			{
-				return "";
+				return string.Empty;
 			}
 		}
 
@@ -48,7 +46,7 @@ namespace WindowsGSM.DiscordBot
 			}
 			catch
 			{
-				return "";
+				return string.Empty;
 			}
 		}
 
@@ -56,6 +54,42 @@ namespace WindowsGSM.DiscordBot
 		{
 			Directory.CreateDirectory(_botPath);
 			File.WriteAllText(Path.Combine(_botPath, "token.txt"), token.Trim());
+		}
+
+		public static string GetDashboardChannel()
+		{
+			try
+			{
+				return File.ReadAllText(Path.Combine(_botPath, "channel.txt")).Trim();
+			}
+			catch
+			{
+				return string.Empty;
+			}
+		}
+
+		public static void SetDashboardChannel(string channel)
+		{
+			Directory.CreateDirectory(_botPath);
+			File.WriteAllText(Path.Combine(_botPath, "channel.txt"), channel.Trim());
+		}
+
+		public static int GetDashboardRefreshRate()
+		{
+			try
+			{
+				return int.Parse(File.ReadAllText(Path.Combine(_botPath, "refreshrate.txt")).Trim());
+			}
+			catch
+			{
+				return 5;
+			}
+		}
+
+		public static void SetDashboardRefreshRate(int rate)
+		{
+			Directory.CreateDirectory(_botPath);
+			File.WriteAllText(Path.Combine(_botPath, "refreshrate.txt"), rate.ToString());
 		}
 
 		public static List<string> GetBotAdminIds()
@@ -84,7 +118,7 @@ namespace WindowsGSM.DiscordBot
 				var lines = File.ReadAllLines(Path.Combine(_botPath, "adminIDs.txt"));
 				foreach (var line in lines)
 				{
-					string[] items = line.Split(new char[] { ' ' }, 2);
+					string[] items = line.Split(new[] { ' ' }, 2);
 					if (items[0] == adminId)
 					{
 						return items[1].Trim().Split(',').Select(s => s.Trim()).ToList();
@@ -107,8 +141,8 @@ namespace WindowsGSM.DiscordBot
 				var lines = File.ReadAllLines(Path.Combine(_botPath, "adminIDs.txt"));
 				foreach (var line in lines)
 				{
-					string[] items = line.Split(new char[] { ' ' }, 2);
-					adminList.Add((items[0], items.Length == 1 ? "" : items[1]));
+					string[] items = line.Split(new[] { ' ' }, 2);
+					adminList.Add((items[0], items.Length == 1 ? string.Empty : items[1]));
 				}
 				return adminList;
 			}

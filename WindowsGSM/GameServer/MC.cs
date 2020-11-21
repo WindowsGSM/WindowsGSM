@@ -6,6 +6,7 @@ using System.Windows;
 using System.Net;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
+using WindowsGSM.Functions;
 
 namespace WindowsGSM.GameServer
 {
@@ -17,33 +18,16 @@ namespace WindowsGSM.GameServer
         public string Notice;
 
         public const string FullName = "Minecraft: Java Edition Server";
-        public string StartPath = "";
-        public bool ToggleConsole = false;
+        public string StartPath = string.Empty;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 1;
-        public dynamic QueryMethod = null;
+        public dynamic QueryMethod = new Query.UT3();
 
         public string Port = "25565";
         public string QueryPort = "25565";
         public string Defaultmap = "world";
         public string Maxplayers = "20";
         public string Additional = "-Xmx1024M -Xms1024M";
-
-        private enum Java : int
-        {
-            NotInstall = 0,
-            InstalledGlobal = 1, //(java)
-            InstalledAbsolute = 2 //Path: (C:\Program Files (x86)\Java\jre1.8.0_231\bin\java.exe)
-        }
-
-        private static string[] _JavaData =
-        { 
-            $"jre-8u241-windows-{(Environment.Is64BitOperatingSystem ? "x64" : "i586")}.exe",
-            Environment.Is64BitOperatingSystem ?
-                "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=241536_1f5b5a70bf22433b84d0e960903adac8" :
-                "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=241534_1f5b5a70bf22433b84d0e960903adac8",
-            $"C:\\Program Files{(Environment.Is64BitOperatingSystem ? "" : " (x86)")}\\Java\\jre1.8.0_241\\bin\\java.exe",
-            $"C:\\Program Files{(Environment.Is64BitOperatingSystem ? "" : " (x86)")}\\Java\\jre1.8.0_241"
-        };
 
         public MC(Functions.ServerConfig serverData)
         {
@@ -70,8 +54,8 @@ namespace WindowsGSM.GameServer
 
         public async Task<Process> Start()
         {
-            Java isJavaInstalled = IsJavaJREInstalled();
-            if (isJavaInstalled == Java.NotInstall)
+            string javaPath = JavaHelper.FindJavaExecutableAbsolutePath();
+            if (javaPath.Length == 0)
             {
                 Error = "Java is not installed";
                 return null;
@@ -92,19 +76,14 @@ namespace WindowsGSM.GameServer
                 Notice = $"server.properties not found ({configPath}). Generated a new one.";
             }
 
-            string javaPath = (isJavaInstalled == Java.InstalledGlobal) ? "java" : _JavaData[2];
-
-            if (isJavaInstalled == Java.InstalledAbsolute)
+            WindowsFirewall firewall = new WindowsFirewall("java.exe", javaPath);
+            if (!await firewall.IsRuleExist())
             {
-                WindowsFirewall firewall = new WindowsFirewall("java.exe", javaPath);
-                if (!await firewall.IsRuleExist())
-                {
-                    firewall.AddRule();
-                }
+                await firewall.AddRule();
             }
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {
@@ -114,6 +93,7 @@ namespace WindowsGSM.GameServer
                         FileName = javaPath,
                         Arguments = $"{_serverData.ServerParam} -jar server.jar nogui",
                         WindowStyle = ProcessWindowStyle.Minimized,
+                        UseShellExecute = false
                     },
                     EnableRaisingEvents = true
                 };
@@ -158,9 +138,7 @@ namespace WindowsGSM.GameServer
                 }
                 else
                 {
-                    Functions.ServerConsole.SetMainWindow(p.MainWindowHandle);
-                    Functions.ServerConsole.SendWaitToMainWindow("stop");
-                    Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
+                    Functions.ServerConsole.SendMessageToMainWindow(p.MainWindowHandle, "stop");
                 }
             });
         }
@@ -176,7 +154,7 @@ namespace WindowsGSM.GameServer
             }
 
             //Install JAVA if not installed
-            if (IsJavaJREInstalled() == 0)
+            if (!JavaHelper.IsJREInstalled())
             {
                 //Java
                 result = MessageBox.Show("Java is not installed\n\nWould you like to install?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
@@ -186,52 +164,56 @@ namespace WindowsGSM.GameServer
                     return null;
                 }
 
-                if (!await DownloadJavaJRE())
+                JavaHelper.JREDownloadTaskResult taskResult = await JavaHelper.DownloadJREToServer(_serverData.ServerID);
+                if (!taskResult.installed)
                 {
+                    Error = taskResult.error;
                     return null;
                 }
             }
 
             try
             {
-                WebClient webClient = new WebClient();
-                const string manifestUrl = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
-                string versionJson = await webClient.DownloadStringTaskAsync(manifestUrl);
-                string latesetVersion = JObject.Parse(versionJson)["latest"]["release"].ToString();
-                var versionObject = JObject.Parse(versionJson)["versions"];
-                string packageUrl = null;
-
-                foreach (var obj in versionObject)
+                using (WebClient webClient = new WebClient())
                 {
-                    if (obj["id"].ToString() == latesetVersion)
+                    const string manifestUrl = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
+                    string versionJson = await webClient.DownloadStringTaskAsync(manifestUrl);
+                    string latesetVersion = JObject.Parse(versionJson)["latest"]["release"].ToString();
+                    var versionObject = JObject.Parse(versionJson)["versions"];
+                    string packageUrl = null;
+
+                    foreach (var obj in versionObject)
                     {
-                        packageUrl = obj["url"].ToString();
-                        break;
+                        if (obj["id"].ToString() == latesetVersion)
+                        {
+                            packageUrl = obj["url"].ToString();
+                            break;
+                        }
                     }
-                }
 
-                if (packageUrl == null)
-                {
-                    Error = $"Fail to fetch packageUrl from {manifestUrl}";
-                    return null;
-                }
+                    if (packageUrl == null)
+                    {
+                        Error = $"Fail to fetch packageUrl from {manifestUrl}";
+                        return null;
+                    }
 
-                //packageUrl example: https://launchermeta.mojang.com/v1/packages/6876d19c096de56d1aa2cf434ec6b0e66e0aba00/1.15.json
-                var packageJson = await webClient.DownloadStringTaskAsync(packageUrl);
+                    //packageUrl example: https://launchermeta.mojang.com/v1/packages/6876d19c096de56d1aa2cf434ec6b0e66e0aba00/1.15.json
+                    var packageJson = await webClient.DownloadStringTaskAsync(packageUrl);
 
-                //serverJarUrl example: https://launcher.mojang.com/v1/objects/e9f105b3c5c7e85c7b445249a93362a22f62442d/server.jar
-                string serverJarUrl = JObject.Parse(packageJson)["downloads"]["server"]["url"].ToString();
-                await webClient.DownloadFileTaskAsync(serverJarUrl, Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "server.jar"));
+                    //serverJarUrl example: https://launcher.mojang.com/v1/objects/e9f105b3c5c7e85c7b445249a93362a22f62442d/server.jar
+                    string serverJarUrl = JObject.Parse(packageJson)["downloads"]["server"]["url"].ToString();
+                    await webClient.DownloadFileTaskAsync(serverJarUrl, Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "server.jar"));
 
-                //Create eula.txt
-                string eulaPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "eula.txt");
-                File.Create(eulaPath).Dispose();
+                    //Create eula.txt
+                    string eulaPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "eula.txt");
+                    File.Create(eulaPath).Dispose();
 
-                using (TextWriter textwriter = new StreamWriter(eulaPath))
-                {
-                    textwriter.WriteLine("#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).");
-                    textwriter.WriteLine("#Generated by WindowsGSM.exe");
-                    textwriter.WriteLine("eula=true");
+                    using (TextWriter textwriter = new StreamWriter(eulaPath))
+                    {
+                        textwriter.WriteLine("#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).");
+                        textwriter.WriteLine("#Generated by WindowsGSM.exe");
+                        textwriter.WriteLine("eula=true");
+                    }
                 }
             }
             catch
@@ -243,14 +225,16 @@ namespace WindowsGSM.GameServer
             return null;
         }
 
-        public async Task<bool> Update()
+        public async Task<Process> Update()
         {
             //Install JAVA if not installed
-            if (IsJavaJREInstalled() == Java.NotInstall)
+            if (!JavaHelper.IsJREInstalled())
             {
-                if (!await DownloadJavaJRE())
+                JavaHelper.JREDownloadTaskResult taskResult = await JavaHelper.DownloadJREToServer(_serverData.ServerID);
+                if (!taskResult.installed)
                 {
-                    return false;
+                    Error = taskResult.error;
+                    return null;
                 }
             }
 
@@ -264,59 +248,61 @@ namespace WindowsGSM.GameServer
                 catch
                 {
                     Error = "Fail to delete server.jar";
-                    return false;
+                    return null;
                 }
             }
 
             try
             {
-                WebClient webClient = new WebClient();
-                const string manifestUrl = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
-                string versionJson = webClient.DownloadString(manifestUrl);
-                string latesetVersion = JObject.Parse(versionJson)["latest"]["release"].ToString();
-                var versionObject = JObject.Parse(versionJson)["versions"];
-                string packageUrl = null;
-
-                foreach (var obj in versionObject)
+                using (WebClient webClient = new WebClient())
                 {
-                    if (obj["id"].ToString() == latesetVersion)
+                    const string manifestUrl = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
+                    string versionJson = webClient.DownloadString(manifestUrl);
+                    string latesetVersion = JObject.Parse(versionJson)["latest"]["release"].ToString();
+                    var versionObject = JObject.Parse(versionJson)["versions"];
+                    string packageUrl = null;
+
+                    foreach (var obj in versionObject)
                     {
-                        packageUrl = obj["url"].ToString();
-                        break;
+                        if (obj["id"].ToString() == latesetVersion)
+                        {
+                            packageUrl = obj["url"].ToString();
+                            break;
+                        }
                     }
-                }
 
-                if (packageUrl == null)
-                {
-                    Error = $"Fail to fetch packageUrl from {manifestUrl}";
-                    return false;
-                }
+                    if (packageUrl == null)
+                    {
+                        Error = $"Fail to fetch packageUrl from {manifestUrl}";
+                        return null;
+                    }
 
-                //packageUrl example: https://launchermeta.mojang.com/v1/packages/6876d19c096de56d1aa2cf434ec6b0e66e0aba00/1.15.json
-                var packageJson = webClient.DownloadString(packageUrl);
+                    //packageUrl example: https://launchermeta.mojang.com/v1/packages/6876d19c096de56d1aa2cf434ec6b0e66e0aba00/1.15.json
+                    var packageJson = webClient.DownloadString(packageUrl);
 
-                //serverJarUrl example: https://launcher.mojang.com/v1/objects/e9f105b3c5c7e85c7b445249a93362a22f62442d/server.jar
-                string serverJarUrl = JObject.Parse(packageJson)["downloads"]["server"]["url"].ToString();
-                await webClient.DownloadFileTaskAsync(serverJarUrl, Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "server.jar"));
+                    //serverJarUrl example: https://launcher.mojang.com/v1/objects/e9f105b3c5c7e85c7b445249a93362a22f62442d/server.jar
+                    string serverJarUrl = JObject.Parse(packageJson)["downloads"]["server"]["url"].ToString();
+                    await webClient.DownloadFileTaskAsync(serverJarUrl, Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "server.jar"));
 
-                //Create eula.txt
-                string eulaPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "eula.txt");
-                File.Create(eulaPath).Dispose();
+                    //Create eula.txt
+                    string eulaPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "eula.txt");
+                    File.Create(eulaPath).Dispose();
 
-                using (TextWriter textwriter = new StreamWriter(eulaPath))
-                {
-                    textwriter.WriteLine("#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).");
-                    textwriter.WriteLine("#Generated by WindowsGSM.exe");
-                    textwriter.WriteLine("eula=true");
+                    using (TextWriter textwriter = new StreamWriter(eulaPath))
+                    {
+                        textwriter.WriteLine("#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).");
+                        textwriter.WriteLine("#Generated by WindowsGSM.exe");
+                        textwriter.WriteLine("eula=true");
+                    }
                 }
             }
             catch
             {
                 Error = $"Fail to install {FullName}";
-                return false;
+                return null;
             }
 
-            return true;
+            return null;
         }
 
         public bool IsInstallValid()
@@ -344,7 +330,7 @@ namespace WindowsGSM.GameServer
             if (!File.Exists(logPath))
             {
                 Error = $"{logFile} is missing.";
-                return "";
+                return string.Empty;
             }
 
             FileStream fileStream = new FileStream(logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -364,23 +350,25 @@ namespace WindowsGSM.GameServer
             fileStream.Close();
 
             Error = $"Fail to get local build";
-            return "";
+            return string.Empty;
         }
 
         public async Task<string> GetRemoteBuild()
         {
             try
             {
-                WebClient webClient = new WebClient();
-                string remoteUrl = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
-                string html = await webClient.DownloadStringTaskAsync(remoteUrl);
-
-                Regex regex = new Regex("\"latest\":.{\"release\":.\"(.*?)\"");
-                var matches = regex.Matches(html);
-
-                if (matches.Count == 1 && matches[0].Groups.Count == 2)
+                using (WebClient webClient = new WebClient())
                 {
-                    return matches[0].Groups[1].Value;
+                    string remoteUrl = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
+                    string html = await webClient.DownloadStringTaskAsync(remoteUrl);
+
+                    Regex regex = new Regex("\"latest\":.{\"release\":.\"(.*?)\"");
+                    var matches = regex.Matches(html);
+
+                    if (matches.Count == 1 && matches[0].Groups.Count == 2)
+                    {
+                        return matches[0].Groups[1].Value;
+                    }
                 }
             }
             catch
@@ -389,96 +377,7 @@ namespace WindowsGSM.GameServer
             }
 
             Error = $"Fail to get remote build";
-            return "";
-        }
-
-        private static Java IsJavaJREInstalled()
-        {
-            try
-            {
-                ProcessStartInfo psi = new ProcessStartInfo("cmd.exe");
-                psi.RedirectStandardOutput = true;
-                psi.RedirectStandardError = true;
-                psi.UseShellExecute = false;
-                psi.CreateNoWindow = true;
-                psi.Arguments = "/c java -version";
-                Process p = Process.Start(psi);
-                string output = p.StandardOutput.ReadToEnd();
-                string error = p.StandardError.ReadToEnd();
-
-                if (!output.Contains("is not recognized"))
-                {
-                    return Java.InstalledGlobal;
-                }
-            }
-            catch
-            {
-                //ignore
-            }
-
-            try
-            {
-                ProcessStartInfo psi = new ProcessStartInfo("cmd.exe");
-                psi.RedirectStandardOutput = true;
-                psi.RedirectStandardError = true;
-                psi.UseShellExecute = false;
-                psi.CreateNoWindow = true;
-                psi.Arguments = $"/c \"{_JavaData[2]}\" -version";
-                Process p = Process.Start(psi);
-                string output = p.StandardOutput.ReadToEnd();
-                string error = p.StandardError.ReadToEnd();
-
-                if (!output.Contains("is not recognized"))
-                {
-                    return Java.InstalledAbsolute;
-                }
-            }
-            catch
-            {
-                //ignore
-            }
-
-            return Java.NotInstall;
-        }
-
-        private async Task<bool> DownloadJavaJRE()
-        {
-            string serverFilesPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
-            string filename = _JavaData[0];
-            string installLink = _JavaData[1];
-
-            //Download jre-8u231-windows-i586-iftw.exe from https://www.java.com/en/download/manual.jsp
-            string jrePath = Path.Combine(serverFilesPath, filename);
-            try
-            {
-                WebClient webClient = new WebClient();
-
-                //Run jre-8u231-windows-i586-iftw.exe to install Java
-                await webClient.DownloadFileTaskAsync(installLink, jrePath);
-                string installPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
-                ProcessStartInfo psi = new ProcessStartInfo(jrePath);
-                psi.WorkingDirectory = installPath;
-                psi.Arguments = $"INSTALL_SILENT=Enable INSTALLDIR=\"{_JavaData[3]}\"";
-                Process p = new Process
-                {
-                    StartInfo = psi,
-                    EnableRaisingEvents = true
-                };
-                p.Start();
-
-                while (!File.Exists(_JavaData[2]))
-                {
-                    await Task.Delay(100);
-                    continue;
-                }
-            }
-            catch
-            {
-                Error = "Fail to download " + filename;
-                return false;
-            }
-
-            return true;
+            return string.Empty;
         }
     }
 }

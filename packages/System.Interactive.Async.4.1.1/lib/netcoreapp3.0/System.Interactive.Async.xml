@@ -1,0 +1,1054 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>System.Interactive.Async</name>
+    </assembly>
+    <members>
+        <member name="T:System.Linq.AsyncEnumerableEx">
+            <summary>
+            Provides an additional set of extension methods for writing in-memory queries, transformations of async-enumerable sequences.
+            </summary>
+            <seealso cref="T:System.Linq.AsyncEnumerable"/>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Amb``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Collections.Generic.IAsyncEnumerable{``0})">
+            <summary>
+            Propagates the async-enumerable sequence that reacts first.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequences.</typeparam>
+            <param name="first">First async-enumerable sequence.</param>
+            <param name="second">Second async-enumerable sequence.</param>
+            <returns>An async-enumerable sequence that surfaces either of the given sequences, whichever reacted first.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="first"/> or <paramref name="second"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Amb``1(System.Collections.Generic.IAsyncEnumerable{``0}[])">
+            <summary>
+            Propagates the async-enumerable sequence that reacts first.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequences.</typeparam>
+            <param name="sources">Observable sources competing to react first.</param>
+            <returns>An async-enumerable sequence that surfaces any of the given sequences, whichever reacted first.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="sources"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Amb``1(System.Collections.Generic.IEnumerable{System.Collections.Generic.IAsyncEnumerable{``0}})">
+            <summary>
+            Propagates the async-enumerable sequence that reacts first.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequences.</typeparam>
+            <param name="sources">Observable sources competing to react first.</param>
+            <returns>An async-enumerable sequence that surfaces any of the given sequences, whichever reacted first.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="sources"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Buffer``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Int32)">
+            <summary>
+            Projects each element of an async-enumerable sequence into consecutive non-overlapping buffers which are produced based on element count information.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence, and in the lists in the result sequence.</typeparam>
+            <param name="source">Source sequence to produce buffers over.</param>
+            <param name="count">Length of each buffer.</param>
+            <returns>An async-enumerable sequence of buffers.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="count"/> is less than or equal to zero.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Buffer``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Int32,System.Int32)">
+            <summary>
+            Projects each element of an async-enumerable sequence into zero or more buffers which are produced based on element count information.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence, and in the lists in the result sequence.</typeparam>
+            <param name="source">Source sequence to produce buffers over.</param>
+            <param name="count">Length of each buffer.</param>
+            <param name="skip">Number of elements to skip between creation of consecutive buffers.</param>
+            <returns>An async-enumerable sequence of buffers.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="count"/> or <paramref name="skip"/> is less than or equal to zero.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Catch``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``1,System.Collections.Generic.IAsyncEnumerable{``0}})">
+            <summary>
+            Continues an async-enumerable sequence that is terminated by an exception of the specified type with the async-enumerable sequence produced by the handler.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence and sequences returned by the exception handler function.</typeparam>
+            <typeparam name="TException">The type of the exception to catch and handle. Needs to derive from <see cref="T:System.Exception"/>.</typeparam>
+            <param name="source">Source sequence.</param>
+            <param name="handler">Exception handler function, producing another async-enumerable sequence.</param>
+            <returns>An async-enumerable sequence containing the source sequence's elements, followed by the elements produced by the handler's resulting async-enumerable sequence in case an exception occurred.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="handler"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Catch``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``1,System.Threading.Tasks.ValueTask{System.Collections.Generic.IAsyncEnumerable{``0}}})">
+            <summary>
+            Continues an async-enumerable sequence that is terminated by an exception of the specified type with the async-enumerable sequence produced asynchronously by the handler.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence and sequences returned by the exception handler function.</typeparam>
+            <typeparam name="TException">The type of the exception to catch and handle. Needs to derive from <see cref="T:System.Exception"/>.</typeparam>
+            <param name="source">Source sequence.</param>
+            <param name="handler">Exception handler function, producing another async-enumerable sequence asynchronously.</param>
+            <returns>An async-enumerable sequence containing the source sequence's elements, followed by the elements produced by the handler's resulting async-enumerable sequence in case an exception occurred.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="handler"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Catch``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``1,System.Threading.CancellationToken,System.Threading.Tasks.ValueTask{System.Collections.Generic.IAsyncEnumerable{``0}}})">
+            <summary>
+            Continues an async-enumerable sequence that is terminated by an exception of the specified type with the async-enumerable sequence produced asynchronously (cancellable) by the handler.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence and sequences returned by the exception handler function.</typeparam>
+            <typeparam name="TException">The type of the exception to catch and handle. Needs to derive from <see cref="T:System.Exception"/>.</typeparam>
+            <param name="source">Source sequence.</param>
+            <param name="handler">Exception handler function, producing another async-enumerable sequence asynchronously while supporting cancellation.</param>
+            <returns>An async-enumerable sequence containing the source sequence's elements, followed by the elements produced by the handler's resulting async-enumerable sequence in case an exception occurred.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="handler"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Catch``1(System.Collections.Generic.IEnumerable{System.Collections.Generic.IAsyncEnumerable{``0}})">
+            <summary>
+            Continues an async-enumerable sequence that is terminated by an exception with the next async-enumerable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source and handler sequences.</typeparam>
+            <param name="sources">Observable sequences to catch exceptions for.</param>
+            <returns>An async-enumerable sequence containing elements from consecutive source sequences until a source sequence terminates successfully.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="sources"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Catch``1(System.Collections.Generic.IAsyncEnumerable{``0}[])">
+            <summary>
+            Continues an async-enumerable sequence that is terminated by an exception with the next async-enumerable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source and handler sequences.</typeparam>
+            <param name="sources">Observable sequences to catch exceptions for.</param>
+            <returns>An async-enumerable sequence containing elements from consecutive source sequences until a source sequence terminates successfully.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="sources"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Catch``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Collections.Generic.IAsyncEnumerable{``0})">
+            <summary>
+            Continues an async-enumerable sequence that is terminated by an exception with the next async-enumerable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence and handler sequence.</typeparam>
+            <param name="first">First async-enumerable sequence whose exception (if any) is caught.</param>
+            <param name="second">Second async-enumerable sequence used to produce results when an error occurred in the first sequence.</param>
+            <returns>An async-enumerable sequence containing the first sequence's elements, followed by the elements of the second sequence in case an exception occurred.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="first"/> or <paramref name="second"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Concat``1(System.Collections.Generic.IAsyncEnumerable{System.Collections.Generic.IAsyncEnumerable{``0}})">
+            <summary>
+            Concatenates all inner async-enumerable sequences, as long as the previous async-enumerable sequence terminated successfully.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequences.</typeparam>
+            <param name="sources">Observable sequence of inner async-enumerable sequences.</param>
+            <returns>An async-enumerable sequence that contains the elements of each observed inner sequence, in sequential order.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="sources"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Concat``1(System.Collections.Generic.IEnumerable{System.Collections.Generic.IAsyncEnumerable{``0}})">
+            <summary>
+            Concatenates all async-enumerable sequences in the given enumerable sequence, as long as the previous async-enumerable sequence terminated successfully.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequences.</typeparam>
+            <param name="sources">Observable sequences to concatenate.</param>
+            <returns>An async-enumerable sequence that contains the elements of each given sequence, in sequential order.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="sources"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Concat``1(System.Collections.Generic.IAsyncEnumerable{``0}[])">
+            <summary>
+            Concatenates all of the specified async-enumerable sequences, as long as the previous async-enumerable sequence terminated successfully.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequences.</typeparam>
+            <param name="sources">Observable sequences to concatenate.</param>
+            <returns>An async-enumerable sequence that contains the elements of each given sequence, in sequential order.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="sources"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Defer``1(System.Func{System.Collections.Generic.IAsyncEnumerable{``0}})">
+            <summary>
+            Returns an async-enumerable sequence that invokes the specified factory function whenever a new observer subscribes.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the sequence returned by the factory function, and in the resulting sequence.</typeparam>
+            <param name="factory">The async-enumerable factory function to invoke for each consumer that starts enumerating the resulting asynchronous sequence.</param>
+            <returns>An async-enumerable sequence whose observers trigger an invocation of the given async-enumerable factory function.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="factory"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Defer``1(System.Func{System.Threading.Tasks.Task{System.Collections.Generic.IAsyncEnumerable{``0}}})">
+            <summary>
+            Returns an async-enumerable sequence that starts the specified asynchronous factory function whenever a new observer subscribes.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the sequence returned by the factory function, and in the resulting sequence.</typeparam>
+            <param name="factory">Asynchronous factory function to start for each consumer that starts enumerating the resulting asynchronous sequence.</param>
+            <returns>An async-enumerable sequence whose observers trigger the given asynchronous async-enumerable factory function to be started.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="factory"/> is null.</exception>
+            <remarks>This operator is especially useful in conjunction with the asynchronous programming features introduced in C# 5.0 and Visual Basic 11.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Defer``1(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Collections.Generic.IAsyncEnumerable{``0}}})">
+            <summary>
+            Returns an async-enumerable sequence that starts the specified cancellable asynchronous factory function whenever a new observer subscribes.
+            The CancellationToken passed to the asynchronous factory function is tied to the returned disposable subscription, allowing best-effort cancellation.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the sequence returned by the factory function, and in the resulting sequence.</typeparam>
+            <param name="factory">Asynchronous factory function, supporting cancellation, to start for each consumer that starts enumerating the resulting asynchronous sequence.</param>
+            <returns>An async-enumerable sequence whose observers trigger the given asynchronous async-enumerable factory function to be started.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="factory"/> is null.</exception>
+            <remarks>This operator is especially useful in conjunction with the asynchronous programming features introduced in C# 5.0 and Visual Basic 11.</remarks>
+            <remarks>When a subscription to the resulting sequence is disposed, the CancellationToken that was fed to the asynchronous async-enumerable factory function will be signaled.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Distinct``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,``1})">
+            <summary>
+            Returns an async-enumerable sequence that contains only distinct elements according to the keySelector.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the discriminator key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to retain distinct elements for.</param>
+            <param name="keySelector">A function to compute the comparison key for each element.</param>
+            <returns>An async-enumerable sequence only containing the distinct elements, based on a computed key value, from the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> is null.</exception>
+            <remarks>Usage of this operator should be considered carefully due to the maintenance of an internal lookup structure which can grow large.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Distinct``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,``1},System.Collections.Generic.IEqualityComparer{``1})">
+            <summary>
+            Returns an async-enumerable sequence that contains only distinct elements according to the keySelector and the comparer.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the discriminator key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to retain distinct elements for.</param>
+            <param name="keySelector">A function to compute the comparison key for each element.</param>
+            <param name="comparer">Equality comparer for source elements.</param>
+            <returns>An async-enumerable sequence only containing the distinct elements, based on a computed key value, from the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> or <paramref name="comparer"/> is null.</exception>
+            <remarks>Usage of this operator should be considered carefully due to the maintenance of an internal lookup structure which can grow large.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Distinct``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.Tasks.ValueTask{``1}})">
+            <summary>
+            Returns an async-enumerable sequence that contains only distinct elements according to the asynchronous keySelector.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the discriminator key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to retain distinct elements for.</param>
+            <param name="keySelector">An asynchronous function to compute the comparison key for each element.</param>
+            <returns>An async-enumerable sequence only containing the distinct elements, based on a computed key value, from the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> is null.</exception>
+            <remarks>Usage of this operator should be considered carefully due to the maintenance of an internal lookup structure which can grow large.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Distinct``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.CancellationToken,System.Threading.Tasks.ValueTask{``1}})">
+            <summary>
+            Returns an async-enumerable sequence that contains only distinct elements according to the asynchronous (cancellable) keySelector.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the discriminator key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to retain distinct elements for.</param>
+            <param name="keySelector">An asynchronous (cancellable) function to compute the comparison key for each element.</param>
+            <returns>An async-enumerable sequence only containing the distinct elements, based on a computed key value, from the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> is null.</exception>
+            <remarks>Usage of this operator should be considered carefully due to the maintenance of an internal lookup structure which can grow large.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Distinct``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.Tasks.ValueTask{``1}},System.Collections.Generic.IEqualityComparer{``1})">
+            <summary>
+            Returns an async-enumerable sequence that contains only distinct elements according to the asynchronous keySelector and the comparer.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the discriminator key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to retain distinct elements for.</param>
+            <param name="keySelector">An asynchronous function to compute the comparison key for each element.</param>
+            <param name="comparer">Equality comparer for source elements.</param>
+            <returns>An async-enumerable sequence only containing the distinct elements, based on a computed key value, from the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> or <paramref name="comparer"/> is null.</exception>
+            <remarks>Usage of this operator should be considered carefully due to the maintenance of an internal lookup structure which can grow large.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Distinct``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.CancellationToken,System.Threading.Tasks.ValueTask{``1}},System.Collections.Generic.IEqualityComparer{``1})">
+            <summary>
+            Returns an async-enumerable sequence that contains only distinct elements according to the asynchronous (cancellable) keySelector and the comparer.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the discriminator key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to retain distinct elements for.</param>
+            <param name="keySelector">An asynchronous (cancellable) function to compute the comparison key for each element.</param>
+            <param name="comparer">Equality comparer for source elements.</param>
+            <returns>An async-enumerable sequence only containing the distinct elements, based on a computed key value, from the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> or <paramref name="comparer"/> is null.</exception>
+            <remarks>Usage of this operator should be considered carefully due to the maintenance of an internal lookup structure which can grow large.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.DistinctUntilChanged``1(System.Collections.Generic.IAsyncEnumerable{``0})">
+            <summary>
+            Returns an async-enumerable sequence that contains only distinct contiguous elements.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to retain distinct contiguous elements for.</param>
+            <returns>An async-enumerable sequence only containing the distinct contiguous elements from the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.DistinctUntilChanged``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Collections.Generic.IEqualityComparer{``0})">
+            <summary>
+            Returns an async-enumerable sequence that contains only distinct contiguous elements according to the comparer.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to retain distinct contiguous elements for.</param>
+            <param name="comparer">Equality comparer for source elements.</param>
+            <returns>An async-enumerable sequence only containing the distinct contiguous elements from the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="comparer"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.DistinctUntilChanged``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,``1})">
+            <summary>
+            Returns an async-enumerable sequence that contains only distinct contiguous elements according to the keySelector.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the discriminator key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to retain distinct contiguous elements for, based on a computed key value.</param>
+            <param name="keySelector">A function to compute the comparison key for each element.</param>
+            <returns>An async-enumerable sequence only containing the distinct contiguous elements, based on a computed key value, from the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.DistinctUntilChanged``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,``1},System.Collections.Generic.IEqualityComparer{``1})">
+            <summary>
+            Returns an async-enumerable sequence that contains only distinct contiguous elements according to the keySelector and the comparer.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the discriminator key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to retain distinct contiguous elements for, based on a computed key value.</param>
+            <param name="keySelector">A function to compute the comparison key for each element.</param>
+            <param name="comparer">Equality comparer for computed key values.</param>
+            <returns>An async-enumerable sequence only containing the distinct contiguous elements, based on a computed key value, from the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> or <paramref name="comparer"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.DistinctUntilChanged``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.Tasks.ValueTask{``1}})">
+            <summary>
+            Returns an async-enumerable sequence that contains only distinct contiguous elements according to the asynchronous keySelector.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the discriminator key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to retain distinct contiguous elements for, based on a computed key value.</param>
+            <param name="keySelector">A function to compute the comparison key for each element asynchronously.</param>
+            <returns>An async-enumerable sequence only containing the distinct contiguous elements, based on a computed key value, from the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.DistinctUntilChanged``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.CancellationToken,System.Threading.Tasks.ValueTask{``1}})">
+            <summary>
+            Returns an async-enumerable sequence that contains only distinct contiguous elements according to the asynchronous and cancellable keySelector.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the discriminator key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to retain distinct contiguous elements for, based on a computed key value.</param>
+            <param name="keySelector">A function to compute the comparison key for each element asynchronously while supporting cancellation.</param>
+            <returns>An async-enumerable sequence only containing the distinct contiguous elements, based on a computed key value, from the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.DistinctUntilChanged``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.Tasks.ValueTask{``1}},System.Collections.Generic.IEqualityComparer{``1})">
+            <summary>
+            Returns an async-enumerable sequence that contains only distinct contiguous elements according to the asynchronous keySelector and the comparer.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the discriminator key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to retain distinct contiguous elements for, based on a computed key value.</param>
+            <param name="keySelector">A function to compute the comparison key for each element asynchronously.</param>
+            <param name="comparer">Equality comparer for computed key values.</param>
+            <returns>An async-enumerable sequence only containing the distinct contiguous elements, based on a computed key value, from the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> or <paramref name="comparer"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.DistinctUntilChanged``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.CancellationToken,System.Threading.Tasks.ValueTask{``1}},System.Collections.Generic.IEqualityComparer{``1})">
+            <summary>
+            Returns an async-enumerable sequence that contains only distinct contiguous elements according to the asynchronous and cancellable keySelector and the comparer.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the discriminator key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to retain distinct contiguous elements for, based on a computed key value.</param>
+            <param name="keySelector">A function to compute the comparison key for each element asynchronously while supporting cancellation.</param>
+            <param name="comparer">Equality comparer for computed key values.</param>
+            <returns>An async-enumerable sequence only containing the distinct contiguous elements, based on a computed key value, from the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> or <paramref name="comparer"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Do``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Action{``0})">
+            <summary>
+            Invokes an action for each element in the async-enumerable sequence, and propagates all observer messages through the result sequence.
+            This method can be used for debugging, logging, etc. of query behavior by intercepting the message stream to run arbitrary actions for messages on the pipeline.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence.</param>
+            <param name="onNext">Action to invoke for each element in the async-enumerable sequence.</param>
+            <returns>The source sequence with the side-effecting behavior applied.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="onNext"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Do``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Action{``0},System.Action)">
+            <summary>
+            Invokes an action for each element in the async-enumerable sequence and invokes an action upon graceful termination of the async-enumerable sequence.
+            This method can be used for debugging, logging, etc. of query behavior by intercepting the message stream to run arbitrary actions for messages on the pipeline.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence.</param>
+            <param name="onNext">Action to invoke for each element in the async-enumerable sequence.</param>
+            <param name="onCompleted">Action to invoke upon graceful termination of the async-enumerable sequence.</param>
+            <returns>The source sequence with the side-effecting behavior applied.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="onNext"/> or <paramref name="onCompleted"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Do``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Action{``0},System.Action{System.Exception})">
+            <summary>
+            Invokes an action for each element in the async-enumerable sequence and invokes an action upon exceptional termination of the async-enumerable sequence.
+            This method can be used for debugging, logging, etc. of query behavior by intercepting the message stream to run arbitrary actions for messages on the pipeline.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence.</param>
+            <param name="onNext">Action to invoke for each element in the async-enumerable sequence.</param>
+            <param name="onError">Action to invoke upon exceptional termination of the async-enumerable sequence.</param>
+            <returns>The source sequence with the side-effecting behavior applied.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="onNext"/> or <paramref name="onError"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Do``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Action{``0},System.Action{System.Exception},System.Action)">
+            <summary>
+            Invokes an action for each element in the async-enumerable sequence and invokes an action upon graceful or exceptional termination of the async-enumerable sequence.
+            This method can be used for debugging, logging, etc. of query behavior by intercepting the message stream to run arbitrary actions for messages on the pipeline.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence.</param>
+            <param name="onNext">Action to invoke for each element in the async-enumerable sequence.</param>
+            <param name="onError">Action to invoke upon exceptional termination of the async-enumerable sequence.</param>
+            <param name="onCompleted">Action to invoke upon graceful termination of the async-enumerable sequence.</param>
+            <returns>The source sequence with the side-effecting behavior applied.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="onNext"/> or <paramref name="onError"/> or <paramref name="onCompleted"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Do``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.Tasks.Task})">
+            <summary>
+            Invokes and awaits an asynchronous action for each element in the async-enumerable sequence, and propagates all observer messages through the result sequence.
+            This method can be used for debugging, logging, etc. of query behavior by intercepting the message stream to run arbitrary actions for messages on the pipeline.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence.</param>
+            <param name="onNext">Action to invoke and await for each element in the async-enumerable sequence.</param>
+            <returns>The source sequence with the side-effecting behavior applied.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="onNext"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Do``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.Tasks.Task},System.Func{System.Threading.Tasks.Task})">
+            <summary>
+            Invokes and awaits an asynchronous action for each element in the async-enumerable sequence, then invokes and awaits an asynchronous an action upon graceful termination of the async-enumerable sequence.
+            This method can be used for debugging, logging, etc. of query behavior by intercepting the message stream to run arbitrary actions for messages on the pipeline.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence.</param>
+            <param name="onNext">Action to invoke and await for each element in the async-enumerable sequence.</param>
+            <param name="onCompleted">Action to invoke and await upon graceful termination of the async-enumerable sequence.</param>
+            <returns>The source sequence with the side-effecting behavior applied.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="onNext"/> or <paramref name="onCompleted"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Do``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.Tasks.Task},System.Func{System.Exception,System.Threading.Tasks.Task})">
+            <summary>
+            Invokes and awaits an asynchronous action for each element in the async-enumerable sequence, then invokes and awaits an asynchronous action upon exceptional termination of the async-enumerable sequence.
+            This method can be used for debugging, logging, etc. of query behavior by intercepting the message stream to run arbitrary actions for messages on the pipeline.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence.</param>
+            <param name="onNext">Action to invoke and await for each element in the async-enumerable sequence.</param>
+            <param name="onError">Action to invoke and await upon exceptional termination of the async-enumerable sequence.</param>
+            <returns>The source sequence with the side-effecting behavior applied.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="onNext"/> or <paramref name="onError"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Do``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.Tasks.Task},System.Func{System.Exception,System.Threading.Tasks.Task},System.Func{System.Threading.Tasks.Task})">
+            <summary>
+            Invokes and awaits an asynchronous action for each element in the async-enumerable sequence, then invokes and awaits an asynchronous action upon graceful or exceptional termination of the async-enumerable sequence.
+            This method can be used for debugging, logging, etc. of query behavior by intercepting the message stream to run arbitrary actions for messages on the pipeline.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence.</param>
+            <param name="onNext">Action to invoke and await for each element in the async-enumerable sequence.</param>
+            <param name="onError">Action to invoke and await upon exceptional termination of the async-enumerable sequence.</param>
+            <param name="onCompleted">Action to invoke and await upon graceful termination of the async-enumerable sequence.</param>
+            <returns>The source sequence with the side-effecting behavior applied.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="onNext"/> or <paramref name="onError"/> or <paramref name="onCompleted"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Do``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.CancellationToken,System.Threading.Tasks.Task})">
+            <summary>
+            Invokes and awaits an asynchronous (cancellable) action for each element in the async-enumerable sequence, and propagates all observer messages through the result sequence.
+            This method can be used for debugging, logging, etc. of query behavior by intercepting the message stream to run arbitrary actions for messages on the pipeline.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence.</param>
+            <param name="onNext">Action to invoke and await for each element in the async-enumerable sequence while supporting cancellation.</param>
+            <returns>The source sequence with the side-effecting behavior applied.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="onNext"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Do``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.CancellationToken,System.Threading.Tasks.Task},System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task})">
+            <summary>
+            Invokes and awaits an asynchronous (cancellable) action for each element in the async-enumerable sequence, then invokes and awaits an asynchronous (cancellable) an action upon graceful termination of the async-enumerable sequence.
+            This method can be used for debugging, logging, etc. of query behavior by intercepting the message stream to run arbitrary actions for messages on the pipeline.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence.</param>
+            <param name="onNext">Action to invoke and await for each element in the async-enumerable sequence while supporting cancellation.</param>
+            <param name="onCompleted">Action to invoke and await upon graceful termination of the async-enumerable sequence while supporting cancellation.</param>
+            <returns>The source sequence with the side-effecting behavior applied.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="onNext"/> or <paramref name="onCompleted"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Do``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.CancellationToken,System.Threading.Tasks.Task},System.Func{System.Exception,System.Threading.CancellationToken,System.Threading.Tasks.Task})">
+            <summary>
+            Invokes and awaits an asynchronous (cancellable) action for each element in the async-enumerable sequence, then invokes and awaits an asynchronous (cancellable) action upon exceptional termination of the async-enumerable sequence.
+            This method can be used for debugging, logging, etc. of query behavior by intercepting the message stream to run arbitrary actions for messages on the pipeline.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence.</param>
+            <param name="onNext">Action to invoke and await for each element in the async-enumerable sequence while supporting cancellation.</param>
+            <param name="onError">Action to invoke and await upon exceptional termination of the async-enumerable sequence while supporting cancellation.</param>
+            <returns>The source sequence with the side-effecting behavior applied.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="onNext"/> or <paramref name="onError"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Do``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.CancellationToken,System.Threading.Tasks.Task},System.Func{System.Exception,System.Threading.CancellationToken,System.Threading.Tasks.Task},System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task})">
+            <summary>
+            Invokes and awaits an asynchronous (cancellable) action for each element in the async-enumerable sequence, then invokes and awaits an asynchronous (cancellable) action upon graceful or exceptional termination of the async-enumerable sequence.
+            This method can be used for debugging, logging, etc. of query behavior by intercepting the message stream to run arbitrary actions for messages on the pipeline.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence.</param>
+            <param name="onNext">Action to invoke and await for each element in the async-enumerable sequence while supporting cancellation.</param>
+            <param name="onError">Action to invoke and await upon exceptional termination of the async-enumerable sequence while supporting cancellation.</param>
+            <param name="onCompleted">Action to invoke and await upon graceful termination of the async-enumerable sequence while supporting cancellation.</param>
+            <returns>The source sequence with the side-effecting behavior applied.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="onNext"/> or <paramref name="onError"/> or <paramref name="onCompleted"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Do``1(System.Collections.Generic.IAsyncEnumerable{``0},System.IObserver{``0})">
+            <summary>
+            Invokes the observer's methods for each message in the source async-enumerable sequence.
+            This method can be used for debugging, logging, etc. of query behavior by intercepting the message stream to run arbitrary actions for messages on the pipeline.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence.</param>
+            <param name="observer">Observer whose methods to invoke as part of the source sequence's observation.</param>
+            <returns>The source sequence with the side-effecting behavior applied.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="observer"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Expand``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Collections.Generic.IAsyncEnumerable{``0}})">
+            <summary>
+            Expands (breadth first) the async-enumerable sequence by recursively applying a selector function to generate more sequences at each recursion level.
+            </summary>
+            <typeparam name="TSource">Source sequence element type.</typeparam>
+            <param name="source">Source async-enumerable sequence.</param>
+            <param name="selector">Selector function to retrieve the next sequence to expand.</param>
+            <returns>Sequence with results from the recursive expansion of the source sequence.</returns>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Expand``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.Tasks.ValueTask{System.Collections.Generic.IAsyncEnumerable{``0}}})">
+            <summary>
+            Expands (breadth first) the async-enumerable sequence by recursively applying an asynchronous selector function to generate more sequences at each recursion level.
+            </summary>
+            <typeparam name="TSource">Source sequence element type.</typeparam>
+            <param name="source">Source async-enumerable sequence.</param>
+            <param name="selector">Asynchronous selector function to retrieve the next sequence to expand.</param>
+            <returns>Sequence with results from the recursive expansion of the source sequence.</returns>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Expand``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.CancellationToken,System.Threading.Tasks.ValueTask{System.Collections.Generic.IAsyncEnumerable{``0}}})">
+            <summary>
+            Expands (breadth first) the async-enumerable sequence by recursively applying an asynchronous (cancellable) selector function to generate more sequences at each recursion level.
+            </summary>
+            <typeparam name="TSource">Source sequence element type.</typeparam>
+            <param name="source">Source async-enumerable sequence.</param>
+            <param name="selector">Asynchronous (cancellable) selector function to retrieve the next sequence to expand.</param>
+            <returns>Sequence with results from the recursive expansion of the source sequence.</returns>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Finally``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Action)">
+            <summary>
+            Invokes a specified action after the source async-enumerable sequence terminates gracefully or exceptionally.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence.</param>
+            <param name="finallyAction">Action to invoke after the source async-enumerable sequence terminates.</param>
+            <returns>Source sequence with the action-invoking termination behavior applied.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="finallyAction"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Finally``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{System.Threading.Tasks.Task})">
+            <summary>
+            Invokes a specified asynchronous action after the source async-enumerable sequence terminates gracefully or exceptionally.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence.</param>
+            <param name="finallyAction">Action to invoke and await asynchronously after the source async-enumerable sequence terminates.</param>
+            <returns>Source sequence with the action-invoking termination behavior applied.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="finallyAction"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Generate``2(``0,System.Func{``0,System.Boolean},System.Func{``0,``0},System.Func{``0,``1})">
+            <summary>
+            Generates an async-enumerable sequence by running a state-driven loop producing the sequence's elements.
+            </summary>
+            <typeparam name="TState">The type of the state used in the generator loop.</typeparam>
+            <typeparam name="TResult">The type of the elements in the produced sequence.</typeparam>
+            <param name="initialState">Initial state.</param>
+            <param name="condition">Condition to terminate generation (upon returning false).</param>
+            <param name="iterate">Iteration step function.</param>
+            <param name="resultSelector">Selector function for results produced in the sequence.</param>
+            <returns>The generated sequence.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="condition"/> or <paramref name="iterate"/> or <paramref name="resultSelector"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.IgnoreElements``1(System.Collections.Generic.IAsyncEnumerable{``0})">
+            <summary>
+            Ignores all elements in an async-enumerable sequence leaving only the termination messages.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence.</param>
+            <returns>An empty async-enumerable sequence that signals termination, successful or exceptional, of the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.IsEmptyAsync``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Threading.CancellationToken)">
+            <summary>
+            Determines whether an async-enumerable sequence is empty.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to check for emptiness.</param>
+            <param name="cancellationToken">The optional cancellation token to be used for cancelling the sequence at any time.</param>
+            <returns>An async-enumerable sequence containing a single element determining whether the source sequence is empty.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.MaxAsync``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Collections.Generic.IComparer{``0},System.Threading.CancellationToken)">
+            <summary>
+            Returns the maximum value in an async-enumerable sequence according to the specified comparer.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to determine the maximum element of.</param>
+            <param name="comparer">Comparer used to compare elements.</param>
+            <param name="cancellationToken">The optional cancellation token to be used for cancelling the sequence at any time.</param>
+            <returns>An async-enumerable sequence containing a single element with the maximum element in the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="comparer"/> is null.</exception>
+            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.MaxByAsync``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,``1},System.Threading.CancellationToken)">
+            <summary>
+            Returns the elements in an async-enumerable sequence with the maximum key value.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to get the maximum elements for.</param>
+            <param name="keySelector">Key selector function.</param>
+            <param name="cancellationToken">The optional cancellation token to be used for cancelling the sequence at any time.</param>
+            <returns>A ValueTask containing a list of zero or more elements that have a maximum key value.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> is null.</exception>
+            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.MaxByAsync``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,``1},System.Collections.Generic.IComparer{``1},System.Threading.CancellationToken)">
+            <summary>
+            Returns the elements in an async-enumerable sequence with the maximum key value according to the specified comparer.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to get the maximum elements for.</param>
+            <param name="keySelector">Key selector function.</param>
+            <param name="comparer">Comparer used to compare key values.</param>
+            <param name="cancellationToken">The optional cancellation token to be used for cancelling the sequence at any time.</param>
+            <returns>A ValueTask containing a list of zero or more elements that have a maximum key value.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> or <paramref name="comparer"/> is null.</exception>
+            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.MaxByAsync``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.Tasks.ValueTask{``1}},System.Threading.CancellationToken)">
+            <summary>
+            Returns the elements in an async-enumerable sequence with the maximum key value.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to get the maximum elements for.</param>
+            <param name="keySelector">Key selector function returning a key possibly asynchronously.</param>
+            <param name="cancellationToken">The optional cancellation token to be used for cancelling the sequence at any time.</param>
+            <returns>A ValueTask containing a list of zero or more elements that have a maximum key value.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> is null.</exception>
+            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.MaxByAsync``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.CancellationToken,System.Threading.Tasks.ValueTask{``1}},System.Threading.CancellationToken)">
+            <summary>
+            Returns the elements in an async-enumerable sequence with the maximum key value.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to get the maximum elements for.</param>
+            <param name="keySelector">Key selector function returning a key possibly asynchronously and supporting cancellation.</param>
+            <param name="cancellationToken">The optional cancellation token to be used for cancelling the sequence at any time.</param>
+            <returns>A ValueTask containing a list of zero or more elements that have a maximum key value.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> is null.</exception>
+            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.MaxByAsync``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.Tasks.ValueTask{``1}},System.Collections.Generic.IComparer{``1},System.Threading.CancellationToken)">
+            <summary>
+            Returns the elements in an async-enumerable sequence with the maximum key value according to the specified comparer.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to get the maximum elements for.</param>
+            <param name="keySelector">Key selector function returning a key possibly asynchronously.</param>
+            <param name="comparer">Comparer used to compare key values.</param>
+            <param name="cancellationToken">The optional cancellation token to be used for cancelling the sequence at any time.</param>
+            <returns>A ValueTask containing a list of zero or more elements that have a maximum key value.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> or <paramref name="comparer"/> is null.</exception>
+            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.MaxByAsync``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.CancellationToken,System.Threading.Tasks.ValueTask{``1}},System.Collections.Generic.IComparer{``1},System.Threading.CancellationToken)">
+            <summary>
+            Returns the elements in an async-enumerable sequence with the maximum key value according to the specified comparer.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to get the maximum elements for.</param>
+            <param name="keySelector">Key selector function returning a key possibly asynchronously and supporting cancellation.</param>
+            <param name="comparer">Comparer used to compare key values.</param>
+            <param name="cancellationToken">The optional cancellation token to be used for cancelling the sequence at any time.</param>
+            <returns>A ValueTask containing a list of zero or more elements that have a maximum key value.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> or <paramref name="comparer"/> is null.</exception>
+            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Merge``1(System.Collections.Generic.IAsyncEnumerable{``0}[])">
+            <summary>
+            Merges elements from all of the specified async-enumerable sequences into a single async-enumerable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequences.</typeparam>
+            <param name="sources">Observable sequences.</param>
+            <returns>The async-enumerable sequence that merges the elements of the async-enumerable sequences.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="sources"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Merge``1(System.Collections.Generic.IEnumerable{System.Collections.Generic.IAsyncEnumerable{``0}})">
+            <summary>
+            Merges elements from all async-enumerable sequences in the given enumerable sequence into a single async-enumerable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequences.</typeparam>
+            <param name="sources">Enumerable sequence of async-enumerable sequences.</param>
+            <returns>The async-enumerable sequence that merges the elements of the async-enumerable sequences.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="sources"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Merge``1(System.Collections.Generic.IAsyncEnumerable{System.Collections.Generic.IAsyncEnumerable{``0}})">
+            <summary>
+            Merges elements from all inner async-enumerable sequences into a single async-enumerable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequences.</typeparam>
+            <param name="sources">Observable sequence of inner async-enumerable sequences.</param>
+            <returns>The async-enumerable sequence that merges the elements of the inner sequences.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="sources"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.MinAsync``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Collections.Generic.IComparer{``0},System.Threading.CancellationToken)">
+            <summary>
+            Returns the minimum element in an async-enumerable sequence according to the specified comparer.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to determine the minimum element of.</param>
+            <param name="comparer">Comparer used to compare elements.</param>
+            <param name="cancellationToken">The optional cancellation token to be used for cancelling the sequence at any time.</param>
+            <returns>An async-enumerable sequence containing a single element with the minimum element in the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="comparer"/> is null.</exception>
+            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.MinByAsync``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,``1},System.Threading.CancellationToken)">
+            <summary>
+            Returns the elements in an async-enumerable sequence with the minimum key value.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to get the minimum elements for.</param>
+            <param name="keySelector">Key selector function.</param>
+            <param name="cancellationToken">The optional cancellation token to be used for cancelling the sequence at any time.</param>
+            <returns>A ValueTask containing a list of zero or more elements that have a minimum key value.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> is null.</exception>
+            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.MinByAsync``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,``1},System.Collections.Generic.IComparer{``1},System.Threading.CancellationToken)">
+            <summary>
+            Returns the elements in an async-enumerable sequence with the minimum key value according to the specified comparer.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to get the minimum elements for.</param>
+            <param name="keySelector">Key selector function.</param>
+            <param name="comparer">Comparer used to compare key values.</param>
+            <param name="cancellationToken">The optional cancellation token to be used for cancelling the sequence at any time.</param>
+            <returns>A ValueTask containing a list of zero or more elements that have a minimum key value.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> or <paramref name="comparer"/> is null.</exception>
+            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.MinByAsync``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.Tasks.ValueTask{``1}},System.Threading.CancellationToken)">
+            <summary>
+            Returns the elements in an async-enumerable sequence with the minimum key value.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to get the minimum elements for.</param>
+            <param name="keySelector">Key selector function returning a key possibly asynchronously.</param>
+            <param name="cancellationToken">The optional cancellation token to be used for cancelling the sequence at any time.</param>
+            <returns>A ValueTask containing a list of zero or more elements that have a minimum key value.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> is null.</exception>
+            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.MinByAsync``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.CancellationToken,System.Threading.Tasks.ValueTask{``1}},System.Threading.CancellationToken)">
+            <summary>
+            Returns the elements in an async-enumerable sequence with the minimum key value.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to get the minimum elements for.</param>
+            <param name="keySelector">Key selector function returning a key possibly asynchronously and supporting cancellation.</param>
+            <param name="cancellationToken">The optional cancellation token to be used for cancelling the sequence at any time.</param>
+            <returns>A ValueTask containing a list of zero or more elements that have a minimum key value.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> is null.</exception>
+            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.MinByAsync``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.Tasks.ValueTask{``1}},System.Collections.Generic.IComparer{``1},System.Threading.CancellationToken)">
+            <summary>
+            Returns the elements in an async-enumerable sequence with the minimum key value according to the specified comparer.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to get the minimum elements for.</param>
+            <param name="keySelector">Key selector function returning a key possibly asynchronously.</param>
+            <param name="comparer">Comparer used to compare key values.</param>
+            <param name="cancellationToken">The optional cancellation token to be used for cancelling the sequence at any time.</param>
+            <returns>A ValueTask containing a list of zero or more elements that have a minimum key value.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> or <paramref name="comparer"/> is null.</exception>
+            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.MinByAsync``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,System.Threading.CancellationToken,System.Threading.Tasks.ValueTask{``1}},System.Collections.Generic.IComparer{``1},System.Threading.CancellationToken)">
+            <summary>
+            Returns the elements in an async-enumerable sequence with the minimum key value according to the specified comparer.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TKey">The type of the key computed for each element in the source sequence.</typeparam>
+            <param name="source">An async-enumerable sequence to get the minimum elements for.</param>
+            <param name="keySelector">Key selector function returning a key possibly asynchronously and supporting cancellation.</param>
+            <param name="comparer">Comparer used to compare key values.</param>
+            <param name="cancellationToken">The optional cancellation token to be used for cancelling the sequence at any time.</param>
+            <returns>A ValueTask containing a list of zero or more elements that have a minimum key value.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> or <paramref name="comparer"/> is null.</exception>
+            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Never``1">
+            <summary>
+            Returns a non-terminating async-enumerable sequence, which can be used to denote an infinite duration (e.g. when using reactive joins).
+            </summary>
+            <typeparam name="TValue">The type used for the <see cref="T:System.Collections.Generic.IAsyncEnumerable`1"/> type parameter of the resulting sequence.</typeparam>
+            <returns>An async-enumerable sequence whose consumers will never resume after awaiting <see cref="M:System.Collections.Generic.IAsyncEnumerator`1.MoveNextAsync"/>.</returns>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.OnErrorResumeNext``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Collections.Generic.IAsyncEnumerable{``0})">
+            <summary>
+            Concatenates the second async-enumerable sequence to the first async-enumerable sequence upon successful or exceptional termination of the first.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequences.</typeparam>
+            <param name="first">First async-enumerable sequence whose exception (if any) is caught.</param>
+            <param name="second">Second async-enumerable sequence used to produce results after the first sequence terminates.</param>
+            <returns>An async-enumerable sequence that concatenates the first and second sequence, even if the first sequence terminates exceptionally.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="first"/> or <paramref name="second"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.OnErrorResumeNext``1(System.Collections.Generic.IAsyncEnumerable{``0}[])">
+            <summary>
+            Concatenates all of the specified async-enumerable sequences, even if the previous async-enumerable sequence terminated exceptionally.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequences.</typeparam>
+            <param name="sources">Observable sequences to concatenate.</param>
+            <returns>An async-enumerable sequence that concatenates the source sequences, even if a sequence terminates exceptionally.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="sources"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.OnErrorResumeNext``1(System.Collections.Generic.IEnumerable{System.Collections.Generic.IAsyncEnumerable{``0}})">
+            <summary>
+            Concatenates all async-enumerable sequences in the given enumerable sequence, even if the previous async-enumerable sequence terminated exceptionally.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequences.</typeparam>
+            <param name="sources">Observable sequences to concatenate.</param>
+            <returns>An async-enumerable sequence that concatenates the source sequences, even if a sequence terminates exceptionally.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="sources"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Repeat``1(``0)">
+            <summary>
+            Repeats the element indefinitely.
+            </summary>
+            <typeparam name="TResult">The type of the elements in the source sequence.</typeparam>
+            <param name="element">Element to repeat.</param>
+            <returns>The async-enumerable sequence producing the element repeatedly and sequentially.</returns>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Repeat``1(System.Collections.Generic.IAsyncEnumerable{``0})">
+            <summary>
+            Repeats the async-enumerable sequence indefinitely.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Observable sequence to repeat.</param>
+            <returns>The async-enumerable sequence producing the elements of the given sequence repeatedly and sequentially.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Repeat``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Int32)">
+            <summary>
+            Repeats the async-enumerable sequence a specified number of times.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Observable sequence to repeat.</param>
+            <param name="count">Number of times to repeat the sequence.</param>
+            <returns>The async-enumerable sequence producing the elements of the given sequence repeatedly.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="count"/> is less than zero.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Retry``1(System.Collections.Generic.IAsyncEnumerable{``0})">
+            <summary>
+            Repeats the source async-enumerable sequence until it successfully terminates.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Observable sequence to repeat until it successfully terminates.</param>
+            <returns>An async-enumerable sequence producing the elements of the given sequence repeatedly until it terminates successfully.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Retry``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Int32)">
+            <summary>
+            Repeats the source async-enumerable sequence the specified number of times or until it successfully terminates.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Observable sequence to repeat until it successfully terminates.</param>
+            <param name="retryCount">Number of times to repeat the sequence.</param>
+            <returns>An async-enumerable sequence producing the elements of the given sequence repeatedly until it terminates successfully.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="retryCount"/> is less than zero.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Return``1(``0)">
+            <summary>
+            Returns an async-enumerable sequence that contains a single element.
+            </summary>
+            <typeparam name="TValue">The type of the element that will be returned in the produced sequence.</typeparam>
+            <param name="value">Single element in the resulting async-enumerable sequence.</param>
+            <returns>An async-enumerable sequence containing the single specified element.</returns>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Scan``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,``0,``0})">
+            <summary>
+            Applies an accumulator function over an async-enumerable sequence and returns each intermediate result.
+            For aggregation behavior with no intermediate results, see <see cref="M:System.Linq.AsyncEnumerable.AggregateAsync``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,``0,``0},System.Threading.CancellationToken)"/>.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence and the result of the aggregation.</typeparam>
+            <param name="source">An async-enumerable sequence to accumulate over.</param>
+            <param name="accumulator">An accumulator function to be invoked on each element.</param>
+            <returns>An async-enumerable sequence containing the accumulated values.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="accumulator"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Scan``2(System.Collections.Generic.IAsyncEnumerable{``0},``1,System.Func{``1,``0,``1})">
+            <summary>
+            Applies an accumulator function over an async-enumerable sequence and returns each intermediate result. The specified seed value is used as the initial accumulator value.
+            For aggregation behavior with no intermediate results, see <see cref="M:System.Linq.AsyncEnumerable.AggregateAsync``2(System.Collections.Generic.IAsyncEnumerable{``0},``1,System.Func{``1,``0,``1},System.Threading.CancellationToken)"/>.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TAccumulate">The type of the result of the aggregation.</typeparam>
+            <param name="source">An async-enumerable sequence to accumulate over.</param>
+            <param name="seed">The initial accumulator value.</param>
+            <param name="accumulator">An accumulator function to be invoked on each element.</param>
+            <returns>An async-enumerable sequence containing the accumulated values.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="accumulator"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Scan``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,``0,System.Threading.Tasks.ValueTask{``0}})">
+            <summary>
+            Applies an asynchronous accumulator function over an async-enumerable sequence and returns each intermediate result.
+            For aggregation behavior with no intermediate results, see <see cref="M:System.Linq.AsyncEnumerable.AggregateAsync``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,``0,``0},System.Threading.CancellationToken)"/>.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence and the result of the aggregation.</typeparam>
+            <param name="source">An async-enumerable sequence to accumulate over.</param>
+            <param name="accumulator">An asynchronous accumulator function to be invoked and awaited on each element.</param>
+            <returns>An async-enumerable sequence containing the accumulated values.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="accumulator"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Scan``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,``0,System.Threading.CancellationToken,System.Threading.Tasks.ValueTask{``0}})">
+            <summary>
+            Applies an asynchronous (cancellable) accumulator function over an async-enumerable sequence and returns each intermediate result.
+            For aggregation behavior with no intermediate results, see <see cref="M:System.Linq.AsyncEnumerable.AggregateAsync``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Func{``0,``0,``0},System.Threading.CancellationToken)"/>.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence and the result of the aggregation.</typeparam>
+            <param name="source">An async-enumerable sequence to accumulate over.</param>
+            <param name="accumulator">An asynchronous (cancellable) accumulator function to be invoked and awaited on each element.</param>
+            <returns>An async-enumerable sequence containing the accumulated values.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="accumulator"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Scan``2(System.Collections.Generic.IAsyncEnumerable{``0},``1,System.Func{``1,``0,System.Threading.Tasks.ValueTask{``1}})">
+            <summary>
+            Applies an asynchronous accumulator function over an async-enumerable sequence and returns each intermediate result. The specified seed value is used as the initial accumulator value.
+            For aggregation behavior with no intermediate results, see <see cref="M:System.Linq.AsyncEnumerable.AggregateAsync``2(System.Collections.Generic.IAsyncEnumerable{``0},``1,System.Func{``1,``0,``1},System.Threading.CancellationToken)"/>.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TAccumulate">The type of the result of the aggregation.</typeparam>
+            <param name="source">An async-enumerable sequence to accumulate over.</param>
+            <param name="seed">The initial accumulator value.</param>
+            <param name="accumulator">An asynchronous accumulator function to be invoked on each element.</param>
+            <returns>An async-enumerable sequence containing the accumulated values.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="accumulator"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Scan``2(System.Collections.Generic.IAsyncEnumerable{``0},``1,System.Func{``1,``0,System.Threading.CancellationToken,System.Threading.Tasks.ValueTask{``1}})">
+            <summary>
+            Applies an asynchronous (cancellable) accumulator function over an async-enumerable sequence and returns each intermediate result. The specified seed value is used as the initial accumulator value.
+            For aggregation behavior with no intermediate results, see <see cref="M:System.Linq.AsyncEnumerable.AggregateAsync``2(System.Collections.Generic.IAsyncEnumerable{``0},``1,System.Func{``1,``0,``1},System.Threading.CancellationToken)"/>.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TAccumulate">The type of the result of the aggregation.</typeparam>
+            <param name="source">An async-enumerable sequence to accumulate over.</param>
+            <param name="seed">The initial accumulator value.</param>
+            <param name="accumulator">An asynchronous (cancellable) accumulator function to be invoked on each element.</param>
+            <returns>An async-enumerable sequence containing the accumulated values.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="accumulator"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.SelectMany``2(System.Collections.Generic.IAsyncEnumerable{``0},System.Collections.Generic.IAsyncEnumerable{``1})">
+            <summary>
+            Projects each element of the source async-enumerable sequence to the other async-enumerable sequence and merges the resulting async-enumerable sequences into one async-enumerable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TOther">The type of the elements in the other sequence and the elements in the result sequence.</typeparam>
+            <param name="source">An async-enumerable sequence of elements to project.</param>
+            <param name="other">An async-enumerable sequence to project each element from the source sequence onto.</param>
+            <returns>An async-enumerable sequence whose elements are the result of projecting each source element onto the other sequence and merging all the resulting sequences together.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="other"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.StartWith``1(System.Collections.Generic.IAsyncEnumerable{``0},``0[])">
+            <summary>
+            Prepends a sequence of values to an async-enumerable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence to prepend values to.</param>
+            <param name="values">Values to prepend to the specified sequence.</param>
+            <returns>The source sequence prepended with the specified values.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="values"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Throw``1(System.Exception)">
+            <summary>
+            Returns an async-enumerable sequence that terminates with an exception.
+            </summary>
+            <typeparam name="TValue">The type used for the <see cref="T:System.Collections.Generic.IAsyncEnumerable`1"/> type parameter of the resulting sequence.</typeparam>
+            <param name="exception">Exception object used for the sequence's termination.</param>
+            <returns>The async-enumerable sequence that terminates exceptionally with the specified exception object.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="exception"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Timeout``1(System.Collections.Generic.IAsyncEnumerable{``0},System.TimeSpan)">
+            <summary>
+            Applies a timeout policy for each element in the async-enumerable sequence.
+            If the next element isn't received within the specified timeout duration starting from its predecessor, a TimeoutException is propagated to the observer.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence to perform a timeout for.</param>
+            <param name="timeout">Maximum duration between values before a timeout occurs.</param>
+            <returns>The source sequence with a TimeoutException in case of a timeout.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="timeout"/> is less than TimeSpan.Zero.</exception>
+            <exception cref="T:System.TimeoutException">(Asynchronous) If no element is produced within <paramref name="timeout"/> from the previous element.</exception>
+            <remarks>
+            <para>
+            In case you only want to timeout on the first element, consider using the <see cref="M:System.Linq.AsyncEnumerableEx.Amb``1(System.Collections.Generic.IAsyncEnumerable{``0},System.Collections.Generic.IAsyncEnumerable{``0})"/>
+            operator applied to the source sequence and a delayed <see cref="M:System.Linq.AsyncEnumerableEx.Throw``1(System.Exception)"/> sequence.
+            <!-- FIXME: Timeout with initial and per item timeout option not implemented yet.
+            Alternatively, the general-purpose overload
+            of Timeout, <see cref="Timeout{TSource, TTimeout}(IObservable{TSource}, IObservable{TTimeout}, Func{TSource, IObservable{TTimeout}})"/> can be used.
+            -->
+            </para>
+            <para>
+            Specifying a TimeSpan.Zero value for <paramref name="timeout"/> is not recommended but supported, causing timeout timers to be scheduled that are due
+            immediately. However, this doesn't guarantee a timeout will occur, even for the first element. This is a side-effect of the asynchrony introduced by the
+            scheduler, where the action to propagate a timeout may not execute immediately, despite the TimeSpan.Zero due time. In such cases, the next element may
+            arrive before the scheduler gets a chance to run the timeout action.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Using``2(System.Func{``1},System.Func{``1,System.Collections.Generic.IAsyncEnumerable{``0}})">
+            <summary>
+            Constructs an async-enumerable sequence that depends on a resource object, whose lifetime is tied to the resulting async-enumerable sequence's lifetime.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the produced sequence.</typeparam>
+            <typeparam name="TResource">The type of the resource used during the generation of the resulting sequence. Needs to implement <see cref="T:System.IDisposable"/>.</typeparam>
+            <param name="resourceFactory">Factory function to obtain a resource object.</param>
+            <param name="enumerableFactory">Factory function to obtain an async-enumerable sequence that depends on the obtained resource.</param>
+            <returns>An async-enumerable sequence whose lifetime controls the lifetime of the dependent resource object.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="resourceFactory"/> or <paramref name="enumerableFactory"/> is null.</exception>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Using``2(System.Func{System.Threading.Tasks.Task{``1}},System.Func{``1,System.Threading.Tasks.ValueTask{System.Collections.Generic.IAsyncEnumerable{``0}}})">
+            <summary>
+            Constructs an async-enumerable sequence that depends on a resource object, whose lifetime is tied to the resulting async-enumerable sequence's lifetime.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the produced sequence.</typeparam>
+            <typeparam name="TResource">The type of the resource used during the generation of the resulting sequence. Needs to implement <see cref="T:System.IDisposable"/>.</typeparam>
+            <param name="resourceFactory">Asynchronous factory function to obtain a resource object.</param>
+            <param name="enumerableFactory">Asynchronous factory function to obtain an async-enumerable sequence that depends on the obtained resource.</param>
+            <returns>An async-enumerable sequence whose lifetime controls the lifetime of the dependent resource object.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="resourceFactory"/> or <paramref name="enumerableFactory"/> is null.</exception>
+            <remarks>This operator is especially useful in conjunction with the asynchronous programming features introduced in C# 5.0 and Visual Basic 11.</remarks>
+            <remarks>When a subscription to the resulting sequence is disposed, the CancellationToken that was fed to the asynchronous resource factory and async-enumerable factory functions will be signaled.</remarks>
+        </member>
+        <member name="M:System.Linq.AsyncEnumerableEx.Using``2(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{``1}},System.Func{``1,System.Threading.CancellationToken,System.Threading.Tasks.ValueTask{System.Collections.Generic.IAsyncEnumerable{``0}}})">
+            <summary>
+            Constructs an async-enumerable sequence that depends on a resource object, whose lifetime is tied to the resulting async-enumerable sequence's lifetime. The resource is obtained and used through asynchronous methods.
+            The CancellationToken passed to the asynchronous methods is tied to the returned disposable subscription, allowing best-effort cancellation at any stage of the resource acquisition or usage.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the produced sequence.</typeparam>
+            <typeparam name="TResource">The type of the resource used during the generation of the resulting sequence. Needs to implement <see cref="T:System.IDisposable"/>.</typeparam>
+            <param name="resourceFactory">Asynchronous factory function to obtain a resource object.</param>
+            <param name="enumerableFactory">Asynchronous factory function to obtain an async-enumerable sequence that depends on the obtained resource.</param>
+            <returns>An async-enumerable sequence whose lifetime controls the lifetime of the dependent resource object.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="resourceFactory"/> or <paramref name="enumerableFactory"/> is null.</exception>
+            <remarks>This operator is especially useful in conjunction with the asynchronous programming features introduced in C# 5.0 and Visual Basic 11.</remarks>
+            <remarks>When a subscription to the resulting sequence is disposed, the CancellationToken that was fed to the asynchronous resource factory and async-enumerable factory functions will be signaled.</remarks>
+        </member>
+    </members>
+</doc>

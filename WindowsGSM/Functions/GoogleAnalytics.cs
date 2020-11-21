@@ -1,6 +1,5 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -8,8 +7,6 @@ using System.Management;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
-using Microsoft.VisualBasic;
 
 namespace WindowsGSM.Functions
 {
@@ -33,7 +30,7 @@ namespace WindowsGSM.Functions
             await Task.Run(() =>
             {
                 // https://stackoverflow.com/questions/2819934/detect-windows-version-in-net
-                string osBit = "";
+                string osBit = string.Empty;
                 using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT OSArchitecture FROM Win32_OperatingSystem"))
                 {
                     ManagementObjectCollection information = searcher.Get();
@@ -56,7 +53,7 @@ namespace WindowsGSM.Functions
         {
             await Task.Run(() =>
             {
-                string cpuName = "";
+                string cpuName = string.Empty;
                 using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT Name FROM Win32_Processor"))
                 {
                     ManagementObjectCollection information = searcher.Get();
@@ -155,10 +152,10 @@ namespace WindowsGSM.Functions
             if (string.IsNullOrEmpty(_clientId)) { return; }
 
             string post = $"v=1&t=event&tid={_trackingId}&cid={_clientId}";
-            post += string.IsNullOrWhiteSpace(category) ? "" : $"&ec={Uri.EscapeDataString(category)}";
-            post += string.IsNullOrWhiteSpace(action) ? "" : $"&ea={Uri.EscapeDataString(action)}";
-            post += string.IsNullOrWhiteSpace(label) ? "" : $"&el={Uri.EscapeDataString(label)}";
-            post += string.IsNullOrWhiteSpace(value) ? "" : $"&ev={Uri.EscapeDataString(value)}";
+            post += string.IsNullOrWhiteSpace(category) ? string.Empty : $"&ec={Uri.EscapeDataString(category)}";
+            post += string.IsNullOrWhiteSpace(action) ? string.Empty : $"&ea={Uri.EscapeDataString(action)}";
+            post += string.IsNullOrWhiteSpace(label) ? string.Empty : $"&el={Uri.EscapeDataString(label)}";
+            post += string.IsNullOrWhiteSpace(value) ? string.Empty : $"&ev={Uri.EscapeDataString(value)}";
 
             try
             {
@@ -193,7 +190,7 @@ namespace WindowsGSM.Functions
             if (key == null) { return null; }
 
             //Get Client ID
-            string clientId = (key.GetValue("ClientID") == null) ? "" : key.GetValue("ClientID").ToString();
+            string clientId = (key.GetValue("ClientID") == null) ? string.Empty : key.GetValue("ClientID").ToString();
 
             //If Client ID is invalid, set new client id
             if (string.IsNullOrWhiteSpace(clientId))

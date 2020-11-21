@@ -16,9 +16,9 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Grand Theft Auto V Dedicated Server (FiveM)";
         public string StartPath = @"server\FXServer.exe";
-        public bool ToggleConsole = false;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 1;
-        public dynamic QueryMethod = null;
+        public dynamic QueryMethod = new Query.FIVEM();
 
         public string Port = "30120";
         public string QueryPort = "30120";
@@ -81,7 +81,7 @@ namespace WindowsGSM.GameServer
             }
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {
@@ -90,7 +90,8 @@ namespace WindowsGSM.GameServer
                         WorkingDirectory = serverDataPath,
                         FileName = fxServerPath,
                         Arguments = $"+set citizen_dir \"{citizenPath}\" {_serverData.ServerParam}",
-                        WindowStyle = ProcessWindowStyle.Minimized
+                        WindowStyle = ProcessWindowStyle.Minimized,
+                        UseShellExecute = false
                     },
                     EnableRaisingEvents = true
                 };
@@ -135,9 +136,7 @@ namespace WindowsGSM.GameServer
                 }
                 else
                 {
-                    Functions.ServerConsole.SetMainWindow(p.MainWindowHandle);
-                    Functions.ServerConsole.SendWaitToMainWindow("quit");
-                    Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
+                    Functions.ServerConsole.SendMessageToMainWindow(p.MainWindowHandle, "quit");
                 }
             });
         }
@@ -196,7 +195,7 @@ namespace WindowsGSM.GameServer
             }
         }
 
-        public async Task<bool> Update()
+        public async Task<Process> Update()
         {
             try
             {
@@ -220,7 +219,8 @@ namespace WindowsGSM.GameServer
 
                     if (Directory.Exists(serverPath))
                     {
-                        return false;
+                        Error = $"Unable to delete server folder. Path: {serverPath}";
+                        return null;
                     }
 
                     Directory.CreateDirectory(serverPath);
@@ -243,11 +243,11 @@ namespace WindowsGSM.GameServer
                     File.WriteAllText(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "FiveM-version.txt"), remoteBuild);
                 }
 
-                return true;
+                return null;
             }
             catch
             {
-                return false;
+                return null;
             }
         }
 
@@ -272,19 +272,21 @@ namespace WindowsGSM.GameServer
         {
             string versionPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "FiveM-version.txt");
             Error = $"Fail to get local build";
-            return File.Exists(versionPath) ? File.ReadAllText(versionPath) : "";
+            return File.Exists(versionPath) ? File.ReadAllText(versionPath) : string.Empty;
         }
 
         public async Task<string> GetRemoteBuild()
         {
             try
             {
-                WebClient webClient = new WebClient();
-                string html = await webClient.DownloadStringTaskAsync("https://runtime.fivem.net/artifacts/fivem/build_server_windows/master/");
-                Regex regex = new Regex(@"[0-9]{4}-[ -~][^\s]{39}");
-                var matches = regex.Matches(html);
+                using (WebClient webClient = new WebClient())
+                {
+                    string html = await webClient.DownloadStringTaskAsync("https://runtime.fivem.net/artifacts/fivem/build_server_windows/master/");
+                    Regex regex = new Regex(@"[0-9]{4}-[ -~][^\s]{39}");
+                    var matches = regex.Matches(html);
 
-                return matches[0].Value;
+                    return matches[0].Value;
+                }
             }
             catch
             {
@@ -292,7 +294,7 @@ namespace WindowsGSM.GameServer
             }
 
             Error = $"Fail to get remote build";
-            return "";
+            return string.Empty;
         }
     }
 }

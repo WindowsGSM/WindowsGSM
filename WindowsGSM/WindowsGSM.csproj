@@ -36,22 +36,24 @@
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
+  <PropertyGroup>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>true</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>true</Prefer32Bit>
+    <Prefer32Bit>false</Prefer32Bit>
     <NoWarn>1998;</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>none</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>
     </DefineConstants>
@@ -60,7 +62,7 @@
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
     <DocumentationFile>
     </DocumentationFile>
-    <Prefer32Bit>true</Prefer32Bit>
+    <Prefer32Bit>false</Prefer32Bit>
     <NoWarn>1998;</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
@@ -104,41 +106,60 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ControlzEx, Version=3.0.2.4, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ControlzEx.3.0.2.4\lib\net462\ControlzEx.dll</HintPath>
+    <Reference Include="ControlzEx, Version=4.0.0.0, Culture=neutral, PublicKeyToken=69f1c32f803d307e, processorArchitecture=MSIL">
+      <HintPath>..\packages\ControlzEx.4.3.2\lib\net462\ControlzEx.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Discord.Net.Commands, Version=2.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Discord.Net.Commands.2.1.1\lib\net46\Discord.Net.Commands.dll</HintPath>
+    <Reference Include="Discord.Net.Commands, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Discord.Net.Commands.2.2.0\lib\net461\Discord.Net.Commands.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Discord.Net.Core, Version=2.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Discord.Net.Core.2.1.1\lib\net46\Discord.Net.Core.dll</HintPath>
+    <Reference Include="Discord.Net.Core, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Discord.Net.Core.2.2.0\lib\net461\Discord.Net.Core.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Discord.Net.Rest, Version=2.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Discord.Net.Rest.2.1.1\lib\net46\Discord.Net.Rest.dll</HintPath>
+    <Reference Include="Discord.Net.Rest, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Discord.Net.Rest.2.2.0\lib\net461\Discord.Net.Rest.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Discord.Net.Webhook, Version=2.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Discord.Net.Webhook.2.1.1\lib\netstandard1.3\Discord.Net.Webhook.dll</HintPath>
+    <Reference Include="Discord.Net.Webhook, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Discord.Net.Webhook.2.2.0\lib\netstandard2.0\Discord.Net.Webhook.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Discord.Net.WebSocket, Version=2.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Discord.Net.WebSocket.2.1.1\lib\net46\Discord.Net.WebSocket.dll</HintPath>
+    <Reference Include="Discord.Net.WebSocket, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Discord.Net.WebSocket.2.2.0\lib\net461\Discord.Net.WebSocket.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="MahApps.Metro, Version=1.6.5.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MahApps.Metro.1.6.5\lib\net47\MahApps.Metro.dll</HintPath>
-      <Private>False</Private>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.DependencyInjection, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.1.1.1\lib\netstandard1.1\Microsoft.Extensions.DependencyInjection.dll</HintPath>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=1.2.0.246, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpZipLib.1.2.0\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.1.1.1\lib\netstandard1.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    <Reference Include="LiveCharts, Version=0.9.7.0, Culture=neutral, PublicKeyToken=0bc1f845d1ebb8df, processorArchitecture=MSIL">
+      <HintPath>..\packages\LiveCharts.0.9.7\lib\net45\LiveCharts.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="LiveCharts.Wpf, Version=0.9.7.0, Culture=neutral, PublicKeyToken=0bc1f845d1ebb8df, processorArchitecture=MSIL">
+      <HintPath>..\packages\LiveCharts.Wpf.0.9.7\lib\net45\LiveCharts.Wpf.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MahApps.Metro, Version=2.0.0.0, Culture=neutral, PublicKeyToken=51482d6f650b2b3f, processorArchitecture=MSIL">
+      <HintPath>..\packages\MahApps.Metro.2.1.1\lib\net47\MahApps.Metro.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.1.1.1\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=3.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection, Version=3.1.6.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.3.1.6\lib\net461\Microsoft.Extensions.DependencyInjection.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=3.1.6.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.3.1.6\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.VisualBasic" />
@@ -146,6 +167,10 @@
       <HintPath>..\packages\Microsoft.Win32.Primitives.4.3.0\lib\net46\Microsoft.Win32.Primitives.dll</HintPath>
       <Private>True</Private>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Xaml.Behaviors, Version=1.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Xaml.Behaviors.Wpf.1.1.19\lib\net45\Microsoft.Xaml.Behaviors.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="NCrontab.Signed, Version=3.3.2.0, Culture=neutral, PublicKeyToken=5247b4370afff365, processorArchitecture=MSIL">
       <HintPath>..\packages\NCrontab.Signed.3.3.2\lib\net35\NCrontab.Signed.dll</HintPath>
@@ -161,17 +186,20 @@
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Collections.Immutable, Version=1.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Collections.Immutable.1.3.1\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Collections.Immutable, Version=1.2.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.Immutable.1.7.1\lib\net461\System.Collections.Immutable.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.Console, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Console.4.3.0\lib\net46\System.Console.dll</HintPath>
+    <Reference Include="System.Console, Version=4.0.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Console.4.3.1\lib\net46\System.Console.dll</HintPath>
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Data" />
     <Reference Include="System.Diagnostics.Tracing, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Diagnostics.Tracing.4.3.0\lib\net462\System.Diagnostics.Tracing.dll</HintPath>
       <Private>True</Private>
@@ -183,8 +211,8 @@
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Interactive.Async, Version=3.2.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Interactive.Async.3.2.0\lib\net46\System.Interactive.Async.dll</HintPath>
+    <Reference Include="System.Interactive.Async, Version=4.1.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Interactive.Async.4.1.1\lib\net461\System.Interactive.Async.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.IO, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -218,12 +246,20 @@
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Linq.Async, Version=4.1.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Linq.Async.4.1.1\lib\net461\System.Linq.Async.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System.Linq.Expressions, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Linq.Expressions.4.3.0\lib\net463\System.Linq.Expressions.dll</HintPath>
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Management" />
+    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System.Net.Http, Version=4.1.1.3, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Net.Http.4.3.4\lib\net46\System.Net.Http.dll</HintPath>
       <Private>True</Private>
@@ -235,18 +271,26 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System.Reflection, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Reflection.4.3.0\lib\net462\System.Reflection.dll</HintPath>
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Runtime, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.4.3.0\lib\net462\System.Runtime.dll</HintPath>
+    <Reference Include="System.Runtime, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.4.3.1\lib\net462\System.Runtime.dll</HintPath>
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Runtime.Extensions, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.Extensions.4.3.0\lib\net462\System.Runtime.Extensions.dll</HintPath>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.6.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.7.1\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Runtime.Extensions, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.Extensions.4.3.1\lib\net462\System.Runtime.Extensions.dll</HintPath>
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
@@ -261,7 +305,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Security.Cryptography.Algorithms, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.Algorithms.4.3.0\lib\net463\System.Security.Cryptography.Algorithms.dll</HintPath>
+      <HintPath>..\packages\System.Security.Cryptography.Algorithms.4.3.1\lib\net463\System.Security.Cryptography.Algorithms.dll</HintPath>
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
@@ -275,32 +319,31 @@
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
+    <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.2, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.2\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Text.RegularExpressions, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Text.RegularExpressions.4.3.0\lib\net463\System.Text.RegularExpressions.dll</HintPath>
+      <HintPath>..\packages\System.Text.RegularExpressions.4.3.1\lib\net463\System.Text.RegularExpressions.dll</HintPath>
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Web" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\ControlzEx.3.0.2.4\lib\net462\System.Windows.Interactivity.dll</HintPath>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Xml.ReaderWriter, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Xml.ReaderWriter.4.3.0\lib\net46\System.Xml.ReaderWriter.dll</HintPath>
+      <HintPath>..\packages\System.Xml.ReaderWriter.4.3.1\lib\net46\System.Xml.ReaderWriter.dll</HintPath>
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
@@ -317,24 +360,45 @@
     <Compile Include="DiscordBot\Bot.cs" />
     <Compile Include="DiscordBot\Commands.cs" />
     <Compile Include="DiscordBot\Configs.cs" />
+    <Compile Include="Functions\BackupConfig.cs" />
+    <Compile Include="Functions\CPU\Affinity.cs" />
+    <Compile Include="Functions\CPU\Priority.cs" />
+    <Compile Include="Functions\DirectoryManagement.cs" />
+    <Compile Include="Functions\FileManagement.cs" />
     <Compile Include="Functions\Github.cs" />
     <Compile Include="Functions\GoogleAnalytics.cs" />
+    <Compile Include="Functions\Plugin.cs" />
+    <Compile Include="Functions\PluginManagement.cs" />
+    <Compile Include="Functions\ProcessManagement.cs" />
     <Compile Include="Functions\ServerAddon.cs" />
+    <Compile Include="Functions\ServerCache.cs" />
     <Compile Include="Functions\ServerConsole.cs" />
+    <Compile Include="Functions\SystemMetrics.cs" />
+    <Compile Include="Functions\UI.cs" />
     <Compile Include="GameServer\Addon\AMXModX.cs" />
     <Compile Include="GameServer\Addon\SourceMod.cs" />
     <Compile Include="GameServer\ARKSE.cs" />
     <Compile Include="GameServer\AVORION.cs" />
+    <Compile Include="GameServer\BT.cs" />
     <Compile Include="GameServer\BW.cs" />
     <Compile Include="GameServer\CE.cs" />
+    <Compile Include="GameServer\DMC.cs" />
+    <Compile Include="GameServer\DOD.cs" />
     <Compile Include="GameServer\DODS.cs" />
     <Compile Include="GameServer\EGS.cs" />
+    <Compile Include="GameServer\Engine\SteamCMDAgent.cs" />
     <Compile Include="GameServer\Engine\Unity.cs" />
     <Compile Include="GameServer\Engine\UnrealEngine.cs" />
     <Compile Include="GameServer\HEAT.cs" />
+    <Compile Include="GameServer\HLOF.cs" />
     <Compile Include="GameServer\INSS.cs" />
+    <Compile Include="GameServer\ECO.cs" />
     <Compile Include="GameServer\ONSET.cs" />
+    <Compile Include="GameServer\ROR2.cs" />
     <Compile Include="GameServer\Query\A2S.cs" />
+    <Compile Include="GameServer\Query\FIVEM.cs" />
+    <Compile Include="GameServer\Query\UT3.cs" />
+    <Compile Include="GameServer\RCC.cs" />
     <Compile Include="GameServer\ROK.cs" />
     <Compile Include="GameServer\SDTD.cs" />
     <Compile Include="GameServer\Data\Class.cs" />
@@ -354,11 +418,18 @@
     <Compile Include="GameServer\SE.cs" />
     <Compile Include="GameServer\Engine\GoldSource.cs" />
     <Compile Include="GameServer\Engine\Source.cs" />
+    <Compile Include="GameServer\SQ.cs" />
+    <Compile Include="GameServer\PS.cs" />
     <Compile Include="GameServer\SW.cs" />
+    <Compile Include="GameServer\TF.cs" />
+    <Compile Include="GameServer\TFC.cs" />
     <Compile Include="GameServer\UNT.cs" />
+    <Compile Include="GameServer\VTS.cs" />
     <Compile Include="GameServer\ZPS.cs" />
-    <Compile Include="Tools\GlobalServerList.cs" />
-    <Compile Include="Tools\InstallAddons.cs" />
+    <Compile Include="Functions\GlobalServerList.cs" />
+    <Compile Include="Functions\InstallAddons.cs" />
+    <Compile Include="Functions\UdpClientHandler.cs" />
+    <Compile Include="Functions\JavaHelper.cs" />
     <Compile Include="WindowsFirewall.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -411,13 +482,15 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="app.manifest" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
+      <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <None Include="Resources\roslyn.zip" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -443,16 +516,6 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="..\packages\ControlzEx.3.0.2.4\lib\net462\System.Windows.Interactivity.dll">
-      <Link>ReferencesEx\System.Windows.Interactivity.dll</Link>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="..\packages\ControlzEx.3.0.2.4\lib\net462\ControlzEx.dll">
-      <Link>ReferencesEx\ControlzEx.dll</Link>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Games\gmod.png" />
@@ -593,35 +656,6 @@
     <Resource Include="Images\WindowsGSM-Icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="..\packages\System.Interactive.Async.3.2.0\lib\net46\System.Interactive.Async.dll">
-      <Link>ReferencesEx\System.Interactive.Async.dll</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="..\packages\Discord.Net.Commands.2.1.1\lib\net46\Discord.Net.Commands.dll">
-      <Link>ReferencesEx\Discord.Net.Commands.dll</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="..\packages\Discord.Net.Core.2.1.1\lib\net46\Discord.Net.Core.dll">
-      <Link>ReferencesEx\Discord.Net.Core.dll</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="..\packages\Discord.Net.Rest.2.1.1\lib\net46\Discord.Net.Rest.dll">
-      <Link>ReferencesEx\Discord.Net.Rest.dll</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="..\packages\Discord.Net.Webhook.2.1.1\lib\netstandard1.3\Discord.Net.Webhook.dll">
-      <Link>ReferencesEx\Discord.Net.Webhook.dll</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="..\packages\Discord.Net.WebSocket.2.1.1\lib\net46\Discord.Net.WebSocket.dll">
-      <Link>ReferencesEx\Discord.Net.WebSocket.dll</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="..\packages\Microsoft.Extensions.DependencyInjection.1.1.1\lib\netstandard1.1\Microsoft.Extensions.DependencyInjection.dll">
-      <Link>ReferencesEx\Microsoft.Extensions.DependencyInjection.dll</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.1.1.1\lib\netstandard1.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll">
-      <Link>ReferencesEx\Microsoft.Extensions.DependencyInjection.Abstractions.dll</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="..\packages\System.Collections.Immutable.1.3.1\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll">
-      <Link>ReferencesEx\System.Collections.Immutable.dll</Link>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Images\Tools\AMXModX.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -648,5 +682,151 @@
   <ItemGroup>
     <Resource Include="Images\Games\inss.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\dmc.png" />
+    <Resource Include="Images\Games\dod.png" />
+    <Resource Include="Images\Games\hlof.png" />
+    <Resource Include="Images\Games\rcc.png" />
+    <Resource Include="Images\Games\tfc.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\HMenu\Dashboard.ico" />
+    <Resource Include="Images\HMenu\Home.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\LiveCharts.0.9.7\lib\net45\LiveCharts.dll">
+      <Link>ReferencesEx\LiveCharts.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\packages\LiveCharts.Wpf.0.9.7\lib\net45\LiveCharts.Wpf.dll">
+      <Link>ReferencesEx\LiveCharts.Wpf.dll</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\HMenu\Discord.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\sq.png" />
+    <Resource Include="Images\Games\tf.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\bt.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\HMenu\Settings.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\ps.png" />
+    <Resource Include="Images\Games\ror2.png" />
+    <Resource Include="Images\Games\eco.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Restore.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Games\vts.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\SharpZipLib.1.2.0\lib\net45\ICSharpCode.SharpZipLib.dll">
+      <Link>ReferencesEx\ICSharpCode.SharpZipLib.dll</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\Discord.Net.Commands.2.2.0\lib\net461\Discord.Net.Commands.dll">
+      <Link>ReferencesEx\Discord.Net.Commands.dll</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\Discord.Net.Core.2.2.0\lib\net461\Discord.Net.Core.dll">
+      <Link>ReferencesEx\Discord.Net.Core.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\packages\Discord.Net.Rest.2.2.0\lib\net461\Discord.Net.Rest.dll">
+      <Link>ReferencesEx\Discord.Net.Rest.dll</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\Discord.Net.Webhook.2.2.0\lib\netstandard2.1\Discord.Net.Webhook.dll">
+      <Link>ReferencesEx\Discord.Net.Webhook.dll</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\Discord.Net.WebSocket.2.2.0\lib\net461\Discord.Net.WebSocket.dll">
+      <Link>ReferencesEx\Discord.Net.WebSocket.dll</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\ControlzEx.4.3.2\lib\net462\ControlzEx.dll">
+      <Link>ReferencesEx\ControlzEx.dll</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll">
+      <Link>ReferencesEx\System.Threading.Tasks.Extensions.dll</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll">
+      <Link>ReferencesEx\System.Numerics.Vectors.dll</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll">
+      <Link>ReferencesEx\System.Memory.dll</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\System.Interactive.Async.4.1.1\lib\net461\System.Interactive.Async.dll">
+      <Link>ReferencesEx\System.Interactive.Async.dll</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\Microsoft.Bcl.AsyncInterfaces.1.1.1\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll">
+      <Link>ReferencesEx\Microsoft.Bcl.AsyncInterfaces.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.3.1.6\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll">
+      <Link>ReferencesEx\Microsoft.Extensions.DependencyInjection.Abstractions.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\packages\Microsoft.Extensions.DependencyInjection.3.1.6\lib\net461\Microsoft.Extensions.DependencyInjection.dll">
+      <Link>ReferencesEx\Microsoft.Extensions.DependencyInjection.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\packages\System.Runtime.CompilerServices.Unsafe.4.7.1\lib\net461\System.Runtime.CompilerServices.Unsafe.dll">
+      <Link>ReferencesEx\System.Runtime.CompilerServices.Unsafe.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\packages\Microsoft.Xaml.Behaviors.Wpf.1.1.19\lib\net45\Microsoft.Xaml.Behaviors.dll">
+      <Link>ReferencesEx\Microsoft.Xaml.Behaviors.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\packages\System.Collections.Immutable.1.7.1\lib\net461\System.Collections.Immutable.dll">
+      <Link>ReferencesEx\System.Collections.Immutable.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll">
+      <Link>ReferencesEx\System.Buffers.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\packages\System.Linq.4.3.0\lib\net463\System.Linq.dll">
+      <Link>ReferencesEx\System.Linq.dll</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Tools\OxideMod.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\HMenu\ViewPlugins.ico" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll">
+      <Link>ReferencesEx\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Plugins\User.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets'))" />
+  </Target>
+  <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" />
 </Project>

@@ -40,23 +40,25 @@ namespace WindowsGSM
             });
         }
 
-        public void AddRule()
+        public async Task<bool> AddRule()
         {
-            try
+            return await Task.Run(() =>
             {
-                INetFwMgr netFwMgr = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
-                INetFwAuthorizedApplication app = (INetFwAuthorizedApplication)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwAuthorizedApplication"));
-
-                app.Name = Name;
-                app.ProcessImageFileName = Path;
-                app.Enabled = true;
-
-                netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications.Add(app);
-            }
-            catch
-            {
-                // ignore
-            }
+                try
+                {
+                    var netFwMgr = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
+                    var app = (INetFwAuthorizedApplication)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwAuthorizedApplication"));
+                    app.Name = Name;
+                    app.ProcessImageFileName = Path;
+                    app.Enabled = true;
+                    netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications.Add(app);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            });
         }
 
         public void RemoveRule()

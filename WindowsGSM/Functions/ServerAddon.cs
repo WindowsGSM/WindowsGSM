@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace WindowsGSM.Functions
 {
     class ServerAddon
     {
-        private string _serverId;
-        private string _serverGame;
-        private dynamic _gameServer;
+        private readonly string _serverId;
+        private readonly string _serverGame;
+        private readonly dynamic _gameServer;
 
         public ServerAddon(string serverId, string serverGame)
         {
@@ -27,7 +23,7 @@ namespace WindowsGSM.Functions
             if (_serverGame == GameServer.DAYZ.FullName)
             {
                 string modPath = ServerPath.GetServersConfigs(_serverId, "DayZActivatedMods.cfg");
-                string activatedMods = File.Exists(modPath) ? File.ReadAllText(modPath) : "";
+                string activatedMods = File.Exists(modPath) ? File.ReadAllText(modPath) : string.Empty;
                 string[] folders = Directory.GetDirectories(ServerPath.GetServersServerFiles(_serverId), "@*", SearchOption.TopDirectoryOnly);
 
                 foreach (string folder in folders)
@@ -188,7 +184,7 @@ namespace WindowsGSM.Functions
                 return "SourceMod Plugins";
             }
 
-            return "";
+            return string.Empty;
         }
 
         public static bool IsGameSupportManageAddons(string serverGame)

@@ -18,7 +18,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Minecraft: Bedrock Edition Server";
         public string StartPath = "bedrock_server.exe";
-        public bool ToggleConsole = false;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 2;
         public dynamic QueryMethod = null;
 
@@ -26,7 +26,7 @@ namespace WindowsGSM.GameServer
         public string QueryPort = "19132";
         public string Defaultmap = "Bedrock level";
         public string Maxplayers = "10";
-        public string Additional = "";
+        public string Additional = string.Empty;
 
         public MCBE(Functions.ServerConfig serverData)
         {
@@ -44,7 +44,7 @@ namespace WindowsGSM.GameServer
                 configText = configText.Replace("{{max-players}}", Maxplayers);
                 string tempPort = _serverData.ServerPort;
                 configText = configText.Replace("{{server-port}}", tempPort);
-                configText = configText.Replace("{{server-portv6}}", (System.Int32.Parse(tempPort)+1).ToString());
+                configText = configText.Replace("{{server-portv6}}", (int.Parse(tempPort)+1).ToString());
                 configText = configText.Replace("{{level-name}}", Defaultmap);
                 File.WriteAllText(configPath, configText);
             }
@@ -69,7 +69,7 @@ namespace WindowsGSM.GameServer
             }
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {
@@ -121,9 +121,7 @@ namespace WindowsGSM.GameServer
                 }
                 else
                 {
-                    Functions.ServerConsole.SetMainWindow(p.MainWindowHandle);
-                    Functions.ServerConsole.SendWaitToMainWindow("stop");
-                    Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
+                    Functions.ServerConsole.SendMessageToMainWindow(p.MainWindowHandle, "stop");
                 }
             });
         }
@@ -173,7 +171,7 @@ namespace WindowsGSM.GameServer
             return null;
         }
 
-        public async Task<bool> Update()
+        public async Task<Process> Update()
         {
             try
             {
@@ -187,7 +185,8 @@ namespace WindowsGSM.GameServer
 
                     if (matches.Count <= 0)
                     {
-                        return false;
+                        Error = "Fail to get latest build from https://minecraft.azureedge.net";
+                        return null;
                     }
 
                     string downloadUrl = matches[0].Value; //https://minecraft.azureedge.net/bin-win/bedrock-server-1.14.21.0.zip
@@ -243,12 +242,12 @@ namespace WindowsGSM.GameServer
                     File.WriteAllText(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "MCBE-version.txt"), version);
                 }
 
-                return true;
+                return null;
             }
             catch (Exception e)
             {
-                Error = e.ToString();
-                return false;
+                Error = e.Message;
+                return null;
             }
         }
 
@@ -267,7 +266,7 @@ namespace WindowsGSM.GameServer
         {
             string versionPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "MCBE-version.txt");
             Error = $"Fail to get local build";
-            return File.Exists(versionPath) ? File.ReadAllText(versionPath) : "";
+            return File.Exists(versionPath) ? File.ReadAllText(versionPath) : string.Empty;
         }
 
         public async Task<string> GetRemoteBuild()
@@ -292,7 +291,7 @@ namespace WindowsGSM.GameServer
             }
 
             Error = $"Fail to get remote build";
-            return "";
+            return string.Empty;
         }
     }
 }

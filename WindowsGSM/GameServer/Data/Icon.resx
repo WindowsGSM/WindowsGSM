@@ -126,6 +126,9 @@
   <data name="Avorion Dedicated Server" xml:space="preserve">
     <value>Images/Games/avorion.png</value>
   </data>
+  <data name="Barotrauma Dedicated Server" xml:space="preserve">
+    <value>Images/Games/bt.png</value>
+  </data>
   <data name="BlackWake Dedicated Server" xml:space="preserve">
     <value>Images/Games/bw.png</value>
   </data>
@@ -144,11 +147,20 @@
   <data name="Counter-Strike: Source Dedicated Server" xml:space="preserve">
     <value>Images/Games/css.png</value>
   </data>
+  <data name="Day of Defeat Dedicated Server" xml:space="preserve">
+    <value>Images/Games/dod.png</value>
+  </data>
   <data name="Day of Defeat: Source Dedicated Server" xml:space="preserve">
     <value>Images/Games/dods.png</value>
   </data>
   <data name="DayZ Dedicated Server" xml:space="preserve">
     <value>Images/Games/dayz.png</value>
+  </data>
+  <data name="Deathmatch Classic Dedicated Server" xml:space="preserve">
+    <value>Images/Games/dmc.png</value>
+  </data>
+  <data name="Eco Dedicated Server" xml:space="preserve">
+    <value>Images/Games/eco.png</value>
   </data>
   <data name="Empyrion - Galactic Survival Dedicated Server" xml:space="preserve">
     <value>Images/Games/egs.png</value>
@@ -161,6 +173,9 @@
   </data>
   <data name="Half-Life 2: Deathmatch Dedicated Server" xml:space="preserve">
     <value>Images/Games/hl2dm.png</value>
+  </data>
+  <data name="Half-Life: Opposing Force Dedicated Server" xml:space="preserve">
+    <value>Images/Games/hlof.png</value>
   </data>
   <data name="Heat Dedicated Server" xml:space="preserve">
     <value>Images/Games/heat.png</value>
@@ -195,8 +210,17 @@
   <data name="Outlaws of the Old West Dedicated Server" xml:space="preserve">
     <value>Images/Games/olow.png</value>
   </data>
+  <data name="Post Scriptum Dedicated Server" xml:space="preserve">
+    <value>Images/Games/ps.png</value>
+  </data>
   <data name="Reign Of Kings Dedicated Server" xml:space="preserve">
     <value>Images/Games/rok.png</value>
+  </data>
+  <data name="Ricochet Dedicated Server" xml:space="preserve">
+    <value>Images/Games/rcc.png</value>
+  </data>
+  <data name="Risk of Rain 2 Dedicated Server" xml:space="preserve">
+    <value>Images/Games/ror2.png</value>
   </data>
   <data name="Rust Dedicated Server" xml:space="preserve">
     <value>Images/Games/rust.png</value>
@@ -204,14 +228,26 @@
   <data name="Space Engineers Dedicated Server" xml:space="preserve">
     <value>Images/Games/se.png</value>
   </data>
+  <data name="Squad Dedicated Server" xml:space="preserve">
+    <value>Images/Games/sq.png</value>
+  </data>
   <data name="Stormworks Dedicated Server" xml:space="preserve">
     <value>Images/Games/sw.png</value>
   </data>
   <data name="Team Fortress 2 Dedicated Server" xml:space="preserve">
     <value>Images/Games/tf2.png</value>
   </data>
+  <data name="Team Fortress Classic Dedicated Server" xml:space="preserve">
+    <value>Images/Games/tfc.png</value>
+  </data>
+  <data name="The Forest Dedicated Server" xml:space="preserve">
+    <value>Images/Games/tf.png</value>
+  </data>
   <data name="Unturned Dedicated Server" xml:space="preserve">
     <value>Images/Games/unt.png</value>
+  </data>
+  <data name="Vintage Story Dedicated Server" xml:space="preserve">
+    <value>Images/Games/vts.png</value>
   </data>
   <data name="Zombie Panic Source Dedicated Server" xml:space="preserve">
     <value>Images/Games/zps.png</value>

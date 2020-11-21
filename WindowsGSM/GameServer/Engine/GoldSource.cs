@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WindowsGSM.GameServer.Engine
 {
-    class GoldSource
+    public class GoldSource
     {
         public Functions.ServerConfig serverData;
 
@@ -13,23 +13,20 @@ namespace WindowsGSM.GameServer.Engine
         public string Notice;
 
         public string StartPath = "hlds.exe";
-        public bool ToggleConsole = false;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 1;
         public dynamic QueryMethod = new Query.A2S();
 
         public virtual string Port { get { return "27015"; } }
         public virtual string QueryPort { get { return "27015"; } }
-        public virtual string Defaultmap { get { return ""; } }
+        public virtual string Defaultmap { get { return string.Empty; } }
         public virtual string Maxplayers { get { return "24"; } }
-        public virtual string Additional { get { return ""; } }
+        public virtual string Additional { get { return string.Empty; } }
 
-        public virtual string Game { get { return ""; } }
-        public virtual string AppId { get { return ""; } }
+        public virtual string Game { get { return string.Empty; } }
+        public virtual string AppId { get { return string.Empty; } }
 
-        public GoldSource(Functions.ServerConfig serverData)
-        {
-            this.serverData = serverData;
-        }
+        public GoldSource(Functions.ServerConfig serverData) => this.serverData = serverData;
 
         public async Task<Process> Start()
         {
@@ -48,16 +45,17 @@ namespace WindowsGSM.GameServer.Engine
 
             StringBuilder sb = new StringBuilder();
             sb.Append($"-console -game {Game}");
-            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerIP) ? "" : $" -ip {serverData.ServerIP}");
-            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerPort) ? "" : $" -port {serverData.ServerPort}");
-            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerMaxPlayer) ? "" : $" -maxplayers {serverData.ServerMaxPlayer}");
-            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerGSLT) ? "" : $" +sv_setsteamaccount {serverData.ServerGSLT}");
-            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerParam) ? "" : $" {serverData.ServerParam}");
-            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerMap) ? "" : $" +map {serverData.ServerMap}");
+            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerIP) ? string.Empty : $" -ip {serverData.ServerIP}");
+            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerPort) ? string.Empty : $" -port {serverData.ServerPort}");
+            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerMaxPlayer) ? string.Empty : $" -maxplayers {serverData.ServerMaxPlayer}");
+            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerGSLT) ? string.Empty : $" +sv_setsteamaccount {serverData.ServerGSLT}");
+            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerParam) ? string.Empty : $" {serverData.ServerParam}");
+            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerMap) ? string.Empty : $" +map {serverData.ServerMap}");
+            if (serverData.ServerParam.Contains("-game ")) { sb.Replace($" -game {Game}", ""); }
             string param = sb.ToString();
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {
@@ -67,6 +65,7 @@ namespace WindowsGSM.GameServer.Engine
                         FileName = hldsPath,
                         Arguments = param,
                         WindowStyle = ProcessWindowStyle.Minimized,
+                        UseShellExecute = false
                     },
                     EnableRaisingEvents = true
                 };
@@ -103,9 +102,7 @@ namespace WindowsGSM.GameServer.Engine
         {
             await Task.Run(() =>
             {
-                Functions.ServerConsole.SetMainWindow(p.MainWindowHandle);
-                Functions.ServerConsole.SendWaitToMainWindow("quit");
-                Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
+                Functions.ServerConsole.SendMessageToMainWindow(p.MainWindowHandle, "quit");
             });
         }
 
@@ -135,13 +132,11 @@ namespace WindowsGSM.GameServer.Engine
             return p;
         }
 
-        public async Task<bool> Update(bool validate = false)
+        public async Task<Process> Update(bool validate = false, string custom = null)
         {
-            var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(serverData.ServerID, Game, "90", validate, true);
-            Error = steamCMD.Error;
-
-            return updateSuccess;
+            var (p, error) = await Installer.SteamCMD.UpdateEx(serverData.ServerID, "90", validate, custom: custom, modName: Game);
+            Error = error;
+            return p;
         }
 
         public bool IsInstallValid()

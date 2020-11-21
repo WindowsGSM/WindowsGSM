@@ -17,7 +17,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Reign Of Kings Dedicated Server";
         public string StartPath = "ROK.exe";
-        public bool ToggleConsole = true;
+        public bool AllowsEmbedConsole = false;
         public int PortIncrements = 1;
         public dynamic QueryMethod = null;
 
@@ -25,7 +25,9 @@ namespace WindowsGSM.GameServer
         public string QueryPort = "7350";
         public string Defaultmap = "CrownLand";
         public string Maxplayers = "30";
-        public string Additional = "";
+        public string Additional = string.Empty;
+
+        public string AppId = "381690";
 
         public ROK(Functions.ServerConfig serverData)
         {
@@ -72,7 +74,8 @@ namespace WindowsGSM.GameServer
                     WorkingDirectory = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID),
                     FileName = serverPath,
                     Arguments = param,
-                    WindowStyle = ProcessWindowStyle.Minimized
+                    WindowStyle = ProcessWindowStyle.Minimized,
+                    UseShellExecute = false
                 },
                 EnableRaisingEvents = true
             };
@@ -85,9 +88,7 @@ namespace WindowsGSM.GameServer
         {
             await Task.Run(() =>
             {
-                Functions.ServerConsole.SetMainWindow(p.MainWindowHandle);
-                Functions.ServerConsole.SendWaitToMainWindow("/shutdown");
-                Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
+                Functions.ServerConsole.SendMessageToMainWindow(p.MainWindowHandle, "/shutdown");
                 Task.Delay(5000); //Wait 5 second for auto close
             });
         }
@@ -95,19 +96,17 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", "381690", true);
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, AppId, true);
             Error = steamCMD.Error;
 
             return p;
         }
 
-        public async Task<bool> Update(bool validate = false)
+        public async Task<Process> Update(bool validate = false, string custom = null)
         {
-            var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "381690", validate);
-            Error = steamCMD.Error;
-
-            return updateSuccess;
+            var (p, error) = await Installer.SteamCMD.UpdateEx(_serverData.ServerID, AppId, validate, custom: custom);
+            Error = error;
+            return p;
         }
 
         public bool IsInstallValid()
@@ -124,13 +123,13 @@ namespace WindowsGSM.GameServer
         public string GetLocalBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return steamCMD.GetLocalBuild(_serverData.ServerID, "381690");
+            return steamCMD.GetLocalBuild(_serverData.ServerID, AppId);
         }
 
         public async Task<string> GetRemoteBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return await steamCMD.GetRemoteBuild("381690");
+            return await steamCMD.GetRemoteBuild(AppId);
         }
     }
 }

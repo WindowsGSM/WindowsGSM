@@ -1,7 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace WindowsGSM.GameServer
 {
@@ -14,7 +14,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "ARK: Survival Evolved Dedicated Server";
         public string StartPath = @"ShooterGame\Binaries\Win64\ShooterGameServer.exe";
-        public bool ToggleConsole = true;
+        public bool AllowsEmbedConsole = false;
         public int PortIncrements = 2;
         public dynamic QueryMethod = new Query.A2S();
 
@@ -22,7 +22,7 @@ namespace WindowsGSM.GameServer
         public string QueryPort = "27015";
         public string Defaultmap = "TheIsland";
         public string Maxplayers = "16";
-        public string Additional = "";
+        public string Additional = string.Empty;
 
         public string AppId = "376030";
 
@@ -45,13 +45,13 @@ namespace WindowsGSM.GameServer
                 return null;
             }
 
-            string param = string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : _serverData.ServerMap;
+            string param = string.IsNullOrWhiteSpace(_serverData.ServerMap) ? string.Empty : _serverData.ServerMap;
             param += "?listen";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? "" : $"?SessionName=\"{_serverData.ServerName}\"";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? "" : $"?MultiHome={_serverData.ServerIP}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $"?Port={_serverData.ServerPort}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? "" : $"?MaxPlayers={_serverData.ServerMaxPlayer}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? "" : $"?QueryPort={_serverData.ServerQueryPort}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? string.Empty : $"?SessionName=\"{_serverData.ServerName}\"";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? string.Empty : $"?MultiHome={_serverData.ServerIP}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $"?Port={_serverData.ServerPort}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? string.Empty : $"?MaxPlayers={_serverData.ServerMaxPlayer}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? string.Empty : $"?QueryPort={_serverData.ServerQueryPort}";
             param += $"{_serverData.ServerParam} -server -log";
 
             Process p = new Process
@@ -81,19 +81,17 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", AppId);
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, AppId);
             Error = steamCMD.Error;
 
             return p;
         }
 
-        public async Task<bool> Update(bool validate = false)
+        public async Task<Process> Update(bool validate = false, string custom = null)
         {
-            var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", AppId, validate);
-            Error = steamCMD.Error;
-
-            return updateSuccess;
+            var (p, error) = await Installer.SteamCMD.UpdateEx(_serverData.ServerID, AppId, validate, custom: custom);
+            Error = error;
+            return p;
         }
 
         public bool IsInstallValid()

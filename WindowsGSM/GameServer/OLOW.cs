@@ -23,15 +23,17 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Outlaws of the Old West Dedicated Server";
         public string StartPath = @"Outlaws\Binaries\Win64\OutlawsServer-Win64-Shipping.exe";
-        public bool ToggleConsole = false;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 2;
-        public dynamic QueryMethod = null;
+        public dynamic QueryMethod = new Query.A2S();
 
         public string Port = "27374";
         public string QueryPort = "27015";
         public string Defaultmap = "/Game/Maps/MainMap/MainMap";
         public string Maxplayers = "24";
         public string Additional = "-Type=PVP -ServerPassword=\"\" -AdminPassword=\"\"";
+
+        public string AppId = "915070";
 
         public OLOW(Functions.ServerConfig serverData)
         {
@@ -52,15 +54,15 @@ namespace WindowsGSM.GameServer
                 return null;
             }
 
-            string param = string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : $"{_serverData.ServerMap}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" -port={_serverData.ServerPort}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? "" : $" -servername=\"{_serverData.ServerName}\"";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? "" : $" -PlayerCount={_serverData.ServerMaxPlayer}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? "" : $" -queryport={_serverData.ServerQueryPort}";
-            param += $" {_serverData.ServerParam}" + ((ToggleConsole) ? " -log" : "");
+            string param = string.IsNullOrWhiteSpace(_serverData.ServerMap) ? string.Empty : $"{_serverData.ServerMap}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $" -port={_serverData.ServerPort}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? string.Empty : $" -servername=\"{_serverData.ServerName}\"";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? string.Empty : $" -PlayerCount={_serverData.ServerMaxPlayer}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? string.Empty : $" -queryport={_serverData.ServerQueryPort}";
+            param += $" {_serverData.ServerParam}" + (!AllowsEmbedConsole ? " -log" : string.Empty);
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {
@@ -69,6 +71,7 @@ namespace WindowsGSM.GameServer
                         FileName = shipExePath,
                         Arguments = param,
                         WindowStyle = ProcessWindowStyle.Minimized,
+                        UseShellExecute = false
                     },
                     EnableRaisingEvents = true
                 };
@@ -112,19 +115,17 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", "915070");
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, AppId);
             Error = steamCMD.Error;
 
             return p;
         }
 
-        public async Task<bool> Update(bool validate = false)
+        public async Task<Process> Update(bool validate = false, string custom = null)
         {
-            var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "915070", validate);
-            Error = steamCMD.Error;
-
-            return updateSuccess;
+            var (p, error) = await Installer.SteamCMD.UpdateEx(_serverData.ServerID, AppId, validate, custom: custom);
+            Error = error;
+            return p;
         }
 
         public bool IsInstallValid()
@@ -142,13 +143,13 @@ namespace WindowsGSM.GameServer
         public string GetLocalBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return steamCMD.GetLocalBuild(_serverData.ServerID, "915070");
+            return steamCMD.GetLocalBuild(_serverData.ServerID, AppId);
         }
 
         public async Task<string> GetRemoteBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return await steamCMD.GetRemoteBuild("915070");
+            return await steamCMD.GetRemoteBuild(AppId);
         }
     }
 }

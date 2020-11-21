@@ -13,10 +13,10 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Unturned Dedicated Server";
         public string StartPath = "Unturned.exe";
-        public bool ToggleConsole = true;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 2;
-        public dynamic QueryMethod = null;
-        public bool requireSteamAccount = true;
+        public dynamic QueryMethod = new Query.A2S();
+        public bool loginAnonymous = false;
 
         public string Port = "27015";
         public string QueryPort = "27016";
@@ -46,13 +46,13 @@ namespace WindowsGSM.GameServer
             }
 
             string param = "-batchmode --nographics";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" -port:{_serverData.ServerPort}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? "" : $" -players:{_serverData.ServerMaxPlayer}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : $" -{_serverData.ServerMap}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $" -port:{_serverData.ServerPort}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? string.Empty : $" -players:{_serverData.ServerMaxPlayer}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerMap) ? string.Empty : $" -{_serverData.ServerMap}";
             param += $" {_serverData.ServerParam}";
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {
@@ -106,9 +106,7 @@ namespace WindowsGSM.GameServer
                 }
                 else
                 {
-                    Functions.ServerConsole.SetMainWindow(p.MainWindowHandle);
-                    Functions.ServerConsole.SendWaitToMainWindow("shutdown");
-                    Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
+                    Functions.ServerConsole.SendMessageToMainWindow(p.MainWindowHandle, "shutdown");
                 }
             });
         }
@@ -116,19 +114,17 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", AppId, true, loginAnonymous: false);
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, AppId, true, loginAnonymous);
             Error = steamCMD.Error;
 
             return p;
         }
 
-        public async Task<bool> Update(bool validate = false)
+        public async Task<Process> Update(bool validate = false, string custom = null)
         {
-            var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", AppId, validate, loginAnonymous: false);
-            Error = steamCMD.Error;
-
-            return updateSuccess;
+            var (p, error) = await Installer.SteamCMD.UpdateEx(_serverData.ServerID, AppId, validate, custom: custom, loginAnonymous: loginAnonymous);
+            Error = error;
+            return p;
         }
 
         public bool IsInstallValid()

@@ -10,12 +10,20 @@ namespace WindowsGSM.Functions
     public class ServerConsole
     {
         [DllImport("user32.dll")]
-        static extern IntPtr GetForegroundWindow();
+        private static extern IntPtr GetForegroundWindow();
 
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
 
-        private static readonly int MAX_LINE = 200;
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = false)]
+        private static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+        private const int WM_KEYDOWN = 0x0100;
+        private const int WM_CHAR = 0x0102;
+        private const int WM_GETTEXT = 0x000D;
+        private const int WM_GETTEXTLENGTH = 0x000E;
+
+        private const int MAX_LINE = 150;
         private readonly List<string> _consoleList = new List<string>();
         private readonly string _serverId;
         private int _lineNumber = 0;
@@ -27,58 +35,52 @@ namespace WindowsGSM.Functions
 
         public async void AddOutput(object sender, DataReceivedEventArgs args)
         {
-            await Task.Run(() => MainWindow.g_ServerConsoles[int.Parse(_serverId)].Add(args.Data));
+            System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+            {
+                MainWindow.g_ServerConsoles[int.Parse(_serverId)].Add(args.Data);
+            });
         }
 
         public async void Input(Process process, string text, IntPtr mainWindow)
         {
-            await Task.Run(() =>
-            {
-                if (!process.HasExited)
-                {
-                    if (process.StartInfo.RedirectStandardInput)
-                    {
-                        try
-                        {
-                            process.StandardInput.WriteLine(text);
-                            Add(text);
-                        }
-                        catch
-                        {
-                            //ignore
-                        }
-                    }
-                    else
-                    {
-                        SetForegroundWindow(mainWindow);
-                        var current = GetForegroundWindow();
-                        var wgsmWindow = Process.GetCurrentProcess().MainWindowHandle;
-                        if (current != wgsmWindow)
-                        {
-                            SendWaitToMainWindow(text);
-                            SendWaitToMainWindow("{ENTER}");
-                            SetForegroundWindow(wgsmWindow);
-                        }
-                    }
-                }
-            });
-        }
-
-        public void InputFor7DTD(Process process, string text, IntPtr mainWindow)
-        {
             if (!process.HasExited)
             {
-                SetForegroundWindow(mainWindow);
-                var current = GetForegroundWindow();
-                var wgsmWindow = Process.GetCurrentProcess().MainWindowHandle;
-                if (current != wgsmWindow)
+                if (process.StartInfo.RedirectStandardInput)
                 {
-                    SendWaitToMainWindow("{TAB}");
-                    SendWaitToMainWindow(text);
-                    SendWaitToMainWindow("{TAB}");
-                    SendWaitToMainWindow(text);
-                    SendWaitToMainWindow("{ENTER}");
-                    SetForegroundWindow(wgsmWindow);
+                    try
+                    {
+                        process.StandardInput.WriteLine(text);
+                        Add(text);
+                    }
+                    catch
+                    {
+                        //ignore
+                    }
+                }
+                else
+                {
+                    await Task.Run(() =>
+                    {
+                        if (!process.HasExited && process.ProcessName == "7DaysToDieServer")
+                        {
+                            SetForegroundWindow(mainWindow);
+                            var current = GetForegroundWindow();
+                            var wgsmWindow = Process.GetCurrentProcess().MainWindowHandle;
+                            if (current != wgsmWindow)
+                            {
+                                SendWaitToMainWindow("{TAB}");
+                                SendWaitToMainWindow(text);
+                                SendWaitToMainWindow("{TAB}");
+                                SendWaitToMainWindow(text);
+                                SendWaitToMainWindow("{ENTER}");
+                                SetForegroundWindow(wgsmWindow);
+                            }
+                        }
+                        else
+                        {
+                            SendMessageToMainWindow(mainWindow, text);
+                        }
+                    });
                 }
             }
         }
@@ -96,13 +98,13 @@ namespace WindowsGSM.Functions
         public string GetPreviousCommand()
         {
             --_lineNumber;
-            return (_consoleList.Count == 0) ? "" : _consoleList[GetLineNumber()].ToString();
+            return (_consoleList.Count == 0) ? string.Empty : _consoleList[GetLineNumber()];
         }
 
         public string GetNextCommand()
         {
             ++_lineNumber;
-            return (_consoleList.Count == 0) ? "" : _consoleList[GetLineNumber()].ToString();
+            return (_consoleList.Count == 0) ? string.Empty : _consoleList[GetLineNumber()];
         }
 
         private int GetLineNumber()
@@ -125,7 +127,7 @@ namespace WindowsGSM.Functions
             {
                 _lineNumber = _consoleList.Count + 1;
 
-                if (_consoleList.Count > 0 && text == _consoleList[_consoleList.Count - 1].ToString())
+                if (_consoleList.Count > 0 && text == _consoleList[_consoleList.Count - 1])
                 {
                     return;
                 }
@@ -136,6 +138,25 @@ namespace WindowsGSM.Functions
             {
                 _consoleList.RemoveAt(0);
             }
+        }
+
+        public static void SendMessageToMainWindow(IntPtr hWnd, string message)
+        {
+            // Here is a minor error on PostMessage, when it sends repeated char, some char may disappear. Example: send 1111111, windows may receive 1111 or 11111
+            for (int i = 0; i < message.Length; i++)
+            {
+                // This is the solution for the error stated above
+                if (i > 0 && message[i] == message[i-1])
+                {
+                    // Send a None key, break the repeat bug
+                    PostMessage(hWnd, WM_KEYDOWN, (IntPtr)Keys.None, (IntPtr)0);
+                }
+
+                PostMessage(hWnd, WM_CHAR, (IntPtr)message[i], (IntPtr)0);
+            }
+
+            // Send enter
+            PostMessage(hWnd, WM_KEYDOWN, (IntPtr)Keys.Enter, (IntPtr)(0 << 29 | 0));
         }
 
         public static void SetMainWindow(IntPtr hWnd)

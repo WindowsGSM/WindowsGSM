@@ -13,15 +13,15 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Onset Dedicated Server";
         public string StartPath = "OnsetServer.exe";
-        public bool ToggleConsole = true;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 3;
         public dynamic QueryMethod = null;
 
         public string Port = "7777";
         public string QueryPort = "7776";
-        public string Defaultmap = "";
+        public string Defaultmap = string.Empty;
         public string Maxplayers = "100";
-        public string Additional = "";
+        public string Additional = string.Empty;
 
         public string AppId = "1204170";
 
@@ -60,7 +60,7 @@ namespace WindowsGSM.GameServer
             }
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {
@@ -115,19 +115,17 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", AppId);
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, AppId);
             Error = steamCMD.Error;
 
             return p;
         }
 
-        public async Task<bool> Update(bool validate = false)
+        public async Task<Process> Update(bool validate = false, string custom = null)
         {
-            var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", AppId, validate);
-            Error = steamCMD.Error;
-
-            return updateSuccess;
+            var (p, error) = await Installer.SteamCMD.UpdateEx(_serverData.ServerID, AppId, validate, custom: custom);
+            Error = error;
+            return p;
         }
 
         public bool IsInstallValid()

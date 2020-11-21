@@ -1,8 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.IO.Compression;
 
 namespace WindowsGSM.GameServer
@@ -23,7 +21,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Space Engineers Dedicated Server";
         public string StartPath = @"DedicatedServer64\SpaceEngineersDedicated.exe";
-        public bool ToggleConsole = false;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 2;
         public dynamic QueryMethod = new Query.A2S();
 
@@ -31,7 +29,9 @@ namespace WindowsGSM.GameServer
         public string QueryPort = "27017";
         public string Defaultmap = "world";
         public string Maxplayers = "4";
-        public string Additional = "";
+        public string Additional = string.Empty;
+
+        public string AppId = "298740";
 
         public SE(Functions.ServerConfig serverData)
         {
@@ -84,13 +84,13 @@ namespace WindowsGSM.GameServer
                 Notice = $"{Path.GetFileName(configPath)} not found ({configPath})";
             }
 
-            string param = (ToggleConsole ? "-console" : "-noconsole") + " -ignorelastsession";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? "" : $" -ip {_serverData.ServerIP}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" -port {_serverData.ServerPort}";
+            string param = (!AllowsEmbedConsole ? "-console" : "-noconsole") + " -ignorelastsession";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? string.Empty : $" -ip {_serverData.ServerIP}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $" -port {_serverData.ServerPort}";
             param += $" {_serverData.ServerParam}";
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {
@@ -99,7 +99,8 @@ namespace WindowsGSM.GameServer
                         WorkingDirectory = Path.GetDirectoryName(Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath)),
                         FileName = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath),
                         Arguments = param,
-                        WindowStyle = ProcessWindowStyle.Minimized
+                        WindowStyle = ProcessWindowStyle.Minimized,
+                        UseShellExecute = false
                     },
                     EnableRaisingEvents = true
                 };
@@ -177,19 +178,17 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", "298740");
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, AppId);
             Error = steamCMD.Error;
 
             return p;
         }
 
-        public async Task<bool> Update(bool validate = false)
+        public async Task<Process> Update(bool validate = false, string custom = null)
         {
-            var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "298740", validate);
-            Error = steamCMD.Error;
-
-            return updateSuccess;
+            var (p, error) = await Installer.SteamCMD.UpdateEx(_serverData.ServerID, AppId, validate, custom: custom);
+            Error = error;
+            return p;
         }
 
         public bool IsInstallValid()
@@ -207,13 +206,13 @@ namespace WindowsGSM.GameServer
         public string GetLocalBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return steamCMD.GetLocalBuild(_serverData.ServerID, "298740");
+            return steamCMD.GetLocalBuild(_serverData.ServerID, AppId);
         }
 
         public async Task<string> GetRemoteBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return await steamCMD.GetRemoteBuild("298740");
+            return await steamCMD.GetRemoteBuild(AppId);
         }
     }
 }

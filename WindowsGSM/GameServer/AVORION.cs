@@ -13,12 +13,12 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Avorion Dedicated Server";
         public string StartPath = @"bin\AvorionServer.exe";
-        public bool ToggleConsole = true;
-        public int PortIncrements = 2;
-        public dynamic QueryMethod = new Query.A2S();
+        public bool AllowsEmbedConsole = true;
+        public int PortIncrements = 1;
+        public dynamic QueryMethod = null;
 
         public string Port = "27000";
-        public string QueryPort = "27001";
+        public string QueryPort = "27003";
         public string Defaultmap = "avorion_galaxy";
         public string Maxplayers = "10";
         public string Additional = "--admin avorion_admin";
@@ -41,16 +41,16 @@ namespace WindowsGSM.GameServer
             Directory.CreateDirectory(dataPath);
 
             string param = $"--datapath \"{dataPath}\"";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerMap) ? "" : $" --galaxy-name {_serverData.ServerMap}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? "" : $" --server-name \"{_serverData.ServerName}\"";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? "" : $" --ip {_serverData.ServerIP}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? "" : $" --port {_serverData.ServerPort}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? "" : $" --query-port {_serverData.ServerQueryPort}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? "" : $" --max-players {_serverData.ServerMaxPlayer}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerMap) ? string.Empty : $" --galaxy-name {_serverData.ServerMap}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerName) ? string.Empty : $" --server-name \"{_serverData.ServerName}\"";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? string.Empty : $" --ip {_serverData.ServerIP}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $" --port {_serverData.ServerPort}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? string.Empty : $" --query-port {_serverData.ServerQueryPort}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? string.Empty : $" --max-players {_serverData.ServerMaxPlayer}";
             param += $" {_serverData.ServerParam}";
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {
@@ -59,7 +59,8 @@ namespace WindowsGSM.GameServer
                         WorkingDirectory = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID),
                         FileName = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath),
                         Arguments = param,
-                        WindowStyle = ProcessWindowStyle.Minimized
+                        WindowStyle = ProcessWindowStyle.Minimized,
+                        UseShellExecute = false
                     },
                     EnableRaisingEvents = true
                 };
@@ -104,11 +105,8 @@ namespace WindowsGSM.GameServer
                 }
                 else
                 {
-                    Functions.ServerConsole.SetMainWindow(p.MainWindowHandle);
-                    Functions.ServerConsole.SendWaitToMainWindow("/save");
-                    Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
-                    Functions.ServerConsole.SendWaitToMainWindow("/stop");
-                    Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
+                    Functions.ServerConsole.SendMessageToMainWindow(p.MainWindowHandle, "/save");
+                    Functions.ServerConsole.SendMessageToMainWindow(p.MainWindowHandle, "/stop");
                 }
             });
         }
@@ -116,19 +114,17 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", AppId);
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, AppId);
             Error = steamCMD.Error;
 
             return p;
         }
 
-        public async Task<bool> Update(bool validate = false)
+        public async Task<Process> Update(bool validate = false, string custom = null)
         {
-            var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", AppId, validate);
-            Error = steamCMD.Error;
-
-            return updateSuccess;
+            var (p, error) = await Installer.SteamCMD.UpdateEx(_serverData.ServerID, AppId, validate, custom: custom);
+            Error = error;
+            return p;
         }
 
         public bool IsInstallValid()

@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
+using System;
 
 namespace WindowsGSM.GameServer
 {
@@ -33,7 +34,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "7 Days to Die Dedicated Server";
         public string StartPath = "7DaysToDieServer.exe";
-        public bool ToggleConsole = true;
+        public bool AllowsEmbedConsole = true;
         public int PortIncrements = 1;
         public dynamic QueryMethod = null;
 
@@ -41,7 +42,9 @@ namespace WindowsGSM.GameServer
         public string QueryPort = "26900";
         public string Defaultmap = "Navezgane";
         public string Maxplayers = "8";
-        public string Additional = "";
+        public string Additional = string.Empty;
+
+        public string AppId = "294420";
 
         public SDTD(Functions.ServerConfig serverData)
         {
@@ -86,21 +89,23 @@ namespace WindowsGSM.GameServer
                 Notice = $"serverconfig.xml not found ({configPath})";
             }
 
-            string param = $"start 7DaysToDieServer -quit -batchmode -nographics -configfile=serverconfig.xml -dedicated {_serverData.ServerParam}";
+            string logFile = @"7DaysToDieServer_Data\output_log_dedi__" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + ".txt";
+            string param = $"-logfile \"{Path.Combine(workingDir, logFile)}\" -quit -batchmode -nographics -configfile=serverconfig.xml -dedicated {_serverData.ServerParam}";
 
             WindowsFirewall firewall = new WindowsFirewall(exeName, exePath);
             if (!await firewall.IsRuleExist())
             {
-                firewall.AddRule();
+                await firewall.AddRule();
             }
 
             Process p;
-            if (ToggleConsole)
+            if (!AllowsEmbedConsole)
             {
                 p = new Process
                 {
                     StartInfo =
                     {
+                        WorkingDirectory = workingDir,
                         FileName = exePath,
                         Arguments = param,
                         WindowStyle = ProcessWindowStyle.Minimized
@@ -115,6 +120,7 @@ namespace WindowsGSM.GameServer
                 {
                     StartInfo =
                     {
+                        WorkingDirectory = workingDir,
                         FileName = exePath,
                         Arguments = param,
                         WindowStyle = ProcessWindowStyle.Minimized,
@@ -148,19 +154,17 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", "294420");
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, AppId);
             Error = steamCMD.Error;
 
             return p;
         }
 
-        public async Task<bool> Update(bool validate = false)
+        public async Task<Process> Update(bool validate = false, string custom = null)
         {
-            var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", "294420", validate);
-            Error = steamCMD.Error;
-
-            return updateSuccess;
+            var (p, error) = await Installer.SteamCMD.UpdateEx(_serverData.ServerID, AppId, validate, custom: custom);
+            Error = error;
+            return p;
         }
 
         public bool IsInstallValid()
@@ -183,13 +187,13 @@ namespace WindowsGSM.GameServer
         public string GetLocalBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return steamCMD.GetLocalBuild(_serverData.ServerID, "294420");
+            return steamCMD.GetLocalBuild(_serverData.ServerID, AppId);
         }
 
         public async Task<string> GetRemoteBuild()
         {
             var steamCMD = new Installer.SteamCMD();
-            return await steamCMD.GetRemoteBuild("294420");
+            return await steamCMD.GetRemoteBuild(AppId);
         }
     }
 }

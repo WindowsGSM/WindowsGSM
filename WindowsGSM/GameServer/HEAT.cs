@@ -13,7 +13,7 @@ namespace WindowsGSM.GameServer
 
         public const string FullName = "Heat Dedicated Server";
         public string StartPath = "Heat.exe";
-        public bool ToggleConsole = true;
+        public bool AllowsEmbedConsole = false;
         public int PortIncrements = 1;
         public dynamic QueryMethod = null;
 
@@ -21,7 +21,7 @@ namespace WindowsGSM.GameServer
         public string QueryPort = "7450";
         public string Defaultmap = "America";
         public string Maxplayers = "40";
-        public string Additional = "";
+        public string Additional = string.Empty;
 
         public string AppId = "996600";
 
@@ -70,7 +70,8 @@ namespace WindowsGSM.GameServer
                     WorkingDirectory = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID),
                     FileName = serverPath,
                     Arguments = param,
-                    WindowStyle = ProcessWindowStyle.Minimized
+                    WindowStyle = ProcessWindowStyle.Minimized,
+                    UseShellExecute = false
                 },
                 EnableRaisingEvents = true
             };
@@ -83,9 +84,7 @@ namespace WindowsGSM.GameServer
         {
             await Task.Run(() =>
             {
-                Functions.ServerConsole.SetMainWindow(p.MainWindowHandle);
-                Functions.ServerConsole.SendWaitToMainWindow("/shutdown");
-                Functions.ServerConsole.SendWaitToMainWindow("{ENTER}");
+                Functions.ServerConsole.SendMessageToMainWindow(p.MainWindowHandle, "/shutdown");
                 Task.Delay(5000); //Wait 5 second for auto close
             });
         }
@@ -93,19 +92,17 @@ namespace WindowsGSM.GameServer
         public async Task<Process> Install()
         {
             var steamCMD = new Installer.SteamCMD();
-            Process p = await steamCMD.Install(_serverData.ServerID, "", AppId, true);
+            Process p = await steamCMD.Install(_serverData.ServerID, string.Empty, AppId);
             Error = steamCMD.Error;
 
             return p;
         }
 
-        public async Task<bool> Update(bool validate = false)
+        public async Task<Process> Update(bool validate = false, string custom = null)
         {
-            var steamCMD = new Installer.SteamCMD();
-            bool updateSuccess = await steamCMD.Update(_serverData.ServerID, "", AppId, validate);
-            Error = steamCMD.Error;
-
-            return updateSuccess;
+            var (p, error) = await Installer.SteamCMD.UpdateEx(_serverData.ServerID, AppId, validate, custom: custom);
+            Error = error;
+            return p;
         }
 
         public bool IsInstallValid()

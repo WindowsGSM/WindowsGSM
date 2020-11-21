@@ -1,0 +1,9 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Target Name="LocateRoslynCompilerFiles">
+    <PropertyGroup>
+      <RoslynToolPath Condition="'$(RoslynToolPath)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\tools\roslyn472'))</RoslynToolPath>
+    </PropertyGroup>
+  </Target>
+
+</Project>

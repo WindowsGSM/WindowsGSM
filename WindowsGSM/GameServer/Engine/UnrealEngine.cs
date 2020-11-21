@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace WindowsGSM.GameServer.Engine
 {
-    class UnrealEngine
+    public class UnrealEngine
     {
     }
 }

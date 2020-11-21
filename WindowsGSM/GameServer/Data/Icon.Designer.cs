@@ -88,6 +88,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/bt.png.
+        /// </summary>
+        public static string Barotrauma_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Barotrauma Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/bw.png.
         /// </summary>
         public static string BlackWake_Dedicated_Server {
@@ -151,11 +160,38 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/dod.png.
+        /// </summary>
+        public static string Day_of_Defeat_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Day of Defeat Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/dayz.png.
         /// </summary>
         public static string DayZ_Dedicated_Server {
             get {
                 return ResourceManager.GetString("DayZ Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/dmc.png.
+        /// </summary>
+        public static string Deathmatch_Classic_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Deathmatch Classic Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/eco.png.
+        /// </summary>
+        public static string Eco_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Eco Dedicated Server", resourceCulture);
             }
         }
         
@@ -183,6 +219,15 @@ namespace WindowsGSM.GameServer.Data {
         public static string Grand_Theft_Auto_V_Dedicated_Server__FiveM_ {
             get {
                 return ResourceManager.GetString("Grand Theft Auto V Dedicated Server (FiveM)", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/hlof.png.
+        /// </summary>
+        public static string Half_Life__Opposing_Force_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Half-Life: Opposing Force Dedicated Server", resourceCulture);
             }
         }
         
@@ -295,11 +340,38 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/ps.png.
+        /// </summary>
+        public static string Post_Scriptum_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Post Scriptum Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/rok.png.
         /// </summary>
         public static string Reign_Of_Kings_Dedicated_Server {
             get {
                 return ResourceManager.GetString("Reign Of Kings Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/rcc.png.
+        /// </summary>
+        public static string Ricochet_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Ricochet Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/ror2.png.
+        /// </summary>
+        public static string Risk_of_Rain_2_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Risk of Rain 2 Dedicated Server", resourceCulture);
             }
         }
         
@@ -322,6 +394,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/sq.png.
+        /// </summary>
+        public static string Squad_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Squad Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/sw.png.
         /// </summary>
         public static string Stormworks_Dedicated_Server {
@@ -340,11 +421,38 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/tfc.png.
+        /// </summary>
+        public static string Team_Fortress_Classic_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Team Fortress Classic Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/tf.png.
+        /// </summary>
+        public static string The_Forest_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("The Forest Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/unt.png.
         /// </summary>
         public static string Unturned_Dedicated_Server {
             get {
                 return ResourceManager.GetString("Unturned Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/vts.png.
+        /// </summary>
+        public static string Vintage_Story_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Vintage Story Dedicated Server", resourceCulture);
             }
         }
         
