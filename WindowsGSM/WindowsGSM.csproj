@@ -423,6 +423,7 @@
     <Compile Include="GameServer\SW.cs" />
     <Compile Include="GameServer\TF.cs" />
     <Compile Include="GameServer\TFC.cs" />
+    <Compile Include="GameServer\TI.cs" />
     <Compile Include="GameServer\UNT.cs" />
     <Compile Include="GameServer\VTS.cs" />
     <Compile Include="GameServer\ZPS.cs" />
@@ -810,7 +811,9 @@
   <ItemGroup>
     <Resource Include="Images\HMenu\ViewPlugins.ico" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Images\Games\TheIsle.png" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.3.6.0\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll">
       <Link>ReferencesEx\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</Link>

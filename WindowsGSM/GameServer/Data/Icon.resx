@@ -243,6 +243,9 @@
   <data name="The Forest Dedicated Server" xml:space="preserve">
     <value>Images/Games/tf.png</value>
   </data>
+  <data name="The Isle Evrima Dedicated Server" xml:space="preserve">
+    <value>Images/Games/theisle.png</value>
+  </data>
   <data name="Unturned Dedicated Server" xml:space="preserve">
     <value>Images/Games/unt.png</value>
   </data>

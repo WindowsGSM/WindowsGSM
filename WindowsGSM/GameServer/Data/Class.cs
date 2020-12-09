@@ -48,6 +48,7 @@ namespace WindowsGSM.GameServer.Data
                 case RCC.FullName: return new RCC(serverData);
                 case TFC.FullName: return new TFC(serverData);
                 case TF.FullName: return new TF(serverData);
+                case TI.FullName: return new TI(serverData);
                 case SQ.FullName: return new SQ(serverData);
                 case BT.FullName: return new BT(serverData);
                 case PS.FullName: return new PS(serverData);
