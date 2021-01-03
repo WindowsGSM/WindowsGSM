@@ -9,11 +9,11 @@
         mc:Ignorable="d"
         Title="WindowsGSM" 
         Height="650" 
-        Width="1100" 
+        Width="1000" 
         Icon="Images\WindowsGSM-Icon-Border.ico"
         ResizeMode="CanResizeWithGrip"
         MinHeight="650"
-        MinWidth="1100"
+        MinWidth="1000"
         Closing="Window_Closing"
         GlowBrush="{DynamicResource MahApps.Brushes.Accent}"
         WindowStartupLocation="CenterScreen" Activated="Window_Activated">
@@ -330,7 +330,7 @@
                                 <Label x:Name="label_DiscordBotCommands" Content="" FontFamily="Consolas" DockPanel.Dock="Top"/>
                             </DockPanel>
                             <DockPanel DockPanel.Dock="Top" Margin="5,10,0,0">
-                                <mah:ToggleSwitch DockPanel.Dock="Left" VerticalAlignment="Center" x:Name="switch_DiscordBot" Header="Enable" Style="{StaticResource MahApps.Styles.ToggleSwitch}" Width="140" Toggled="Switch_DiscordBot_Click"/>
+                                <mah:ToggleSwitch DockPanel.Dock="Left" VerticalAlignment="Center" x:Name="switch_DiscordBot" Header="Enable" Style="{StaticResource MahApps.Styles.ToggleSwitch}" Width="140" Toggled="Switch_DiscordBot_Toggled"/>
                                 <mah:ToggleSwitch DockPanel.Dock="Left" VerticalAlignment="Center" x:Name="MahAppSwitch_DiscordBotAutoStart" Header="Auto Start" Style="{StaticResource MahApps.Styles.ToggleSwitch}" Width="140" Toggled="Switch_DiscordBotAutoStart_Click"/>
                                 <DockPanel DockPanel.Dock="Top" Margin="10,0,0,0">
                                     <DockPanel DockPanel.Dock="Top">
@@ -350,7 +350,7 @@
                                 <Rectangle x:Name="rectangle_DiscordBotTokenSpoiler" Fill="#FF2B2B2B" Height="20" Stroke="Black" VerticalAlignment="Top" Margin="3"/>
                             </Grid>
 
-                            <DockPanel DockPanel.Dock="Top" Margin="0,10,0,0">
+                            <!--<DockPanel DockPanel.Dock="Top" Margin="0,10,0,0">
                                 <DockPanel DockPanel.Dock="Left">
                                     <DockPanel DockPanel.Dock="Top">
                                         <Label Content="Dashboard Channel ID"/>
@@ -360,9 +360,9 @@
                                 </DockPanel>
                                 <DockPanel DockPanel.Dock="Right" Margin="10,0,0,0">
                                     <Label Content="Dashboard Refresh Rate (Second)" DockPanel.Dock="Top"/>
-                                    <mah:NumericUpDown x:Name="numericUpDown_DiscordRefreshRate" Minimum="30" Maximum="900" Interval="1" Height="5" Margin="0,4,0,0" ValueChanged="NumericUpDown_DiscordRefreshRate_ValueChanged"/>
+                                    <mah:NumericUpDown x:Name="numericUpDown_DiscordRefreshRate" Minimum="10" Maximum="900" Interval="1" Height="5" Margin="0,4,0,0" ValueChanged="NumericUpDown_DiscordRefreshRate_ValueChanged"/>
                                 </DockPanel>
-                            </DockPanel>
+                            </DockPanel>-->
 
                             <DockPanel DockPanel.Dock="Top" Margin="0,10,0,0">
                                 <Label Content="Discord Bot Log"/>
@@ -663,18 +663,17 @@
             </Grid>
             <Grid Height="1" Background="Black" DockPanel.Dock="Top"/>
             <Grid Height="40" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="0,0,0,0">
-                <Label x:Name="label_select" Content="Select or Install or Import a server" HorizontalAlignment="Left" Margin="10,2,0,0" VerticalAlignment="Center" Height="33"/>
+                <Label x:Name="label_select" Content="Select or Install or Import a server" HorizontalAlignment="Left" Margin="11,4,0,2" VerticalAlignment="Center" Height="34"/>
                 <DockPanel x:Name="grid_action">
-                    <!--<Button x:Name="button_Crash" Cursor="Hand" Content="CRASH" HorizontalAlignment="Left" Margin="10,5,0,5" Width="101" Height="26" Background="Purple" Foreground="White" Click="Actions_Crash_Click"/>-->
-                    <Button x:Name="button_Start" Cursor="Hand" Content="START" HorizontalAlignment="Left" Margin="10,5,0,5" Width="101" Height="26" Click="Actions_Start_Click" Background="LimeGreen" Foreground="White"/>
-                    <Button x:Name="button_Stop" Cursor="Hand" Content="STOP" HorizontalAlignment="Left" Margin="5,5,0,5" Width="101" Height="26" Click="Actions_Stop_Click" Background="Orange" Foreground="White"/>
-                    <Button x:Name="button_Restart" Cursor="Hand" Content="RESTART" HorizontalAlignment="Left" Margin="5,5,0,5" Width="101" Height="26" Click="Actions_Restart_Click" Background="DeepSkyBlue" Foreground="White"/>
-                    <Button x:Name="button_Kill" Cursor="Hand" Content="KILL" HorizontalAlignment="Left" Margin="5,5,0,5" Width="101" Height="26" Click="Actions_Kill_Click" Background="OrangeRed" Foreground="White"/>
-                    <Button x:Name="button_Console" Cursor="Hand" Content="TOGGLE CONSOLE" HorizontalAlignment="Left" Margin="5,5,0,5" Width="101" Height="26" Click="Actions_ToggleConsole_Click"/>
-                    <Button x:Name="button_Update" Cursor="Hand" Content="UPDATE" HorizontalAlignment="Left" Margin="5,5,0,5" Width="101" Height="26" Click="Actions_Update_Click"/>
-                    <Button x:Name="button_Backup" Cursor="Hand" Content="BACKUP" HorizontalAlignment="Left" Margin="5,5,0,5" Width="101" Height="26" Click="Actions_Backup_Click"/>
-                    <Button x:Name="button_ManageAddons" Cursor="Hand" Content="MANAGE ADDONS" HorizontalAlignment="Left" Margin="5,5,0,5" Width="101" Height="26" Click="Actions_ManageAddons_Click"/>
-                    <Button x:Name="button_clearServerConsole" Cursor="Hand" Content="CLEAR SERVER CONSOLE" Margin="0,5,10,5" Height="26" Click="Button_ClearServerConsole_Click" HorizontalAlignment="Right" Width="130"/>
+                    <!--<Button x:Name="button_Crash" Cursor="Hand" Content="CRASH" HorizontalAlignment="Left" Margin="10,5,0,5" Width="112" Height="26" Background="Purple" Foreground="White" Click="Actions_Crash_Click"/>-->
+                    <Button x:Name="button_Start" Cursor="Hand" Content="START" HorizontalAlignment="Left" Margin="10,5,0,5" Width="112" Height="26" Click="Actions_Start_Click" Background="LimeGreen" Foreground="White"/>
+                    <Button x:Name="button_Stop" Cursor="Hand" Content="STOP" HorizontalAlignment="Left" Margin="5,5,0,5" Width="112" Height="26" Click="Actions_Stop_Click" Background="Orange" Foreground="White"/>
+                    <Button x:Name="button_Restart" Cursor="Hand" Content="RESTART" HorizontalAlignment="Left" Margin="5,5,0,5" Width="112" Height="26" Click="Actions_Restart_Click" Background="DeepSkyBlue" Foreground="White"/>
+                    <Button x:Name="button_Kill" Cursor="Hand" Content="KILL" HorizontalAlignment="Left" Margin="5,5,0,5" Width="112" Height="26" Click="Actions_Kill_Click" Background="OrangeRed" Foreground="White"/>
+                    <Button x:Name="button_Console" Cursor="Hand" Content="TOGGLE CONSOLE" HorizontalAlignment="Left" Margin="5,5,0,5" Width="112" Height="26" Click="Actions_ToggleConsole_Click"/>
+                    <Button x:Name="button_Update" Cursor="Hand" Content="UPDATE" HorizontalAlignment="Left" Margin="5,5,0,5" Width="112" Height="26" Click="Actions_Update_Click"/>
+                    <Button x:Name="button_Backup" Cursor="Hand" Content="BACKUP" HorizontalAlignment="Left" Margin="5,5,0,5" Width="112" Height="26" Click="Actions_Backup_Click"/>
+                    <Button x:Name="button_ManageAddons" Cursor="Hand" Content="MANAGE ADDONS" HorizontalAlignment="Left" Margin="5,5,0,5" Width="112" Height="26" Click="Actions_ManageAddons_Click"/>
                 </DockPanel>
             </Grid>
             <Grid Height="1" Background="Black" DockPanel.Dock="Top"/>
@@ -712,6 +711,7 @@
                         <DataGridTextColumn Header="Query Port" IsReadOnly="True" Binding="{Binding Path=QueryPort}" Width="4*" MinWidth="93"/>
                         <DataGridTextColumn Header="Map" IsReadOnly="True" Binding="{Binding Path=Defaultmap}" Width="7*" MinWidth="50"/>
                         <DataGridTextColumn Header="Players" IsReadOnly="True" Binding="{Binding Path=Maxplayers}" Width="3*" MinWidth="70"/>
+                        <DataGridTextColumn Header="Uptime" IsReadOnly="True" Binding="{Binding Path=Uptime}" Width="4*" MinWidth="80"/>
                         <!--<DataGridTextColumn Header="RAM Usage" IsReadOnly="True" Binding="{Binding Path=RamUsage}" Width="4*"/>-->
                     </DataGrid.Columns>
                 </DataGrid>
@@ -722,27 +722,27 @@
                 </GridSplitter>
                 <Grid Grid.Row="2">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="520" MaxWidth="520"/>
+                        <ColumnDefinition Width="475" MaxWidth="475"/>
                         <ColumnDefinition Width="5"/>
                         <ColumnDefinition Width="1*"/>
                     </Grid.ColumnDefinitions>
 
                     <Grid>
-                        <Button x:Name="button_Status" Content="" HorizontalAlignment="Left" Margin="428,11,0,0" Width="50" Height="11" Background="Orange" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False" />
+                        <Button x:Name="button_Status" Content="" HorizontalAlignment="Left" Margin="399,10,0,0" Width="50" Height="11" Background="Orange" Foreground="White" VerticalAlignment="Top" IsHitTestVisible="False" />
 
                         <Label x:Name="label_ProcessPriority" Content="Process Priority" HorizontalAlignment="Left" Margin="5,10,0,0" VerticalAlignment="Top" Height="26"/>
-                        <Slider x:Name="slider_ProcessPriority" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="101,10,0,0" Width="109" Height="25" Style="{StaticResource MahApps.Styles.Slider}" Minimum="0" Maximum="5" IsSnapToTickEnabled="True" TickPlacement="BottomRight" ValueChanged="Slider_ProcessPriority_ValueChanged"/>
-                        <TextBox x:Name="textBox_ProcessPriority" Height="11" Margin="215,10,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="95" FontFamily="Consolas"/>
+                        <Slider x:Name="slider_ProcessPriority" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="101,10,0,0" Width="86" Height="25" Style="{StaticResource MahApps.Styles.Slider}" Minimum="0" Maximum="5" IsSnapToTickEnabled="True" TickPlacement="BottomRight" ValueChanged="Slider_ProcessPriority_ValueChanged"/>
+                        <TextBox x:Name="textBox_ProcessPriority" Height="11" Margin="192,10,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="95" FontFamily="Consolas"/>
 
-                        <Button x:Name="button_SetAffinity" Content="Set Affinity" HorizontalAlignment="Left" Margin="315,10,0,0" VerticalAlignment="Top" Width="95" Height="26" Click="Button_SetAffinity_Click"/>
-                        <TextBox x:Name="textBox_SetAffinity" Height="11" Margin="420,10,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="86" FontFamily="Consolas"/>
-                        <Button x:Name="button_EditConfig" Content="Edit Config" HorizontalAlignment="Left" Margin="415,10,0,0" VerticalAlignment="Top" Width="95" Height="26" Click="Button_EditConfig_Click"/>
+                        <Button x:Name="button_SetAffinity" Content="Set Affinity" HorizontalAlignment="Left" Margin="292,10,0,0" VerticalAlignment="Top" Width="85" Height="26" Click="Button_SetAffinity_Click"/>
+                        <TextBox x:Name="textBox_SetAffinity" Height="11" Margin="389,10,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="66" FontFamily="Consolas"/>
+                        <Button x:Name="button_EditConfig" Content="Edit Config" HorizontalAlignment="Left" Margin="382,10,0,0" VerticalAlignment="Top" Width="85" Height="26" Click="Button_EditConfig_Click"/>
 
                         <Label x:Name="label_restartcrontab" Content="Restart Crontab" HorizontalAlignment="Left" Margin="5,40,0,0" VerticalAlignment="Top" Height="26"/>
                         <mah:ToggleSwitch x:Name="switch_restartcrontab" Margin="99,38,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Toggled="Button_RestartCrontab_Click" Width="44" Height="30"/>
-                        <Button x:Name="button_restartcrontabedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="150,40,0,0" VerticalAlignment="Top" Width="60" Height="26" Click="Button_CrontabEdit_Click"/>
-                        <TextBox x:Name="textBox_restartcrontab" Height="23" Margin="215,40,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="95"/>
-                        <TextBox x:Name="textBox_nextcrontab" Height="11" Margin="315,40,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="195" FontFamily="Consolas"/>
+                        <Button x:Name="button_restartcrontabedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="150,40,0,0" VerticalAlignment="Top" Width="37" Height="26" Click="Button_CrontabEdit_Click"/>
+                        <TextBox x:Name="textBox_restartcrontab" Height="23" Margin="192,40,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="95"/>
+                        <TextBox x:Name="textBox_nextcrontab" Height="11" Margin="292,40,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="true" HorizontalAlignment="Left" Width="175" FontFamily="Consolas"/>
 
                         <Label Content="Auto Start" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Margin="5,127,0,0"/>
                         <mah:ToggleSwitch x:Name="switch_autostart" Margin="100,125,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Toggled="Button_AutoStart_Click" Width="44" Height="30"/>
@@ -750,24 +750,24 @@
                         <Label x:Name="label_embedconsole" Content="Embed Console" HorizontalAlignment="Left" Margin="5,99,0,0" VerticalAlignment="Top"/>
                         <mah:ToggleSwitch x:Name="switch_embedconsole" Margin="100,97,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Toggled="Button_EmbedConsole_Click" Width="44" Height="30"/>
 
-                        <Label Content="Auto Restart" HorizontalAlignment="Left" Margin="192,127,0,0" VerticalAlignment="Top"/>
-                        <mah:ToggleSwitch x:Name="switch_autorestart" Margin="273,125,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Toggled="Button_AutoRestart_Click" Width="44" Height="30"/>
+                        <Label Content="Auto Restart" HorizontalAlignment="Left" Margin="177,127,0,0" VerticalAlignment="Top"/>
+                        <mah:ToggleSwitch x:Name="switch_autorestart" Margin="258,125,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Toggled="Button_AutoRestart_Click" Width="44" Height="30"/>
 
-                        <Label Content="Auto Update" HorizontalAlignment="Left" Margin="369,127,0,0" VerticalAlignment="Top"/>
-                        <mah:ToggleSwitch x:Name="switch_autoupdate" Margin="454,125,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Toggled="Button_AutoUpdate_Click" Width="44" Height="30"/>
+                        <Label Content="Auto Update" HorizontalAlignment="Left" Margin="338,127,0,0" VerticalAlignment="Top"/>
+                        <mah:ToggleSwitch x:Name="switch_autoupdate" Margin="422,125,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Toggled="Button_AutoUpdate_Click" Width="44" Height="30"/>
 
-                        <Label Content="Update on Start" HorizontalAlignment="Left" Margin="174,99,0,0" VerticalAlignment="Top"/>
-                        <mah:ToggleSwitch x:Name="switch_updateonstart" Margin="273,97,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Toggled="Button_UpdateOnStart_Click" Width="44" Height="30"/>
+                        <Label Content="Update on Start" HorizontalAlignment="Left" Margin="159,99,0,0" VerticalAlignment="Top"/>
+                        <mah:ToggleSwitch x:Name="switch_updateonstart" Margin="258,97,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Toggled="Button_UpdateOnStart_Click" Width="44" Height="30"/>
 
-                        <Label Content="Backup on Start" HorizontalAlignment="Left" Margin="354,99,0,0" VerticalAlignment="Top"/>
-                        <mah:ToggleSwitch x:Name="switch_backuponstart" Margin="454,97,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Toggled="Button_BackupOnStart_Click" Width="44" Height="30"/>
+                        <Label Content="Backup on Start" HorizontalAlignment="Left" Margin="323,99,0,0" VerticalAlignment="Top"/>
+                        <mah:ToggleSwitch x:Name="switch_backuponstart" Margin="422,97,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Toggled="Button_BackupOnStart_Click" Width="44" Height="30"/>
 
                         <Label x:Name="label_discordalert" Content="Discord Alert" HorizontalAlignment="Left" Margin="5,70,0,0" VerticalAlignment="Top"/>
                         <mah:ToggleSwitch x:Name="switch_discordalert" Margin="99,68,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Toggled="Button_DiscordAlert_Click" Width="44" Height="30"/>
-                        <Button x:Name="button_discordedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="150,70,0,0" VerticalAlignment="Top" Width="60" Height="26" Click="Button_DiscordEdit_Click"/>
-                        <Button x:Name="button_discordset" Cursor="Hand" Content="Set Message" HorizontalAlignment="Left" Margin="215,70,0,0" VerticalAlignment="Top" Width="95" Height="26" Click="Button_DiscordSetMessage_Click"/>
-                        <Button x:Name="button_discordtest" Cursor="Hand" Content="Send Test Alert" HorizontalAlignment="Left" Margin="415,70,0,0" VerticalAlignment="Top" Width="95" Height="26" Click="Button_DiscordWebhookTest_Click" IsEnabled="False"/>
-                        <Button x:Name="button_discordsettings" Content="Settings" HorizontalAlignment="Left" Margin="315,70,0,0" VerticalAlignment="Top" Width="95" Height="26" Click="Button_DiscordAlertSettings_Click"/>
+                        <Button x:Name="button_discordedit" Cursor="Hand" Content="Edit" HorizontalAlignment="Left" Margin="150,70,0,0" VerticalAlignment="Top" Width="37" Height="26" Click="Button_DiscordEdit_Click"/>
+                        <Button x:Name="button_discordset" Cursor="Hand" Content="Set Message" HorizontalAlignment="Left" Margin="192,70,0,0" VerticalAlignment="Top" Width="95" Height="26" Click="Button_DiscordSetMessage_Click"/>
+                        <Button x:Name="button_discordtest" Cursor="Hand" Content="Test Alert" HorizontalAlignment="Left" Margin="382,70,0,0" VerticalAlignment="Top" Width="85" Height="26" Click="Button_DiscordWebhookTest_Click" IsEnabled="False"/>
+                        <Button x:Name="button_discordsettings" Content="Settings" HorizontalAlignment="Left" Margin="292,70,0,0" VerticalAlignment="Top" Width="85" Height="26" Click="Button_DiscordAlertSettings_Click"/>
                         <Label x:Name="label_wgsmlog" Content="Log:" HorizontalAlignment="Left" Margin="24,154,0,0" VerticalAlignment="Top"/>
                         <Button x:Name="button_clearwgsmlog" Cursor="Hand" Content="CLEAR" Margin="10,0,0,10" Height="18" Click="Button_ClearWGSMLog_Click" HorizontalAlignment="Left" Width="45" VerticalAlignment="Bottom"/>
                         <TextBox x:Name="textBox_wgsmlog" Margin="10,157,10,10" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True"/>
@@ -780,9 +780,12 @@
                     </GridSplitter>
 
                     <Grid Grid.Column="2" MinWidth="100">
-                        <TextBox x:Name="console" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility ="Disabled" Background="Black" IsReadOnly="True" Margin="0,0,0,26" BorderBrush="Black" Foreground="White" BorderThickness="0" SelectionBrush="White" TextWrapping="Wrap"/>
+                        <Rectangle Height="30" VerticalAlignment="Top" Fill="Black"/>
+                        <Button x:Name="Button_AutoScroll" Style="{DynamicResource MahApps.Styles.Button.Square}" Cursor="Hand" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120" Content="✔ Auto Scroll" mah:ControlsHelper.CornerRadius="0" Background="Black" Foreground="White" Height="30" mah:ControlsHelper.ContentCharacterCasing="Upper" BorderThickness="0" Click="Button_AutoScroll_Click" />
+                        <Button x:Name="button_clearServerConsole" Style="{DynamicResource MahApps.Styles.Button.Square}" Cursor="Hand" Content="CLEAR" Height="30" Click="Button_ClearServerConsole_Click" HorizontalAlignment="Right" Width="61" mah:ControlsHelper.CornerRadius="0" VerticalAlignment="Top" Background="Black" Foreground="White" mah:ControlsHelper.ContentCharacterCasing="Upper" BorderThickness="0" />
+                        <TextBox x:Name="console" FontFamily="Consolas" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility ="Disabled" Background="Black" IsReadOnly="True" Margin="0,30,0,26" BorderBrush="Black" Foreground="White" BorderThickness="0" SelectionBrush="White" TextWrapping="Wrap"/>
                         <TextBox x:Name="textbox_servercommand" TextWrapping="Wrap" Text="" Margin="0,0,61,0" Height="23" VerticalAlignment="Bottom" KeyDown="Textbox_ServerCommand_KeyDown" IsEnabled="False" Background="Black" BorderBrush="White" Foreground="White" CaretBrush="White" PreviewKeyDown="Textbox_ServerCommand_PreviewKeyDown"/>
-                        <Button x:Name="button_servercommand" Cursor="Hand" Content="Send" Click="Button_ServerCommand_Click" IsEnabled="False" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="61" mah:ControlsHelper.CornerRadius="0"/>
+                        <Button x:Name="button_servercommand" Cursor="Hand" Content="Send" Click="Button_ServerCommand_Click" IsEnabled="False" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="61" mah:ControlsHelper.CornerRadius="0" />
                     </Grid>
                 </Grid>
             </Grid>

@@ -347,7 +347,7 @@ namespace WindowsGSM.Installer
         public string GetLocalBuild(string serverId, string appId)
         {
             string manifestFile = $"appmanifest_{appId}.acf";
-            string manifestPath = Path.Combine(Functions.ServerPath.GetServersServerFiles(serverId), "steamapps", manifestFile);
+            string manifestPath = Path.Combine(ServerPath.GetServersServerFiles(serverId), "steamapps", manifestFile);
 
             if (!File.Exists(manifestPath))
             {
@@ -355,7 +355,17 @@ namespace WindowsGSM.Installer
                 return string.Empty;
             }
 
-            string text = File.ReadAllText(manifestPath);
+            string text;
+            try
+            {
+                text = File.ReadAllText(manifestPath);
+            }
+            catch (Exception e)
+            {
+                Error = $"Fail to get local build {e.Message}";
+                return string.Empty;
+            }
+
             Regex regex = new Regex("\"buildid\".{1,}\"(.*?)\"");
             var matches = regex.Matches(text);
 

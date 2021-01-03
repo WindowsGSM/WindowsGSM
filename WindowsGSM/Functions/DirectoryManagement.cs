@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace WindowsGSM.Functions
 {
-    static class DirectoryManagement
+    public static class DirectoryManagement
     {
         public static async Task<bool> DeleteAsync(string path, bool recursive)
         {

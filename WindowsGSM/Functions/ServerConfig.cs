@@ -36,6 +36,7 @@ namespace WindowsGSM.Functions
             public const string CrashAlert = "crashalert";
             public const string CPUPriority = "cpupriority";
             public const string CPUAffinity = "cpuaffinity";
+            public const string AutoScroll = "autoscroll";
         }
 
         public string ServerID;
@@ -66,6 +67,7 @@ namespace WindowsGSM.Functions
         public bool CrashAlert;
         public string CPUPriority;
         public string CPUAffinity;
+        public bool AutoScroll;
 
         public ServerConfig(string serverid)
         {
@@ -136,6 +138,7 @@ namespace WindowsGSM.Functions
                             case SettingName.CrashAlert: CrashAlert = keyvalue[1] == "1"; break;
                             case SettingName.CPUPriority: CPUPriority = keyvalue[1]; break;
                             case SettingName.CPUAffinity: CPUAffinity = keyvalue[1]; break;
+                            case SettingName.AutoScroll: AutoScroll = keyvalue[1] == "1"; break;
                         }
                     }
                 }
@@ -172,6 +175,7 @@ namespace WindowsGSM.Functions
             CrashAlert = true;
             CPUPriority = "2";
             CPUAffinity = string.Concat(System.Linq.Enumerable.Repeat("1", Environment.ProcessorCount));
+            AutoScroll = true;
         }
 
         public bool CreateWindowsGSMConfig()
@@ -212,6 +216,7 @@ namespace WindowsGSM.Functions
                     textwriter.WriteLine($"{SettingName.CrontabFormat}=\"{CrontabFormat}\"");
                     textwriter.WriteLine(string.Empty);
                     textwriter.WriteLine($"{SettingName.EmbedConsole}=\"{(EmbedConsole ? "1" : "0")}\"");
+                    textwriter.WriteLine($"{SettingName.AutoScroll}=\"{(AutoScroll ? "1" : "0")}\"");
                     textwriter.WriteLine(string.Empty);
                     textwriter.WriteLine($"{SettingName.AutoStartAlert}=\"1\"");
                     textwriter.WriteLine($"{SettingName.AutoRestartAlert}=\"1\"");

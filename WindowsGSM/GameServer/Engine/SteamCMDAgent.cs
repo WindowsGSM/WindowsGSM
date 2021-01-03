@@ -47,7 +47,9 @@ namespace WindowsGSM.GameServer.Engine
 
         public bool IsInstallValid()
         {
-            return File.Exists(Functions.ServerPath.GetServersServerFiles(serverData.ServerID, StartPath));
+            string installPath = Functions.ServerPath.GetServersServerFiles(serverData.ServerID, StartPath);
+            Error = $"Fail to find {installPath}";
+            return File.Exists(installPath);
         }
 
         public bool IsImportValid(string path)

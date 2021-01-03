@@ -1,8 +1,11 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using WindowsGSM.Functions;
 
 namespace WindowsGSM.DiscordBot
 {
@@ -51,13 +54,14 @@ namespace WindowsGSM.DiscordBot
                     case "check":
                     case "backup":
                     case "update":
+                    case "stats":
                         List<string> serverIds = Configs.GetServerIdsByAdminId(message.Author.Id.ToString());
                         if (splits[0] == "check")
                         {
                             await message.Channel.SendMessageAsync(
                                 serverIds.Contains("0") ?
-                                "You have full permission.\nCommands: `check`, `list`, `start`, `stop`, `restart`, `send`, `backup`, `update`" :
-                                $"You have permission on servers (`{string.Join(",", serverIds.ToArray())}`)\nCommands: `check`, `start`, `stop`, `restart`, `send`, `backup`, `update`");
+                                "You have full permission.\nCommands: `check`, `list`, `start`, `stop`, `restart`, `send`, `backup`, `update`, `stats`" :
+                                $"You have permission on servers (`{string.Join(",", serverIds.ToArray())}`)\nCommands: `check`, `start`, `stop`, `restart`, `send`, `backup`, `update`, `stats`");
                             break;
                         }
 
@@ -75,6 +79,7 @@ namespace WindowsGSM.DiscordBot
                                 case "send": await Action_SendCommand(message, args[1]); break;
                                 case "backup": await Action_Backup(message, args[1]); break;
                                 case "update": await Action_Update(message, args[1]); break;
+                                case "stats": await Action_Stats(message); break;
                             }
                         }
                         else
@@ -323,7 +328,7 @@ namespace WindowsGSM.DiscordBot
                         }
                         else
                         {
-                            await message.Channel.SendMessageAsync($"Server (ID: {args[1]}) currently in {serverStatus.ToString()} state, not able to update.");
+                            await message.Channel.SendMessageAsync($"Server (ID: {args[1]}) currently in {serverStatus} state, not able to update.");
                         }
                     }
                     else
@@ -336,6 +341,16 @@ namespace WindowsGSM.DiscordBot
             {
                 await message.Channel.SendMessageAsync($"Usage: {Configs.GetBotPrefix()}wgsm update `<SERVERID>`");
             }
+        }
+
+        private async Task Action_Stats(SocketMessage message)
+        {
+            var system = new SystemMetrics();
+            await Task.Run(() => system.GetCPUStaticInfo());
+            await Task.Run(() => system.GetRAMStaticInfo());
+            await Task.Run(() => system.GetDiskStaticInfo());
+
+            await message.Channel.SendMessageAsync(embed: (await GetMessageEmbed(system)).Build());
         }
 
         private async Task SendServerEmbed(SocketMessage message, Color color, string serverId, string serverStatus, string serverName)
@@ -357,10 +372,73 @@ namespace WindowsGSM.DiscordBot
             };
 
             string prefix = Configs.GetBotPrefix();
-            embed.AddField("Command", $"{prefix}wgsm check\n{prefix}wgsm list\n{prefix}wgsm start <SERVERID>\n{prefix}wgsm stop <SERVERID>\n{prefix}wgsm restart <SERVERID>\n{prefix}wgsm send <SERVERID> <COMMAND>\n{prefix}wgsm backup <SERVERID>\n{prefix}wgsm update <SERVERID>", inline: true);
+            embed.AddField("Command", $"{prefix}wgsm check\n{prefix}wgsm list\n{prefix}wgsm start <SERVERID>\n{prefix}wgsm stop <SERVERID>\n{prefix}wgsm restart <SERVERID>\n{prefix}wgsm update <SERVERID>\n{prefix}wgsm send <SERVERID> <COMMAND>\n{prefix}wgsm backup <SERVERID>\n{prefix}wgsm stats", inline: true);
             embed.AddField("Usage", "Check permission\nPrint server list with id, status and name\nStart a server remotely by serverId\nStop a server remotely by serverId\nRestart a server remotely by serverId\nSend a command to server console\nBackup a server remotely by serverId\nUpdate a server remotely by serverId", inline: true);
 
             await message.Channel.SendMessageAsync(embed: embed.Build());
+        }
+
+        private string GetProgressBar(double progress)
+        {
+            // ▌ // ▋ // █ // Which one is the best?
+            const int MAX_BLOCK = 23;
+            string display = $" {(int)progress}% ";
+
+            int startIndex = MAX_BLOCK / 2 - display.Length / 2;
+            string progressBar = string.Concat(Enumerable.Repeat("█", (int)(progress / 100 * MAX_BLOCK))).PadRight(MAX_BLOCK).Remove(startIndex, display.Length).Insert(startIndex, display);
+
+            return $"**`{progressBar}`**";
+        }
+
+        private string GetActivePlayersString(int activePlayers)
+        {
+            const int MAX_BLOCK = 23;
+            string display = $" {activePlayers} ";
+
+            int startIndex = MAX_BLOCK / 2 - display.Length / 2;
+            string activePlayersString = string.Concat(Enumerable.Repeat(" ", MAX_BLOCK)).Remove(startIndex, display.Length).Insert(startIndex, display);
+
+            return $"**`{activePlayersString}`**";
+        }
+
+        private async Task<(int, int, int)> GetGameServerDashBoardDetails()
+        {
+            if (Application.Current != null)
+            {
+                return await Application.Current.Dispatcher.Invoke(async () =>
+                {
+                    MainWindow WindowsGSM = (MainWindow)Application.Current.MainWindow;
+                    return (WindowsGSM.GetServerCount(), WindowsGSM.GetStartedServerCount(), WindowsGSM.GetActivePlayers());
+                });
+            }
+
+            return (0, 0, 0);
+        }
+
+        private async Task<EmbedBuilder> GetMessageEmbed(SystemMetrics system)
+        {
+            var embed = new EmbedBuilder
+            {
+                Title = ":small_orange_diamond: System Metrics",
+                Description = $"Server name: {Environment.MachineName}",
+                Color = Color.Blue
+            };
+
+            embed.AddField("CPU", GetProgressBar(await Task.Run(() => system.GetCPUUsage())), true);
+            double ramUsage = await Task.Run(() => system.GetRAMUsage());
+            embed.AddField("Memory: " + SystemMetrics.GetMemoryRatioString(ramUsage, system.RAMTotalSize), GetProgressBar(ramUsage), true);
+            double diskUsage = await Task.Run(() => system.GetDiskUsage());
+            embed.AddField("Disk: " + SystemMetrics.GetDiskRatioString(diskUsage, system.DiskTotalSize), GetProgressBar(diskUsage), true);
+
+            (int serverCount, int startedCount, int activePlayers) = await GetGameServerDashBoardDetails();
+            embed.AddField($"Servers: {serverCount}/{MainWindow.MAX_SERVER}", GetProgressBar(serverCount * 100 / MainWindow.MAX_SERVER), true);
+            embed.AddField($"Online: {startedCount}/{serverCount}", GetProgressBar((serverCount == 0) ? 0 : startedCount * 100 / serverCount), true);
+            embed.AddField("Active Players", GetActivePlayersString(activePlayers), true);
+
+            embed.WithFooter(new EmbedFooterBuilder().WithIconUrl("https://github.com/WindowsGSM/WindowsGSM/raw/master/WindowsGSM/Images/WindowsGSM.png").WithText($"WindowsGSM {MainWindow.WGSM_VERSION} | System Metrics"));
+            embed.WithCurrentTimestamp();
+
+            return embed;
         }
     }
 }

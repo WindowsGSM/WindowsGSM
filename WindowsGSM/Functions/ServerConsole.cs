@@ -33,11 +33,16 @@ namespace WindowsGSM.Functions
             _serverId = serverId;
         }
 
+        public ServerConsole(int serverId)
+        {
+            _serverId = serverId.ToString();
+        }
+
         public async void AddOutput(object sender, DataReceivedEventArgs args)
         {
             System.Windows.Application.Current?.Dispatcher.Invoke(() =>
             {
-                MainWindow.g_ServerConsoles[int.Parse(_serverId)].Add(args.Data);
+                MainWindow._serverMetadata[int.Parse(_serverId)].ServerConsole.Add(args.Data);
             });
         }
 
