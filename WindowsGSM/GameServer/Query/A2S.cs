@@ -100,7 +100,24 @@ namespace WindowsGSM.GameServer.Query
                                 keys["SpectatorPort"] = br.ReadInt16().ToString();
                                 keys["SpectatorName"] = ReadString(br);
                             }
-                            if ((edf & 0x20) == 1) { keys["Keywords"] = ReadString(br); }
+                            if ((edf & 0x20) == 1)
+                            {
+                                keys["Keywords"] = ReadString(br);
+
+                                if (keys["Game"] == "Mordhau")
+                                {
+                                    var tags = keys["Keywords"].Split(',');
+
+                                    foreach (var tag in tags)
+                                    {
+                                        if (tag[0] == 'B' && tag[1] == ':' && int.TryParse(tag.Replace("B:", string.Empty), out int players))
+                                        {
+                                            keys["Players"] = players.ToString();
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
                             if ((edf & 0x01) == 1) { keys["GameID"] = br.ReadUInt64().ToString(); }
                         }
                         else if (header == GOLDSOURCE_RESPONSE)
