@@ -14,7 +14,7 @@ namespace WindowsGSM.Installer
     /// <summary>
     /// This script is very old, so it doesn't written in the best practice, but at least it works
     /// </summary>
-    class SteamCMD
+    public class SteamCMD
     {
         private static readonly string _exeFile = "steamcmd.exe";
         private static readonly string _installPath = ServerPath.GetBin("steamcmd");
