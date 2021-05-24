@@ -96,8 +96,9 @@ Effortlessly remote control your game servers with Discord!
 ### Plugins
 Allow support more game servers by installing plugins!
 ##### Some available plugins (Made by [BattlefieldDuck](https://github.com/BattlefieldDuck)):
-1. [WindowsGSM.ARMA3](https://github.com/BattlefieldDuck/WindowsGSM.ARMA3)
-1. [WindowsGSM.PaperMC](https://github.com/BattlefieldDuck/WindowsGSM.PaperMC)
+1. [WindowsGSM.ARMA2](https://github.com/DevVault/WindowsGSM.ARMA2)
+2. [WindowsGSM.ARMA3](https://github.com/BattlefieldDuck/WindowsGSM.ARMA3)
+3. [WindowsGSM.PaperMC](https://github.com/BattlefieldDuck/WindowsGSM.PaperMC)
 
 ![Screenshot Plugins](https://windowsgsm.com/assets/images/WindowsGSM-Plugins-v1.21.0.png)
 
