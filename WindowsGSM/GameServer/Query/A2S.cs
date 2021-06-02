@@ -54,6 +54,18 @@ namespace WindowsGSM.GameServer.Query
                         responseData = udpHandler.GetResponse(requestData, requestData.Length, _timeout, _timeout)
                             .Skip(4)
                             .ToArray();
+
+                        if (responseData[0] == 0x41)
+                        {
+                            requestData = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }
+                            .Concat(A2S_INFO)
+                            .Concat(responseData)
+                            .ToArray();
+
+                            responseData = udpHandler.GetResponse(requestData, requestData.Length, _timeout, _timeout)
+                                .Skip(4)
+                                .ToArray();
+                        }
                     }
 
                     // Store response's data
