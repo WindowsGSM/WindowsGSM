@@ -59,7 +59,7 @@ namespace WindowsGSM.GameServer.Query
                         {
                             requestData = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }
                             .Concat(A2S_INFO)
-                            .Concat(responseData)
+                            .Concat(responseData.Skip(1))
                             .ToArray();
 
                             responseData = udpHandler.GetResponse(requestData, requestData.Length, _timeout, _timeout)
