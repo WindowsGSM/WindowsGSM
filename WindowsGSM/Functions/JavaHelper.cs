@@ -271,7 +271,11 @@ namespace WindowsGSM.Functions
 
         private static string FindNewestJavaExecutableAbsolutePath()
         {
-            string javaDirectoryAbsolutePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Java");
+            string javaDirectoryAbsolutePath = Environment.GetEnvironmentVariable("JAVA_HOME");
+            if (javaDirectoryAbsolutePath == null)
+            {
+                javaDirectoryAbsolutePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Java");
+            }
             string javaRuntimeAbsolutePath = FindJavaExecutableAbsolutePath(javaDirectoryAbsolutePath);
 
             if (javaRuntimeAbsolutePath.Length > 0)
