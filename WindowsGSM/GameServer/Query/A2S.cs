@@ -11,7 +11,7 @@ namespace WindowsGSM.GameServer.Query
 {
     public class A2S
     {
-        private static readonly byte[] A2S_INFO = Encoding.Default.GetBytes("TSource Engine Query");
+        private static readonly byte[] A2S_INFO = Encoding.Default.GetBytes("TSource Engine Query\0");
         private static readonly byte[] A2S_PLAYER = Encoding.Default.GetBytes("U");
         private static readonly byte[] A2S_RULES = Encoding.Default.GetBytes("V");
 
@@ -48,7 +48,6 @@ namespace WindowsGSM.GameServer.Query
                     {
                         requestData = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }
                             .Concat(A2S_INFO)
-                            .Concat(new byte[] { 0x00 })
                             .ToArray();
 
                         responseData = udpHandler.GetResponse(requestData, requestData.Length, _timeout, _timeout)
@@ -58,9 +57,9 @@ namespace WindowsGSM.GameServer.Query
                         if (responseData[0] == 0x41)
                         {
                             requestData = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }
-                            .Concat(A2S_INFO)
-                            .Concat(responseData.Skip(1))
-                            .ToArray();
+                                .Concat(A2S_INFO)
+                                .Concat(responseData.Skip(1))
+                                .ToArray();
 
                             responseData = udpHandler.GetResponse(requestData, requestData.Length, _timeout, _timeout)
                                 .Skip(4)
