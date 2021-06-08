@@ -232,6 +232,9 @@ namespace WindowsGSM.Installer
 
         public async Task<Process> Install(string serverId, string modName, string appId, bool validate = true, bool loginAnonymous = true)
         {
+            // Fix the SteamCMD issue
+            Directory.CreateDirectory(Path.Combine(ServerPath.GetServersServerFiles(serverId), "steamapps"));
+
             SetParameter(ServerPath.GetServersServerFiles(serverId), modName, appId, validate, loginAnonymous);
             Process p = await Run();
             SendEnterPreventFreeze(p);
@@ -252,6 +255,9 @@ namespace WindowsGSM.Installer
             {
                 return (null, "Unable to download steamcmd");
             }
+
+            // Fix the SteamCMD issue
+            Directory.CreateDirectory(Path.Combine(ServerPath.GetServersServerFiles(serverId), "steamapps"));
 
             var p = new Process
             {
