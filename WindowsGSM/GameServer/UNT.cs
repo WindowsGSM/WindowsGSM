@@ -16,7 +16,7 @@ namespace WindowsGSM.GameServer
         public bool AllowsEmbedConsole = true;
         public int PortIncrements = 2;
         public dynamic QueryMethod = new Query.A2S();
-        public bool loginAnonymous = false;
+        public bool loginAnonymous = true;
 
         public string Port = "27015";
         public string QueryPort = "27016";
