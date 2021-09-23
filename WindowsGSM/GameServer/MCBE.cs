@@ -9,7 +9,19 @@ using System;
 
 namespace WindowsGSM.GameServer
 {
-    class MCBE
+    internal class MCBEwebclient : WebClient
+    {
+        protected override WebRequest GetWebRequest(Uri address)
+        {
+            HttpWebRequest req = (HttpWebRequest)base.GetWebRequest(address);
+            // WWW server only responds to Compression
+            req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+            // Also needs a Accept header.
+            req.Accept = "*/*";
+            return req;
+        }
+    }
+        class MCBE
     {
         private readonly Functions.ServerConfig _serverData;
 
@@ -138,7 +150,7 @@ namespace WindowsGSM.GameServer
 
             try
             {
-                using (WebClient webClient = new WebClient())
+                using (WebClient webClient = new MCBEwebclient())
                 {
                     string html = await webClient.DownloadStringTaskAsync("https://www.minecraft.net/en-us/download/server/bedrock/");
                     Regex regex = new Regex(@"https:\/\/minecraft\.azureedge\.net\/bin-win\/(bedrock-server-(.*?)\.zip)");
@@ -175,7 +187,7 @@ namespace WindowsGSM.GameServer
         {
             try
             {
-                using (WebClient webClient = new WebClient())
+                using (WebClient webClient = new MCBEwebclient())
                 {
                     string remoteBuild = await GetRemoteBuild();
 
@@ -265,15 +277,21 @@ namespace WindowsGSM.GameServer
         public string GetLocalBuild()
         {
             string versionPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, "MCBE-version.txt");
-            Error = $"Fail to get local build";
-            return File.Exists(versionPath) ? File.ReadAllText(versionPath) : string.Empty;
+            if (File.Exists(versionPath))
+            {
+                return File.ReadAllText(versionPath);
+            }
+            else { 
+                Error = $"Fail to get local build"; 
+                return string.Empty; 
+            }
         }
 
         public async Task<string> GetRemoteBuild()
         {
             try
             {
-                using (WebClient webClient = new WebClient())
+                using (WebClient webClient = new MCBEwebclient())
                 {
                     string html = await webClient.DownloadStringTaskAsync("https://www.minecraft.net/en-us/download/server/bedrock/");
                     Regex regex = new Regex(@"https:\/\/minecraft\.azureedge\.net\/bin-win\/(bedrock-server-(.*?)\.zip)");
