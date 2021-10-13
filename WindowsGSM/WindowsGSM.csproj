@@ -401,6 +401,7 @@
     <Compile Include="GameServer\Query\UT3.cs" />
     <Compile Include="GameServer\RCC.cs" />
     <Compile Include="GameServer\ROK.cs" />
+    <Compile Include="GameServer\SDK2013.cs" />
     <Compile Include="GameServer\SDTD.cs" />
     <Compile Include="GameServer\Data\Class.cs" />
     <Compile Include="GameServer\CS.cs" />

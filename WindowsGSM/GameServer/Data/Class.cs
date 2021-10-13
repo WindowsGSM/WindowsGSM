@@ -54,6 +54,7 @@ namespace WindowsGSM.GameServer.Data
                 case ROR2.FullName: return new ROR2(serverData);
                 case ECO.FullName: return new ECO(serverData);
                 case VTS.FullName: return new VTS(serverData);
+                case SDK2013.FullName: return new SDK2013(serverData);
                 default: // Load Plugin
                 {
                     if (pluginList == null) { return null; }
