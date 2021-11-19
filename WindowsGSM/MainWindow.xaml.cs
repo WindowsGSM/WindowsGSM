@@ -969,6 +969,10 @@ namespace WindowsGSM
                 key?.SetValue("Width", Width.ToString());
             }
 
+            // Get rid of system tray icon
+            notifyIcon.Visible = false;
+            notifyIcon.Dispose();
+
             // Stop Discord Bot
             g_DiscordBot.Stop().ConfigureAwait(false);
         }
