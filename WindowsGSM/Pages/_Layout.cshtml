@@ -1,0 +1,42 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@namespace WindowsGSM.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="~/" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+    <link href="_content/XtermBlazor/XtermBlazor.css" rel="stylesheet" />
+    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+</head>
+<body>
+    @RenderBody()
+
+    <div id="blazor-error-ui">
+        <environment include="Staging,Production">
+            An error has occurred. This application may no longer respond until reloaded.
+        </environment>
+        <environment include="Development">
+            An unhandled exception has occurred. See browser dev tools for details.
+        </environment>
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="_framework/blazor.server.js"></script>
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    <script src="_content/XtermBlazor/XtermBlazor.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.5.0/lib/xterm-addon-fit.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-search@0.8.2/lib/xterm-addon-search.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-web-links@0.5.0/lib/xterm-addon-web-links.min.js"></script>
+    <script>
+        window.XtermBlazor.registerAddon("xterm-addon-fit", new window.FitAddon.FitAddon());
+        window.XtermBlazor.registerAddon("xterm-addon-search", new window.SearchAddon.SearchAddon());
+        window.XtermBlazor.registerAddon("xterm-addon-web-links", new window.WebLinksAddon.WebLinksAddon());
+    </script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+﻿@inherits LayoutComponentBase
+@inject GameServerService gameServerService
+
+<MudThemeProvider Theme="_theme" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<PageTitle>WindowsGSM</PageTitle>
+
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudButton Variant="Variant.Filled" DisableElevation="true" Color="Color.Primary" Class="ml-3">Docs</MudButton>
+        <MudButton Variant="Variant.Filled" DisableElevation="true" Color="Color.Primary" Class="ml-3">About</MudButton>
+        <MudSpacer />
+        <MudDivider Vertical="true" FlexItem="true" Class="ma-4" />
+        <MudIconButton Icon="@Icons.Custom.Brands.Discord" Color="Color.Inherit" Link="https://discord.gg/8nxm6zAtc7" Target="_blank" />
+        <MudIconButton Icon="@Icons.Custom.Brands.YouTube" Color="Color.Inherit" Link="https://www.youtube.com/channel/UCgZ-q9VaVOcv5Yi4tkNd7pA" Target="_blank" />
+        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/WindowsGSM/WindowsGSM" Target="_blank" />
+        <MudIconButton Icon="@(_theme == _defaultTheme ? Icons.Outlined.DarkMode : Icons.Filled.LightMode)" Color="Color.Inherit" Edge="Edge.End" OnClick="@((e) => DarkMode())" />
+    </MudAppBar>
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="2">
+        <MudDrawerHeader>
+            <MudText Typo="Typo.h5" Class="mt-1">WindowsGSM</MudText>
+        </MudDrawerHeader>
+        <MudNavMenu Class="mud-width-full" Bordered="true">
+            @*<MudNavLink Href="/dashboard" Icon="@Icons.Filled.Dashboard">Dashboard</MudNavLink>*@
+            <MudNavLink Href="/servers" Match="NavLinkMatch.All" Icon="@Icons.Filled.Storage">Servers</MudNavLink>
+
+            <MudNavGroup Title="Control Panel" Icon="@Icons.Filled.DisplaySettings" Expanded="true" Class="mt-3">
+                @foreach (IGameServer gameServer in gameServerService.GameServers)
+                {
+                    <MudNavLink Href="@($"/servers/{gameServer.Config.Guid}")">@gameServer.Config.Basic.Name</MudNavLink>
+                }
+            </MudNavGroup>
+        </MudNavMenu>
+    </MudDrawer>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true;
+
+    private void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    protected override void OnInitialized()
+    {
+        _theme = _defaultTheme;
+    }
+
+    private void DarkMode()
+    {
+        if (_theme == _defaultTheme)
+        {
+            _theme = _darkTheme;
+        }
+        else
+        {
+            _theme = _defaultTheme;
+        }
+    }
+
+    private MudTheme _theme = new();
+    private MudTheme _defaultTheme = new()
+    {
+        Palette = new()
+        {
+            AppbarBackground = "#004d92",
+            Primary = "#005bad",
+            Black = "#272c34"
+        }
+    };
+
+    private MudTheme _darkTheme = new()
+    {
+        Palette = new()
+        {
+            Primary = "#0086ff",
+            Black = "#27272f",
+            Background = "#32333d",
+            BackgroundGrey = "#27272f",
+            Surface = "#373740",
+            DrawerBackground = "#27272f",
+            DrawerText = "rgba(255,255,255, 0.50)",
+            DrawerIcon = "rgba(255,255,255, 0.50)",
+            AppbarBackground = "#27272f",
+            AppbarText = "rgba(255,255,255, 0.70)",
+            TextPrimary = "rgba(255,255,255, 0.70)",
+            TextSecondary = "rgba(255,255,255, 0.50)",
+            ActionDefault = "#adadb1",
+            ActionDisabled = "rgba(255,255,255, 0.26)",
+            ActionDisabledBackground = "rgba(255,255,255, 0.12)",
+            Divider = "rgba(255,255,255, 0.12)",
+            DividerLight = "rgba(255,255,255, 0.06)",
+            TableLines = "rgba(255,255,255, 0.12)",
+            LinesDefault = "rgba(255,255,255, 0.12)",
+            LinesInputs = "rgba(255,255,255, 0.3)",
+            TextDisabled = "rgba(255,255,255, 0.2)"
+        }
+    };
+}

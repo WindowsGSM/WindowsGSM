@@ -1,0 +1,174 @@
+﻿@page "/servers"
+@inject NavigationManager NavManager
+@inject GameServerService gameServerService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<MudContainer Class="mt-6" MaxWidth="MaxWidth.ExtraLarge">
+    <MudText Typo="Typo.h3" Class="mb-4">Servers</MudText>
+    <MudButton @onclick="OpenCreateDialog" Variant="Variant.Filled" Color="Color.Primary">
+        Create Game Server
+    </MudButton>
+
+    <MudTable Items="@gameServerService.GameServers" Dense="true" MultiSelection="false" @bind-SelectedItems="_selectedServers" Hover="true" Class="mt-6 mb-6">
+        <HeaderContent>
+            <MudTh>Game</MudTh>
+            <MudTh>PID</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh>Name</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Game">
+                <MudTooltip Text="@context.Name" Placement="Placement.Right">
+                    <MudImage Src="@context.ImageSource" Alt="@context.Config.ClassName" Elevation="2" Class="rounded-lg" Width="24" />
+                </MudTooltip>
+            </MudTd>
+            <MudTd DataLabel="PID">@context.Process.Id</MudTd>
+            <MudTd DataLabel="Status">@context.Status.ToDisplayString()</MudTd>
+            <MudTd DataLabel="Name">@context.Config.Basic.Name</MudTd>
+            <MudTd Style="text-align:right">
+                @*if (context.ProcessConsole.Mode == ProcessConsole.ConsoleType.Windowed)
+                {
+                    <MudTooltip Text="Toggle Console">
+                        <MudIconButton Icon="@Icons.Material.Filled.Tab" Color="Color.Inherit" OnClick="@((e) => NavigateToConsole(context.Config.Guid))" />
+                    </MudTooltip>
+                }
+                else
+                {
+                    <MudTooltip Text="Console">
+                        <MudIconButton Icon="@Icons.Material.Filled.Terminal" Color="Color.Inherit" OnClick="@((e) => NavigateToConsole(context.Config.Guid))" />
+                    </MudTooltip>
+                }*@
+
+                @if (@context.Status == Status.Stopped)
+                {
+                    <MudTooltip Text="Start">
+                        <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" OnClick="@((e) => Start(context))" Disabled="@context.Status.IsRunning()" />
+                    </MudTooltip>
+                }
+                else
+                {
+                    <MudTooltip Text="Stop">
+                        <MudMenu Dense="true" ActivationEvent="@MouseEvent.RightClick" ListClass="pa-0" PopoverClass="rounded-circle">
+                            <ActivatorContent>
+                                <MudTooltip> @* Need to keep this *@
+                                    <MudIconButton Icon="@Icons.Material.Filled.Stop" Color="Color.Warning" OnClick="@((e) => Stop(context))" Disabled="@context.Status.IsRunning()" />
+                                </MudTooltip>
+                            </ActivatorContent>
+                            <ChildContent>
+                                <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Error" OnClick="@((e) => Kill(context))" Disabled="@context.Status.IsRunning()" Title="Kill" />
+                            </ChildContent>
+                        </MudMenu>
+                    </MudTooltip>
+                }
+                
+                <MudTooltip Text="Restart">
+                    <MudIconButton Icon="@Icons.Material.Filled.RestartAlt" Color="Color.Info" OnClick="@((e) => Restart(context))" Disabled="@(context.Status != Status.Started)" />
+                </MudTooltip>
+
+                <MudTooltip Text="Control Panel">
+                    <MudIconButton Icon="@Icons.Material.Filled.DisplaySettings" Color="Color.Inherit" OnClick="@((e) => NavigateToControlPanel(context.Config.Guid))" />
+                </MudTooltip>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudContainer>
+
+@code {
+    private HashSet<IGameServer> _selectedServers = new();
+
+    protected override void OnInitialized()
+    {
+        gameServerService.GameServersHasChanged += () => InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Start(IGameServer gameServer)
+    {
+        try
+        {
+            await gameServerService.Start(gameServer);
+            Snackbar.Add($"{gameServer.Config.Basic.Name}: Started", Severity.Success);
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add($"{gameServer.Config.Basic.Name}: Fail to Started - {e.Message}", Severity.Error);
+        }
+    }
+
+    private async Task Stop(IGameServer gameServer)
+    {
+        try
+        {
+            await gameServerService.Stop(gameServer);
+            Snackbar.Add($"{gameServer.Config.Basic.Name}: Stopped", Severity.Success);
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add($"{gameServer.Config.Basic.Name}: Fail to Stop - {e.Message}", Severity.Error);
+        }
+    }
+
+    private async Task Restart(IGameServer gameServer)
+    {
+        try
+        {
+            await gameServerService.Restart(gameServer);
+            Snackbar.Add($"{gameServer.Config.Basic.Name}: Restarted", Severity.Success);
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add($"{gameServer.Config.Basic.Name}: Fail to Restart - {e.Message}", Severity.Error);
+        }
+    }
+
+    private async Task Kill(IGameServer gameServer)
+    {
+        try
+        {
+            await gameServerService.Kill(gameServer);
+            Snackbar.Add($"{gameServer.Config.Basic.Name}: Killed", Severity.Success);
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add($"{gameServer.Config.Basic.Name}: Fail to Kill - {e.Message}", Severity.Error);
+        }
+    }
+
+    private async void OpenCreateDialog()
+    {
+        DialogOptions options = new()
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true,
+            CloseOnEscapeKey = true,
+            DisableBackdropClick = true,
+        };
+
+        IDialogReference dialogReference = DialogService.Show<CreateDialog>("Create Server", options);
+        DialogResult dialogResult = await dialogReference.Result;
+
+        if (dialogResult.Cancelled)
+        {
+            return;
+        }
+
+        IGameServer gameServer = (IGameServer)dialogResult.Data;
+
+        try
+        {
+            await gameServerService.Create(gameServer);
+            Snackbar.Add($"{gameServer.Config.Basic.Name}: Created", Severity.Success);
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add($"{gameServer.Config.Basic.Name}: Fail to Create - {e.Message}", Severity.Error);
+        }
+    }
+
+    private void NavigateToControlPanel(Guid guid)
+    {
+        NavManager.NavigateTo($"/servers/{guid}");
+    }
+}

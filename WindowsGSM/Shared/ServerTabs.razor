@@ -1,0 +1,16 @@
+﻿@inject NavigationManager NavigationManager
+@inject GameServerService GameServerService
+
+<MudTabs Elevation="2" Class="mb-4">
+    @foreach (IGameServer gameServer in GameServerService.GameServers)
+    {
+         <MudTabPanel Text="@gameServer.Config.Basic.Name" OnClick="@(() => NavigateToControlPanel(gameServer.Config.Guid))" />
+    }
+</MudTabs>
+
+@code {
+    private void NavigateToControlPanel(Guid guid)
+    {
+        NavigationManager.NavigateTo($"/servers/{guid}");
+    }
+}

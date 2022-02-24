@@ -1,0 +1,39 @@
+﻿@page "/dashboard"
+@implements IDisposable
+@using System.Threading
+@inject SystemMetricsService systemMetrics
+
+<PageTitle>Dashboard</PageTitle>
+
+<MudPaper Class="pa-16 ma-2">@systemMetrics.CPU.Name @systemMetrics.CPU.Count @systemMetrics.CPU.UsedRatio</MudPaper>
+<MudPaper Class="pa-16 ma-2">@systemMetrics.Memory.Type @systemMetrics.Memory.Used/@systemMetrics.Memory.Size</MudPaper>
+
+@foreach (var (name, disk) in systemMetrics.Disks) {
+    <MudPaper Class="pa-16 ma-2">@disk.Name @disk.Type @disk.Used/@disk.Size</MudPaper>
+}
+
+<MudGrid>
+    <MudItem xs="8" sm="4">
+        <MudPaper Class="d-flex align-center justify-center mud-width-full py-8">xs=6 sm=3</MudPaper>
+    </MudItem>
+    <MudItem xs="8" sm="4">
+        <MudPaper Class="d-flex align-center justify-center mud-width-full py-8">xs=6 sm=3</MudPaper>
+    </MudItem>
+    <MudItem xs="8" sm="4">
+        <MudPaper Class="d-flex align-center justify-center mud-width-full py-8">xs=6 sm=3</MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private Timer timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        timer = timer ?? new Timer(_ => InvokeAsync(StateHasChanged), null, 0, 1000);
+    }
+
+    public void Dispose()
+    {
+        timer?.Dispose();
+    }
+}
