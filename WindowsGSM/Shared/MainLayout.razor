@@ -10,8 +10,8 @@
 <MudLayout>
     <MudAppBar Elevation="1">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        <MudButton Variant="Variant.Filled" DisableElevation="true" Color="Color.Primary" Class="ml-3">Docs</MudButton>
-        <MudButton Variant="Variant.Filled" DisableElevation="true" Color="Color.Primary" Class="ml-3">About</MudButton>
+        @*<MudButton Variant="Variant.Filled" DisableElevation="true" Color="Color.Primary" Class="ml-3">Docs</MudButton>
+        <MudButton Variant="Variant.Filled" DisableElevation="true" Color="Color.Primary" Class="ml-3">About</MudButton>*@
         <MudSpacer />
         <MudDivider Vertical="true" FlexItem="true" Class="ma-4" />
         <MudIconButton Icon="@Icons.Custom.Brands.Discord" Color="Color.Inherit" Link="https://discord.gg/8nxm6zAtc7" Target="_blank" />
@@ -51,6 +51,7 @@
     protected override void OnInitialized()
     {
         _theme = _defaultTheme;
+        GameServerService.GameServersHasChanged += () => InvokeAsync(StateHasChanged);
     }
 
     private void DarkMode()

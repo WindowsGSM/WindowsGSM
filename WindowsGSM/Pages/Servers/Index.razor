@@ -1,6 +1,6 @@
 ﻿@page "/servers"
 @inject NavigationManager NavManager
-@inject GameServerService gameServerService
+@inject GameServerService GameServerService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
@@ -10,7 +10,7 @@
         Create Game Server
     </MudButton>
 
-    <MudTable Items="@gameServerService.GameServers" Dense="true" MultiSelection="false" @bind-SelectedItems="_selectedServers" Hover="true" Class="mt-6 mb-6">
+    <MudTable Items="@GameServerService.GameServers" Dense="true" MultiSelection="false" @bind-SelectedItems="_selectedServers" Hover="true" Class="mt-6 mb-6">
         <HeaderContent>
             <MudTh>Game</MudTh>
             <MudTh>PID</MudTh>
@@ -25,7 +25,7 @@
                 </MudTooltip>
             </MudTd>
             <MudTd DataLabel="PID">@context.Process.Id</MudTd>
-            <MudTd DataLabel="Status">@context.Status.ToDisplayString()</MudTd>
+            <MudTd DataLabel="Status">@context.Status.ToString()</MudTd>
             <MudTd DataLabel="Name">@context.Config.Basic.Name</MudTd>
             <MudTd Style="text-align:right">
                 @*if (context.ProcessConsole.Mode == ProcessConsole.ConsoleType.Windowed)
@@ -44,7 +44,7 @@
                 @if (@context.Status == Status.Stopped)
                 {
                     <MudTooltip Text="Start">
-                        <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" OnClick="@((e) => Start(context))" Disabled="@context.Status.IsRunning()" />
+                        <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" OnClick="@((e) => Start(context))" Disabled="@context.Status.IsDisabled(Operation.Start)" />
                     </MudTooltip>
                 }
                 else
@@ -53,11 +53,11 @@
                         <MudMenu Dense="true" ActivationEvent="@MouseEvent.RightClick" ListClass="pa-0" PopoverClass="rounded-circle">
                             <ActivatorContent>
                                 <MudTooltip> @* Need to keep this *@
-                                    <MudIconButton Icon="@Icons.Material.Filled.Stop" Color="Color.Warning" OnClick="@((e) => Stop(context))" Disabled="@context.Status.IsRunning()" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Stop" Color="Color.Warning" OnClick="@((e) => Stop(context))" Disabled="@context.Status.IsDisabled(Operation.Stop)" />
                                 </MudTooltip>
                             </ActivatorContent>
                             <ChildContent>
-                                <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Error" OnClick="@((e) => Kill(context))" Disabled="@context.Status.IsRunning()" Title="Kill" />
+                                <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Error" OnClick="@((e) => Kill(context))" Disabled="@context.Status.IsDisabled(Operation.Kill)" Title="Kill" />
                             </ChildContent>
                         </MudMenu>
                     </MudTooltip>
@@ -80,14 +80,14 @@
 
     protected override void OnInitialized()
     {
-        gameServerService.GameServersHasChanged += () => InvokeAsync(StateHasChanged);
+        GameServerService.GameServersHasChanged += () => InvokeAsync(StateHasChanged);
     }
 
     private async Task Start(IGameServer gameServer)
     {
         try
         {
-            await gameServerService.Start(gameServer);
+            await GameServerService.Start(gameServer);
             Snackbar.Add($"{gameServer.Config.Basic.Name}: Started", Severity.Success);
         }
         catch (Exception e)
@@ -100,7 +100,7 @@
     {
         try
         {
-            await gameServerService.Stop(gameServer);
+            await GameServerService.Stop(gameServer);
             Snackbar.Add($"{gameServer.Config.Basic.Name}: Stopped", Severity.Success);
         }
         catch (Exception e)
@@ -113,7 +113,7 @@
     {
         try
         {
-            await gameServerService.Restart(gameServer);
+            await GameServerService.Restart(gameServer);
             Snackbar.Add($"{gameServer.Config.Basic.Name}: Restarted", Severity.Success);
         }
         catch (Exception e)
@@ -126,7 +126,7 @@
     {
         try
         {
-            await gameServerService.Kill(gameServer);
+            await GameServerService.Kill(gameServer);
             Snackbar.Add($"{gameServer.Config.Basic.Name}: Killed", Severity.Success);
         }
         catch (Exception e)
@@ -146,7 +146,7 @@
             DisableBackdropClick = true,
         };
 
-        IDialogReference dialogReference = DialogService.Show<CreateDialog>("Create Server", options);
+        IDialogReference dialogReference = DialogService.Show<GameServerCreateDialog>("Create Server", options);
         DialogResult dialogResult = await dialogReference.Result;
 
         if (dialogResult.Cancelled)
@@ -158,7 +158,7 @@
 
         try
         {
-            await gameServerService.Create(gameServer);
+            await GameServerService.Create(gameServer);
             Snackbar.Add($"{gameServer.Config.Basic.Name}: Created", Severity.Success);
         }
         catch (Exception e)

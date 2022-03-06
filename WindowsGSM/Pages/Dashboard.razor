@@ -25,9 +25,9 @@
 </MudGrid>
 
 @code {
-    private Timer timer;
+    private Timer? timer;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         timer = timer ?? new Timer(_ => InvokeAsync(StateHasChanged), null, 0, 1000);
     }

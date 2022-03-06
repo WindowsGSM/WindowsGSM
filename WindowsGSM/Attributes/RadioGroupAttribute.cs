@@ -7,5 +7,7 @@
     public class RadioGroupAttribute : Attribute
     {
         public string Text { get; set; } = string.Empty;
+
+        public string HelperText { get; set; } = string.Empty;
     }
 }

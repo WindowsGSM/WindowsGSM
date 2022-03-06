@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
-using WindowsGSM.Games;
+using WindowsGSM.GameServers;
 
 namespace WindowsGSM.Services
 {

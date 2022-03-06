@@ -1,0 +1,49 @@
+﻿<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            Processor Affinity
+        </MudText>
+        Which processors are allowed to run?
+    </TitleContent>
+    <DialogContent>
+        @for (int i = 0; i < _processors.Length; i++)
+        {
+            int index = i;
+            <MudCheckBox T="bool" Checked="_processors[index]" Label=@($"CPU {index}") CheckedChanged=@((e) => CheckedChanged(index, e)) Color="Color.Primary" Class="mr-1" />
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudCheckBox T="bool" Checked="_selectAll" Label="Select All" CheckedChanged=@((e) => { _selectAll = e; Array.Fill(_processors, _selectAll); }) Color="Color.Primary" />
+        <MudSpacer/>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit" Disabled="!_processors.Contains(true)">OK</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance? MudDialog { get; set; }
+
+    [Parameter]
+    public uint Affinity { get; set; }
+
+    // TODO: Support more than 64 processor https://docs.microsoft.com/en-gb/windows/win32/procthread/processor-groups?redirectedfrom=MSDN
+    private static readonly int _processorCount = Environment.ProcessorCount > 64 ? 64 : Environment.ProcessorCount;
+    private bool[] _processors { get; set; } = new bool[_processorCount];
+    private bool _selectAll { get; set; }
+
+    private void Cancel() => MudDialog?.Cancel();
+    private void Submit() => MudDialog?.Close(DialogResult.Ok(ProcessorAffinity.GetProcessorAffinity(_processors)));
+
+    protected override void OnInitialized()
+    {
+        _processors = ProcessorAffinity.GetProcessors(Affinity);
+        _selectAll = !_processors.Contains(false);
+    }
+
+    private void CheckedChanged(int index, bool @checked)
+    {
+        _processors[index] = @checked;
+        _selectAll = !_processors.Contains(false);
+    }
+}

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using WindowsGSM.Data;
 using WindowsGSM.Services;
 using MudBlazor.Services;
-using WindowsGSM.Games;
+using WindowsGSM.GameServers;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.Json.Serialization;

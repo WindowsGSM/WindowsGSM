@@ -5,7 +5,7 @@
 @inject ISnackbar Snackbar
 
 <MudContainer Class="mt-6" MaxWidth="MaxWidth.ExtraLarge">
-    <MudText Typo="Typo.h3">Control Panel <MudChip Variant="Variant.Text">@(_gameServer?.Status.ToDisplayString() ?? "Unknown")</MudChip></MudText>
+    <MudText Typo="Typo.h3">Control Panel <MudChip Variant="Variant.Text">@(_gameServer?.Status.ToString() ?? "Unknown")</MudChip></MudText>
 
     @if (_gameServer != null)
     {
@@ -13,25 +13,25 @@
 
         <MudPaper Elevation="2" Class="mb-4">
             <MudToolBar>
-                <MudTooltip Text="Start">
-                    <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" OnClick="@((e) => Start(_gameServer))" Disabled="@(_gameServer.Status != Status.Stopped)" />
+                <MudTooltip Text="@(Operation.Start.ToString())">
+                    <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" OnClick="@((e) => Start(_gameServer))" Disabled="@(_gameServer.Status.IsDisabled(Operation.Start))" />
                 </MudTooltip>
-                <MudTooltip Text="Stop">
-                    <MudIconButton Icon="@Icons.Material.Filled.Stop" Color="Color.Warning" OnClick="@((e) => Stop(_gameServer))" Disabled="@(_gameServer.Status != Status.Started)" />
+                <MudTooltip Text="@(Operation.Stop.ToString())">
+                    <MudIconButton Icon="@Icons.Material.Filled.Stop" Color="Color.Warning" OnClick="@((e) => Stop(_gameServer))" Disabled="@(_gameServer.Status.IsDisabled(Operation.Stop))" />
                 </MudTooltip>
-                <MudTooltip Text="Restart">
-                    <MudIconButton Icon="@Icons.Material.Filled.RestartAlt" Color="Color.Info" OnClick="@((e) => Restart(_gameServer))" Disabled="@(_gameServer.Status != Status.Started)" />
+                <MudTooltip Text="@(Operation.Restart.ToString())">
+                    <MudIconButton Icon="@Icons.Material.Filled.RestartAlt" Color="Color.Info" OnClick="@((e) => Restart(_gameServer))" Disabled="@(_gameServer.Status.IsDisabled(Operation.Restart))" />
                 </MudTooltip>
-                <MudTooltip Text="Kill">
-                    <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Error" OnClick="@((e) => Kill(_gameServer))" Disabled="@(_gameServer.Status != Status.Started)" />
+                <MudTooltip Text="@(Operation.Kill.ToString())">
+                    <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Error" OnClick="@((e) => Kill(_gameServer))" Disabled="@(_gameServer.Status.IsDisabled(Operation.Kill))" />
                 </MudTooltip>
-                @*<MudTooltip Text="Toggle Console">
+                <MudTooltip Text="Toggle Console">
                     <MudIconButton
                         Icon="@Icons.Material.Filled.Terminal"
                         Color="Color.Inherit"
                         OnClick="@((e) => _gameServer.Process.ToggleWindow())"
                         Disabled="@(_gameServer.Status != Status.Started || _gameServer.Process.Mode != ProcessEx.ConsoleType.Windowed)" />
-                </MudTooltip>*@
+                </MudTooltip>
 
                 <MudDivider Vertical="true" FlexItem="true" Class="ma-4" />
 
@@ -44,77 +44,73 @@
 
                 <MudSpacer />
 
-                <MudTooltip Text="Delete">
-                    <MudIconButton Icon="@Icons.Filled.DeleteForever" Color="Color.Error" OnClick="@((e) => Delete(_gameServer))" Disabled="@(_gameServer.Status != Status.Stopped)" />
+                <MudTooltip Text="@(Operation.Delete.ToString())">
+                    <MudIconButton Icon="@Icons.Filled.DeleteForever" Color="Color.Error" OnClick="@((e) => Delete(_gameServer))" Disabled="@(_gameServer.Status.IsDisabled(Operation.Delete))" />
                 </MudTooltip>
             </MudToolBar>
         </MudPaper>
 
         <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true">
-            <MudTabPanel Text="Details" Icon="@Icons.Filled.Article">
-
-            </MudTabPanel>
             <MudTabPanel Text="Console" Icon="@Icons.Material.Filled.Terminal">
-                @if (_gameServer.Process.Mode == ProcessEx.ConsoleType.Windowed)
+                @* Search Bar for Xterm*@
+                @*<div class="pa-1" style="background-color:black;">
+                    <MudTextField 
+                        Style="color:white;"
+                        Margin="Margin.Dense"
+                        IconSize="Size.Small"
+                        @bind-Value="_search"
+                        Placeholder="Search"
+                        Variant="Variant.Outlined"
+                        Adornment="Adornment.End"
+                        AdornmentIcon="@Icons.Filled.Search"
+                        AdornmentColor="Color.Info"
+                        OnAdornmentClick="@Search" />
+                </div>*@
+
+                <div style="background-color:black;">
+                    <Xterm @ref="_terminal" Options="_options" AddonIds="_addonIds" OnFirstRender="@OnFirstRender" OnKey="@OnKey" />
+                </div>
+
+                @if (_gameServer.Process.Mode == ProcessEx.ConsoleType.RedirectStandard)
                 {
-                    <MudButton
-                        Class="ma-3"
-                        Variant="Variant.Filled"
-                        Color="Color.Primary"
-                        StartIcon="@Icons.Material.Filled.Terminal"
-                        IconColor="Color.Inherit"
-                        Size="Size.Large"
-                        OnClick="@((e) => _gameServer.Process.ToggleWindow())">Toggle Console</MudButton>
-                }
-                else
-                {
-                    @* Search Bar for Xterm*@
-                    @*<div class="pa-1" style="background-color:black;">
-                        <MudTextField 
+                    <div class="pa-1" style="background-color:black;border-bottom-left-radius:var(--mud-default-borderradius);border-bottom-right-radius:var(--mud-default-borderradius);">
+                        <MudTextField
+                            T="string"
+                            @ref="_commandTextField"
+                            Immediate="true"
+                            Variant="Variant.Outlined"
                             Style="color:white;"
                             Margin="Margin.Dense"
+                            Placeholder="@(_gameServer.Status == Status.Started ? "Command" : string.Empty)"
                             IconSize="Size.Small"
-                            @bind-Value="_search"
-                            Placeholder="Search"
-                            Variant="Variant.Outlined"
                             Adornment="Adornment.End"
-                            AdornmentIcon="@Icons.Filled.Search"
+                            AdornmentIcon="@Icons.Filled.Send"
                             AdornmentColor="Color.Info"
-                            OnAdornmentClick="@Search" />
-                    </div>*@
-
-                    <Xterm @ref="_terminal" Options="_options" AddonIds="_addonIds" OnFirstRender="@OnFirstRender" OnKey="@OnKey" />
-
-                    @if (_gameServer.Process.Mode == ProcessEx.ConsoleType.RedirectStandard)
-                    {
-                        <div class="pa-1" style="background-color:black;border-bottom-left-radius:var(--mud-default-borderradius);border-bottom-right-radius:var(--mud-default-borderradius);">
-                            <MudTextField
-                                T="string"
-                                @ref="_commandTextField"
-                                Immediate="true"
-                                Variant="Variant.Outlined"
-                                Style="color:white;"
-                                Margin="Margin.Dense"
-                                Placeholder="@(_gameServer.Status == Status.Started ? "Command" : string.Empty)"
-                                IconSize="Size.Small"
-                                Adornment="Adornment.End"
-                                AdornmentIcon="@Icons.Filled.Send"
-                                AdornmentColor="Color.Info"
-                                OnAdornmentClick="@((e) => SendCommand())"
-                                OnKeyDown="OnKeyDown"
-                                Disabled="@(_gameServer.Status != Status.Started)" />
-                        </div>
-                    }
-                    
+                            OnAdornmentClick="@((e) => SendCommand())"
+                            OnKeyDown="OnKeyDown"
+                            Disabled="@(_gameServer.Status != Status.Started)" />
+                    </div>
                 }
             </MudTabPanel>
             <MudTabPanel Text="Update" Icon="@Icons.Filled.KeyboardDoubleArrowUp">
                 <div class="ma-6">
                     <MudTextField T="string" Label="Local Version" Value="@_gameServer.Config.LocalVersion" />
-                    <MudTextField T="string" Label="Remote Version" Value="@_gameServer.Config.LocalVersion" />
+
+                    @if (GameServerService.TryGetLatestVersion(_gameServer, out string? version, out DateTime? lastUpdate))
+                    {
+                        <MudTextField T="string" Label="Latest Version" Value="@(version ?? string.Empty)" HelperText="@($"Last fetch: {lastUpdate}")" />
+                    }
+                    
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Class="mt-3" OnClick="@((e) => Update(_gameServer))">Update</MudButton>
                 </div>        
             </MudTabPanel>
+
+            @if (_gameServer.Config is ISourceModConfig)
+            {
+                <MudTabPanel Text="SourceMod">
+                    <SourceModContent GameServer="_gameServer" />
+                </MudTabPanel>
+            }
         </MudTabs>
     }
 </MudContainer>
@@ -129,6 +125,7 @@
     {
         CursorBlink = true,
         CursorStyle = CursorStyle.Bar,
+        WindowsMode = true,
     };
     private string[] _addonIds =
     {
@@ -181,9 +178,9 @@
     {
         if (_terminal != null && _gameServer != null)
         {
-            //await _terminal.InvokeAddonFunctionVoidAsync("xterm-addon-fit", "fit");
             try
             {
+                await _terminal.InvokeAddonFunctionVoidAsync("xterm-addon-fit", "fit");
                 await _terminal.Clear();
                 await _terminal.Write(_gameServer.Process.Output);
             }
@@ -225,7 +222,7 @@
         if (_commandTextField != null && (args.Code == "Enter" || args.Code == "NumpadEnter"))
         {
             await SendCommand();
-            await Task.Delay(1);
+            await Task.Delay(9);
             await _commandTextField.Clear();
         }
     }
@@ -317,7 +314,7 @@
             CloseOnEscapeKey = true,
         };
 
-        IDialogReference dialogReference = DialogService.Show<DeleteDialog>("", parameters, options);
+        IDialogReference dialogReference = DialogService.Show<GameServerDeleteDialog>("", parameters, options);
         DialogResult dialogResult = await dialogReference.Result;
 
         if (dialogResult.Cancelled)
@@ -325,6 +322,7 @@
             return;
         }
 
+        string guid = gameServer.Config.Guid.ToString();
         string name = gameServer.Config.Basic.Name;
 
         try
@@ -332,7 +330,10 @@
             await GameServerService.Delete(gameServer);
             Snackbar.Add($"{name}: Deleted", Severity.Success);
 
-            NavigationManager.NavigateTo($"/servers");
+            if (NavigationManager.ToBaseRelativePath(NavigationManager.Uri).StartsWith($"servers/{guid}"))
+            {
+                NavigationManager.NavigateTo($"/servers");
+            }
         }
         catch (Exception e)
         {

@@ -18,6 +18,10 @@ namespace WindowsGSM.Attributes
 
         public InputType InputType { get; set; } = InputType.Text;
 
+        public bool ReadOnly { get; set; }
+
         public bool FolderBrowser { get; set; }
+
+        public bool ProcessorAffinity { get; set; }
     }
 }

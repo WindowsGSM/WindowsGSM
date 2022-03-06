@@ -1,8 +1,8 @@
-﻿using SteamCMD.ConPTY;
-using SteamCMD.ConPTY.Interop.Definitions;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
 using WindowsGSM.Services;
+using WindowsPseudoConsole;
+using WindowsPseudoConsole.Interop.Definitions;
 
 namespace WindowsGSM.Utilities
 {
@@ -17,9 +17,8 @@ namespace WindowsGSM.Utilities
         }
 
         private Process? _process;
-        private WindowsPseudoConsole? _pseudoConsole;
+        private ConPTY? _pseudoConsole;
         private readonly StringBuilder _output = new();
-        //private readonly List<string> _output = new();
 
         public Process? Process => _process;
 
@@ -27,26 +26,32 @@ namespace WindowsGSM.Utilities
         {
             get
             {
-                if (_process != null)
+                try
                 {
-                    try
-                    {
-                        if (!_process.HasExited)
-                        {
-                            return _process.Id;
-                        }
-                    }
-                    catch
-                    {
-                        return null;
-                    }
+                    return _process != null && !_process.HasExited ? _process.Id : null;
                 }
-
-                return null;
+                catch
+                {
+                    return null;
+                }
             }
         }
 
-        //public string Output => _output.Count == 0 ? string.Empty : _output.Aggregate((a, b) => a + b);
+        public int? ExitCode
+        {
+            get
+            {
+                try
+                {
+                    return _process != null && _process.HasExited ? _process.ExitCode : null;
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+        }
+
         public string Output => _output.ToString();
 
         public ConsoleType? Mode { get; private set; }
@@ -55,13 +60,18 @@ namespace WindowsGSM.Utilities
         public event Action<int>? Exited;
         public event Action? Cleared;
 
-        public void UsePseudoConsole(WindowsPseudoConsole pseudoConsole)
+        public void UsePseudoConsole(ProcessStartInfo processStartInfo)
         {
             Mode = ConsoleType.PseudoConsole;
 
-            _pseudoConsole = pseudoConsole;
+            _pseudoConsole = new()
+            {
+                WorkingDirectory = processStartInfo.WorkingDirectory,
+                FileName = processStartInfo.FileName,
+                Arguments = processStartInfo.Arguments,
+            };
             _pseudoConsole.OutputDataReceived += (s, data) => AddOutput(data);
-            _pseudoConsole.Exited += (sender, _) => (sender as WindowsPseudoConsole)?.Dispose();
+            _pseudoConsole.Exited += (sender, _) => (sender as ConPTY)?.Dispose();
         }
 
         public void UseRedirectStandard(ProcessStartInfo processStartInfo)
@@ -127,7 +137,7 @@ namespace WindowsGSM.Utilities
                         StartInfo =
                         {
                             FileName = Path.Combine(GameServerService.BasePath, "ProcessEx.Windowed.bat"),
-                            Arguments = $"\"{_process.StartInfo.FileName}\" \"{_process.StartInfo.WorkingDirectory}\"",
+                            Arguments = $"\"{_process.StartInfo.FileName} {_process.StartInfo.Arguments}\" \"{_process.StartInfo.WorkingDirectory}\"",
                             UseShellExecute = false,
                             RedirectStandardOutput = true,
                         }
@@ -135,9 +145,10 @@ namespace WindowsGSM.Utilities
 
                     batchProcess.Start();
 
-                    string output = (await batchProcess.StandardOutput.ReadToEndAsync()).TrimEnd().Split(new[] { '\n' }).Last();
+                    string output = await batchProcess.StandardOutput.ReadToEndAsync();
+                    string pidString = output.TrimEnd().Split(new[] { '\n' }).Last();
 
-                    if (int.TryParse(output, out int pid))
+                    if (int.TryParse(pidString, out int pid))
                     {
                         _process = Process.GetProcessById(pid);
                         _process.EnableRaisingEvents = true;

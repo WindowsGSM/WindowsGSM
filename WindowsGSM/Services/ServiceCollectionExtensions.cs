@@ -1,4 +1,4 @@
-﻿using WindowsGSM.Games;
+﻿using WindowsGSM.GameServers;
 
 namespace WindowsGSM.Services
 {

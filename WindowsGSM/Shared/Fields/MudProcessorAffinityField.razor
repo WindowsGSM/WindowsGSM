@@ -1,0 +1,40 @@
+﻿@inherits MudTextField<uint>
+@inject IDialogService DialogService
+
+@{
+    base.BuildRenderTree(__builder);
+}
+
+@code {
+    private DialogOptions _options = new DialogOptions
+    {
+        MaxWidth = MaxWidth.Medium,
+        FullWidth = true,
+        CloseButton = true,
+        CloseOnEscapeKey = true,
+    };
+
+    protected override void OnInitialized()
+    {
+        base.AdornmentIcon = Icons.Filled.Settings;
+        base.Adornment = Adornment.End;
+        base.ReadOnly = true;
+        base.OnAdornmentClick = EventCallback.Factory.Create<MouseEventArgs>(this, OnFolderClick);
+    }
+
+    private async Task OnFolderClick(MouseEventArgs args)
+    {
+        DialogParameters parameters = new();
+        parameters.Add("Affinity", uint.TryParse(base.Value.ToString(), out uint result) ? result : 0);
+
+        IDialogReference dialogReference = DialogService.Show<ProcessorAffinityDialog>("Processor Affinity", parameters, _options);
+        DialogResult dialogResult = await dialogReference.Result;
+
+        if (dialogResult.Cancelled)
+        {
+            return;
+        }
+
+        await base.SetValueAsync(uint.Parse(dialogResult.Data.ToString()!), true);
+    }
+}

@@ -1,0 +1,197 @@
+﻿@foreach (PropertyInfo field in infos)
+{
+    @if (field.TryGetCustomAttribute<TextFieldAttribute>(out TextFieldAttribute? textField))
+    {
+        @if (textField.InputType == InputType.Password)
+        {
+            <MudPasswordField
+                HelperText="@textField.HelperText"
+                Label="@textField.Label"
+                Required="@textField.Required"
+                RequiredError="@textField.RequiredError"
+                ReadOnly="@textField.ReadOnly"
+                Value="@(field.GetValue(config)?.ToString() ?? string.Empty)"
+                ValueChanged="@((e) => field.SetValue(config, e))" />
+        }
+        else if (textField.FolderBrowser)
+        {
+            <MudFolderBrowserField
+                HelperText="@textField.HelperText"
+                Label="@textField.Label"
+                Required="@textField.Required"
+                RequiredError="@textField.RequiredError"
+                ReadOnly="@textField.ReadOnly"
+                Value="@(field.GetValue(config)?.ToString() ?? string.Empty)"
+                ValueChanged="@((e) => field.SetValue(config, e))" />
+        }
+        else if (textField.ProcessorAffinity)
+        {
+            <MudProcessorAffinityField
+                HelperText="@textField.HelperText"
+                Label="@textField.Label"
+                Required="@textField.Required"
+                RequiredError="@textField.RequiredError"
+                ReadOnly="@textField.ReadOnly"
+                Value="@((uint)(IntPtr.TryParse(field.GetValue(config)?.ToString(), out IntPtr value) ? value : IntPtr.Zero))"
+                ValueChanged="@((e) => field.SetValue(config, e))" />
+        }
+        else
+        {
+            <MudTextField 
+                T="string"
+                HelperText="@textField.HelperText"
+                Label="@textField.Label"
+                Required="@textField.Required"
+                RequiredError="@textField.RequiredError"
+                ReadOnly="@textField.ReadOnly"
+                Value="@(field.GetValue(config)?.ToString() ?? string.Empty)"
+                ValueChanged="@((e) => field.SetValue(config, e))"
+                InputType="@textField.InputType" />
+        }
+    }
+    // If C# supports Generic attributes, it can be simpler
+    else if (field.TryGetCustomAttribute<NumericFieldAttribute>(out NumericFieldAttribute? numericField))
+    {
+        @if (field.PropertyType == typeof(int))
+        {
+            <MudNumericField
+                T="int"
+                Label="@numericField.Label"
+                Required="@numericField.Required"
+                Variant="Variant.Text"
+                Min="@((int)numericField.Min)"
+                Max="@((int)numericField.Max)"
+                Step="@((int)numericField.Step)"
+                Value="@(int.TryParse(field.GetValue(config)?.ToString(), out int value) ? value : (int)numericField.Min)"
+                ValueChanged="@((e) => field.SetValue(config, e))" />
+        }
+        else if (field.PropertyType == typeof(double))
+        {
+            <MudNumericField
+                T="double"
+                Label="@numericField.Label"
+                Required="@numericField.Required"
+                Variant="Variant.Text"
+                Min="@numericField.Min"
+                Max="@numericField.Max"
+                Step="@numericField.Step"
+                Value="@(double.TryParse(field.GetValue(config)?.ToString(), out double value) ? value : numericField.Min)"
+                ValueChanged="@((e) => field.SetValue(config, e))" />
+        }
+        else if (field.PropertyType == typeof(decimal))
+        {
+            <MudNumericField
+                T="decimal"
+                Label="@numericField.Label"
+                Required="@numericField.Required"
+                Variant="Variant.Text"
+                Min="@((decimal)numericField.Min)"
+                Max="@((decimal)numericField.Max)"
+                Step="@((decimal)numericField.Step)"
+                Value="@(decimal.TryParse(field.GetValue(config)?.ToString(), out decimal value) ? value : (decimal)numericField.Min)"
+                ValueChanged="@((e) => field.SetValue(config, e))" />
+        }
+    }
+    else if (field.TryGetCustomAttribute<CheckBoxAttribute>(out CheckBoxAttribute? checkBox))
+    {
+        bool isChecked = bool.TryParse(field.GetValue(config)?.ToString(), out bool value) ? value : false;
+
+        @if (checkBox.IsSwitch)
+        {
+            <MudField Variant="Variant.Text" InnerPadding="false" Label="@checkBox.Label" HelperText="@checkBox.HelperText">
+                <MudSwitch
+                    T="bool"
+                    Checked="@isChecked"
+                    CheckedChanged="@((e) => field.SetValue(config, e))"
+                    Required="@checkBox.Required"
+                    RequiredError="@checkBox.RequiredError"
+                    Error="@(!isChecked)"
+                    ErrorText="@checkBox.RequiredError"
+                    Color="Color.Primary" />
+            </MudField>
+        }
+        else
+        {
+            <MudCheckBox
+                T="bool"
+                Checked="@isChecked"
+                CheckedChanged="@((e) => field.SetValue(config, e))"
+                Required="@checkBox.Required"
+                RequiredError="@checkBox.RequiredError"
+                Error="@(!isChecked)"
+                ErrorText="@checkBox.RequiredError"
+                Color="Color.Primary" >
+
+                @if (!string.IsNullOrWhiteSpace(checkBox.Label))
+                {
+                    Regex regex = new(@"(?:__|[*#])|\[(.*?)\]\((.*?)\)");
+                    MatchCollection matches = regex.Matches(checkBox.Label);
+                    int i = 0;
+
+                    @if (matches.Count <= 0)
+                    {
+                        @checkBox.Label
+                    }
+                    else
+                    {
+                        @foreach (Match match in matches)
+                        {
+                            @while (i < match.Index)
+                            {
+                                @checkBox.Label[i++];
+                            }
+
+                            i = match.Index + match.Length;
+
+                            <MudLink Href="@match.Groups[2].Value" Target="_blank">@match.Groups[1].Value</MudLink>
+                        }
+                    }
+                }
+            </MudCheckBox>
+
+            @if (!isChecked)
+            {
+                <MudText Typo="Typo.body2" Color="@Color.Error">@checkBox.RequiredError</MudText>
+            }
+        }  
+    }
+    else if (field.TryGetCustomAttribute<RadioGroupAttribute>(out RadioGroupAttribute? radioGroup))
+    {
+        <MudField Label="@radioGroup.Text" Variant="Variant.Text" InnerPadding="false" HelperText="@radioGroup.HelperText">
+            <MudRadioGroup T="string" SelectedOption="@field.GetValue(config)?.ToString()" SelectedOptionChanged="@((e) => field.SetValue(config, e))">
+                @if (field.TryGetCustomAttributes<RadioAttribute>(out List<RadioAttribute> radios))
+                {
+                    @foreach (RadioAttribute radio in radios)
+                    {
+                        <MudRadio Option="@radio.Option" Color="Color.Primary" Class="mr-2">@radio.Option</MudRadio>
+                    }
+                }
+            </MudRadioGroup>
+        </MudField>
+    }
+    else if (field.TryGetCustomAttribute<SelectAttribute>(out SelectAttribute? select))
+    {
+        ISelectItem o = (ISelectItem)Activator.CreateInstance(select.SelectItemsType!)!;
+
+        <MudSelect
+            T="string"
+            Label="@select.Label"
+            Value="@(field.GetValue(config)?.ToString())"
+            SelectedValuesChanged="@((e) => field.SetValue(config, e.FirstOrDefault()))"
+            AnchorOrigin="Origin.BottomCenter"
+            HelperText="@select.HelperText">
+            @foreach (string selectItem in o.Values)
+            {
+                <MudSelectItem Value="@(selectItem)" />
+            }
+        </MudSelect>
+    }
+}
+
+@code {
+    [Parameter]
+    public PropertyInfo[] infos { get; set; } = new PropertyInfo[0];
+
+    [Parameter]
+    public object? config { get; set; }
+}
