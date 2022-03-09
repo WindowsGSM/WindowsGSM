@@ -58,14 +58,14 @@ namespace WindowsGSM.GameServer.Engine
             }
 
             StringBuilder sb = new StringBuilder();
-            sb.Append($"-console -game {Game}");
+            sb.Append($"-console");
+            sb.Append(string.IsNullOrWhiteSpace(Game) ? string.Empty : $" -game {Game}");
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerIP) ? string.Empty : $" -ip {serverData.ServerIP}");
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerPort) ? string.Empty : $" -port {serverData.ServerPort}");
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerMaxPlayer) ? string.Empty : $" -maxplayers{(AppId == "740" ? "_override" : "")} {serverData.ServerMaxPlayer}");
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerGSLT) ? string.Empty : $" +sv_setsteamaccount {serverData.ServerGSLT}");
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerParam) ? string.Empty : $" {serverData.ServerParam}");
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerMap) ? string.Empty : $" +map {serverData.ServerMap}");
-            if (serverData.ServerParam.Contains("-game ")) { sb.Replace($" -game {Game}", ""); }
             string param = sb.ToString();
 
             Process p;

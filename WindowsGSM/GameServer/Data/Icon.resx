@@ -225,6 +225,9 @@
   <data name="Rust Dedicated Server" xml:space="preserve">
     <value>Images/Games/rust.png</value>
   </data>
+  <data name="Source SDK Base 2013 Dedicated Server" xml:space="preserve">
+    <value>Images/Games/hl2dm.png</value>
+  </data>
   <data name="Space Engineers Dedicated Server" xml:space="preserve">
     <value>Images/Games/se.png</value>
   </data>

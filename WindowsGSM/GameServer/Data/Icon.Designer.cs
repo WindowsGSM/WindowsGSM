@@ -385,6 +385,15 @@ namespace WindowsGSM.GameServer.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Images/Games/hl2dm.png.
+        /// </summary>
+        public static string Source_SDK_Base_2013_Dedicated_Server {
+            get {
+                return ResourceManager.GetString("Source SDK Base 2013 Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Images/Games/se.png.
         /// </summary>
         public static string Space_Engineers_Dedicated_Server {
