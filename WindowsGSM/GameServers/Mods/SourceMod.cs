@@ -6,7 +6,16 @@ namespace WindowsGSM.GameServers.Mods
 {
     public class SourceMod : IMod
     {
-        public async Task<(List<string>, string)> GetVersions()
+        public string Name => "SourceMod";
+
+        public Type ConfigType => typeof(ISourceModConfig);
+
+        public string GetLocalVersion(IGameServer gameServer)
+        {
+            return ((ISourceModConfig)gameServer.Config).SourceModLocalVersion;
+        }
+
+        public async Task<List<string>> GetVersions()
         {
             using HttpClient httpClient = new();
             using HttpResponseMessage response = await httpClient.GetAsync("https://sm.alliedmods.net/smdrop/");
@@ -27,7 +36,7 @@ namespace WindowsGSM.GameServers.Mods
             matches = regex.Matches(content); // Match ?branch=1.10
             string stableVersion = matches.Last().Groups[1].Value; // Value 1.10
 
-            return (versions.Select(x => x.ToString()).ToList(), stableVersion);
+            return new List<string> { stableVersion }.Concat(versions.Select(x => x.ToString())).Distinct().ToList();
         }
 
         public async Task Create(IGameServer gameServer, string version)
@@ -42,19 +51,20 @@ namespace WindowsGSM.GameServers.Mods
             // Download zip
             using HttpResponseMessage response2 = await httpClient.GetAsync($"https://sm.alliedmods.net/smdrop/{version}/{latest}");
             response2.EnsureSuccessStatusCode();
-            string zipPath = Path.Combine(gameServer.Config.Basic.Directory, latest);
+            string temporaryDirectory = DirectoryEx.CreateTemporaryDirectory();
+            string zipPath = Path.Combine(temporaryDirectory, latest);
 
             using (FileStream fs = new(zipPath, FileMode.CreateNew))
             {
                 await response2.Content.CopyToAsync(fs);
             }
 
-            // Extract then delete zip
+            // Extract and delete zip
             string modFolder = ((ISteamCMDConfig)gameServer.Config).SteamCMD.Game;
-            await FileEx.ExtractZip(zipPath, Path.Combine(gameServer.Config.Basic.Directory, modFolder));
-            await FileEx.DeleteAsync(zipPath);
+            await FileEx.ExtractZip(zipPath, Path.Combine(gameServer.Config.Basic.Directory, modFolder), true);
+            await DirectoryEx.DeleteAsync(temporaryDirectory, true);
 
-            ((ISourceModConfig)gameServer.Config).SourceMod.LocalVersion = version;
+            ((ISourceModConfig)gameServer.Config).SourceModLocalVersion = version;
             await gameServer.Config.Update();
         }
 

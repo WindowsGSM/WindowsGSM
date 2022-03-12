@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <VersionPrefix>2.0.0</VersionPrefix>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
   </PropertyGroup>
 	
   <ItemGroup>

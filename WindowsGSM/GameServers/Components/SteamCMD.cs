@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.RegularExpressions;
 using WindowsGSM.GameServers.Configs;
 using WindowsGSM.Services;
 using WindowsGSM.Utilities;
@@ -37,6 +38,13 @@ namespace WindowsGSM.GameServers.Components
             return @string.ToString();
         }
 
+        /// <summary>
+        /// Start steamcmd.exe
+        /// </summary>
+        /// <param name="gameServer"></param>
+        /// <param name="updateLocalVersion"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public static async Task Start(IGameServer gameServer, bool updateLocalVersion = false)
         {
             SteamCMDConfig steamCMD = ((ISteamCMDConfig)gameServer.Config).SteamCMD;
@@ -57,7 +65,7 @@ namespace WindowsGSM.GameServers.Components
                     await response.Content.CopyToAsync(fs);
                 }
 
-                await FileEx.ExtractZip(zipPath, directory);
+                await FileEx.ExtractZip(zipPath, directory, true);
                 await FileEx.DeleteAsync(zipPath);
             }
 
@@ -111,6 +119,66 @@ namespace WindowsGSM.GameServers.Components
                 gameServer.Config.LocalVersion = await gameServer.GetLocalVersion();
                 await gameServer.Config.Update();
             }
+        }
+
+        /// <summary>
+        /// Get Local Build Id from appmanifest.acf
+        /// </summary>
+        /// <param name="gameServer"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static async Task<string> GetLocalBuildId(IGameServer gameServer)
+        {
+            SteamCMDConfig steamCMD = ((ISteamCMDConfig)gameServer.Config).SteamCMD;
+            string appId = steamCMD.ServerAppId;
+
+            string content = await File.ReadAllTextAsync(Path.Combine(gameServer.Config.Basic.Directory, "steamapps", $"appmanifest_{appId}.acf"));
+            Regex regex = new("\"buildid\"\\s+\"(\\S*)\"");
+            MatchCollection matches = regex.Matches(content);
+
+            if (matches.Count <= 0)
+            {
+                throw new Exception("Could not find the local build id");
+            }
+
+            return matches[0].Groups[1].Value;
+        }
+
+        /// <summary>
+        /// Get Public Build Id from AppInfo
+        /// </summary>
+        /// <param name="gameServer"></param>
+        /// <returns>Public Build Id</returns>
+        /// <exception cref="Exception"></exception>
+        public static async Task<string> GetPublicBuildId(IGameServer gameServer)
+        {
+            string content = await GetAppInfoJson(gameServer);
+            Regex regex = new("\"branches\":\\s*{\\s*\"public\":\\s*{\\s*\"buildid\":\\s*\"(\\S*)\"");
+            MatchCollection matches = regex.Matches(content);
+
+            if (matches.Count <= 0)
+            {
+                throw new Exception("Could not find the public build id");
+            }
+
+            return matches[0].Groups[1].Value;
+        }
+
+        /// <summary>
+        /// Get AppInfo Json
+        /// </summary>
+        /// <param name="gameServer"></param>
+        /// <returns>Json string</returns>
+        public static async Task<string> GetAppInfoJson(IGameServer gameServer)
+        {
+            SteamCMDConfig steamCMD = ((ISteamCMDConfig)gameServer.Config).SteamCMD;
+            string appId = steamCMD.ServerAppId;
+
+            using HttpClient httpClient = new();
+            using HttpResponseMessage response = await httpClient.GetAsync($"https://raw.githubusercontent.com/WindowsGSM/SteamAppInfo/main/AppInfo/{appId}.json");
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
         }
     }
 }

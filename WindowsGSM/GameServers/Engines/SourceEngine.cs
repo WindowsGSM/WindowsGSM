@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using WindowsGSM.Attributes;
 using WindowsGSM.GameServers.Components;
 using WindowsGSM.GameServers.Configs;
+using WindowsGSM.GameServers.Mods;
 using WindowsGSM.Utilities;
 using WindowsGSM.Utilities.Steamworks;
 
@@ -21,7 +22,7 @@ namespace WindowsGSM.GameServers.Engines
             [TextField(Label = "Start Parameter")]
             public string StartParameter { get; set; } = string.Empty;
 
-            [RadioGroup(Text = "Console Type")]
+            [RadioGroup(Text = "Console Mode")]
             [Radio(Option = "Redirect Standard Input/Output")]
             [Radio(Option = "Windowed")]
             public string ConsoleMode { get; set; } = "Redirect Standard Input/Output";
@@ -33,7 +34,13 @@ namespace WindowsGSM.GameServers.Engines
             public string GSLT { get; set; } = string.Empty;
         }
 
-        public class Configuration : IConfig, ISteamCMDConfig, ISourceModConfig
+        public class ModConfig : ISourceModConfig
+        {
+            [TextField(Label = "Local Version", HelperText = "SourceMod Version (ReadOnly)", ReadOnly = true)]
+            public string SourceModLocalVersion { get; set; } = string.Empty;
+        }
+
+        public class Configuration : IConfig, ISteamCMDConfig
         {
             public string LocalVersion { get; set; } = string.Empty;
 
@@ -53,8 +60,8 @@ namespace WindowsGSM.GameServers.Engines
             [TabPanel(Text = "SteamCMD")]
             public SteamCMDConfig SteamCMD { get; set; } = new();
 
-            [TabPanel(Text = "SourceMod")]
-            public SourceModConfig SourceMod { get; set; } = new();
+            [TabPanel(Text = "Mod")]
+            public ModConfig Mod { get; set; } = new();
         }
 
         public virtual string Name => string.Empty;
@@ -62,9 +69,7 @@ namespace WindowsGSM.GameServers.Engines
         public virtual string ImageSource => string.Empty;
 
         public virtual IConfig Config { get; set; } = new Configuration();
-
         public Status Status { get; set; }
-
         public ProcessEx Process { get; set; } = new();
 
         public Task<bool> Detect(string path)
@@ -156,7 +161,7 @@ namespace WindowsGSM.GameServers.Engines
             return Task.FromResult(version);
         }
 
-        public async Task<string> GetLatestVersion()
+        public async Task<List<string>> GetVersions()
         {
             Configuration config = (Configuration)Config;
 
@@ -177,7 +182,7 @@ namespace WindowsGSM.GameServers.Engines
             var apiResponse = JsonSerializer.Deserialize<ResponseWrapper<SteamApps.UpToDateCheck>>(content) ?? throw new Exception("Fail to Deserialize JSON");
             string version = apiResponse.Response?.RequiredVersion?.ToString() ?? throw new Exception("Fail to get RequiredVersion");
 
-            return version;
+            return new() { version };
         }
     }
 }

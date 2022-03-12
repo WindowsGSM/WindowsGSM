@@ -2,14 +2,20 @@
 {
     public interface IMod
     {
-        public Task<(List<string>, string)> GetVersions() => throw new NotImplementedException();
+        public string Name { get; }
 
-        public Task Create(IGameServer gameServer, string version) => throw new NotImplementedException();
+        public Type ConfigType { get; }
 
-        public Task Update(IGameServer gameServer, string version) => throw new NotImplementedException();
+        public string GetLocalVersion(IGameServer gameServer);
 
-        public Task Delete(IGameServer gameServer) => throw new NotImplementedException();
+        public Task<List<string>> GetVersions();
 
-        public bool Exists(IGameServer gameServer) => throw new NotImplementedException();
+        public Task Create(IGameServer gameServer, string version);
+
+        public Task Update(IGameServer gameServer, string version);
+
+        public Task Delete(IGameServer gameServer);
+
+        public bool Exists(IGameServer gameServer);
     }
 }

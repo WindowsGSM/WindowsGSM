@@ -4,23 +4,30 @@
             <MudSelect @bind-Value="@_version" Label="Select the version" HelperText="@($"{@_versions.Count} versions available")" Variant="Variant.Outlined">
                 @foreach (string version in _versions)
                 {
-                    <MudSelectItem Value="@version" />
+                    <MudSelectItem Value="@version">
+                        @version
+
+                        @if (version == _versions[0])
+                        {
+                            <span>&nbsp;(Stable)</span>
+                        }
+                    </MudSelectItem>
                 }
             </MudSelect>
         </MudForm>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Create</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Install</MudButton>
     </DialogActions>
 </MudDialog>
 
 @code {
     [CascadingParameter]
-    public MudDialogInstance? MudDialog { get; set; }
+    public MudDialogInstance MudDialog { get; set; } = null!;
 
     [Parameter]
-    public IMod Mod { get; set; }
+    public IMod Mod { get; set; } = null!;
 
     private MudForm _form = null!;
     private List<string> _versions = new();
@@ -28,7 +35,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        (_versions, _version) = await Mod.GetVersions();
+        _versions = await Mod.GetVersions();
+        _version = _versions[0];
     }
 
     private async Task Submit()
@@ -37,7 +45,7 @@
 
         if (_form.IsValid)
         {
-            MudDialog?.Close(DialogResult.Ok(_version));
+            MudDialog.Close(DialogResult.Ok(_version));
         }
         else
         {
@@ -48,5 +56,5 @@
         }
     }
 
-    private void Cancel() => MudDialog?.Cancel();
+    private void Cancel() => MudDialog.Cancel();
 }

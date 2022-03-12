@@ -5,9 +5,9 @@ namespace WindowsGSM.GameServers
 {
     public class CSGO : SourceEngine
     {
-        public override string Name => "Counter-Strike: Global Offensive";
+        public override string Name => "Counter-Strike: Global Offensive Dedicated Server";
 
-        public override string ImageSource => $"/images/games/{nameof(CSGO).ToLower()}.jpg";
+        public override string ImageSource => $"/images/games/{nameof(CSGO)}.jpg";
 
         public override IConfig Config { get; set; } = new Configuration()
         {

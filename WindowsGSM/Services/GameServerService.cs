@@ -16,7 +16,6 @@ namespace WindowsGSM.Services
 {
     public class GameServerService : IHostedService, IDisposable
     {
-        // Path
         public static readonly string BasePath = Path.GetDirectoryName(Environment.ProcessPath)!;
         public static readonly string ConfigsPath = Path.Combine(BasePath, "configs");
         public static readonly string ServersPath = Path.Combine(BasePath, "servers");
@@ -27,7 +26,19 @@ namespace WindowsGSM.Services
 
         public List<IGameServer> GameServers { get; private set; } = new();
 
-        public Dictionary<Type, (string?, DateTime)> LatestVersions = new();
+        public List<IMod> Mods { get; private set; } = Assembly.GetExecutingAssembly().GetTypes()
+                .Where(x => x.GetInterfaces().Contains(typeof(IMod)))
+                .Select(x => (Activator.CreateInstance(x) as IMod)!).ToList();
+
+        public class VersionData
+        {
+            public List<string> Versions { get; set; } = new();
+
+            public DateTime DateTime { get; set; }
+        }
+
+        private readonly Dictionary<Type, VersionData> _versions = new();
+        private readonly Dictionary<Type, VersionData> _modVersions = new();
 
         private readonly ILogger<GameServerService> _logger;
         private Timer? _timer;
@@ -41,6 +52,8 @@ namespace WindowsGSM.Services
             Directory.CreateDirectory(StoragePath);
 
             InitializeGameServers();
+
+            Mods = GetSupportedMods();
         }
 
         private void InitializeGameServers()
@@ -127,6 +140,13 @@ namespace WindowsGSM.Services
             return Assembly.GetExecutingAssembly().GetTypes()
                 .Where(x => x.GetInterfaces().Contains(typeof(IGameServer)) && !x.IsAbstract)
                 .Select(x => (Activator.CreateInstance(x) as IGameServer)!).OrderBy(x => x.Name).ToList();
+        }
+
+        public List<IMod> GetSupportedMods()
+        {
+            return Assembly.GetExecutingAssembly().GetTypes()
+                .Where(x => x.GetInterfaces().Contains(typeof(IMod)))
+                .Select(x => (Activator.CreateInstance(x) as IMod)!).ToList();
         }
 
         public async Task Create(IGameServer gameServer)
@@ -279,26 +299,26 @@ namespace WindowsGSM.Services
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="gameServer"></param>
-        /// <param name="version"></param>
-        /// <returns></returns>
-        public bool TryGetLatestVersion(IGameServer gameServer, out string? version, [NotNullWhen(true)] out DateTime? lastUpdate)
+        public (List<string>, DateTime?) GetVersions(IGameServer gameServer)
         {
             Type type = gameServer.GetType();
 
-            if (LatestVersions.ContainsKey(type))
-            {
-                (version, lastUpdate) = LatestVersions[gameServer.GetType()];
-            }
-            else
-            {
-                (version, lastUpdate) = (null, null);
-            }
+            return _versions.ContainsKey(type) ? (_versions[type].Versions, _versions[type].DateTime) : (new(), null);
+        }
 
-            return version != null;
+        public (List<string>, DateTime?) GetVersions(IMod mod)
+        {
+            Type type = mod.GetType();
+
+            return _modVersions.ContainsKey(type) ? (_modVersions[type].Versions, _modVersions[type].DateTime) : (new(), null);
+        }
+
+        public (List<string>, DateTime?) GetVersions(Type modConfigType)
+        {
+            IMod mod = Mods.Where(x => x.ConfigType == modConfigType).First();
+            Type type = mod.GetType();
+
+            return _modVersions.ContainsKey(type) ? (_modVersions[type].Versions, _modVersions[type].DateTime) : (new(), null);
         }
 
         public bool TryCreateInstance(Type type, [NotNullWhen(true)] out IGameServer? gameServer)
@@ -356,11 +376,13 @@ namespace WindowsGSM.Services
         /// <exception cref="Exception"></exception>
         private IGameServer Deserialize(string json)
         {
-            Dictionary<string, object>? config = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
-
+            Dictionary<string, object> config = JsonSerializer.Deserialize<Dictionary<string, object>>(json)!;
+            
             return config?["ClassName"].ToString() switch
             {
+                nameof(CSGO) => new CSGO { Config = JsonSerializer.Deserialize<CSGO.Configuration>(json)! },
                 nameof(MCBE) => new MCBE { Config = JsonSerializer.Deserialize<MCBE.Configuration>(json)! },
+                nameof(Subsistence) => new Subsistence { Config = JsonSerializer.Deserialize<Subsistence.Configuration>(json)! },
                 nameof(TF2) => new TF2 { Config = JsonSerializer.Deserialize<TF2.Configuration>(json)! },
                 _ => throw new Exception("Invalid JSON config file"),
             };
@@ -388,12 +410,40 @@ namespace WindowsGSM.Services
             {
                 try
                 {
-                    LatestVersions[gameServer.GetType()] = (await gameServer.GetLatestVersion(), DateTime.Now);
-                    _logger.LogInformation($"GetLatestVersion {LatestVersions[gameServer.GetType()]} ({gameServer.GetType().Name})");
+                    Type type = gameServer.GetType();
+
+                    _versions[type] = new()
+                    {
+                        Versions = await gameServer.GetVersions(),
+                        DateTime = DateTime.Now,
+                    };
+
+                    _logger.LogInformation($"GetVersions {_versions[type].Versions[0]} ({type.Name})");
                 }
-                catch
+                catch (Exception e)
                 {
-                    _logger.LogError($"Fail to GetLatestVersion ({gameServer.GetType().Name})");
+                    _logger.LogError($"Fail to GetVersions ({gameServer.GetType().Name}) {e}");
+                }
+
+                if (gameServer.Config is ISourceModConfig sourceModConfig)
+                {
+                    IMod mod = Mods.Where(x => x.ConfigType == typeof(ISourceModConfig)).First();
+                    Type type = mod.GetType();
+
+                    try
+                    {
+                        _modVersions[type] = new()
+                        {
+                            Versions = await mod.GetVersions(),
+                            DateTime = DateTime.Now,
+                        };
+
+                        _logger.LogInformation($"GetVersions {_modVersions[type].Versions[0]} ({type.Name})");
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError($"Fail to GetVersions ({type.Name}) {e}");
+                    }
                 }
             }
         }

@@ -50,7 +50,7 @@ namespace WindowsGSM.GameServers
 
         public Task<string> GetLocalVersion();
 
-        public Task<string> GetLatestVersion();
+        public Task<List<string>> GetVersions();
 
         public void UpdateStatus(Status status)
         {

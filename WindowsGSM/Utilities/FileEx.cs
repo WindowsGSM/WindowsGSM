@@ -28,7 +28,19 @@ namespace WindowsGSM.Utilities
         /// <returns></returns>
         public static Task ExtractZip(string sourceArchiveFileName, string destinationDirectoryName)
         {
-            return TaskEx.Run(() => ZipFile.ExtractToDirectory(sourceArchiveFileName, destinationDirectoryName));
+            return ExtractZip(sourceArchiveFileName, destinationDirectoryName, false);
+        }
+
+        /// <summary>
+        /// Extract .zip file
+        /// </summary>
+        /// <param name="sourceArchiveFileName"></param>
+        /// <param name="destinationDirectoryName"></param>
+        /// <param name="overwriteFiles"></param>
+        /// <returns></returns>
+        public static Task ExtractZip(string sourceArchiveFileName, string destinationDirectoryName, bool overwriteFiles)
+        {
+            return TaskEx.Run(() => ZipFile.ExtractToDirectory(sourceArchiveFileName, destinationDirectoryName, overwriteFiles));
         }
 
         /// <summary>

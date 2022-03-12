@@ -94,15 +94,32 @@
             </MudTabPanel>
             <MudTabPanel Text="Update" Icon="@Icons.Filled.KeyboardDoubleArrowUp">
                 <div class="ma-6">
-                    <MudTextField T="string" Label="Local Version" Value="@_gameServer.Config.LocalVersion" />
+                    <MudText Typo="Typo.h6">@_gameServer.Name</MudText>
+                    <MudTextField T="string" Label="Local Version" Value="@_gameServer.Config.LocalVersion" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.KeyboardDoubleArrowUp" OnAdornmentClick="@((e) => Update(_gameServer))" />
 
-                    @if (GameServerService.TryGetLatestVersion(_gameServer, out string? version, out DateTime? lastUpdate))
-                    {
-                        <MudTextField T="string" Label="Latest Version" Value="@(version ?? string.Empty)" HelperText="@($"Last fetch: {lastUpdate}")" />
+                    @{
+                        (List<string> versions, DateTime? lastFetch) = GameServerService.GetVersions(_gameServer);
+
+                        <MudTextField T="string" Label="Latest Stable Version" Value="@(versions.Count > 0 ? versions[0] : string.Empty)" HelperText="@($"Last fetch: {(lastFetch.ToString() ?? "-")}")" />
                     }
-                    
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Class="mt-3" OnClick="@((e) => Update(_gameServer))">Update</MudButton>
-                </div>        
+
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@((e) => Update(_gameServer))">Update</MudButton>
+
+                    @foreach (IMod mod in GameServerService.Mods)
+                    {
+                        @if (_gameServer.Config.GetType().GetInterfaces().Contains(mod.ConfigType))
+                        {
+                            <MudText Typo="Typo.h6" Class="mt-6">@mod.Name</MudText>
+                            <MudTextField T="string" Label="Local Version" Value="@(mod.GetLocalVersion(_gameServer))" />
+
+                            (versions, lastFetch) = GameServerService.GetVersions(mod.ConfigType);
+
+                            <MudTextField T="string" Label="Latest Stable Version" Value="@(versions.Count > 0 ? versions[0] : string.Empty)" HelperText="@($"Last fetch: {(lastFetch.ToString() ?? "-")}")" />
+
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@((e) => Update(_gameServer))">Update</MudButton>
+                        }
+                    }
+                </div>
             </MudTabPanel>
 
             @if (_gameServer.Config is ISourceModConfig)

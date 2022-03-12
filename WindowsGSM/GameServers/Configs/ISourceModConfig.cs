@@ -2,6 +2,6 @@
 {
     public interface ISourceModConfig
     {
-        public SourceModConfig SourceMod { get; set; }
+        public string SourceModLocalVersion { get; set; }
     }
 }

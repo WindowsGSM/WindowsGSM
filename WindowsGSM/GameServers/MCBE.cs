@@ -57,14 +57,12 @@ namespace WindowsGSM.GameServers
             public CreateConfig Create { get; set; } = new();
         }
 
-        public string Name => "Minecraft: Bedrock Edition";
+        public string Name => "Minecraft: Bedrock Edition Server";
 
-        public string ImageSource => $"/images/games/{nameof(MCBE).ToLower()}.png";
+        public string ImageSource => $"/images/games/{nameof(MCBE)}.png";
 
         public IConfig Config { get; set; } = new Configuration();
-
         public Status Status { get; set; }
-
         public ProcessEx Process { get; set; } = new();
 
         public Task Backup()
@@ -214,7 +212,7 @@ namespace WindowsGSM.GameServers
             return Task.FromResult(Config.LocalVersion);
         }
 
-        public async Task<string> GetLatestVersion()
+        public async Task<List<string>> GetVersions()
         {
             Configuration config = (Configuration)Config;
 
@@ -241,7 +239,7 @@ namespace WindowsGSM.GameServers
             // Extract useful data from regex
             string version = matches[0].Groups[2].Value; // 1.14.21.0
 
-            return version;
+            return new() { version };
         }
     }
 }
