@@ -44,9 +44,9 @@
             }
         }
 
-        public static async Task<TResult?> Run<TResult>(Func<Task<TResult>?> function)
+        public static async Task<TResult> Run<TResult>(Func<Task<TResult>> function)
         {
-            object? result = await Task.Run<object?>(() =>
+            object result = await Task.Run<object>(() =>
             {
                 try
                 {
@@ -63,16 +63,16 @@
                 throw exception;
             }
 
-            return (TResult?)result;
+            return (TResult)result;
         }
 
-        public static async Task<TResult?> Run<TResult>(Func<TResult> function)
+        public static async Task<TResult> Run<TResult>(Func<TResult> function)
         {
-            object? result = await Task.Run<object?>(() =>
+            object result = await Task.Run<object>(() =>
             {
                 try
                 {
-                    return function();
+                    return function() ?? throw new Exception("TaskEx Error");
                 }
                 catch (Exception e)
                 {
@@ -85,7 +85,7 @@
                 throw exception;
             }
 
-            return (TResult?)result;
+            return (TResult)result;
         }
     }
 }

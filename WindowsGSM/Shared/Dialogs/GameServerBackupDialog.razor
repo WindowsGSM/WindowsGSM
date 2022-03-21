@@ -1,0 +1,27 @@
+﻿<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Filled.Backup" Class="mr-3 mb-n1" />
+            Backup server
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField Value="@GameServer?.Name" Label="Game Server" ReadOnly="true" />
+        <MudTextField Value="@GameServer?.Config.Basic.Name" Label="Name" ReadOnly="true" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Tertiary" Variant="Variant.Filled" OnClick="Submit">Backup</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter]
+    public IGameServer? GameServer { get; set; }
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    private void Cancel() => MudDialog.Cancel();
+}

@@ -4,6 +4,8 @@
 @code {
     protected override async Task OnInitializedAsync()
     {
+        // void OnInitialized() will crash idk why
+
         NavigationManager.NavigateTo("/servers");
     }
 }

@@ -6,14 +6,14 @@
 <MudContainer Class="mt-6" MaxWidth="MaxWidth.ExtraLarge">
     <MudText Typo="Typo.h3" Class="mb-4">Configuration</MudText>
     
-    @if (_gameServer == null)
+    @if (_gameServer == null || _config == null)
     {
         <MudChip Variant="Variant.Text">Unknown game server guid</MudChip>
     }
     else
     {
-        <MudTabs Elevation="2" Class="mb-4" ActivePanelIndex="@GameServerService.GameServers.FindIndex(x => x.Config.Guid == _gameServer.Config.Guid)">
-            @foreach (IGameServer gameServer in GameServerService.GameServers)
+        <MudTabs Elevation="2" Class="mb-4" ActivePanelIndex="@GameServerService.Instances.FindIndex(x => x.Config.Guid == _gameServer.Config.Guid)">
+            @foreach (IGameServer gameServer in GameServerService.Instances)
             {
                 <MudTabPanel Text="@gameServer.Config.Basic.Name" OnClick="@(() => NavigateToConfiguration(gameServer.Config.Guid))" ID="@gameServer.Config.Guid" />
             }
@@ -21,12 +21,12 @@
 
         <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Class="mt-6">
             <MudForm @ref="_form">
-                @foreach (PropertyInfo tab in _gameServer.Config.GetType().GetProperties())
+                @foreach (PropertyInfo tab in _config.GetType().GetProperties())
                 {
-                    @if (tab.TryGetCustomAttribute<TabPanelAttribute>(out TabPanelAttribute? tabPanel))
+                    @if (tab.TryGetCustomAttribute<TabPanelAttribute>(out TabPanelAttribute? tabPanel) && tabPanel.Text != "Backup")
                     {
                         <MudTabPanel Text="@tabPanel.Text">
-                            <MudFieldBuilder infos="tab.PropertyType.GetProperties()" config="tab.GetValue(_gameServer.Config)" />
+                            <MudFieldBuilder Tab="tab" Config="_config" />
                         </MudTabPanel> 
                     }
                 }
@@ -41,27 +41,38 @@
     public string GuidString { get; set; } = string.Empty;
 
     private IGameServer? _gameServer;
-    private MudForm? _form;
+    private IConfig? _config;
+    private MudForm _form = null!;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         if (Guid.TryParse(GuidString, out Guid guid))
         {
-            _gameServer = GameServerService.GameServers.Where(x => x.Config.Guid == guid).FirstOrDefault();
+            _gameServer = GameServerService.Instances.Where(x => x.Config.Guid == guid).FirstOrDefault();
+
+            if (_gameServer != null)
+            {
+                _config = await _gameServer.Config.Clone();
+            }
         }
     }
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         if (Guid.TryParse(GuidString, out Guid guid))
         {
-            _gameServer = GameServerService.GameServers.Where(x => x.Config.Guid == guid).FirstOrDefault();
+            _gameServer = GameServerService.Instances.Where(x => x.Config.Guid == guid).FirstOrDefault();
+
+            if (_gameServer != null)
+            {
+                _config = await _gameServer.Config.Clone();
+            }
         }
     }
 
     private async Task Update()
     {
-        if (_gameServer != null && _form != null)
+        if (_gameServer != null)
         {
             await _form.Validate();
 
@@ -87,8 +98,17 @@
         }
     }
 
-    private void NavigateToConfiguration(Guid guid)
+    private async Task NavigateToConfiguration(Guid guid)
     {
         NavigationManager.NavigateTo($"/servers/{guid}/configuration");
+
+        _gameServer = GameServerService.Instances.Where(x => x.Config.Guid == guid).FirstOrDefault();
+
+        if (_gameServer != null)
+        {
+            _config = await _gameServer.Config.Clone();
+        }
+
+        await InvokeAsync(StateHasChanged);
     }
 }

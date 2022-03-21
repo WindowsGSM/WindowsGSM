@@ -5,24 +5,30 @@ namespace WindowsGSM.Utilities
     public static class DirectoryEx
     {
         /// <summary>
-        /// Delete Directory
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        public static Task DeleteAsync(string path)
-        {
-            return DeleteAsync(path, false);
-        }
-
-        /// <summary>
-        /// Delete Directory
+        /// Delete directory
         /// </summary>
         /// <param name="path"></param>
         /// <param name="recursive"></param>
         /// <returns></returns>
-        public static Task DeleteAsync(string path, bool recursive)
+        public static Task DeleteAsync(string path, bool recursive = false)
         {
             return TaskEx.Run(() => Directory.Delete(path, recursive));
+        }
+
+        /// <summary>
+        /// Delete directory if exists
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="recursive"></param>
+        /// <returns></returns>
+        public static Task DeleteIfExistsAsync(string path, bool recursive = false)
+        {
+            if (Directory.Exists(path))
+            {
+                return DeleteAsync(path, recursive);
+            }
+
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -33,6 +39,7 @@ namespace WindowsGSM.Utilities
         {
             string directory = Path.Combine(GameServerService.BasePath, "temps", Guid.NewGuid().ToString());
             Directory.CreateDirectory(directory);
+
             return directory;
         }
 
@@ -62,11 +69,7 @@ namespace WindowsGSM.Utilities
                 foreach (var file in folder)
                 {
                     string targetFile = Path.Combine(targetFolder, Path.GetFileName(file));
-
-                    if (File.Exists(targetFile))
-                    {
-                        await FileEx.DeleteAsync(targetFile);
-                    }
+                    await FileEx.DeleteIfExistsAsync(targetFile);
 
                     File.Move(file, targetFile);
                 }

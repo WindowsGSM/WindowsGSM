@@ -19,11 +19,8 @@ namespace WindowsGSM.GameServers
             SteamCMD =
             {
                 Game = "csgo",
-                AppId = "730",
-                ServerAppId = "740",
+                AppId = "740",
                 Username = "anonymous",
-                CreateParameter = "+app_update 740 validate",
-                UpdateParameter = "+app_update 740",
             },
         };
     }

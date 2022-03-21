@@ -16,14 +16,20 @@ namespace WindowsGSM.GameServers
             {
                 StartParameter = "-console -game tf -ip 0.0.0.0 -port 27015 -maxplayers 24 +map cp_badlands -nocrashdialog -nohltv",
             },
+            Backup =
+            {
+                Entries =
+                {
+                    "tf\\addons",
+                    "tf\\cfg",
+                    "tf\\maps",
+                },
+            },
             SteamCMD =
             {
                 Game = "tf",
-                AppId = "440",
-                ServerAppId = "232250",
+                AppId = "232250",
                 Username = "anonymous",
-                CreateParameter = "+app_update 232250 validate",
-                UpdateParameter = "+app_update 232250",
             },
         };
     }

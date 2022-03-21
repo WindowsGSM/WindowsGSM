@@ -20,6 +20,8 @@ namespace WindowsGSM.Attributes
 
         public bool ReadOnly { get; set; }
 
+        public string Placeholder { get; set; } = string.Empty;
+
         public bool FolderBrowser { get; set; }
 
         public bool ProcessorAffinity { get; set; }

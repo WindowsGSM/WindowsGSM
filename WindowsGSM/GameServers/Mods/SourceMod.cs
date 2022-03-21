@@ -6,14 +6,13 @@ namespace WindowsGSM.GameServers.Mods
 {
     public class SourceMod : IMod
     {
-        public string Name => "SourceMod";
+        public string Name => nameof(SourceMod);
+
+        public string Description => "SourceMod (SM) is an HL2 mod which allows you to write modifications for Half-Life 2 with the Small scripting language.";
 
         public Type ConfigType => typeof(ISourceModConfig);
 
-        public string GetLocalVersion(IGameServer gameServer)
-        {
-            return ((ISourceModConfig)gameServer.Config).SourceModLocalVersion;
-        }
+        public string GetLocalVersion(IGameServer gameServer) => ((ISourceModConfig)gameServer.Config).SourceModLocalVersion;
 
         public async Task<List<string>> GetVersions()
         {
@@ -39,10 +38,68 @@ namespace WindowsGSM.GameServers.Mods
             return new List<string> { stableVersion }.Concat(versions.Select(x => x.ToString())).Distinct().ToList();
         }
 
-        public async Task Create(IGameServer gameServer, string version)
+        public async Task Install(IGameServer gameServer, string version)
+        {
+            string modFolder = ((ISteamCMDConfig)gameServer.Config).SteamCMD.Game;
+            string temporaryDirectory = await DownloadAndExtractZip(version, Path.Combine(gameServer.Config.Basic.Directory, modFolder));
+
+            // Delete temporary directory
+            await DirectoryEx.DeleteAsync(temporaryDirectory, true);
+
+            // Update version
+            ((ISourceModConfig)gameServer.Config).SourceModLocalVersion = version;
+            await gameServer.Config.Update();
+        }
+
+        public async Task Update(IGameServer gameServer, string version)
+        {
+            string temporaryDirectory = await DownloadAndExtractZip(version);
+
+            // Upgrade https://wiki.alliedmods.net/Upgrading_sourcemod
+            string modFolder = ((ISteamCMDConfig)gameServer.Config).SteamCMD.Game;
+            string newPath = Path.Combine(temporaryDirectory, "addons", "sourcemod");
+            string oldPath = Path.Combine(gameServer.Config.Basic.Directory, modFolder, "addons", "sourcemod");
+            string[] folders = { "bin", "extensions", "gamedata", "plugins", "translations" };
+
+            // Overwrite the folders
+            foreach (string folder in folders)
+            {
+                await DirectoryEx.MoveAsync(Path.Combine(newPath, folder), Path.Combine(oldPath, folder), true);
+            }
+
+            // Delete temporary directory
+            await DirectoryEx.DeleteAsync(temporaryDirectory, true);
+
+            // Update version
+            ((ISourceModConfig)gameServer.Config).SourceModLocalVersion = version;
+            await gameServer.Config.Update();
+        }
+
+        public async Task Delete(IGameServer gameServer)
+        {
+            string modFolder = ((ISteamCMDConfig)gameServer.Config).SteamCMD.Game;
+            string modPath = Path.Combine(gameServer.Config.Basic.Directory, modFolder);
+
+            // Delete folders and files
+            await DirectoryEx.DeleteIfExistsAsync(Path.Combine(modPath, "addons", "sourcemod"), true);
+            await FileEx.DeleteIfExistsAsync(Path.Combine(modPath, "addons", "metamod", "sourcemod.vdf"));
+            await DirectoryEx.DeleteIfExistsAsync(Path.Combine(modPath, "cfg", "sourcemod"), true);
+
+            // Update version
+            ((ISourceModConfig)gameServer.Config).SourceModLocalVersion = string.Empty;
+            await gameServer.Config.Update();
+        }
+
+        /// <summary>
+        /// Download and Extract Zip
+        /// </summary>
+        /// <param name="version"></param>
+        /// <param name="extractPath"></param>
+        /// <returns>Temporary directory</returns>
+        private static async Task<string> DownloadAndExtractZip(string version, string? extractPath = null)
         {
             using HttpClient httpClient = new();
-            
+
             // Get latest windows sourcemod version file name
             using HttpResponseMessage response = await httpClient.GetAsync($"https://sm.alliedmods.net/smdrop/{version}/sourcemod-latest-windows");
             response.EnsureSuccessStatusCode();
@@ -59,30 +116,10 @@ namespace WindowsGSM.GameServers.Mods
                 await response2.Content.CopyToAsync(fs);
             }
 
-            // Extract and delete zip
-            string modFolder = ((ISteamCMDConfig)gameServer.Config).SteamCMD.Game;
-            await FileEx.ExtractZip(zipPath, Path.Combine(gameServer.Config.Basic.Directory, modFolder), true);
-            await DirectoryEx.DeleteAsync(temporaryDirectory, true);
+            // Extract zip
+            await FileEx.ExtractZip(zipPath, extractPath ?? temporaryDirectory, true);
 
-            ((ISourceModConfig)gameServer.Config).SourceModLocalVersion = version;
-            await gameServer.Config.Update();
-        }
-
-        public Task Update(IGameServer gameServer, string version)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Delete(IGameServer gameServer)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Exists(IGameServer gameServer)
-        {
-            string modFolder = ((ISteamCMDConfig)gameServer.Config).SteamCMD.Game;
-
-            return Directory.Exists(Path.Combine(gameServer.Config.Basic.Directory, modFolder, "addons", "sourcemod", "bin"));
+            return temporaryDirectory;
         }
     }
 }

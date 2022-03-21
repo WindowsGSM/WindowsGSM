@@ -14,10 +14,18 @@
         <MudButton Variant="Variant.Filled" DisableElevation="true" Color="Color.Primary" Class="ml-3">About</MudButton>*@
         <MudSpacer />
         <MudDivider Vertical="true" FlexItem="true" Class="ma-4" />
-        <MudIconButton Icon="@Icons.Custom.Brands.Discord" Color="Color.Inherit" Link="https://discord.gg/8nxm6zAtc7" Target="_blank" />
-        <MudIconButton Icon="@Icons.Custom.Brands.YouTube" Color="Color.Inherit" Link="https://www.youtube.com/channel/UCgZ-q9VaVOcv5Yi4tkNd7pA" Target="_blank" />
-        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/WindowsGSM/WindowsGSM" Target="_blank" />
-        <MudIconButton Icon="@(_theme == _defaultTheme ? Icons.Outlined.DarkMode : Icons.Filled.LightMode)" Color="Color.Inherit" Edge="Edge.End" OnClick="@((e) => DarkMode())" />
+        <MudTooltip Text="Discord">
+            <MudIconButton Icon="@Icons.Custom.Brands.Discord" Color="Color.Inherit" Link="https://discord.gg/8nxm6zAtc7" Target="_blank" />
+        </MudTooltip>
+        <MudTooltip Text="Youtube">
+            <MudIconButton Icon="@Icons.Custom.Brands.YouTube" Color="Color.Inherit" Link="https://www.youtube.com/channel/UCgZ-q9VaVOcv5Yi4tkNd7pA" Target="_blank" />
+        </MudTooltip>
+        <MudTooltip Text="Github Repository">
+            <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/WindowsGSM/WindowsGSM/tree/main" Target="_blank" />
+        </MudTooltip>
+        <MudTooltip Text="@($"Switch to {(_theme == _defaultTheme ? "Dark" : "Light")} Theme")">
+            <MudIconButton Icon="@(_theme == _defaultTheme ? Icons.Outlined.DarkMode : Icons.Filled.LightMode)" Color="Color.Inherit" Edge="Edge.End" OnClick="@((e) => DarkMode())" />
+        </MudTooltip>
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" Elevation="2">
         <MudDrawerHeader>
@@ -28,7 +36,7 @@
             <MudNavLink Href="/servers" Match="NavLinkMatch.All" Icon="@Icons.Filled.Storage">Servers</MudNavLink>
 
             <MudNavGroup Title="Control Panel" Icon="@Icons.Filled.DisplaySettings" Expanded="true" Class="mt-3">
-                @foreach (IGameServer gameServer in gameServerService.GameServers)
+                @foreach (IGameServer gameServer in gameServerService.Instances)
                 {
                     <MudNavLink Href="@($"/servers/{gameServer.Config.Guid}")">@gameServer.Config.Basic.Name</MudNavLink>
                 }
@@ -56,14 +64,7 @@
 
     private void DarkMode()
     {
-        if (_theme == _defaultTheme)
-        {
-            _theme = _darkTheme;
-        }
-        else
-        {
-            _theme = _defaultTheme;
-        }
+        _theme = _theme == _defaultTheme ? _darkTheme : _defaultTheme;
     }
 
     private MudTheme _theme = new();

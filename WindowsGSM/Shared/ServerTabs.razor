@@ -2,7 +2,7 @@
 @inject GameServerService GameServerService
 
 <MudTabs Elevation="2" Class="mb-4">
-    @foreach (IGameServer gameServer in GameServerService.GameServers)
+    @foreach (IGameServer gameServer in GameServerService.Instances)
     {
          <MudTabPanel Text="@gameServer.Config.Basic.Name" OnClick="@(() => NavigateToControlPanel(gameServer.Config.Guid))" />
     }

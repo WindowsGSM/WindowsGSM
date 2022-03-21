@@ -8,6 +8,9 @@ namespace WindowsGSM.GameServers.Components
 {
     public static class SteamCMD
     {
+        /// <summary>
+        /// SteamCMD start path
+        /// </summary>
         public static readonly string FileName = Path.Combine(GameServerService.BasePath, "steamcmd", "steamcmd.exe");
 
         /// <summary>
@@ -23,14 +26,36 @@ namespace WindowsGSM.GameServers.Components
             SteamCMDConfig steamCMD = ((ISteamCMDConfig)gameServer.Config).SteamCMD;
             @string.Append($"+login {(steamCMD.Username == "anonymous" ? "anonymous" : $"\"{steamCMD.Username}\" \"{steamCMD.Password}\"")} ");
 
+
             // TODO: maFile 
+
+
+            if (steamCMD.AppId == "90")
+            {
+                @string.Append($"+app_set_config \"{steamCMD.AppId}\" mod \"{steamCMD.Game}\" ");
+            }
 
             // Install 4 more times if hlds.exe (steamCMD.AppId = 90)
             int count = steamCMD.AppId == "90" ? 4 : 1;
 
             for (int i = 0; i < count; i++)
             {
-                @string.Append($"{(gameServer.Status == Status.Creating ? steamCMD.CreateParameter : steamCMD.UpdateParameter)} ");
+                @string.Append($"+app_update \"{steamCMD.AppId}\" ");
+
+                if (!string.IsNullOrWhiteSpace(steamCMD.BetaName))
+                {
+                    @string.Append($"-beta \"{steamCMD.BetaName}\" ");
+
+                    if (!string.IsNullOrWhiteSpace(steamCMD.BetaPassword))
+                    {
+                        @string.Append($"-betapassword \"{steamCMD.BetaPassword}\" ");
+                    }
+                }
+
+                if ((gameServer.Status == Status.Installing && steamCMD.ValidateOnCreate) || (gameServer.Status == Status.Updating && steamCMD.ValidateOnUpdate))
+                {
+                    @string.Append("validate ");
+                }
             }
 
             @string.Append("+quit");
@@ -45,7 +70,7 @@ namespace WindowsGSM.GameServers.Components
         /// <param name="updateLocalVersion"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static async Task Start(IGameServer gameServer, bool updateLocalVersion = false)
+        public static async Task Start(IGameServer gameServer, bool updateLocalVersion = true)
         {
             SteamCMDConfig steamCMD = ((ISteamCMDConfig)gameServer.Config).SteamCMD;
 
@@ -82,7 +107,7 @@ namespace WindowsGSM.GameServers.Components
             }
             else if (steamCMD.ConsoleMode == "Redirect Standard Input/Output")
             {
-                gameServer.Process.UseRedirectStandard(new()
+                gameServer.Process.UseRedirect(new()
                 {
                     WorkingDirectory = directory,
                     FileName = steamCMD.Path,
@@ -116,7 +141,7 @@ namespace WindowsGSM.GameServers.Components
 
             if (updateLocalVersion)
             {
-                gameServer.Config.LocalVersion = await gameServer.GetLocalVersion();
+                gameServer.Config.LocalVersion = await GetLocalBuildId(gameServer);
                 await gameServer.Config.Update();
             }
         }
@@ -130,9 +155,8 @@ namespace WindowsGSM.GameServers.Components
         public static async Task<string> GetLocalBuildId(IGameServer gameServer)
         {
             SteamCMDConfig steamCMD = ((ISteamCMDConfig)gameServer.Config).SteamCMD;
-            string appId = steamCMD.ServerAppId;
 
-            string content = await File.ReadAllTextAsync(Path.Combine(gameServer.Config.Basic.Directory, "steamapps", $"appmanifest_{appId}.acf"));
+            string content = await File.ReadAllTextAsync(Path.Combine(gameServer.Config.Basic.Directory, "steamapps", $"appmanifest_{steamCMD.AppId}.acf"));
             Regex regex = new("\"buildid\"\\s+\"(\\S*)\"");
             MatchCollection matches = regex.Matches(content);
 
@@ -172,13 +196,17 @@ namespace WindowsGSM.GameServers.Components
         public static async Task<string> GetAppInfoJson(IGameServer gameServer)
         {
             SteamCMDConfig steamCMD = ((ISteamCMDConfig)gameServer.Config).SteamCMD;
-            string appId = steamCMD.ServerAppId;
 
             using HttpClient httpClient = new();
-            using HttpResponseMessage response = await httpClient.GetAsync($"https://raw.githubusercontent.com/WindowsGSM/SteamAppInfo/main/AppInfo/{appId}.json");
+            using HttpResponseMessage response = await httpClient.GetAsync($"https://raw.githubusercontent.com/WindowsGSM/SteamAppInfo/main/AppInfo/{steamCMD.AppId}.json");
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadAsStringAsync();
+        }
+
+        public static async Task<List<string>> GetVersions(IGameServer gameServer)
+        {
+            return new() { await GetPublicBuildId(gameServer) };
         }
     }
 }

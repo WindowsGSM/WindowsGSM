@@ -1,0 +1,149 @@
+﻿@inject GameServerService GameServerService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" Style="padding-right: 12px; max-height: 500px; overflow-y: scroll">
+            @if (GameServer == null)
+            {
+                <MudSelect Value="@_gameServer" Label="Select the game server" HelperText="@($"{_gameServers.Count} game servers supported")" Variant="Variant.Outlined" T="IGameServer" ValueChanged="GameServerValueChanged">
+                    @foreach (IGameServer gameServer in _gameServers)
+                    {
+                        <MudSelectItem Value="@gameServer">
+                            <div class="d-flex align-center">
+                                <img src="@gameServer.ImageSource" height="24" class="mr-2 rounded-lg" /> @gameServer.Name
+                            </div>
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            }
+
+            <MudTextField @bind-Value="@_basic.Name" Label="Name" HelperText="Server Display Name (You can change it later)"></MudTextField>
+            <MudTextField @bind-Value="@_basic.Directory" Label="Directory" HelperText="Server Create Directory"></MudTextField>
+
+            <MudSelect @ref="_select" T="string" Value="@_version" Label="Version" HelperText="@($"{_versions.Count} versions available")">
+                @if (_versions.Count <= 0)
+                {
+                    <MudSelectItem Value="@(" ")">
+                        <MudChip Size="Size.Small" Variant="Variant.Outlined" Color="Color.Success" Class="mb-0" Style="margin-top: -3px">Latest Stable</MudChip>
+                    </MudSelectItem>
+                }
+                else
+                {
+                    @foreach (string version in _versions)
+                    {
+                        <MudSelectItem Value="@version">
+                            @version 
+
+                            @if (version == _versions.FirstOrDefault())
+                            {
+                                <MudChip Size="Size.Small" Variant="Variant.Outlined" Color="Color.Success" Class="mb-0 ml-3" Style="margin-top: -3px">Latest Stable</MudChip>
+                            }
+                        </MudSelectItem>
+                    }
+                }
+            </MudSelect>
+ 
+           
+            @{
+                List<PropertyInfo> tabs = new();
+
+                if (_gameServer.Config.TryGetPropertyInfo("Create", out PropertyInfo? createTab))
+                {
+                    tabs.Add(createTab);
+                }
+
+                if (_gameServer.Config.TryGetPropertyInfo("SteamCMD", out PropertyInfo? steamCMDTab))
+                {
+                    tabs.Add(steamCMDTab);
+                }
+
+                @foreach (PropertyInfo tab in tabs)
+                {
+                    <MudFieldBuilder Tab="tab" Config="_gameServer.Config" />
+                }
+            }
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Install</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    public MudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter]
+    public IGameServer? GameServer { get; set; }
+
+    private List<IGameServer> _gameServers = new();
+    private IGameServer _gameServer = null!;
+    private MudSelect<string>? _select;
+    private List<string> _versions = new();
+    private string _version = string.Empty;
+    private Guid _guid = Guid.NewGuid();
+    private BasicConfig _basic = new();
+    private MudForm _form = null!;
+
+    protected override void OnInitialized()
+    {
+        _gameServers = GameServerService.GameServers;
+        _gameServer = GameServer ?? _gameServers[0]; // TODO: Get last selected game server using local storage maybe
+        _guid = GameServer == null ? Guid.NewGuid() : GameServer.Config.Guid;
+        _basic = GameServer == null ? GameServerService.GetNewBasicConfig(_guid) : GameServer.Config.Basic;
+        _versions = GameServerService.GetVersions(_gameServer).Item1;
+        _version = _versions.FirstOrDefault() ?? " ";
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (_select != null)
+            {
+                await _select.SelectAsync();
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+
+    private async Task GameServerValueChanged(IGameServer gameServer)
+    {
+        _gameServer = gameServer;
+        _versions = GameServerService.GetVersions(_gameServer).Item1;
+        _version = _versions.FirstOrDefault() ?? " ";
+
+        if (_select != null)
+        {
+            await _select.SelectAsync(); 
+        }
+    }
+
+    private async Task Submit()
+    {
+        await _form.Validate();
+
+        if (_form.IsValid)
+        {
+            _gameServer.Config.Basic = _basic;
+            _gameServer.Config.Guid = _guid;
+
+            Dictionary<string, object> data = new();
+            data.Add("GameServer", _gameServer);
+            data.Add("Version", _version);
+
+            MudDialog.Close(DialogResult.Ok(data));
+        }
+        else
+        {
+            foreach (string error in _form.Errors)
+            {
+                Snackbar.Add($"Install Server: {error}", Severity.Error);
+            }
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

@@ -21,6 +21,21 @@ namespace WindowsGSM.Utilities
         }
 
         /// <summary>
+        /// Delete file if exists
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static Task DeleteIfExistsAsync(string path)
+        {
+            if (File.Exists(path))
+            {
+                return TaskEx.Run(() => File.Delete(path));
+            }
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
         /// Extract .zip file
         /// </summary>
         /// <param name="sourceArchiveFileName"></param>

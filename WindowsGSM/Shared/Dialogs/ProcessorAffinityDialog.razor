@@ -9,7 +9,7 @@
         @for (int i = 0; i < _processors.Length; i++)
         {
             int index = i;
-            <MudCheckBox T="bool" Checked="_processors[index]" Label=@($"CPU {index}") CheckedChanged=@((e) => CheckedChanged(index, e)) Color="Color.Primary" Class="mr-1" />
+            <MudCheckBox T="bool" Checked="@_processors[i]" Label=@($"CPU {i}") CheckedChanged=@((e) => CheckedChanged(index, e)) Color="Color.Primary" Class="mr-1" />
         }
     </DialogContent>
     <DialogActions>
@@ -22,7 +22,7 @@
 
 @code {
     [CascadingParameter]
-    MudDialogInstance? MudDialog { get; set; }
+    MudDialogInstance MudDialog { get; set; } = null!;
 
     [Parameter]
     public uint Affinity { get; set; }
@@ -32,8 +32,8 @@
     private bool[] _processors { get; set; } = new bool[_processorCount];
     private bool _selectAll { get; set; }
 
-    private void Cancel() => MudDialog?.Cancel();
-    private void Submit() => MudDialog?.Close(DialogResult.Ok(ProcessorAffinity.GetProcessorAffinity(_processors)));
+    private void Cancel() => MudDialog.Cancel();
+    private void Submit() => MudDialog.Close(DialogResult.Ok(ProcessorAffinity.GetProcessorAffinity(_processors)));
 
     protected override void OnInitialized()
     {

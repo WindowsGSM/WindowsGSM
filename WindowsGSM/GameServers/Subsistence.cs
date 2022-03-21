@@ -1,6 +1,7 @@
 ﻿using WindowsGSM.Attributes;
 using WindowsGSM.GameServers.Components;
 using WindowsGSM.GameServers.Configs;
+using WindowsGSM.GameServers.Protocols;
 using WindowsGSM.Utilities;
 
 namespace WindowsGSM.GameServers
@@ -10,7 +11,7 @@ namespace WindowsGSM.GameServers
         public class StartConfig : IStartConfig
         {
             [TextField(Label = "Start Path", Required = true)]
-            public string StartPath { get; set; } = "Binaries/Win64/UDK.exe";
+            public string StartPath { get; set; } = "Binaries\\Win64\\UDK.exe";
 
             [TextField(Label = "Start Parameter")]
             public string StartParameter { get; set; } = "server coldmap1?steamsockets -log";
@@ -20,7 +21,7 @@ namespace WindowsGSM.GameServers
             public string ConsoleMode { get; set; } = "Windowed";
         }
 
-        public class Configuration : IConfig, ISteamCMDConfig
+        public class Configuration : IConfig, ISteamCMDConfig, IProtocolConfig
         {
             public string LocalVersion { get; set; } = string.Empty;
 
@@ -34,41 +35,53 @@ namespace WindowsGSM.GameServers
             [TabPanel(Text = "Advanced")]
             public AdvancedConfig Advanced { get; set; } = new();
 
+            [TabPanel(Text = "Backup")]
+            public BackupConfig Backup { get; set; } = new()
+            {
+                Entries =
+                {
+                    "UDKGame"
+                },
+            };
+
             [TabPanel(Text = "Start")]
             public StartConfig Start { get; set; } = new();
 
             [TabPanel(Text = "SteamCMD")]
             public SteamCMDConfig SteamCMD { get; set; } = new()
             {
-                AppId = "418030",
-                ServerAppId = "1362640",
+                AppId = "1362640",
                 Username = "anonymous",
-                CreateParameter = "+app_update 1362640 validate",
-                UpdateParameter = "+app_update 1362640",
             };
+
+            [TabPanel(Text = "Protocol")]
+            public ProtocolConfig Protocol { get; set; } = new();
         }
 
         public string Name => "Subsistence Dedicated Server";
 
         public string ImageSource => $"/images/games/{nameof(Subsistence)}.jpg";
 
+        public IProtocol? Protocol => new SourceProtocol();
+
         public IConfig Config { get; set; } = new Configuration();
+
         public Status Status { get; set; }
+
         public ProcessEx Process { get; set; } = new();
 
-        public Task Backup()
+        public Task<List<string>> GetVersions() => SteamCMD.GetVersions(this);
+
+        public async Task Install(string version)
         {
-            throw new NotImplementedException();
+            await SteamCMD.Start(this);
+
+            // Once downloaded, the app needs to be run once to generate the UDK*.ini files
+            await Start();
+            await Stop();
         }
 
-        public Task Restore()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Create() => SteamCMD.Start(this, updateLocalVersion: true);
-
-        public Task Update() => SteamCMD.Start(this, updateLocalVersion: true);
+        public Task Update(string version) => SteamCMD.Start(this);
 
         public Task Start()
         {
@@ -95,9 +108,5 @@ namespace WindowsGSM.GameServers
                 throw new Exception("Process fail to stop");
             }
         }
-
-        public Task<string> GetLocalVersion() => SteamCMD.GetLocalBuildId(this);
-
-        public async Task<List<string>> GetVersions() => new() { await SteamCMD.GetPublicBuildId(this) };
     }
 }

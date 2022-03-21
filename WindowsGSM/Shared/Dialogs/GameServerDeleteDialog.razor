@@ -1,14 +1,14 @@
 ﻿<MudDialog>
     <TitleContent>
         <MudText Typo="Typo.h6">
-            <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Class="mr-3 mb-n1"/>
+            <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Class="mr-3 mb-n1" />
             Delete server
         </MudText>
     </TitleContent>
     <DialogContent>
-        <MudTextField Value="@GameServer?.Name" Label="Game Server" ReadOnly="true"/>
-        <MudTextField Value="@GameServer?.Config.Basic.Name" Label="Name" ReadOnly="true"/>
-        <MudTextField Value="@GameServer?.Config.Basic.Directory" Label="Directory" ReadOnly="true"/>
+        <MudTextField Value="@GameServer?.Name" Label="Game Server" ReadOnly="true" />
+        <MudTextField Value="@GameServer?.Config.Basic.Name" Label="Name" ReadOnly="true" />
+        <MudTextField Value="@GameServer?.Config.Basic.Directory" Label="Directory" ReadOnly="true" />
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
@@ -18,11 +18,11 @@
 
 @code {
     [CascadingParameter]
-    MudDialogInstance? MudDialog { get; set; }
+    MudDialogInstance MudDialog { get; set; } = null!;
 
     [Parameter]
     public IGameServer? GameServer { get; set; }
 
-    void Submit() => MudDialog?.Close(DialogResult.Ok(true));
-    private void Cancel() => MudDialog?.Cancel();
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    private void Cancel() => MudDialog.Cancel();
 }

@@ -1,11 +1,90 @@
-﻿
+﻿@* In Dev *@
 
 <MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            Browse For Folder
+        </MudText>
+    </TitleContent>
     <DialogContent>
-        Test
+        <MudIconButton Icon="@Icons.Filled.ArrowBack" OnClick=@((e) => Back()) Disabled="@(_currentPathIndex <= 0)"></MudIconButton>
+        <MudIconButton Icon="@Icons.Filled.ArrowForward" OnClick=@((e) => Forward()) Disabled="@(_currentPathIndex > _pathHistories.Count)"></MudIconButton>
+
+        <MudField Variant="Variant.Outlined" InnerPadding="false" Class="mb-3">
+            @foreach ((string, string) item in _items)
+            {
+                <MudLink @onclick=@((e) => AddHistory(item.Item2))>@item.Item1</MudLink><MudText Typo="Typo.body1" Inline="true">\</MudText>
+            }
+        </MudField>
+
+        <div style="height: 500px; overflow-y: scroll">
+            <MudTreeView @bind-SelectedValue="_selectedFolder" Hover="true">
+                @foreach (string folder in _folders)
+                {
+                    <MudTreeViewItem Selected="true" Value="@Path.GetFileName(folder)" Tag="@folder" Icon="@Icons.Filled.Folder" IconColor="Color.Warning" @ondblclick=@((e) => AddHistory(folder)) />
+                }
+            </MudTreeView>
+        </div>
+
+        <MudTextField Value="Path.GetFileName(_selectedFolder)" HelperText="@_selectedFolder" Label="Folder"></MudTextField>
     </DialogContent>
+    <DialogActions>
+        <MudSpacer/>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit" Disabled="@(string.IsNullOrWhiteSpace(_selectedFolder))">Select Folder</MudButton>
+    </DialogActions>
 </MudDialog>
 
 @code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; } = null!;
 
+    [Parameter]
+    public IConfig Config { get; set; } = null!;
+
+    [Parameter]
+    public string DefaultDirectory { get; set; } = null!;
+
+    private List<string> _pathHistories = new();
+    private int _currentPathIndex = -1;
+
+    private List<(string, string)> _items = new();
+    private string _selectedFolder { get; set; } = string.Empty;
+    private List<string> _folders = new();
+
+    private void Cancel() => MudDialog.Cancel();
+    private void Submit() => MudDialog.Close();
+
+    protected override async Task OnInitializedAsync()
+    {
+        AddHistory(Directory.GetParent(DefaultDirectory).FullName);
+        _selectedFolder = Path.GetFileName(DefaultDirectory);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void AddHistory(string path)
+    {
+        _pathHistories = _pathHistories.Take(++_currentPathIndex).ToList();
+        _pathHistories.Add(path);
+        ChangeDirectory();
+    }
+
+    private void ChangeDirectory()
+    {
+        _folders = Directory.GetDirectories(_pathHistories[_currentPathIndex], "*", SearchOption.TopDirectoryOnly).ToList();
+        List<string> names = _pathHistories[_currentPathIndex].Split("\\").ToList();
+        _items = names.Select((x, i) => (x, string.Join("\\", names.Take(i + 1)))).ToList();
+    }
+
+    private void Back()
+    {
+        _currentPathIndex = _currentPathIndex > 0 ? _currentPathIndex - 1 : _currentPathIndex;
+        ChangeDirectory();
+    }
+
+    private void Forward()
+    {
+        _currentPathIndex = _currentPathIndex < _pathHistories.Count - 1 ? _currentPathIndex + 1 : _currentPathIndex;
+        ChangeDirectory();
+    }
 }

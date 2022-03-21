@@ -18,6 +18,15 @@ namespace WindowsGSM.GameServers.Configs
 
         public AdvancedConfig Advanced { get; set; }
 
+        public BackupConfig Backup { get; set; }
+
+        public bool Exists()
+        {
+            string path = Path.Combine(GameServerService.ConfigsPath, $"{Guid}.json");
+           
+            return File.Exists(path);
+        }
+
         public Task Update()
         {
             string path = Path.Combine(GameServerService.ConfigsPath, $"{Guid}.json");
@@ -31,6 +40,13 @@ namespace WindowsGSM.GameServers.Configs
             string path = Path.Combine(GameServerService.ConfigsPath, $"{Guid}.json");
 
             return FileEx.DeleteAsync(path);
+        }
+
+        public async Task<IConfig> Clone()
+        {
+            string path = Path.Combine(GameServerService.ConfigsPath, $"{Guid}.json");
+
+            return (IConfig)JsonSerializer.Deserialize(await File.ReadAllTextAsync(path), GetType())!;
         }
 
         public bool TryGetPropertyInfo(string memberName, [NotNullWhen(true)] out PropertyInfo? tab)

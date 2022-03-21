@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Reflection;
 using System.Text.Json;
 using WindowsGSM.Extensions;
@@ -10,6 +7,7 @@ using WindowsGSM.GameServers;
 using WindowsGSM.GameServers.Components;
 using WindowsGSM.GameServers.Configs;
 using WindowsGSM.GameServers.Mods;
+using WindowsGSM.GameServers.Protocols;
 using WindowsGSM.Utilities;
 
 namespace WindowsGSM.Services
@@ -17,6 +15,7 @@ namespace WindowsGSM.Services
     public class GameServerService : IHostedService, IDisposable
     {
         public static readonly string BasePath = Path.GetDirectoryName(Environment.ProcessPath)!;
+        public static readonly string BackupsPath = Path.Combine(BasePath, "backups");
         public static readonly string ConfigsPath = Path.Combine(BasePath, "configs");
         public static readonly string ServersPath = Path.Combine(BasePath, "servers");
         public static readonly string StoragePath = Path.Combine(BasePath, "storage");
@@ -24,11 +23,15 @@ namespace WindowsGSM.Services
         public static event Action? GameServersHasChanged;
         public static void InvokeGameServersHasChanged() => GameServersHasChanged?.Invoke();
 
-        public List<IGameServer> GameServers { get; private set; } = new();
+        public List<IGameServer> Instances { get; private set; } = new();
+
+        public List<IGameServer> GameServers => Assembly.GetExecutingAssembly().GetTypes()
+            .Where(x => x.GetInterfaces().Contains(typeof(IGameServer)) && !x.IsAbstract)
+            .Select(x => (Activator.CreateInstance(x) as IGameServer)!).OrderBy(x => x.Name).ToList();
 
         public List<IMod> Mods { get; private set; } = Assembly.GetExecutingAssembly().GetTypes()
-                .Where(x => x.GetInterfaces().Contains(typeof(IMod)))
-                .Select(x => (Activator.CreateInstance(x) as IMod)!).ToList();
+            .Where(x => x.GetInterfaces().Contains(typeof(IMod)) && !x.IsAbstract)
+            .Select(x => (Activator.CreateInstance(x) as IMod)!).ToList();
 
         public class VersionData
         {
@@ -39,24 +42,24 @@ namespace WindowsGSM.Services
 
         private readonly Dictionary<Type, VersionData> _versions = new();
         private readonly Dictionary<Type, VersionData> _modVersions = new();
+        private readonly Dictionary<Type, IResponse> _responses = new();
 
         private readonly ILogger<GameServerService> _logger;
-        private Timer? _timer;
+        private Timer? _versionsTimer, _protocolTimer;
 
         public GameServerService(ILogger<GameServerService> logger)
         {
             _logger = logger;
 
+            Directory.CreateDirectory(BackupsPath);
             Directory.CreateDirectory(ConfigsPath);
             Directory.CreateDirectory(ServersPath);
             Directory.CreateDirectory(StoragePath);
 
-            InitializeGameServers();
-
-            Mods = GetSupportedMods();
+            InitializeInstances();
         }
 
-        private void InitializeGameServers()
+        private void InitializeInstances()
         {
             // Load serverGuids.json
             string path = Path.Combine(StoragePath, "serverGuids.json");
@@ -69,16 +72,16 @@ namespace WindowsGSM.Services
 
                     if (File.Exists(configPath) && TryDeserialize(File.ReadAllText(configPath), out IGameServer? gameServer))
                     {
-                        AddGameServer(gameServer);
+                        AddInstance(gameServer);
                     }
                 }
             }
 
             foreach (string configPath in Directory.GetFiles(ConfigsPath, "*.json", SearchOption.TopDirectoryOnly))
             {
-                if (TryDeserialize(File.ReadAllText(configPath), out IGameServer? gameServer) && !GameServers.Select(x => x.Config.Guid).Contains(gameServer.Config.Guid))
+                if (TryDeserialize(File.ReadAllText(configPath), out IGameServer? gameServer) && !Instances.Select(x => x.Config.Guid).Contains(gameServer.Config.Guid))
                 {
-                    AddGameServer(gameServer);
+                    AddInstance(gameServer);
                 }
             }
 
@@ -88,22 +91,24 @@ namespace WindowsGSM.Services
         private void UpdateServerGuidsJson()
         {
             string path = Path.Combine(StoragePath, "serverGuids.json");
-            string contents = JsonSerializer.Serialize(GameServers.Select(x => x.Config.Guid.ToString()).Distinct(), new JsonSerializerOptions { WriteIndented = true });
+            string contents = JsonSerializer.Serialize(Instances.Select(x => x.Config.Guid.ToString()).Distinct(), new JsonSerializerOptions { WriteIndented = true });
 
             File.WriteAllText(path, contents);
         }
 
-        private void AddGameServer(IGameServer gameServer)
+        private void AddInstance(IGameServer gameServer)
         {
+            Instances.Add(gameServer);
+
+            gameServer.Status = string.IsNullOrEmpty(gameServer.Config.LocalVersion) ? Status.NotInstalled : Status.Stopped;
             gameServer.Process.Exited += async (exitCode) => await OnGameServerExited(gameServer);
-            GameServers.Add(gameServer);
-            UpdateServerGuidsJson();
+
             GameServersHasChanged?.Invoke();
         }
 
         private async Task OnGameServerExited(IGameServer gameServer)
         {
-            if (!gameServer.Status.IsRunning() && gameServer.Config.Advanced.AutoRestart)
+            if (!gameServer.Status.IsRunning() && gameServer.Config.Advanced.RestartOnCrash)
             {
                 gameServer.UpdateStatus(Status.Restarting);
 
@@ -123,8 +128,8 @@ namespace WindowsGSM.Services
         /// <returns></returns>
         public BasicConfig GetNewBasicConfig(Guid guid)
         { 
-            string[] names = GameServers.Select(x => x.Config.Basic.Name).ToArray();
-            int number = GameServers.Count;
+            string[] names = Instances.Select(x => x.Config.Basic.Name).ToArray();
+            int number = Instances.Count;
 
             while (names.Contains($"WindowsGSM - Server #{++number}"));
 
@@ -135,74 +140,59 @@ namespace WindowsGSM.Services
             };
         }
 
-        public List<IGameServer> GetSupportedGameServers()
+        public async Task Install(IGameServer gameServer, string version)
         {
-            return Assembly.GetExecutingAssembly().GetTypes()
-                .Where(x => x.GetInterfaces().Contains(typeof(IGameServer)) && !x.IsAbstract)
-                .Select(x => (Activator.CreateInstance(x) as IGameServer)!).OrderBy(x => x.Name).ToList();
+            if (!gameServer.Config.Exists())
+            {
+                Directory.CreateDirectory(gameServer.Config.Basic.Directory);
+
+                await gameServer.Config.Update();
+
+                AddInstance(gameServer);
+                UpdateServerGuidsJson();
+            }
+
+            gameServer.UpdateStatus(Status.Installing);
+
+            try
+            { 
+                await gameServer.Install(version);
+            }
+            catch
+            {
+                gameServer.UpdateStatus(Status.NotInstalled);
+                throw;
+            }
+
+            gameServer.UpdateStatus(Status.Stopped);
         }
 
-        public List<IMod> GetSupportedMods()
+        public async Task Update(IGameServer gameServer, string version)
         {
-            return Assembly.GetExecutingAssembly().GetTypes()
-                .Where(x => x.GetInterfaces().Contains(typeof(IMod)))
-                .Select(x => (Activator.CreateInstance(x) as IMod)!).ToList();
-        }
-
-        public async Task Create(IGameServer gameServer)
-        {
-            Directory.CreateDirectory(gameServer.Config.Basic.Directory);
-
-            await gameServer.Config.Update();
-
-            AddGameServer(gameServer);
+            gameServer.UpdateStatus(Status.Updating);
 
             try
             {
-                gameServer.UpdateStatus(Status.Creating);
-
-                await gameServer.Create();
-
-                gameServer.UpdateStatus(Status.Stopped);
+                await gameServer.Update(version);
             }
             catch
             {
                 gameServer.UpdateStatus(Status.Stopped);
                 throw;
             }
-        }
 
-        public async Task Update(IGameServer gameServer)
-        {
-            try
-            {
-                gameServer.UpdateStatus(Status.Updating);
-
-                await gameServer.Update();
-
-                gameServer.UpdateStatus(Status.Stopped);
-            }
-            catch
-            {
-                gameServer.UpdateStatus(Status.Stopped);
-                throw;
-            }
+            gameServer.UpdateStatus(Status.Stopped);
         }
 
         public async Task Delete(IGameServer gameServer)
         {
+            gameServer.UpdateStatus(Status.Deleting);
+
             try
             {
-                gameServer.UpdateStatus(Status.Deleting);
-
-                if (Directory.Exists(gameServer.Config.Basic.Directory))
-                {
-                    await DirectoryEx.DeleteAsync(gameServer.Config.Basic.Directory, true);
-                }
-                
+                await DirectoryEx.DeleteIfExistsAsync(gameServer.Config.Basic.Directory, true);
                 await gameServer.Config.Delete();
-
-                GameServers.Remove(gameServer);
+                Instances.Remove(gameServer);
                 GameServersHasChanged?.Invoke();
             }
             catch
@@ -210,6 +200,60 @@ namespace WindowsGSM.Services
                 gameServer.UpdateStatus(Status.Stopped);
                 throw;
             }
+        }
+
+        public async Task Backup(IGameServer gameServer)
+        {
+            gameServer.UpdateStatus(Status.Backuping);
+
+            try
+            {
+                await BackupRestore.PerformFullBackup(gameServer);
+            }
+            catch
+            {
+                gameServer.UpdateStatus(Status.Stopped);
+                throw;
+            }
+
+            gameServer.UpdateStatus(Status.Stopped);
+        }
+
+        public async Task Restore(IGameServer gameServer, string fileName)
+        {
+            gameServer.UpdateStatus(Status.Restoring);
+
+            try
+            {
+                await BackupRestore.PerformRestore(gameServer, fileName);
+            }
+            catch
+            {
+                gameServer.UpdateStatus(Status.Stopped);
+                throw;
+            }
+
+            gameServer.UpdateStatus(Status.Stopped);
+        }
+
+        public Task Run(IGameServer gameServer, Operation operation, string? param1 = null, IMod? mod = null)
+        {
+            return operation switch
+            {
+                Operation.Start => Start(gameServer),
+                Operation.Stop => Stop(gameServer),
+                Operation.Restart => Restart(gameServer),
+                Operation.Kill => Kill(gameServer),
+                Operation.Install => Install(gameServer, param1),
+                Operation.Update => Update(gameServer, param1),
+                Operation.Delete => Delete(gameServer),
+                Operation.Backup => Backup(gameServer),
+                Operation.Restore => Restore(gameServer, param1),
+                Operation.InstallMod => InstallMod(gameServer, mod, param1),
+                Operation.UpdateMod => UpdateMod(gameServer, mod, param1),
+                Operation.DeleteMod => DeleteMod(gameServer, mod),
+                _ => Task.CompletedTask,
+            };
         }
 
         public async Task Start(IGameServer gameServer)
@@ -222,36 +266,51 @@ namespace WindowsGSM.Services
 
                 if (gameServer.Process.Process != null)
                 {
+
 #pragma warning disable CA1416 // Validate platform compatibility
                     gameServer.Process.Process.ProcessorAffinity = (IntPtr)gameServer.Config.Advanced.ProcessorAffinity;
 #pragma warning restore CA1416 // Validate platform compatibility
                     gameServer.Process.Process.PriorityClass = ProcessPriorityClassExtensions.FromString(gameServer.Config.Advanced.ProcessPriority);
-                }
-
-                gameServer.UpdateStatus(Status.Started);
+                }     
             }
             catch
             {
                 gameServer.UpdateStatus(Status.Stopped);
                 throw;
             }
+
+            if (gameServer.Protocol != null)
+            {
+                try
+                {
+                    _responses[gameServer.GetType()] = await gameServer.Protocol.Query((IProtocolConfig)gameServer.Config);
+                }
+                catch
+                {
+                    // Fail to query the game server
+                }
+            }
+
+            gameServer.UpdateStatus(Status.Started);
         }
 
         public async Task Stop(IGameServer gameServer)
         {
+            gameServer.UpdateStatus(Status.Stopping);
+
             try
             {
-                gameServer.UpdateStatus(Status.Stopping);
-
                 await gameServer.Stop();
 
-                gameServer.UpdateStatus(Status.Stopped);
+                _responses.Remove(gameServer.GetType());
             }
             catch
             {
                 gameServer.UpdateStatus(Status.Started);
                 throw;
             }
+
+            gameServer.UpdateStatus(Status.Stopped);
         }
 
         public async Task Restart(IGameServer gameServer)
@@ -273,6 +332,8 @@ namespace WindowsGSM.Services
                     throw new Exception($"Process ID: {gameServer.Process.Id}");
                 }
 
+                _responses.Remove(gameServer.GetType());
+
                 gameServer.UpdateStatus(Status.Stopped);
             }
             catch
@@ -288,7 +349,41 @@ namespace WindowsGSM.Services
             {
                 gameServer.UpdateStatus(Status.InstallingMod);
 
-                await mod.Create(gameServer, version);
+                await mod.Install(gameServer, version);
+
+                gameServer.UpdateStatus(Status.Stopped);
+            }
+            catch
+            {
+                gameServer.UpdateStatus(Status.Stopped);
+                throw;
+            }
+        }
+
+        public async Task UpdateMod(IGameServer gameServer, IMod mod, string version)
+        {
+            try
+            {
+                gameServer.UpdateStatus(Status.UpdatingMod);
+
+                await mod.Update(gameServer, version);
+
+                gameServer.UpdateStatus(Status.Stopped);
+            }
+            catch
+            {
+                gameServer.UpdateStatus(Status.Stopped);
+                throw;
+            }
+        }
+
+        public async Task DeleteMod(IGameServer gameServer, IMod mod)
+        {
+            try
+            {
+                gameServer.UpdateStatus(Status.DeletingMod);
+
+                await mod.Delete(gameServer);
 
                 gameServer.UpdateStatus(Status.Stopped);
             }
@@ -321,31 +416,11 @@ namespace WindowsGSM.Services
             return _modVersions.ContainsKey(type) ? (_modVersions[type].Versions, _modVersions[type].DateTime) : (new(), null);
         }
 
-        public bool TryCreateInstance(Type type, [NotNullWhen(true)] out IGameServer? gameServer)
+        public IResponse? GetResponse(IGameServer gameServer)
         {
-            gameServer = Activator.CreateInstance(type) as IGameServer;
+            Type type = gameServer.GetType();
 
-            return gameServer != null;
-        }
-
-        public List<IGameServer> LoadAll()
-        {
-            List<IGameServer> gameServers = new();
-
-            foreach (string filePath in Directory.GetFiles(ConfigsPath, "*.json", SearchOption.TopDirectoryOnly))
-            {
-                if (TryDeserialize(File.ReadAllText(filePath), out IGameServer? server))
-                {
-                    gameServers.Add(server);
-                }
-            }
-
-            return gameServers;
-        }
-
-        public IGameServer Load(Guid guid)
-        {
-            return Deserialize(File.ReadAllText(Path.Combine(ConfigsPath, $"{guid}.json")));
+            return _responses.ContainsKey(type) ? _responses[type] : null;
         }
 
         /// <summary>
@@ -369,7 +444,7 @@ namespace WindowsGSM.Services
         }
 
         /// <summary>
-        /// 
+        /// Deserialize Config Json
         /// </summary>
         /// <param name="json"></param>
         /// <returns></returns>
@@ -377,41 +452,36 @@ namespace WindowsGSM.Services
         private IGameServer Deserialize(string json)
         {
             Dictionary<string, object> config = JsonSerializer.Deserialize<Dictionary<string, object>>(json)!;
-            
-            return config?["ClassName"].ToString() switch
-            {
-                nameof(CSGO) => new CSGO { Config = JsonSerializer.Deserialize<CSGO.Configuration>(json)! },
-                nameof(MCBE) => new MCBE { Config = JsonSerializer.Deserialize<MCBE.Configuration>(json)! },
-                nameof(Subsistence) => new Subsistence { Config = JsonSerializer.Deserialize<Subsistence.Configuration>(json)! },
-                nameof(TF2) => new TF2 { Config = JsonSerializer.Deserialize<TF2.Configuration>(json)! },
-                _ => throw new Exception("Invalid JSON config file"),
-            };
+            IGameServer gameServer = (IGameServer)Activator.CreateInstance(Type.GetType($"WindowsGSM.GameServers.{config["ClassName"]}")!)!;
+            gameServer.Config = (IConfig)JsonSerializer.Deserialize(json, gameServer.Config.GetType())!;
+
+            return gameServer;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(60 * 5));
+            _versionsTimer = new Timer(FetchLatestVersions, null, TimeSpan.Zero, TimeSpan.FromSeconds(60 * 5));
+            _protocolTimer = new Timer(QueryGameServers, null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
 
             return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _timer?.Change(Timeout.Infinite, 0);
+            _versionsTimer?.Change(Timeout.Infinite, 0);
+            _protocolTimer?.Change(Timeout.Infinite, 0);
 
             return Task.CompletedTask;
         }
         
-        private async void DoWork(object? state)
+        private async void FetchLatestVersions(object? state)
         {
-            IEnumerable<IGameServer> gameServers = GameServers.DistinctBy(x => x.GetType());
-
-            foreach (IGameServer gameServer in gameServers)
+            foreach (IGameServer gameServer in GameServers)
             {
-                try
-                {
-                    Type type = gameServer.GetType();
+                Type type = gameServer.GetType();
 
+                try
+                { 
                     _versions[type] = new()
                     {
                         Versions = await gameServer.GetVersions(),
@@ -422,30 +492,50 @@ namespace WindowsGSM.Services
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError($"Fail to GetVersions ({gameServer.GetType().Name}) {e}");
-                }
-
-                if (gameServer.Config is ISourceModConfig sourceModConfig)
-                {
-                    IMod mod = Mods.Where(x => x.ConfigType == typeof(ISourceModConfig)).First();
-                    Type type = mod.GetType();
-
-                    try
-                    {
-                        _modVersions[type] = new()
-                        {
-                            Versions = await mod.GetVersions(),
-                            DateTime = DateTime.Now,
-                        };
-
-                        _logger.LogInformation($"GetVersions {_modVersions[type].Versions[0]} ({type.Name})");
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogError($"Fail to GetVersions ({type.Name}) {e}");
-                    }
+                    _logger.LogError($"Fail to GetVersions ({type.Name}) {e}");
                 }
             }
+
+            foreach (IMod mod in Mods)
+            {
+                Type type = mod.GetType();
+
+                try
+                {
+                    _modVersions[type] = new()
+                    {
+                        Versions = await mod.GetVersions(),
+                        DateTime = DateTime.Now,
+                    };
+
+                    _logger.LogInformation($"GetVersions {_modVersions[type].Versions[0]} ({type.Name})");
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError($"Fail to GetVersions ({type.Name}) {e}");
+                }
+            }
+        }
+
+        private async void QueryGameServers(object? state)
+        {
+            List<IGameServer> queryList = Instances.Where(x => x.Protocol != null && x.Status == Status.Started).ToList();
+
+            _logger.LogInformation($"Query Servers: Start {queryList.Count}");
+
+            await Parallel.ForEachAsync(queryList, async (gameServer, token) =>
+            {
+                try
+                {
+                    _responses[gameServer.GetType()] = await gameServer.Protocol!.Query((IProtocolConfig)gameServer.Config);
+                }
+                catch
+                {
+
+                }
+            });
+
+            _logger.LogInformation($"Query Servers: Done");
         }
 
         /// <summary>
@@ -453,7 +543,8 @@ namespace WindowsGSM.Services
         /// </summary>
         public void Dispose()
         {
-            _timer?.Dispose();
+            _versionsTimer?.Dispose();
+            _protocolTimer?.Dispose();
             GC.SuppressFinalize(this);
         }
     }

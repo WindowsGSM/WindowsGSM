@@ -1,4 +1,4 @@
-﻿@foreach (PropertyInfo field in infos)
+﻿@foreach (PropertyInfo field in _fields)
 {
     @if (field.TryGetCustomAttribute<TextFieldAttribute>(out TextFieldAttribute? textField))
     {
@@ -10,8 +10,9 @@
                 Required="@textField.Required"
                 RequiredError="@textField.RequiredError"
                 ReadOnly="@textField.ReadOnly"
-                Value="@(field.GetValue(config)?.ToString() ?? string.Empty)"
-                ValueChanged="@((e) => field.SetValue(config, e))" />
+                Placeholder="@textField.Placeholder"
+                Value="@(field.GetValue(_config)?.ToString() ?? string.Empty)"
+                ValueChanged="@((e) => field.SetValue(_config, e))" />
         }
         else if (textField.FolderBrowser)
         {
@@ -21,8 +22,10 @@
                 Required="@textField.Required"
                 RequiredError="@textField.RequiredError"
                 ReadOnly="@textField.ReadOnly"
-                Value="@(field.GetValue(config)?.ToString() ?? string.Empty)"
-                ValueChanged="@((e) => field.SetValue(config, e))" />
+                Placeholder="@textField.Placeholder"
+                Value="@(field.GetValue(_config)?.ToString() ?? string.Empty)"
+                ValueChanged="@((e) => field.SetValue(_config, e))"
+                Config="@Config" />
         }
         else if (textField.ProcessorAffinity)
         {
@@ -32,8 +35,9 @@
                 Required="@textField.Required"
                 RequiredError="@textField.RequiredError"
                 ReadOnly="@textField.ReadOnly"
-                Value="@((uint)(IntPtr.TryParse(field.GetValue(config)?.ToString(), out IntPtr value) ? value : IntPtr.Zero))"
-                ValueChanged="@((e) => field.SetValue(config, e))" />
+                Placeholder="@textField.Placeholder"
+                Value="@((uint)(IntPtr.TryParse(field.GetValue(_config)?.ToString(), out IntPtr value) ? value : IntPtr.Zero))"
+                ValueChanged="@((e) => field.SetValue(_config, e))" />
         }
         else
         {
@@ -44,8 +48,9 @@
                 Required="@textField.Required"
                 RequiredError="@textField.RequiredError"
                 ReadOnly="@textField.ReadOnly"
-                Value="@(field.GetValue(config)?.ToString() ?? string.Empty)"
-                ValueChanged="@((e) => field.SetValue(config, e))"
+                Placeholder="@textField.Placeholder"
+                Value="@(field.GetValue(_config)?.ToString() ?? string.Empty)"
+                ValueChanged="@((e) => field.SetValue(_config, e))"
                 InputType="@textField.InputType" />
         }
     }
@@ -62,8 +67,8 @@
                 Min="@((int)numericField.Min)"
                 Max="@((int)numericField.Max)"
                 Step="@((int)numericField.Step)"
-                Value="@(int.TryParse(field.GetValue(config)?.ToString(), out int value) ? value : (int)numericField.Min)"
-                ValueChanged="@((e) => field.SetValue(config, e))" />
+                Value="@(int.TryParse(field.GetValue(_config)?.ToString(), out int value) ? value : (int)numericField.Min)"
+                ValueChanged="@((e) => field.SetValue(_config, e))" />
         }
         else if (field.PropertyType == typeof(double))
         {
@@ -75,8 +80,8 @@
                 Min="@numericField.Min"
                 Max="@numericField.Max"
                 Step="@numericField.Step"
-                Value="@(double.TryParse(field.GetValue(config)?.ToString(), out double value) ? value : numericField.Min)"
-                ValueChanged="@((e) => field.SetValue(config, e))" />
+                Value="@(double.TryParse(field.GetValue(_config)?.ToString(), out double value) ? value : numericField.Min)"
+                ValueChanged="@((e) => field.SetValue(_config, e))" />
         }
         else if (field.PropertyType == typeof(decimal))
         {
@@ -88,13 +93,13 @@
                 Min="@((decimal)numericField.Min)"
                 Max="@((decimal)numericField.Max)"
                 Step="@((decimal)numericField.Step)"
-                Value="@(decimal.TryParse(field.GetValue(config)?.ToString(), out decimal value) ? value : (decimal)numericField.Min)"
-                ValueChanged="@((e) => field.SetValue(config, e))" />
+                Value="@(decimal.TryParse(field.GetValue(_config)?.ToString(), out decimal value) ? value : (decimal)numericField.Min)"
+                ValueChanged="@((e) => field.SetValue(_config, e))" />
         }
     }
     else if (field.TryGetCustomAttribute<CheckBoxAttribute>(out CheckBoxAttribute? checkBox))
     {
-        bool isChecked = bool.TryParse(field.GetValue(config)?.ToString(), out bool value) ? value : false;
+        bool isChecked = bool.TryParse(field.GetValue(_config)?.ToString(), out bool value) ? value : false;
 
         @if (checkBox.IsSwitch)
         {
@@ -102,7 +107,7 @@
                 <MudSwitch
                     T="bool"
                     Checked="@isChecked"
-                    CheckedChanged="@((e) => field.SetValue(config, e))"
+                    CheckedChanged="@((e) => field.SetValue(_config, e))"
                     Required="@checkBox.Required"
                     RequiredError="@checkBox.RequiredError"
                     Error="@(!isChecked)"
@@ -115,7 +120,7 @@
             <MudCheckBox
                 T="bool"
                 Checked="@isChecked"
-                CheckedChanged="@((e) => field.SetValue(config, e))"
+                CheckedChanged="@((e) => field.SetValue(_config, e))"
                 Required="@checkBox.Required"
                 RequiredError="@checkBox.RequiredError"
                 Error="@(!isChecked)"
@@ -158,7 +163,7 @@
     else if (field.TryGetCustomAttribute<RadioGroupAttribute>(out RadioGroupAttribute? radioGroup))
     {
         <MudField Label="@radioGroup.Text" Variant="Variant.Text" InnerPadding="false" HelperText="@radioGroup.HelperText">
-            <MudRadioGroup T="string" SelectedOption="@field.GetValue(config)?.ToString()" SelectedOptionChanged="@((e) => field.SetValue(config, e))">
+            <MudRadioGroup T="string" SelectedOption="@field.GetValue(_config)?.ToString()" SelectedOptionChanged="@((e) => field.SetValue(_config, e))">
                 @if (field.TryGetCustomAttributes<RadioAttribute>(out List<RadioAttribute> radios))
                 {
                     @foreach (RadioAttribute radio in radios)
@@ -176,8 +181,8 @@
         <MudSelect
             T="string"
             Label="@select.Label"
-            Value="@(field.GetValue(config)?.ToString())"
-            SelectedValuesChanged="@((e) => field.SetValue(config, e.FirstOrDefault()))"
+            Value="@(field.GetValue(_config)?.ToString())"
+            SelectedValuesChanged="@((e) => field.SetValue(_config, e.FirstOrDefault()))"
             AnchorOrigin="Origin.BottomCenter"
             HelperText="@select.HelperText">
             @foreach (string selectItem in o.Values)
@@ -190,8 +195,17 @@
 
 @code {
     [Parameter]
-    public PropertyInfo[] infos { get; set; } = new PropertyInfo[0];
+    public PropertyInfo Tab { get; set; } = null!;
 
     [Parameter]
-    public object? config { get; set; }
+    public IConfig Config { get; set; } = null!;
+
+    private PropertyInfo[] _fields { get; set; } = new PropertyInfo[0];
+    private object? _config;
+
+    protected override void OnParametersSet()
+    {
+        _fields = Tab.PropertyType.GetProperties();
+        _config = Tab.GetValue(Config);
+    }
 }

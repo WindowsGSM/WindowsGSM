@@ -13,7 +13,7 @@ namespace WindowsGSM.Utilities
     {
         public enum ConsoleType
         {
-            PseudoConsole, RedirectStandard, Windowed
+            PseudoConsole, Redirect, Windowed
         }
 
         private Process? _process;
@@ -52,6 +52,21 @@ namespace WindowsGSM.Utilities
             }
         }
 
+        public DateTime? StartTime
+        {
+            get
+            {
+                try
+                {
+                    return _process != null && !_process.HasExited ? _process.StartTime : null;
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+        }
+
         public string Output => _output.ToString();
 
         public ConsoleType? Mode { get; private set; }
@@ -74,9 +89,9 @@ namespace WindowsGSM.Utilities
             _pseudoConsole.Exited += (sender, _) => (sender as ConPTY)?.Dispose();
         }
 
-        public void UseRedirectStandard(ProcessStartInfo processStartInfo)
+        public void UseRedirect(ProcessStartInfo processStartInfo)
         {
-            Mode = ConsoleType.RedirectStandard;
+            Mode = ConsoleType.Redirect;
 
             _process = new()
             {
@@ -121,9 +136,9 @@ namespace WindowsGSM.Utilities
                     throw new Exception("Process is null");
                 }
 
-                if (Mode == ConsoleType.RedirectStandard)
+                if (Mode == ConsoleType.Redirect)
                 {
-                    _process.Start();
+                    await TaskEx.Run(() => _process.Start());
 
                     if (_process.StartInfo.RedirectStandardOutput)
                     {
@@ -143,14 +158,14 @@ namespace WindowsGSM.Utilities
                         }
                     };
 
-                    batchProcess.Start();
+                    await TaskEx.Run(() => batchProcess.Start());
 
                     string output = await batchProcess.StandardOutput.ReadToEndAsync();
                     string pidString = output.TrimEnd().Split(new[] { '\n' }).Last();
 
                     if (int.TryParse(pidString, out int pid))
                     {
-                        _process = Process.GetProcessById(pid);
+                        _process = await TaskEx.Run(() => Process.GetProcessById(pid));
                         _process.EnableRaisingEvents = true;
                         _process.Exited += (s, e) => Exited?.Invoke(_process.ExitCode);
                     }
@@ -164,21 +179,21 @@ namespace WindowsGSM.Utilities
                 {
                     if (Mode == ConsoleType.Windowed || !_process.StartInfo.CreateNoWindow)
                     {
-                        while (!_process.HasExited && !DllImport.ShowWindow(_process.MainWindowHandle, DllImport.WindowShowStyle.Minimize));
+                        while (!_process.HasExited && !DllImport.ShowWindow(_process.MainWindowHandle, DllImport.WindowShowStyle.Minimize))
+                        {
+                            await Task.Delay(1);
+                        }
                     }
 
-                    await Task.Run(() =>
+                    try
                     {
-                        try
-                        {
-                            _process.WaitForInputIdle();
-                        }
-                        catch (InvalidOperationException)
-                        {
-                            // The process does not have a graphical interface.
-                            // Ignore this exception
-                        }
-                    });
+                        await TaskEx.Run(() => _process.WaitForInputIdle());
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // The process does not have a graphical interface.
+                        // Ignore this exception
+                    }
 
                     if (Mode == ConsoleType.Windowed || !_process.StartInfo.CreateNoWindow)
                     {
@@ -216,7 +231,7 @@ namespace WindowsGSM.Utilities
             }
             else if (_process != null)
             {
-                if (Mode == ConsoleType.RedirectStandard && _process.StartInfo.RedirectStandardInput)
+                if (Mode == ConsoleType.Redirect && _process.StartInfo.RedirectStandardInput)
                 {
                     _process.StandardInput.WriteLine(data);
                     AddOutput(data + "\r\n");
@@ -237,7 +252,7 @@ namespace WindowsGSM.Utilities
             }
             else if (_process != null)
             {
-                if (Mode == ConsoleType.RedirectStandard && _process.StartInfo.RedirectStandardInput)
+                if (Mode == ConsoleType.Redirect && _process.StartInfo.RedirectStandardInput)
                 {
                     if (data[0] == 13)
                     {

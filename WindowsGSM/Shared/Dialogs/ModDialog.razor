@@ -1,0 +1,55 @@
+﻿@inject GameServerService GameServerService
+
+<MudDialog>
+    <DialogContent>
+        @if (!MudDialog.Title.Contains("Delete"))
+        {
+            <MudSelect @bind-Value="@_version" Label="Select the version" HelperText="@($"{_versions.Count} versions available")" Variant="Variant.Outlined">
+                @if (_versions.Count <= 0)
+                {
+                    <MudSelectItem Value="@(" ")">
+                        <MudChip Size="Size.Small" Variant="Variant.Outlined" Color="Color.Success" Class="mb-0" Style="margin-top: -3px">Latest Stable</MudChip>
+                    </MudSelectItem>
+                }
+                else
+                {
+                    @foreach (string version in _versions)
+                    {
+                        <MudSelectItem Value="@version">
+                            @version 
+
+                            @if (version == _versions.FirstOrDefault())
+                            {
+                                <MudChip Size="Size.Small" Variant="Variant.Outlined" Color="Color.Success" Class="mb-0 ml-3" Style="margin-top: -3px">Latest Stable</MudChip>
+                            }
+                        </MudSelectItem>
+                    }
+                }
+            </MudSelect>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Confirm</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    public MudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter]
+    public IMod Mod { get; set; } = null!;
+
+    private List<string> _versions = new();
+    private string _version = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        _versions = GameServerService.GetVersions(Mod).Item1;
+        _version = _versions.FirstOrDefault() ?? " ";
+    }
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(_version));
+    private void Cancel() => MudDialog.Cancel();
+}

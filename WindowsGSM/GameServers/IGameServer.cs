@@ -1,6 +1,6 @@
 ﻿using WindowsGSM.GameServers.Components;
 using WindowsGSM.GameServers.Configs;
-using WindowsGSM.GameServers.Mods;
+using WindowsGSM.GameServers.Protocols;
 using WindowsGSM.Services;
 using WindowsGSM.Utilities;
 
@@ -22,6 +22,11 @@ namespace WindowsGSM.GameServers
         public string ImageSource { get; }
 
         /// <summary>
+        /// Game Server Query Protocol
+        /// </summary>
+        public IProtocol? Protocol { get; }
+
+        /// <summary>
         /// Game Server Configuration
         /// </summary>
         public IConfig Config { get; set; }
@@ -36,19 +41,13 @@ namespace WindowsGSM.GameServers
         /// </summary>
         public ProcessEx Process { get; set; }
 
-        public Task Backup();
+        public Task Install(string version);
 
-        public Task Restore();
-
-        public Task Create();
-
-        public Task Update();
+        public Task Update(string version);
 
         public Task Start();
 
         public Task Stop();
-
-        public Task<string> GetLocalVersion();
 
         public Task<List<string>> GetVersions();
 

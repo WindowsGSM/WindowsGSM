@@ -3,19 +3,23 @@
 @inject GameServerService GameServerService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@implements IDisposable
 
-<MudContainer Class="mt-6" MaxWidth="MaxWidth.ExtraLarge">
+<MudContainer Class="mt-6 mb-6" MaxWidth="MaxWidth.ExtraLarge">
     <MudText Typo="Typo.h3" Class="mb-4">Servers</MudText>
-    <MudButton @onclick="OpenCreateDialog" Variant="Variant.Filled" Color="Color.Primary">
-        Create Game Server
+    <MudButton @onclick="OpenInstallDialog" Variant="Variant.Filled" Color="Color.Primary">
+        Install Game Server
     </MudButton>
 
-    <MudTable Items="@GameServerService.GameServers" Dense="true" MultiSelection="false" @bind-SelectedItems="_selectedServers" Hover="true" Class="mt-6 mb-6">
+    <MudTable Items="@GameServerService.Instances" Dense="true" MultiSelection="false" @bind-SelectedItems="_selectedServers" Hover="true" Class="mt-6 mb-6">
         <HeaderContent>
             <MudTh>Game</MudTh>
             <MudTh>PID</MudTh>
             <MudTh>Status</MudTh>
             <MudTh>Name</MudTh>
+            <MudTh>Map</MudTh>
+            <MudTh>Players</MudTh>
+            <MudTh>Uptime</MudTh>
             <MudTh></MudTh>
         </HeaderContent>
         <RowTemplate>
@@ -25,8 +29,21 @@
                 </MudTooltip>
             </MudTd>
             <MudTd DataLabel="PID">@context.Process.Id</MudTd>
-            <MudTd DataLabel="Status">@context.Status.ToString()</MudTd>
+            <MudTd DataLabel="Status"><MudChip Variant="Variant.Text" Size="Size.Small">@context.Status.ToStringEx()</MudChip></MudTd>
             <MudTd DataLabel="Name">@context.Config.Basic.Name</MudTd>
+            <MudTd DataLabel="Map">@GameServerService.GetResponse(context)?.MapName</MudTd>
+            <MudTd DataLabel="Players">
+                @if (context.Config is IProtocolConfig protocolConfig)
+                {
+                    var response = GameServerService.GetResponse(context);
+
+                    if (response != null)
+                    {
+                        <span>@response.Player / @response.MaxPlayer</span>
+                    }
+                }
+            </MudTd>
+            <MudTd DataLabel="Uptime">@UptimeString(context.Process.StartTime)</MudTd>
             <MudTd Style="text-align:right">
                 @*if (context.ProcessConsole.Mode == ProcessConsole.ConsoleType.Windowed)
                 {
@@ -41,7 +58,7 @@
                     </MudTooltip>
                 }*@
 
-                @if (@context.Status == Status.Stopped)
+                @if (@context.Status == Status.NotInstalled || @context.Status == Status.Stopped)
                 {
                     <MudTooltip Text="Start">
                         <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" OnClick="@((e) => Start(context))" Disabled="@context.Status.IsDisabled(Operation.Start)" />
@@ -77,10 +94,29 @@
 
 @code {
     private HashSet<IGameServer> _selectedServers = new();
+    private Timer? timer;
 
     protected override void OnInitialized()
     {
         GameServerService.GameServersHasChanged += () => InvokeAsync(StateHasChanged);
+        timer = new Timer((state) => InvokeAsync(StateHasChanged), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+    }
+
+    public void Dispose()
+    {
+        timer?.Dispose();
+    }
+
+    private string UptimeString(DateTime? startTime)
+    {
+        if (startTime == null)
+        {
+            return "0:00:00:00";
+        }
+
+        TimeSpan t = TimeSpan.FromSeconds((DateTime.Now - startTime.Value).TotalSeconds);
+
+        return string.Format("{0}:{1:D2}:{2:D2}:{3:D2}", (int)t.TotalDays, t.Hours, t.Minutes, t.Seconds);
     }
 
     private async Task Start(IGameServer gameServer)
@@ -135,7 +171,7 @@
         }
     }
 
-    private async void OpenCreateDialog()
+    private async void OpenInstallDialog()
     {
         DialogOptions options = new()
         {
@@ -146,7 +182,7 @@
             DisableBackdropClick = true,
         };
 
-        IDialogReference dialogReference = DialogService.Show<GameServerCreateDialog>("Create Server", options);
+        IDialogReference dialogReference = DialogService.Show<GameServerInstallDialog>("Install Game Server", options);
         DialogResult dialogResult = await dialogReference.Result;
 
         if (dialogResult.Cancelled)
@@ -154,16 +190,18 @@
             return;
         }
 
-        IGameServer gameServer = (IGameServer)dialogResult.Data;
+        Dictionary<string, object> data = (Dictionary<string, object>)dialogResult.Data;
+        IGameServer gameServer = (IGameServer)data["GameServer"];
+        string version = data["Version"].ToString()!;
 
         try
         {
-            await GameServerService.Create(gameServer);
-            Snackbar.Add($"{gameServer.Config.Basic.Name}: Created", Severity.Success);
+            await GameServerService.Install(gameServer, version);
+            Snackbar.Add($"{gameServer.Config.Basic.Name}: Installed", Severity.Success);
         }
         catch (Exception e)
         {
-            Snackbar.Add($"{gameServer.Config.Basic.Name}: Fail to Create - {e.Message}", Severity.Error);
+            Snackbar.Add($"{gameServer.Config.Basic.Name}: Fail to Install - {e.Message}", Severity.Error);
         }
     }
 
