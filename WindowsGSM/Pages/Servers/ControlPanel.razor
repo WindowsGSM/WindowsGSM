@@ -161,8 +161,14 @@
 
                         <MudTextField T="string" Label="Local Version" ReadOnly="true" Value="@_gameServer.Config.LocalVersion" Placeholder="Not Installed" />
 
-                        (List<string> versions, DateTime? lastFetch) = GameServerService.GetVersions(_gameServer);
-                        <MudTextField T="string" Label="Latest Stable Version" ReadOnly="true" Value="@(versions.Count > 0 ? versions[0] : string.Empty)" HelperText="@($"Last fetch: {(lastFetch.ToString() ?? "-")}")" />
+                        GameServerService.IVersions? versionData = GameServerService.GetVersions(_gameServer);
+
+                        <MudTextField
+                            T="string"
+                            Label="Latest Stable Version"
+                            ReadOnly="true"
+                            Value="@((versionData == null || versionData.Versions.Count > 0) ? string.Empty : versionData.Versions[0])"
+                            HelperText="@($"Last fetch: {(versionData?.DateTime.ToString() ?? "-")}")" />
                     }
 
                     @foreach (IMod mod in GameServerService.Mods)
@@ -186,8 +192,14 @@
 
                             <MudTextField T="string" Label="Local Version" ReadOnly="true" Value="@(mod.GetLocalVersion(_gameServer))" Placeholder="Not Installed" />
 
-                            (versions, lastFetch) = GameServerService.GetVersions(mod.ConfigType);
-                            <MudTextField T="string" Label="Latest Stable Version" ReadOnly="true" Value="@(versions.Count > 0 ? versions[0] : string.Empty)" HelperText="@($"Last fetch: {(lastFetch.ToString() ?? "-")}")" />                 
+                            GameServerService.IVersions? versionData2 = GameServerService.GetVersions(mod);
+
+                            <MudTextField
+                                T="string"
+                                Label="Latest Stable Version"
+                                ReadOnly="true"
+                                Value="@((versionData2 == null || versionData2.Versions.Count > 0) ? string.Empty : versionData2.Versions[0])"
+                                HelperText="@($"Last fetch: {(versionData2?.DateTime.ToString() ?? "-")}")" />
                         }
                     }
                 </div>

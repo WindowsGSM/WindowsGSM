@@ -46,7 +46,7 @@
 
     protected override void OnInitialized()
     {
-        _versions = GameServerService.GetVersions(Mod).Item1;
+        _versions = GameServerService.GetVersions(Mod)?.Versions ?? new();
         _version = _versions.FirstOrDefault() ?? " ";
     }
 

@@ -1,5 +1,5 @@
 ﻿using System.IO.Compression;
-using WindowsGSM.GameServers;
+using WindowsGSM.GameServers.Components;
 using WindowsGSM.Services;
 
 namespace WindowsGSM.Utilities

@@ -93,7 +93,7 @@
         _gameServer = GameServer ?? _gameServers[0]; // TODO: Get last selected game server using local storage maybe
         _guid = GameServer == null ? Guid.NewGuid() : GameServer.Config.Guid;
         _basic = GameServer == null ? GameServerService.GetNewBasicConfig(_guid) : GameServer.Config.Basic;
-        _versions = GameServerService.GetVersions(_gameServer).Item1;
+        _versions = GameServerService.GetVersions(_gameServer)?.Versions ?? new();
         _version = _versions.FirstOrDefault() ?? " ";
     }
 
@@ -112,7 +112,7 @@
     private async Task GameServerValueChanged(IGameServer gameServer)
     {
         _gameServer = gameServer;
-        _versions = GameServerService.GetVersions(_gameServer).Item1;
+        _versions = GameServerService.GetVersions(_gameServer)?.Versions ?? new();
         _version = _versions.FirstOrDefault() ?? " ";
 
         if (_select != null)

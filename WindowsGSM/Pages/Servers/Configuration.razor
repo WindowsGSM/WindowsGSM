@@ -44,19 +44,6 @@
     private IConfig? _config;
     private MudForm _form = null!;
 
-    protected override async Task OnInitializedAsync()
-    {
-        if (Guid.TryParse(GuidString, out Guid guid))
-        {
-            _gameServer = GameServerService.Instances.Where(x => x.Config.Guid == guid).FirstOrDefault();
-
-            if (_gameServer != null)
-            {
-                _config = await _gameServer.Config.Clone();
-            }
-        }
-    }
-
     protected override async Task OnParametersSetAsync()
     {
         if (Guid.TryParse(GuidString, out Guid guid))
@@ -102,7 +89,7 @@
     private async Task NavigateToConfiguration(Guid guid)
     {
         NavigationManager.NavigateTo($"/servers/{guid}/configuration");
-
+        
         _gameServer = GameServerService.Instances.Where(x => x.Config.Guid == guid).FirstOrDefault();
 
         if (_gameServer != null)

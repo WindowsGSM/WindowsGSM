@@ -1,8 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.Json;
 using WindowsGSM.Extensions;
-using WindowsGSM.GameServers;
 using WindowsGSM.GameServers.Components;
 using WindowsGSM.GameServers.Configs;
 using WindowsGSM.GameServers.Mods;
@@ -31,16 +31,22 @@ namespace WindowsGSM.Services
             .Where(x => x.GetInterfaces().Contains(typeof(IMod)) && !x.IsAbstract)
             .Select(x => (Activator.CreateInstance(x) as IMod)!).ToList();
 
-        public class VersionData
+        public interface IVersions
+        {
+            public List<string> Versions { get; set; }
+
+            public DateTime DateTime { get; set; }
+        }
+
+        public class VersionData : IVersions
         {
             public List<string> Versions { get; set; } = new();
 
             public DateTime DateTime { get; set; }
         }
 
-        private readonly Dictionary<Type, VersionData> _versions = new();
-        private readonly Dictionary<Type, VersionData> _modVersions = new();
-        private readonly Dictionary<Type, IResponse> _responses = new();
+        private readonly ConcurrentDictionary<Type, IVersions> _versions = new();
+        private readonly ConcurrentDictionary<Guid, IResponse> _responses = new();
 
         private readonly ILogger<GameServerService> _logger;
         private Timer? _versionsTimer, _protocolTimer;
@@ -119,7 +125,7 @@ namespace WindowsGSM.Services
             {
                 gameServer.UpdateStatus(Status.Restarting);
 
-                _responses.Remove(gameServer.GetType());
+                _responses.Remove(gameServer.Config.Guid, out _);
 
                 await Task.Delay(5000);
                 await Start(gameServer);
@@ -286,7 +292,6 @@ namespace WindowsGSM.Services
 
                 if (gameServer.Process.Process != null)
                 {
-
 #pragma warning disable CA1416 // Validate platform compatibility
                     gameServer.Process.Process.ProcessorAffinity = (IntPtr)gameServer.Config.Advanced.ProcessorAffinity;
 #pragma warning restore CA1416 // Validate platform compatibility
@@ -308,15 +313,13 @@ namespace WindowsGSM.Services
             {
                 try
                 {
-                    _responses[gameServer.GetType()] = await gameServer.Protocol.Query((IProtocolConfig)gameServer.Config);
+                    _responses[gameServer.Config.Guid] = await gameServer.Protocol.Query((IProtocolConfig)gameServer.Config);
                 }
                 catch
                 {
                     // Fail to query the game server
                 }
             }
-
-
 
             gameServer.UpdateStatus(Status.Started);
         }
@@ -329,7 +332,7 @@ namespace WindowsGSM.Services
             {
                 await gameServer.Stop();
 
-                _responses.Remove(gameServer.GetType());
+                _responses.Remove(gameServer.Config.Guid, out _);
             }
             catch
             {
@@ -359,7 +362,7 @@ namespace WindowsGSM.Services
                     throw new Exception($"Process ID: {gameServer.Process.Id}");
                 }
 
-                _responses.Remove(gameServer.GetType());
+                _responses.Remove(gameServer.Config.Guid, out _);
 
                 gameServer.UpdateStatus(Status.Stopped);
             }
@@ -421,33 +424,14 @@ namespace WindowsGSM.Services
             }
         }
 
-        public (List<string>, DateTime?) GetVersions(IGameServer gameServer)
+        public IVersions? GetVersions(IVersionable versionable)
         {
-            Type type = gameServer.GetType();
-
-            return _versions.ContainsKey(type) ? (_versions[type].Versions, _versions[type].DateTime) : (new(), null);
-        }
-
-        public (List<string>, DateTime?) GetVersions(IMod mod)
-        {
-            Type type = mod.GetType();
-
-            return _modVersions.ContainsKey(type) ? (_modVersions[type].Versions, _modVersions[type].DateTime) : (new(), null);
-        }
-
-        public (List<string>, DateTime?) GetVersions(Type modConfigType)
-        {
-            IMod mod = Mods.Where(x => x.ConfigType == modConfigType).First();
-            Type type = mod.GetType();
-
-            return _modVersions.ContainsKey(type) ? (_modVersions[type].Versions, _modVersions[type].DateTime) : (new(), null);
+            return _versions.GetValueOrDefault(versionable.GetType());
         }
 
         public IResponse? GetResponse(IGameServer gameServer)
         {
-            Type type = gameServer.GetType();
-
-            return _responses.ContainsKey(type) ? _responses[type] : null;
+            return _responses.GetValueOrDefault(gameServer.Config.Guid);
         }
 
         /// <summary>
@@ -456,7 +440,7 @@ namespace WindowsGSM.Services
         /// <param name="json"></param>
         /// <param name="server"></param>
         /// <returns></returns>
-        private bool TryDeserialize(string path, [NotNullWhen(true)] out IGameServer? server)
+        private static bool TryDeserialize(string path, [NotNullWhen(true)] out IGameServer? server)
         {
             try
             {
@@ -476,7 +460,7 @@ namespace WindowsGSM.Services
         /// <param name="json"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        private IGameServer Deserialize(string json)
+        private static IGameServer Deserialize(string json)
         {
             Dictionary<string, object> config = JsonSerializer.Deserialize<Dictionary<string, object>>(json)!;
             IGameServer gameServer = (IGameServer)Activator.CreateInstance(Type.GetType($"WindowsGSM.GameServers.{config["ClassName"]}")!)!;
@@ -503,45 +487,31 @@ namespace WindowsGSM.Services
         
         private async void FetchLatestVersions(object? state)
         {
-            foreach (IGameServer gameServer in GameServers)
+            List<IVersionable> versionables = new();
+            versionables.AddRange(GameServers);
+            versionables.AddRange(Mods);
+
+            await Parallel.ForEachAsync(versionables, async (versionable, token) =>
             {
-                Type type = gameServer.GetType();
+                Type type = versionable.GetType();
 
                 try
-                { 
-                    _versions[type] = new()
+                {
+                    VersionData version = new()
                     {
-                        Versions = await gameServer.GetVersions(),
+                        Versions = await versionable.GetVersions(),
                         DateTime = DateTime.Now,
                     };
 
-                    _logger.LogInformation($"GetVersions {_versions[type].Versions[0]} ({type.Name})");
+                    _versions[type] = version;
+
+                    _logger.LogInformation($"GetVersions {version.Versions[0]} ({type.Name})");
                 }
                 catch (Exception e)
                 {
                     _logger.LogError($"Fail to GetVersions ({type.Name}) {e}");
                 }
-            }
-
-            foreach (IMod mod in Mods)
-            {
-                Type type = mod.GetType();
-
-                try
-                {
-                    _modVersions[type] = new()
-                    {
-                        Versions = await mod.GetVersions(),
-                        DateTime = DateTime.Now,
-                    };
-
-                    _logger.LogInformation($"GetVersions {_modVersions[type].Versions[0]} ({type.Name})");
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError($"Fail to GetVersions ({type.Name}) {e}");
-                }
-            }
+            });
         }
 
         private async void QueryGameServers(object? state)
@@ -554,7 +524,7 @@ namespace WindowsGSM.Services
             {
                 try
                 {
-                    _responses[gameServer.GetType()] = await gameServer.Protocol!.Query((IProtocolConfig)gameServer.Config);
+                    _responses[gameServer.Config.Guid] = await gameServer.Protocol!.Query((IProtocolConfig)gameServer.Config);
                 }
                 catch
                 {

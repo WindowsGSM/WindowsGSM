@@ -1,6 +1,8 @@
-﻿namespace WindowsGSM.GameServers.Mods
+﻿using WindowsGSM.GameServers.Components;
+
+namespace WindowsGSM.GameServers.Mods
 {
-    public interface IMod
+    public interface IMod : IVersionable
     {
         public string Name { get; }
 
@@ -9,8 +11,6 @@
         public Type ConfigType { get; }
 
         public string GetLocalVersion(IGameServer gameServer);
-
-        public Task<List<string>> GetVersions();
 
         public Task Install(IGameServer gameServer, string version);
 

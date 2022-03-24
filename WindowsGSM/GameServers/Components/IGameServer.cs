@@ -1,15 +1,14 @@
-﻿using WindowsGSM.GameServers.Components;
-using WindowsGSM.GameServers.Configs;
+﻿using WindowsGSM.GameServers.Configs;
 using WindowsGSM.GameServers.Protocols;
 using WindowsGSM.Services;
 using WindowsGSM.Utilities;
 
-namespace WindowsGSM.GameServers
+namespace WindowsGSM.GameServers.Components
 {
     /// <summary>
     /// Game Server Interface
     /// </summary>
-    public interface IGameServer
+    public interface IGameServer : IVersionable
     {
         /// <summary>
         /// Game Server Name
@@ -40,8 +39,6 @@ namespace WindowsGSM.GameServers
         /// Game Server Process
         /// </summary>
         public ProcessEx Process { get; set; }
-
-        public Task<List<string>> GetVersions();
 
         public Task Install(string version);
 
