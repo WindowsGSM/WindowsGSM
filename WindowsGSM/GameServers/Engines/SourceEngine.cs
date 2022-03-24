@@ -47,7 +47,10 @@ namespace WindowsGSM.GameServers.Engines
             public SteamCMDConfig SteamCMD { get; set; } = new();
 
             [TabPanel(Text = "Protocol")]
-            public ProtocolConfig Protocol { get; set; } = new();
+            public ProtocolConfig Protocol { get; set; } = new()
+            {
+                QueryPort = 27015
+            };
 
             public string MetaModLocalVersion { get; set; } = string.Empty;
 
@@ -77,6 +80,8 @@ namespace WindowsGSM.GameServers.Engines
             });
         }
 
+        public virtual Task<List<string>> GetVersions() => SteamCMD.GetVersions(this);
+
         public virtual Task Install(string version) => SteamCMD.Start(this);
 
         public virtual Task Update(string version) => SteamCMD.Start(this);
@@ -92,10 +97,10 @@ namespace WindowsGSM.GameServers.Engines
                     WorkingDirectory = config.Basic.Directory,
                     FileName = Path.Combine(config.Basic.Directory, config.Start.StartPath),
                     Arguments = config.Start.StartParameter,
-                    UseShellExecute = false,
                     StandardOutputEncoding = Encoding.UTF8,
+                    StandardErrorEncoding = Encoding.UTF8,
                     RedirectStandardOutput = true,
-                    RedirectStandardError = true,
+                    RedirectStandardError = true
                 });
             }
             else
@@ -104,8 +109,7 @@ namespace WindowsGSM.GameServers.Engines
                 {
                     WorkingDirectory = config.Basic.Directory,
                     FileName = Path.Combine(config.Basic.Directory, config.Start.StartPath),
-                    Arguments = config.Start.StartParameter,
-                    UseShellExecute = false,
+                    Arguments = config.Start.StartParameter
                 });
             }
 
@@ -123,7 +127,5 @@ namespace WindowsGSM.GameServers.Engines
                 throw new Exception("Process fail to stop");
             }
         }
-
-        public virtual Task<List<string>> GetVersions() => SteamCMD.GetVersions(this);
     }
 }

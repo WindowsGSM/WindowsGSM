@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using WindowsGSM.Data;
 using WindowsGSM.Services;
 using MudBlazor.Services;
 using WindowsGSM.GameServers;
@@ -10,16 +9,20 @@ using System.Text.Json.Serialization;
 using WindowsGSM.Utilities;
 using System.Diagnostics;
 using MudBlazor;
+using Microsoft.Extensions.Hosting.WindowsServices;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions()
+{
+    ContentRootPath = WindowsServiceHelpers.IsWindowsService() ? AppContext.BaseDirectory : default,
+    Args = args
+});
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddSingleton<GameServerService>();
-builder.Services.AddSingleton<IHostedService>(p => p.GetService<GameServerService>()!);
-builder.Services.AddGameServerServices();
+builder.Services.AddSingleton<IHostedService>(p => p.GetRequiredService<GameServerService>());
+//builder.Services.AddGameServerServices();
 builder.Services.AddSingleton<SystemMetricsService>();
 //builder.Services.AddSingleton<IHostedService>(p => p.GetService<SystemMetricsService>()!);
 builder.Services.AddMudServices(config =>
@@ -33,6 +36,8 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.ShowTransitionDuration = 500;
     config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
+
+builder.Host.UseWindowsService();
 
 var app = builder.Build();
 

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using Microsoft.Extensions.Hosting.WindowsServices;
+using System.Diagnostics;
 using System.Text;
 using WindowsGSM.Services;
 using WindowsPseudoConsole;
@@ -105,6 +106,13 @@ namespace WindowsGSM.Utilities
                     AddOutput(e.Data + "\r\n");
                 }
             };
+            _process.ErrorDataReceived += (s, e) =>
+            {
+                if (e.Data != null)
+                {
+                    AddOutput("ERROR: " + e.Data + "\r\n");
+                }
+            };
             _process.Exited += (s, e) => Exited?.Invoke(_process.ExitCode);
         }
 
@@ -144,6 +152,11 @@ namespace WindowsGSM.Utilities
                     {
                         _process.BeginOutputReadLine();
                     }
+
+                    if (_process.StartInfo.RedirectStandardError)
+                    {
+                        _process.BeginErrorReadLine();
+                    }
                 }
                 else
                 {
@@ -175,7 +188,7 @@ namespace WindowsGSM.Utilities
                     }
                 }
                 
-                if (_process != null)
+                if (_process != null && !WindowsServiceHelpers.IsWindowsService())
                 {
                     if (Mode == ConsoleType.Windowed || !_process.StartInfo.CreateNoWindow)
                     {

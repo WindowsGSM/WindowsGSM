@@ -3,6 +3,9 @@ using WindowsGSM.GameServers.Engines;
 
 namespace WindowsGSM.GameServers
 {
+    /// <summary>
+    /// Blade Symphony Dedicated Server
+    /// </summary>
     public class BladeSymphony : SourceEngine
     {
         public override string Name => "Blade Symphony Dedicated Server";
@@ -14,23 +17,23 @@ namespace WindowsGSM.GameServers
             ClassName = nameof(BladeSymphony),
             Start =
             {
-                StartParameter = "",
+                StartPath = "bin\\win64\\srcds.exe",
+                StartParameter = "-console +maxplayers 16 +map duel_winter"
             },
             Backup =
             {
                 Entries =
                 {
-                    "tf\\addons",
-                    "tf\\cfg",
-                    "tf\\maps",
-                },
+                    "berimbau\\addons",
+                    "berimbau\\cfg",
+                    "berimbau\\maps"
+                }
             },
             SteamCMD =
             {
-                Game = "tf",
                 AppId = "228780",
-                Username = "anonymous",
-            },
+                Username = "anonymous"
+            }
         };
     }
 }

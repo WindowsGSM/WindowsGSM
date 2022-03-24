@@ -25,7 +25,7 @@ namespace WindowsGSM.GameServers
             public string ConsoleMode { get; set; } = "Pseudo Console";
         }
 
-        public class CreateConfig
+        public class InstallConfig
         {
             [CheckBox(Label = "I agree to the [Minecraft End User License Agreement](https://minecraft.net/terms) and [Privacy Policy](https://go.microsoft.com/fwlink/?LinkId=521839)", Required = true, RequiredError = "You must agree")]
             public bool EndUserLicenseAgreement { get; set; }
@@ -59,8 +59,8 @@ namespace WindowsGSM.GameServers
             [TabPanel(Text = "Start")]
             public StartConfig Start { get; set; } = new();
 
-            [TabPanel(Text = "Create")]
-            public CreateConfig Create { get; set; } = new();
+            [TabPanel(Text = "Install")]
+            public InstallConfig Install { get; set; } = new();
         }
 
         public string Name => "Minecraft: Bedrock Edition Server";

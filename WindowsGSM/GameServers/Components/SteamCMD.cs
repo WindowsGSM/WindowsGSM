@@ -52,7 +52,7 @@ namespace WindowsGSM.GameServers.Components
                     }
                 }
 
-                if ((gameServer.Status == Status.Installing && steamCMD.ValidateOnCreate) || (gameServer.Status == Status.Updating && steamCMD.ValidateOnUpdate))
+                if ((gameServer.Status == Status.Installing && steamCMD.ValidateOnInstall) || (gameServer.Status == Status.Updating && steamCMD.ValidateOnUpdate))
                 {
                     @string.Append("validate ");
                 }

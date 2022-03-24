@@ -13,10 +13,10 @@ namespace WindowsGSM.GameServers.Configs
         [TextField(Label = "Processor Affinity", HelperText = "Processor Affinity also called CPU pinning, allows the user to assign a process to use only a few cores.", Required = true, ProcessorAffinity = true)]
         public uint ProcessorAffinity { get; set; } = Utilities.ProcessorAffinity.Default;
 
-        [CheckBox(Label = "Auto Start on Boot", HelperText = "Automatically start the server on boot.", IsSwitch = true)]
+        [CheckBox(Label = "Auto Start", HelperText = "Automatically start the server when WindowsGSM started.", IsSwitch = true)]
         public bool AutoStart { get; set; }
 
-        [CheckBox(Label = "RestartOnCrash", HelperText = "Automatically restart the server when the server crashes unexpectedly.", IsSwitch = true)]
+        [CheckBox(Label = "Restart on Crash", HelperText = "Automatically restart the server when the server crashes unexpectedly.", IsSwitch = true)]
         public bool RestartOnCrash { get; set; }
 
         [CheckBox(Label = "Auto Update", HelperText = "Automatically update the server when update is available.", IsSwitch = true)]

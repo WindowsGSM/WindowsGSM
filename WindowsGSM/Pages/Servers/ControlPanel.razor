@@ -3,13 +3,49 @@
 @inject GameServerService GameServerService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@implements IDisposable
 
 <MudContainer Class="mt-6 mb-6" MaxWidth="MaxWidth.ExtraLarge">
     <MudText Typo="Typo.h3">Control Panel <MudChip Variant="Variant.Text">@(_gameServer?.Status.ToStringEx() ?? "Unknown")</MudChip></MudText>
 
     @if (_gameServer != null)
     {
-        <MudText Typo="Typo.body1" Class="mb-4">@_gameServer.Config.Basic.Name</MudText>
+        List<IGameServer> gameServers = new() { _gameServer };
+
+        <MudTable Items="@gameServers" Dense="true" MultiSelection="false" Class="mt-4 mb-4">
+            <HeaderContent>
+                <MudTh>Game</MudTh>
+                <MudTh>PID</MudTh>
+                <MudTh>Status</MudTh>
+                <MudTh>Name</MudTh>
+                <MudTh>Map</MudTh>
+                <MudTh>Players</MudTh>
+                <MudTh>Uptime</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Game">
+                    <MudTooltip Text="@context.Name" Placement="Placement.Right">
+                        <MudImage Src="@context.ImageSource" Alt="@context.Config.ClassName" Elevation="2" Class="rounded-lg" Width="24" />
+                    </MudTooltip>
+                </MudTd>
+                <MudTd DataLabel="PID">@context.Process.Id</MudTd>
+                <MudTd DataLabel="Status"><MudChip Variant="Variant.Text" Size="Size.Small">@context.Status.ToStringEx()</MudChip></MudTd>
+                <MudTd DataLabel="Name">@context.Config.Basic.Name</MudTd>
+                <MudTd DataLabel="Map">@GameServerService.GetResponse(context)?.MapName</MudTd>
+                <MudTd DataLabel="Players">
+                    @if (context.Config is IProtocolConfig protocolConfig)
+                    {
+                        var response = GameServerService.GetResponse(context);
+
+                        if (response != null)
+                        {
+                            <span>@response.Player / @response.MaxPlayer</span>
+                        }
+                    }
+                </MudTd>
+                <MudTd DataLabel="Uptime">@UptimeString(context.Process.StartTime)</MudTd>
+             </RowTemplate>
+        </MudTable>
 
         <MudPaper Elevation="2" Class="mb-4">
             <MudToolBar>
@@ -180,12 +216,19 @@
     };
     private string _search = string.Empty;
     private MudTextField<string>? _commandTextField;
+    private Timer? timer;
 
     protected override void OnInitialized()
     {
         GameServerService.GameServersHasChanged += () => InvokeAsync(StateHasChanged);
+        timer = new Timer((state) => InvokeAsync(StateHasChanged), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
 
         Subscribe();
+    }
+
+    public void Dispose()
+    {
+        timer?.Dispose();
     }
 
     protected override Task OnParametersSetAsync()
@@ -236,6 +279,18 @@
         }
     }
 
+    private string UptimeString(DateTime? startTime)
+    {
+        if (startTime == null)
+        {
+            return "0:00:00:00";
+        }
+
+        TimeSpan t = TimeSpan.FromSeconds((DateTime.Now - startTime.Value).TotalSeconds);
+
+        return string.Format("{0}:{1:D2}:{2:D2}:{3:D2}", (int)t.TotalDays, t.Hours, t.Minutes, t.Seconds);
+    }
+
     private async Task Search(MouseEventArgs args)
     {
         if (_terminal != null)
@@ -258,7 +313,14 @@
     {
         if (_gameServer != null && _gameServer.Process.Mode == ProcessEx.ConsoleType.PseudoConsole)
         {
-            _gameServer.Process.Write(args.Key);
+            try
+            {
+                _gameServer.Process.Write(args.Key);
+            }
+            catch
+            {
+                // Cannot write
+            }
         }
     }
 
@@ -276,7 +338,15 @@
     {
         if (_gameServer != null && _commandTextField != null)
         {
-            _gameServer.Process.WriteLine(_commandTextField.Value ?? string.Empty);
+            try
+            {
+                _gameServer.Process.WriteLine(_commandTextField.Value ?? string.Empty);
+            }
+            catch
+            {
+                // Cannot write
+            }
+
             await _commandTextField.Clear();
         }
     }
@@ -497,7 +567,8 @@
 
         try
         {
-            await GameServerService.Restore(gameServer, null);
+            // TODO: restore file
+            await GameServerService.Restore(gameServer, string.Empty);
             Snackbar.Add($"{gameServer.Config.Basic.Name}: Restored", Severity.Success);
         }
         catch (Exception e)

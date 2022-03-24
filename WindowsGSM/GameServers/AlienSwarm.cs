@@ -27,7 +27,6 @@ namespace WindowsGSM.GameServers
             {
                 Game = "swarm",
                 AppId = "635",
-                Username = "anonymous",
             },
         };
     }

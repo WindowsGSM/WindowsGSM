@@ -24,7 +24,7 @@ namespace WindowsGSM.GameServers
                     MapName = response.Map,
                     Player = player,
                     MaxPlayer = response.MaxPlayers,
-                    Bot = response.Bots,
+                    Bot = response.Bots
                 };
 
                 return protocolResponse;
@@ -37,13 +37,12 @@ namespace WindowsGSM.GameServers
             public string StartPath { get; set; } = "Mordhau\\Binaries\\Win64\\MordhauServer-Win64-Shipping.exe";
 
             [TextField(Label = "Start Parameter")]
-            public string StartParameter { get; set; } = "FFA_ThePit -MultiHome=0.0.0.0 -Port=7777 -QueryPort=27015 -log";
+            public string StartParameter { get; set; } = "FFA_ThePit -Port=7777 -QueryPort=27015 -BeaconPort=15000 -log";
 
             [RadioGroup(Text = "Console Mode")]
-            [Radio(Option = "Pseudo Console")]
             [Radio(Option = "Redirect")]
             [Radio(Option = "Windowed")]
-            public string ConsoleMode { get; set; } = "Pseudo Console";
+            public string ConsoleMode { get; set; } = "Redirect";
         }
 
         public class Configuration : IConfig, ISteamCMDConfig, IProtocolConfig
@@ -61,7 +60,13 @@ namespace WindowsGSM.GameServers
             public AdvancedConfig Advanced { get; set; } = new();
 
             [TabPanel(Text = "Backup")]
-            public BackupConfig Backup { get; set; } = new();
+            public BackupConfig Backup { get; set; } = new()
+            {
+                Entries =
+                {
+                    "Mordhau\\Saved"
+                }
+            };
 
             [TabPanel(Text = "Start")]
             public StartConfig Start { get; set; } = new();
@@ -70,11 +75,14 @@ namespace WindowsGSM.GameServers
             public SteamCMDConfig SteamCMD { get; set; } = new()
             {
                 AppId = "629800",
-                Username = "anonymous",
+                Username = "anonymous"
             };
 
             [TabPanel(Text = "Protocol")]
-            public ProtocolConfig Protocol { get; set; } = new();
+            public ProtocolConfig Protocol { get; set; } = new()
+            {
+                QueryPort = 27015
+            };
         }
 
         public string Name => "MORDHAU Dedicated Server";
@@ -91,7 +99,26 @@ namespace WindowsGSM.GameServers
 
         public Task<List<string>> GetVersions() => SteamCMD.GetVersions(this);
 
-        public Task Install(string version) => SteamCMD.Start(this);
+        public async Task Install(string version)
+        {
+            await SteamCMD.Start(this);
+
+            // Once downloaded, the app needs to be run once to generate the config files
+            await Start();
+            await Stop();
+
+            // Edit Game.ini config
+            string path = Path.Combine(Config.Basic.Directory, "Mordhau", "Saved", "Config", "WindowsServer", "Game.ini");
+
+            // Set bAdvertiseServerViaSteam to true
+            if (File.Exists(path))
+            {
+                string text = await File.ReadAllTextAsync(path);
+                string contents = text.Replace("bAdvertiseServerViaSteam=False", "bAdvertiseServerViaSteam=True");
+
+                await File.WriteAllTextAsync(path, contents);
+            }
+        }
 
         public Task Update(string version) => SteamCMD.Start(this);
 
@@ -99,27 +126,16 @@ namespace WindowsGSM.GameServers
         {
             Configuration config = (Configuration)Config;
 
-            if (config.Start.ConsoleMode == "Pseudo Console")
-            {
-                Process.UsePseudoConsole(new()
-                {
-                    WorkingDirectory = config.Basic.Directory,
-                    FileName = Path.Combine(config.Basic.Directory, config.Start.StartPath),
-                    Arguments = config.Start.StartParameter,
-                });
-            }
-            else if (config.Start.ConsoleMode == "Redirect")
+            if (config.Start.ConsoleMode == "Redirect")
             {
                 Process.UseRedirect(new()
                 {
                     WorkingDirectory = config.Basic.Directory,
                     FileName = Path.Combine(config.Basic.Directory, config.Start.StartPath),
                     Arguments = config.Start.StartParameter,
-                    CreateNoWindow = true,
                     UseShellExecute = false,
-                    RedirectStandardInput = true,
                     RedirectStandardOutput = true,
-                    RedirectStandardError = true,
+                    RedirectStandardError = true
                 });
             }
             else
@@ -128,7 +144,7 @@ namespace WindowsGSM.GameServers
                 {
                     WorkingDirectory = config.Basic.Directory,
                     FileName = Path.Combine(config.Basic.Directory, config.Start.StartPath),
-                    Arguments = config.Start.StartParameter,
+                    Arguments = config.Start.StartParameter
                 });
             }
 

@@ -30,8 +30,8 @@ namespace WindowsGSM.GameServers.Configs
         [TextField(Label = "Beta Password", HelperText = "Beta branch password, some beta branches are protected by a password.")]
         public string BetaPassword { get; set; } = string.Empty;
 
-        [CheckBox(Label = "Validate On Create", HelperText = "Validate will check all the server files to make sure they match the SteamCMD files.", IsSwitch = true)]
-        public bool ValidateOnCreate { get; set; } = true;
+        [CheckBox(Label = "Validate On Install", HelperText = "Validate will check all the server files to make sure they match the SteamCMD files.", IsSwitch = true)]
+        public bool ValidateOnInstall { get; set; } = true;
 
         [CheckBox(Label = "Validate On Update", HelperText = "Validate will check all the server files to make sure they match the SteamCMD files.", IsSwitch = true)]
         public bool ValidateOnUpdate { get; set; }

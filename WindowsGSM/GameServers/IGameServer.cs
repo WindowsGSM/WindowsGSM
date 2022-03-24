@@ -41,6 +41,8 @@ namespace WindowsGSM.GameServers
         /// </summary>
         public ProcessEx Process { get; set; }
 
+        public Task<List<string>> GetVersions();
+
         public Task Install(string version);
 
         public Task Update(string version);
@@ -48,8 +50,6 @@ namespace WindowsGSM.GameServers
         public Task Start();
 
         public Task Stop();
-
-        public Task<List<string>> GetVersions();
 
         public void UpdateStatus(Status status)
         {

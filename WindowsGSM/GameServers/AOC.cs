@@ -3,6 +3,9 @@ using WindowsGSM.GameServers.Engines;
 
 namespace WindowsGSM.GameServers
 {
+    /// <summary>
+    /// Age of Chivalry Dedicated Server
+    /// </summary>
     public class AOC : SourceEngine
     {
         public override string Name => "Age of Chivalry Dedicated Server";
@@ -14,21 +17,23 @@ namespace WindowsGSM.GameServers
             ClassName = nameof(AOC),
             Start =
             {
-                StartParameter = "-console -game ageofchivalry +ip 0.0.0.0 -port 27015 +maxplayers 32 +map aoc_siege",
+                StartParameter = "-console -game ageofchivalry +ip 0.0.0.0 -port 27015 +maxplayers 32 +map aoc_siege"
             },
             Backup =
             {
                 Entries =
                 {
-                    
+                    "ageofchivalry\\addons",
+                    "ageofchivalry\\cfg",
+                    "ageofchivalry\\maps"
                 },
             },
             SteamCMD =
             {
                 Game = "ageofchivalry",
                 AppId = "17515",
-                Username = "anonymous",
-            },
+                Username = "anonymous"
+            }
         };
     }
 }

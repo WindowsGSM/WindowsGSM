@@ -72,7 +72,7 @@
 
     private async Task Update()
     {
-        if (_gameServer != null)
+        if (_gameServer != null && _config != null)
         {
             await _form.Validate();
 
@@ -80,6 +80,7 @@
             {
                 try
                 {
+                    _gameServer.Config = _config;
                     await _gameServer.Config.Update();
                     Snackbar.Add("Server Configuration: Saved", Severity.Success);
                 }

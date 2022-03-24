@@ -3,6 +3,9 @@ using WindowsGSM.GameServers.Engines;
 
 namespace WindowsGSM.GameServers
 {
+    /// <summary>
+    /// Alien Swarm: Reactive Drop Dedicated Server
+    /// </summary>
     public class ASRD : SourceEngine
     {
         public override string Name => "Alien Swarm: Reactive Drop Dedicated Server";
@@ -14,21 +17,23 @@ namespace WindowsGSM.GameServers
             ClassName = nameof(ASRD),
             Start =
             {
-                StartParameter = "-console -game swarm +map lobby -maxplayers 4 -autoupdate",
+                StartParameter = "-console -game reactivedrop +map lobby -maxplayers 4"
             },
             Backup =
             {
                 Entries =
                 {
-
+                    "reactivedrop\\addons",
+                    "reactivedrop\\cfg",
+                    "reactivedrop\\maps"
                 },
             },
             SteamCMD =
             {
-                Game = "swarm",
+                Game = "reactivedrop",
                 AppId = "582400",
-                Username = "anonymous",
-            },
+                Username = "anonymous"
+            }
         };
     }
 }

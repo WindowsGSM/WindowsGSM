@@ -1,5 +1,5 @@
 ﻿@inherits LayoutComponentBase
-@inject GameServerService gameServerService
+@inject GameServerService GameServerService
 
 <MudThemeProvider Theme="_theme" />
 <MudDialogProvider />
@@ -13,7 +13,7 @@
         @*<MudButton Variant="Variant.Filled" DisableElevation="true" Color="Color.Primary" Class="ml-3">Docs</MudButton>
         <MudButton Variant="Variant.Filled" DisableElevation="true" Color="Color.Primary" Class="ml-3">About</MudButton>*@
         <MudSpacer />
-        <MudDivider Vertical="true" FlexItem="true" Class="ma-4" />
+
         <MudTooltip Text="Discord">
             <MudIconButton Icon="@Icons.Custom.Brands.Discord" Color="Color.Inherit" Link="https://discord.gg/8nxm6zAtc7" Target="_blank" />
         </MudTooltip>
@@ -23,20 +23,26 @@
         <MudTooltip Text="Github Repository">
             <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/WindowsGSM/WindowsGSM/tree/main" Target="_blank" />
         </MudTooltip>
+
+        <MudDivider Vertical="true" FlexItem="true" Class="ma-4" />
+
         <MudTooltip Text="@($"Switch to {(_theme == _defaultTheme ? "Dark" : "Light")} Theme")">
-            <MudIconButton Icon="@(_theme == _defaultTheme ? Icons.Outlined.DarkMode : Icons.Filled.LightMode)" Color="Color.Inherit" Edge="Edge.End" OnClick="@((e) => DarkMode())" />
+            <MudIconButton Icon="@(_theme == _defaultTheme ? Icons.Outlined.DarkMode : Icons.Filled.LightMode)" Color="Color.Inherit" Edge="Edge.End" OnClick="@((e) => ChangeTheme())" />
         </MudTooltip>
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" Elevation="2">
         <MudDrawerHeader>
-            <MudText Typo="Typo.h5" Class="mt-1">WindowsGSM</MudText>
+            <div class="d-flex align-center">
+                <MudImage Src="favicon-32x32.png" Width="32" Alt="WindowsGSM" Elevation="25" Class="rounded-lg"/>
+                <MudText Typo="Typo.h5" Class="ml-2">WindowsGSM</MudText>
+            </div>
         </MudDrawerHeader>
         <MudNavMenu Class="mud-width-full" Bordered="true">
             @*<MudNavLink Href="/dashboard" Icon="@Icons.Filled.Dashboard">Dashboard</MudNavLink>*@
             <MudNavLink Href="/servers" Match="NavLinkMatch.All" Icon="@Icons.Filled.Storage">Servers</MudNavLink>
 
             <MudNavGroup Title="Control Panel" Icon="@Icons.Filled.DisplaySettings" Expanded="true" Class="mt-3">
-                @foreach (IGameServer gameServer in gameServerService.Instances)
+                @foreach (IGameServer gameServer in GameServerService.Instances)
                 {
                     <MudNavLink Href="@($"/servers/{gameServer.Config.Guid}")">@gameServer.Config.Basic.Name</MudNavLink>
                 }
@@ -51,6 +57,11 @@
 @code {
     private bool _drawerOpen = true;
 
+    private enum Theme
+    {
+        Default, Dark
+    }
+
     private void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
@@ -58,13 +69,22 @@
 
     protected override void OnInitialized()
     {
-        _theme = _defaultTheme;
+        if (StorageService.TryGetItem<Theme>(nameof(Theme), out Theme theme))
+        {
+            _theme = theme == Theme.Default ? _defaultTheme : _darkTheme;
+        }
+        else
+        {
+            _theme = _defaultTheme;
+        }
+
         GameServerService.GameServersHasChanged += () => InvokeAsync(StateHasChanged);
     }
 
-    private void DarkMode()
+    private void ChangeTheme()
     {
         _theme = _theme == _defaultTheme ? _darkTheme : _defaultTheme;
+        StorageService.SetItem(nameof(Theme), _theme == _defaultTheme ? Theme.Default : Theme.Dark);
     }
 
     private MudTheme _theme = new();
@@ -88,8 +108,8 @@
             BackgroundGrey = "#27272f",
             Surface = "#373740",
             DrawerBackground = "#27272f",
-            DrawerText = "rgba(255,255,255, 0.50)",
-            DrawerIcon = "rgba(255,255,255, 0.50)",
+            DrawerText = "rgba(255,255,255, 0.70)",
+            DrawerIcon = "rgba(255,255,255, 0.70)",
             AppbarBackground = "#27272f",
             AppbarText = "rgba(255,255,255, 0.70)",
             TextPrimary = "rgba(255,255,255, 0.70)",

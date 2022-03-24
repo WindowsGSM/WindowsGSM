@@ -6,6 +6,9 @@ using WindowsGSM.Utilities;
 
 namespace WindowsGSM.GameServers
 {
+    /// <summary>
+    /// Subsistence Dedicated Server
+    /// </summary>
     public class Subsistence : IGameServer
     {
         public class StartConfig : IStartConfig
@@ -15,10 +18,6 @@ namespace WindowsGSM.GameServers
 
             [TextField(Label = "Start Parameter")]
             public string StartParameter { get; set; } = "server coldmap1?steamsockets -log";
-
-            [RadioGroup(Text = "Console Type")]
-            [Radio(Option = "Windowed")]
-            public string ConsoleMode { get; set; } = "Windowed";
         }
 
         public class Configuration : IConfig, ISteamCMDConfig, IProtocolConfig
@@ -41,7 +40,7 @@ namespace WindowsGSM.GameServers
                 Entries =
                 {
                     "UDKGame"
-                },
+                }
             };
 
             [TabPanel(Text = "Start")]
@@ -51,11 +50,14 @@ namespace WindowsGSM.GameServers
             public SteamCMDConfig SteamCMD { get; set; } = new()
             {
                 AppId = "1362640",
-                Username = "anonymous",
+                Username = "anonymous"
             };
 
             [TabPanel(Text = "Protocol")]
-            public ProtocolConfig Protocol { get; set; } = new();
+            public ProtocolConfig Protocol { get; set; } = new()
+            {
+                QueryPort = 27015
+            };
         }
 
         public string Name => "Subsistence Dedicated Server";
@@ -91,7 +93,7 @@ namespace WindowsGSM.GameServers
             {
                 WorkingDirectory = config.Basic.Directory,
                 FileName = Path.Combine(config.Basic.Directory, config.Start.StartPath),
-                Arguments = config.Start.StartParameter,
+                Arguments = config.Start.StartParameter
             });
 
             return Process.Start();

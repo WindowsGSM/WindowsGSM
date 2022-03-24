@@ -18,8 +18,8 @@
                 </MudSelect>
             }
 
-            <MudTextField @bind-Value="@_basic.Name" Label="Name" HelperText="Server Display Name (You can change it later)"></MudTextField>
-            <MudTextField @bind-Value="@_basic.Directory" Label="Directory" HelperText="Server Create Directory"></MudTextField>
+            <MudTextField @bind-Value="@_basic.Name" Label="Name" HelperText="Server Display Name (You can change it later)" Required="true"></MudTextField>
+            <MudTextField @bind-Value="@_basic.Directory" Label="Directory" HelperText="Server Install Directory" Required="true"></MudTextField>
 
             <MudSelect @ref="_select" T="string" Value="@_version" Label="Version" HelperText="@($"{_versions.Count} versions available")">
                 @if (_versions.Count <= 0)
@@ -48,9 +48,9 @@
             @{
                 List<PropertyInfo> tabs = new();
 
-                if (_gameServer.Config.TryGetPropertyInfo("Create", out PropertyInfo? createTab))
+                if (_gameServer.Config.TryGetPropertyInfo("Install", out PropertyInfo? installTab))
                 {
-                    tabs.Add(createTab);
+                    tabs.Add(installTab);
                 }
 
                 if (_gameServer.Config.TryGetPropertyInfo("SteamCMD", out PropertyInfo? steamCMDTab))

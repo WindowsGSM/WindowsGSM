@@ -14,7 +14,7 @@ namespace WindowsGSM.GameServers
             ClassName = nameof(BGT),
             Start =
             {
-                StartParameter = "",
+                StartParameter = ""
             },
             Backup =
             {
