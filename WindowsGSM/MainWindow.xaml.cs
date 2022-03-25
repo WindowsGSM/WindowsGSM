@@ -113,8 +113,8 @@ namespace WindowsGSM
             Restarting = 5,
             Updated = 6,
             Updating = 7,
-            BackedUp = 8,
-            BackingUp = 9,
+            Backuped = 8,
+            Backuping = 9,
             Restored = 10,
             Restoring = 11,
             Deleting = 12
@@ -681,8 +681,8 @@ namespace WindowsGSM
                     case ServerStatus.Restarting: status = "Restarting"; break;
                     case ServerStatus.Updated: status = "Updated"; break;
                     case ServerStatus.Updating: status = "Updating"; break;
-                    case ServerStatus.BackedUp: status = "BackedUp"; break;
-                    case ServerStatus.BackingUp: status = "BackingUp"; break;
+                    case ServerStatus.Backuped: status = "Backuped"; break;
+                    case ServerStatus.Backuping: status = "Backuping"; break;
                     case ServerStatus.Restored: status = "Restored"; break;
                     case ServerStatus.Restoring: status = "Restoring"; break;
                     case ServerStatus.Deleting: status = "Deleting"; break;
