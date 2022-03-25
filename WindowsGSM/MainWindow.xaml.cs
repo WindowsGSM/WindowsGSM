@@ -2138,9 +2138,9 @@ namespace WindowsGSM
             }
 
             //Begin backup
-            _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.BackingUp;
+            _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Backuping;
             Log(server.ID, "Action: Backup" + notes);
-            SetServerStatus(server, "BackingUp");
+            SetServerStatus(server, "Backuping");
 
             //End All Running Process
             await EndAllRunningProcess(server.ID);
@@ -2212,7 +2212,7 @@ namespace WindowsGSM
             }
 
             _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
-            Log(server.ID, "Server: BackedUp");
+            Log(server.ID, "Server: Backuped");
             SetServerStatus(server, "Stopped");
 
             return true;
