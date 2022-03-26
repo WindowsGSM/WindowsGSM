@@ -13,10 +13,10 @@ namespace WindowsGSM.GameServers
     {
         public class StartConfig : IStartConfig
         {
-            [TextField(Label = "Start Path", Required = true)]
+            [TextField(Label = "Start Path", HelperText = "Path to start the application.", Required = true)]
             public string StartPath { get; set; } = "Binaries\\Win64\\UDK.exe";
 
-            [TextField(Label = "Start Parameter")]
+            [TextField(Label = "Start Parameter", HelperText = "Command-line arguments to use when starting the application.")]
             public string StartParameter { get; set; } = "server coldmap1?steamsockets -log";
         }
 
@@ -103,7 +103,7 @@ namespace WindowsGSM.GameServers
         {
             Process.Kill();
 
-            bool exited = await Process.WaitForExit(5000);
+            bool exited = await Process.WaitForExit((int)TimeSpan.FromSeconds(10).TotalMilliseconds);
 
             if (!exited)
             {

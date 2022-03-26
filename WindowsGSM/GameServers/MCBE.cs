@@ -12,10 +12,10 @@ namespace WindowsGSM.GameServers
     {
         public class StartConfig : IStartConfig
         {
-            [TextField(Label = "Start Path", Required = true)]
+            [TextField(Label = "Start Path", HelperText = "Path to start the application.", Required = true)]
             public string StartPath { get; set; } = "bedrock_server.exe";
 
-            [TextField(Label = "Start Parameter")]
+            [TextField(Label = "Start Parameter", HelperText = "Command-line arguments to use when starting the application.")]
             public string StartParameter { get; set; } = string.Empty;
 
             [RadioGroup(Text = "Console Type")]
@@ -46,15 +46,7 @@ namespace WindowsGSM.GameServers
             public AdvancedConfig Advanced { get; set; } = new();
 
             [TabPanel(Text = "Backup")]
-            public BackupConfig Backup { get; set; } = new()
-            {
-                Entries =
-                {
-                    "tf\\addons",
-                    "tf\\cfg",
-                    "tf\\maps",
-                },
-            };
+            public BackupConfig Backup { get; set; } = new();
 
             [TabPanel(Text = "Start")]
             public StartConfig Start { get; set; } = new();
@@ -63,9 +55,9 @@ namespace WindowsGSM.GameServers
             public InstallConfig Install { get; set; } = new();
         }
 
-        public string Name => "Minecraft: Bedrock Edition Server";
+        public string Name => "Minecraft: Bedrock Edition Dedicated Server";
 
-        public string ImageSource => $"/images/games/{nameof(MCBE)}.png";
+        public string ImageSource => $"/images/games/{nameof(MCBE)}.jpg";
 
         public IProtocol? Protocol => null;
 
@@ -144,7 +136,7 @@ namespace WindowsGSM.GameServers
         {
             Process.WriteLine("stop");
 
-            bool exited = await Process.WaitForExit(5000);
+            bool exited = await Process.WaitForExit((int)TimeSpan.FromSeconds(10).TotalMilliseconds);
 
             if (!exited)
             {

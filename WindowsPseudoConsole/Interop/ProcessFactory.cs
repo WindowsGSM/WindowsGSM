@@ -5,10 +5,10 @@ namespace WindowsPseudoConsole.Interop
 {
     internal static class ProcessFactory
     {
-        public static Process Start(string command, IntPtr attributes, IntPtr hPC)
+        public static Process Start(string command, string workingDirectory, IntPtr attributes, IntPtr hPC)
         {
             var startupInfo = ConfigureProcessThread(hPC, attributes);
-            var processInfo = RunProcess(ref startupInfo, command);
+            var processInfo = RunProcess(ref startupInfo, command, workingDirectory);
             return new Process(startupInfo, processInfo);
         }
 
@@ -63,7 +63,7 @@ namespace WindowsPseudoConsole.Interop
             return startupInfo;
         }
 
-        private static ProcessInfo RunProcess(ref StartInfoExtended sInfoEx, string commandLine)
+        private static ProcessInfo RunProcess(ref StartInfoExtended sInfoEx, string commandLine, string currentDirectory)
         {
             int securityAttributeSize = Marshal.SizeOf<SecurityAttributes>();
             var pSec = new SecurityAttributes { nLength = securityAttributeSize };
@@ -76,7 +76,7 @@ namespace WindowsPseudoConsole.Interop
                 bInheritHandles: false,
                 dwCreationFlags: Constants.EXTENDED_STARTUPINFO_PRESENT,
                 lpEnvironment: IntPtr.Zero,
-                lpCurrentDirectory: null,
+                lpCurrentDirectory: currentDirectory,
                 lpStartupInfo: ref sInfoEx,
                 lpProcessInformation: out ProcessInfo pInfo
             );

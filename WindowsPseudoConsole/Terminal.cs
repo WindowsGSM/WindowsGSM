@@ -53,18 +53,28 @@ namespace WindowsPseudoConsole
         /// <param name="consoleWidth"></param>
         /// <param name="consoleHeight"></param>
         /// <returns></returns>
-        public ProcessInfo Start(string shellCommand, short consoleWidth, short consoleHeight)
+        public ProcessInfo Start(string shellCommand, string workingDirectory, short consoleWidth, short consoleHeight)
         {
             input = new Pipe();
             output = new Pipe();
 
             console = PseudoConsole.Create(input.Read, output.Write, consoleWidth, consoleHeight);
-            process = ProcessFactory.Start(shellCommand, PseudoConsole.PseudoConsoleThreadAttribute, console.Handle);
+            process = ProcessFactory.Start(shellCommand, workingDirectory, PseudoConsole.PseudoConsoleThreadAttribute, console.Handle);
 
             Input = new FileStream(input.Write, FileAccess.Write);
             Output = new FileStream(output.Read, FileAccess.Read);
 
             return process.ProcessInfo;
+        }
+
+        /// <summary>
+        /// Resize the console
+        /// </summary>
+        /// <param name="consoleWidth"></param>
+        /// <param name="consoleHeight"></param>
+        public void Resize(short consoleWidth, short consoleHeight)
+        {
+            console?.Resize(consoleWidth, consoleHeight);
         }
 
         /// <summary>

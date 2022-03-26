@@ -119,7 +119,7 @@
                 </div>*@
 
                 <div style="background-color:black;">
-                    <Xterm @ref="_terminal" Options="_options" AddonIds="_addonIds" OnFirstRender="@OnFirstRender" OnKey="@OnKey" />
+                    <Xterm @ref="_terminal" Options="_options" AddonIds="_addonIds" OnFirstRender="@OnXtermRender" OnKey="@OnKey" />
                 </div>
 
                 @if (_gameServer.Process.Mode == ProcessEx.ConsoleType.Redirect)
@@ -167,7 +167,7 @@
                             T="string"
                             Label="Latest Stable Version"
                             ReadOnly="true"
-                            Value="@((versionData == null || versionData.Versions.Count > 0) ? string.Empty : versionData.Versions[0])"
+                            Value="@((versionData == null || versionData.Versions.Count <= 0) ? string.Empty : versionData.Versions[0])"
                             HelperText="@($"Last fetch: {(versionData?.DateTime.ToString() ?? "-")}")" />
                     }
 
@@ -198,7 +198,7 @@
                                 T="string"
                                 Label="Latest Stable Version"
                                 ReadOnly="true"
-                                Value="@((versionData2 == null || versionData2.Versions.Count > 0) ? string.Empty : versionData2.Versions[0])"
+                                Value="@((versionData2 == null || versionData2.Versions.Count <= 0) ? string.Empty : versionData2.Versions[0])"
                                 HelperText="@($"Last fetch: {(versionData2?.DateTime.ToString() ?? "-")}")" />
                         }
                     }
@@ -218,7 +218,7 @@
     {
         CursorBlink = true,
         CursorStyle = CursorStyle.Bar,
-        WindowsMode = true,
+        WindowsMode = true
     };
     private string[] _addonIds =
     {
@@ -248,7 +248,7 @@
         Unsubscribe();
         Subscribe();
 
-        return OnFirstRender();
+        return OnXtermRender();
     }
 
     private void Subscribe()
@@ -274,20 +274,13 @@
         }
     }
 
-    private async Task OnFirstRender()
+    private async Task OnXtermRender()
     {
-        if (_terminal != null && _gameServer != null)
+        if (_terminal != null)
         {
-            try
-            {
-                await _terminal.InvokeAddonFunctionVoidAsync("xterm-addon-fit", "fit");
-                await _terminal.Clear();
-                await _terminal.Write(_gameServer.Process.Output);
-            }
-            catch
-            {
-                _terminal = null;
-            }
+            await _terminal.InvokeAddonFunctionVoidAsync("xterm-addon-fit", "fit");
+            await _terminal.Reset();
+            await _terminal.Write(_gameServer?.Process.Output ?? string.Empty);
         }
     }
 
@@ -329,9 +322,10 @@
             {
                 _gameServer.Process.Write(args.Key);
             }
-            catch
+            catch (Exception e)
             {
                 // Cannot write
+                _terminal?.WriteLine($"Cannot write {e}");
             }
         }
     }
@@ -367,7 +361,7 @@
     {
         try
         {
-            await GameServerService.Start(gameServer);
+            await gameServer.StartAsync();
             Snackbar.Add($"{gameServer.Config.Basic.Name}: Started", Severity.Success);
         }
         catch (Exception e)
@@ -380,7 +374,7 @@
     {
         try
         {
-            await GameServerService.Stop(gameServer);
+            await gameServer.StopAsync();
             Snackbar.Add($"{gameServer.Config.Basic.Name}: Stopped", Severity.Success);
         }
         catch (Exception e)
@@ -393,7 +387,7 @@
     {
         try
         {
-            await GameServerService.Restart(gameServer);
+            await gameServer.RestartAsync();
             Snackbar.Add($"{gameServer.Config.Basic.Name}: Restarted", Severity.Success);
         }
         catch (Exception e)
@@ -406,7 +400,7 @@
     {
         try
         {
-            await GameServerService.Kill(gameServer);
+            await gameServer.KillAsync();
             Snackbar.Add($"{gameServer.Config.Basic.Name}: Killed", Severity.Success);
         }
         catch (Exception e)
@@ -478,6 +472,7 @@
             await GameServerService.Update(gameServer, version);
             Snackbar.Add($"{gameServer.Config.Basic.Name}: Updated", Severity.Success);
         }
+
         catch (Exception e)
         {
             Snackbar.Add($"{gameServer.Config.Basic.Name}: Fail to Update - {e.Message}", Severity.Error);

@@ -55,6 +55,9 @@
 </MudLayout>
 
 @code {
+    private string _version = Assembly.GetEntryAssembly()?.GetName().Version?.ToString(3) ?? string.Empty;
+    private string _service = Microsoft.Extensions.Hosting.WindowsServices.WindowsServiceHelpers.IsWindowsService() ? "Service Mode" : "User Mode";
+
     private bool _drawerOpen = true;
 
     private enum Theme

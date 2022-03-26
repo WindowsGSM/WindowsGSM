@@ -19,9 +19,9 @@ namespace WindowsGSM.GameServers
             SteamCMD =
             {
                 Game = "contagion",
-                AppId = "238430",
-                Username = "anonymous",
-            },
+                AppId = "293030",
+                Username = "anonymous"
+            }
         };
     }
 }

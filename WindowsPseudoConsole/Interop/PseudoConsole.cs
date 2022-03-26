@@ -45,5 +45,15 @@ namespace WindowsPseudoConsole.Interop
 
             return new PseudoConsole(hPC);
         }
+
+        public void Resize(short width, short height)
+        {
+            int resizeResult = ConPtyApi.ResizePseudoConsole(Handle, new Coordinates { X = width, Y = height });
+
+            if (resizeResult != 0)
+            {
+                throw InteropException.CreateWithInnerHResultException($"Could not resize pseudo console. Error Code: {resizeResult}");
+            }
+        }
     }
 }

@@ -123,7 +123,7 @@
     {
         try
         {
-            await GameServerService.Start(gameServer);
+            await gameServer.StartAsync();
             Snackbar.Add($"{gameServer.Config.Basic.Name}: Started", Severity.Success);
         }
         catch (Exception e)
@@ -136,7 +136,7 @@
     {
         try
         {
-            await GameServerService.Stop(gameServer);
+            await gameServer.StopAsync();
             Snackbar.Add($"{gameServer.Config.Basic.Name}: Stopped", Severity.Success);
         }
         catch (Exception e)
@@ -149,7 +149,7 @@
     {
         try
         {
-            await GameServerService.Restart(gameServer);
+            await gameServer.RestartAsync();
             Snackbar.Add($"{gameServer.Config.Basic.Name}: Restarted", Severity.Success);
         }
         catch (Exception e)
@@ -162,7 +162,7 @@
     {
         try
         {
-            await GameServerService.Kill(gameServer);
+            await gameServer.KillAsync();
             Snackbar.Add($"{gameServer.Config.Basic.Name}: Killed", Severity.Success);
         }
         catch (Exception e)

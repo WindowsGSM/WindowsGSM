@@ -49,11 +49,7 @@
         if (Guid.TryParse(GuidString, out Guid guid))
         {
             _gameServer = GameServerService.Instances.Where(x => x.Config.Guid == guid).FirstOrDefault();
-
-            if (_gameServer != null)
-            {
-                _config = await _gameServer.Config.Clone();
-            }
+            _config = _gameServer == null ? null : await _gameServer.Config.Clone();
         }
     }
 
@@ -91,11 +87,7 @@
         NavigationManager.NavigateTo($"/servers/{guid}/configuration");
         
         _gameServer = GameServerService.Instances.Where(x => x.Config.Guid == guid).FirstOrDefault();
-
-        if (_gameServer != null)
-        {
-            _config = await _gameServer.Config.Clone();
-        }
+        _config = _gameServer == null ? null : await _gameServer.Config.Clone();
 
         await InvokeAsync(StateHasChanged);
     }

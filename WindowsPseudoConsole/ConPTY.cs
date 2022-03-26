@@ -59,16 +59,9 @@ namespace WindowsPseudoConsole
                 throw new Exception("WorkingDirectory is not set");
             }
 
-            string filePath = Path.Combine(WorkingDirectory, FileName);
-
-            if (!File.Exists(filePath))
-            {
-                throw new Exception($"File does not exist ({filePath})");
-            }
-
             // Start pseudo console
             terminal = new Terminal();
-            ProcessInfo processInfo = terminal.Start($"{filePath}{(string.IsNullOrEmpty(Arguments) ? string.Empty : $" {Arguments}")}", width, height);
+            ProcessInfo processInfo = terminal.Start($"{FileName}{(string.IsNullOrEmpty(Arguments) ? string.Empty : $" {Arguments}")}", WorkingDirectory, width, height);
 
             // Save the inputStream
             inputStream = terminal.Input;
@@ -89,43 +82,13 @@ namespace WindowsPseudoConsole
         }
 
         /// <summary>
-        /// Start pseudo console
+        /// Resize pseudo console
         /// </summary>
-        [Obsolete]
-        public ProcessInfo Start(string fileName, short width = 120, short height = 30)
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        public void Resize(short width, short height)
         {
-            if (WorkingDirectory == null)
-            {
-                throw new Exception("WorkingDirectory is not set");
-            }
-
-            string filePath = Path.Combine(WorkingDirectory, fileName);
-
-            if (!File.Exists(filePath))
-            {
-                throw new Exception($"File does not exist ({filePath})");
-            }
-
-            // Start pseudo console
-            terminal = new Terminal();
-            ProcessInfo processInfo = terminal.Start($"{filePath}{(string.IsNullOrEmpty(Arguments) ? string.Empty : $" {Arguments}")}", width, height);
-
-            // Save the inputStream
-            inputStream = terminal.Input;
-
-            // Read pseudo console output in the background
-            Task.Run(() => ReadConPtyOutput(terminal.Output));
-
-            // Wait the pseudo console exit in the background
-            Task.Run(() =>
-            {
-                terminal.WaitForExit();
-
-                // Call Exited event with exit code
-                Exited?.Invoke(this, terminal.TryGetExitCode(out uint exitCode) ? (int)exitCode : -1);
-            });
-
-            return processInfo;
+            terminal?.Resize(width, height);
         }
 
         /// <summary>
@@ -180,52 +143,25 @@ namespace WindowsPseudoConsole
 
         private async Task ReadConPtyOutput(Stream output)
         {
-            bool titleInvoked = false;
-            string title = string.Empty;
-            const string cursorLow = "\x1B[?25l", cursorHigh = "\x1B[?25h";
-
             var regex = new Regex(@"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])");
 
             try
             {
-                using (var reader = new StreamReader(output))
+                using var reader = new StreamReader(output);
+                char[] buffer = new char[1024];
+
+                while (true)
                 {
-                    char[] buffer = new char[1024];
+                    int readed = reader.Read(buffer, 0, buffer.Length);
 
-                    while (true)
+                    if (readed > 0)
                     {
-                        int readed = reader.Read(buffer, 0, buffer.Length);
+                        var outputData = new string(buffer.Take(readed).ToArray());
 
-                        if (readed > 0)
-                        {
-                            var outputData = new string(buffer.Take(readed).ToArray());
-
-                            if (!titleInvoked)
-                            {
-                                title += outputData;
-
-                                string[] subs = title.Split(new string[] { cursorLow, cursorHigh }, 2, StringSplitOptions.None);
-
-                                if (subs.Length <= 1)
-                                {
-                                    continue;
-                                }
-
-                                titleInvoked = true;
-
-                                title = regex.Replace(subs[0], string.Empty).TrimEnd('\x7');
-                                title = title.StartsWith("0;") ? title.Substring(2) : title;
-
-                                TitleReceived?.Invoke(this, title);
-
-                                outputData = cursorLow + subs[1];
-                            }
-
-                            OutputDataReceived?.Invoke(this, FilterControlSequences ? regex.Replace(outputData, string.Empty) : outputData);
-                        }
-
-                        await Task.Delay(1).ConfigureAwait(false);
+                        OutputDataReceived?.Invoke(this, FilterControlSequences ? regex.Replace(outputData, string.Empty) : outputData);
                     }
+
+                    await Task.Delay(1).ConfigureAwait(false);
                 }
             }
             catch (ObjectDisposedException)

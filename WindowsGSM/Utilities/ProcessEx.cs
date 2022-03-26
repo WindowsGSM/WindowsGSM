@@ -132,7 +132,7 @@ namespace WindowsGSM.Utilities
 
             if (Mode == ConsoleType.PseudoConsole && _pseudoConsole != null)
             {
-                ProcessInfo processInfo = _pseudoConsole.Start();
+                ProcessInfo processInfo = _pseudoConsole.Start(1000);
                 _process = Process.GetProcessById(processInfo.dwProcessId);
                 _process.EnableRaisingEvents = true;
                 _process.Exited += (s, e) => Exited?.Invoke(_process.ExitCode);
@@ -214,6 +214,11 @@ namespace WindowsGSM.Utilities
                     }
                 }
             }
+        }
+
+        public void Resize(short width, short height)
+        {
+            _pseudoConsole?.Resize(width, height);
         }
 
         public void Kill()

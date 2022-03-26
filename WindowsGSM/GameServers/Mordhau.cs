@@ -155,7 +155,7 @@ namespace WindowsGSM.GameServers
         {
             Process.Kill();
 
-            bool exited = await Process.WaitForExit(5000);
+            bool exited = await Process.WaitForExit((int)TimeSpan.FromSeconds(10).TotalMilliseconds);
 
             if (!exited)
             {
