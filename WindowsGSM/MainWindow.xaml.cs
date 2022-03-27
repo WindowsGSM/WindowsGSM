@@ -685,7 +685,7 @@ namespace WindowsGSM
                     case ServerStatus.Backuping: status = "Backuping"; break;
                     case ServerStatus.Restored: status = "Restored"; break;
                     case ServerStatus.Restoring: status = "Restoring"; break;
-                    case ServerStatus.Deleting: status = "Deleteing"; break;
+                    case ServerStatus.Deleting: status = "Deleting"; break;
                     default:
                         {
                             _serverMetadata[i].ServerStatus = ServerStatus.Stopped;
