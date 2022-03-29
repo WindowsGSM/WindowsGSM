@@ -3102,71 +3102,75 @@ namespace WindowsGSM
             string latestVersion = await GetLatestVersion();
             await controller.CloseAsync();
 
+            if (string.IsNullOrEmpty(latestVersion))
+            {
+                await this.ShowMessageAsync("Software Updates", "Fail to get latest version, please try again later.");
+                return;
+            }
+
             if (latestVersion == WGSM_VERSION)
             {
                 await this.ShowMessageAsync("Software Updates", "WindowsGSM is up to date.");
                 return;
             }
-            else
+
+            var settings = new MetroDialogSettings
             {
-                var settings = new MetroDialogSettings
+                AffirmativeButtonText = "Update",
+                DefaultButtonFocus = MessageDialogResult.Affirmative
+            };
+
+            var result = await this.ShowMessageAsync("Software Updates", $"Version {latestVersion} is available, would you like to update now?\n\nWarning: All servers will be shutdown!", MessageDialogStyle.AffirmativeAndNegative, settings);
+
+            if (result.ToString().Equals("Affirmative"))
+            {
+                string installPath = ServerPath.GetBin();
+                Directory.CreateDirectory(installPath);
+
+                string filePath = Path.Combine(installPath, "WindowsGSM-Updater.exe");
+
+                if (!File.Exists(filePath))
                 {
-                    AffirmativeButtonText = "Update",
-                    DefaultButtonFocus = MessageDialogResult.Affirmative
-                };
+                    //Download WindowsGSM-Updater.exe
+                    controller = await this.ShowProgressAsync("Downloading WindowsGSM-Updater...", "Please wait...");
+                    controller.SetIndeterminate();
+                    bool success = await DownloadWindowsGSMUpdater();
+                    await controller.CloseAsync();
+                }
 
-                var result = await this.ShowMessageAsync("Software Updates", $"Version {latestVersion} is available, would you like to update now?\n\nWarning: All servers will be shutdown!", MessageDialogStyle.AffirmativeAndNegative, settings);
-
-                if (result.ToString().Equals("Affirmative"))
+                if (File.Exists(filePath))
                 {
-                    string installPath = ServerPath.GetBin();
-                    Directory.CreateDirectory(installPath);
-
-                    string filePath = Path.Combine(installPath, "WindowsGSM-Updater.exe");
-
-                    if (!File.Exists(filePath))
+                    //Kill all the server
+                    for (int i = 0; i <= MAX_SERVER; i++)
                     {
-                        //Download WindowsGSM-Updater.exe
-                        controller = await this.ShowProgressAsync("Downloading WindowsGSM-Updater...", "Please wait...");
-                        controller.SetIndeterminate();
-                        bool success = await DownloadWindowsGSMUpdater();
-                        await controller.CloseAsync();
-                    }
-
-                    if (File.Exists(filePath))
-                    {
-                        //Kill all the server
-                        for (int i = 0; i <= MAX_SERVER; i++)
+                        if (GetServerMetadata(i).Process == null)
                         {
-                            if (GetServerMetadata(i).Process == null)
-                            {
-                                continue;
-                            }
-
-                            if (!GetServerMetadata(i).Process.HasExited)
-                            {
-                                _serverMetadata[i].Process.Kill();
-                            }
+                            continue;
                         }
 
-                        //Run WindowsGSM-Updater.exe
-                        Process updater = new Process
+                        if (!GetServerMetadata(i).Process.HasExited)
                         {
-                            StartInfo =
-                            {
-                                WorkingDirectory = installPath,
-                                FileName = filePath,
-                                Arguments = "-autostart -forceupdate"
-                            }
-                        };
-                        updater.Start();
+                            _serverMetadata[i].Process.Kill();
+                        }
+                    }
 
-                        Close();
-                    }
-                    else
+                    //Run WindowsGSM-Updater.exe
+                    Process updater = new Process
                     {
-                        await this.ShowMessageAsync("Software Updates", $"Fail to download WindowsGSM-Updater.exe");
-                    }
+                        StartInfo =
+                        {
+                            WorkingDirectory = installPath,
+                            FileName = filePath,
+                            Arguments = "-autostart -forceupdate"
+                        }
+                    };
+                    updater.Start();
+
+                    Close();
+                }
+                else
+                {
+                    await this.ShowMessageAsync("Software Updates", $"Fail to download WindowsGSM-Updater.exe");
                 }
             }
         }
