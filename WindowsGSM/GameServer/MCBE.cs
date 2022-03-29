@@ -9,20 +9,21 @@ using System;
 
 namespace WindowsGSM.GameServer
 {
-    internal class MCBEwebclient : WebClient
+    class MCBE
     {
-        protected override WebRequest GetWebRequest(Uri address)
+        internal class MCBEWebclient : WebClient
         {
-            HttpWebRequest req = (HttpWebRequest)base.GetWebRequest(address);
-            // WWW server only responds to Compression
-            req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-            // Also needs a Accept header.
-            req.Accept = "*/*";
-            return req;
+            protected override WebRequest GetWebRequest(Uri address)
+            {
+                HttpWebRequest req = (HttpWebRequest)base.GetWebRequest(address);
+                // WWW server only responds to Compression
+                req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+                // Also needs a Accept header.
+                req.Accept = "*/*";
+                return req;
+            }
         }
-    }
-        class MCBE
-    {
+
         private readonly Functions.ServerConfig _serverData;
 
         public string Error;
@@ -150,7 +151,7 @@ namespace WindowsGSM.GameServer
 
             try
             {
-                using (WebClient webClient = new MCBEwebclient())
+                using (WebClient webClient = new MCBEWebclient())
                 {
                     string html = await webClient.DownloadStringTaskAsync("https://www.minecraft.net/en-us/download/server/bedrock/");
                     Regex regex = new Regex(@"https:\/\/minecraft\.azureedge\.net\/bin-win\/(bedrock-server-(.*?)\.zip)");
@@ -187,7 +188,7 @@ namespace WindowsGSM.GameServer
         {
             try
             {
-                using (WebClient webClient = new MCBEwebclient())
+                using (WebClient webClient = new MCBEWebclient())
                 {
                     string remoteBuild = await GetRemoteBuild();
 
@@ -291,7 +292,7 @@ namespace WindowsGSM.GameServer
         {
             try
             {
-                using (WebClient webClient = new MCBEwebclient())
+                using (WebClient webClient = new MCBEWebclient())
                 {
                     string html = await webClient.DownloadStringTaskAsync("https://www.minecraft.net/en-us/download/server/bedrock/");
                     Regex regex = new Regex(@"https:\/\/minecraft\.azureedge\.net\/bin-win\/(bedrock-server-(.*?)\.zip)");
