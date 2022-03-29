@@ -56,9 +56,11 @@ namespace WindowsGSM.Installer
         // Old parameter script
         public void SetParameter(string installDir, string modName, string appId, bool validate, bool loginAnonymous = true)
         {
+            _param = $"+force_install_dir \"{installDir}\"";
+
             if (loginAnonymous)
             {
-                _param = "+login anonymous";
+                _param += " +login anonymous";
             }
             else
             {
@@ -97,10 +99,10 @@ namespace WindowsGSM.Installer
                     return;
                 }
 
-                _param = $"+login \"{steamUser}\" \"{steamPass}\"";
+                _param += $" +login \"{steamUser}\" \"{steamPass}\"";
             }
 
-            _param += $" +force_install_dir \"{installDir}\"" + (string.IsNullOrWhiteSpace(modName) ? string.Empty : $" +app_set_config 90 mod {modName}") + $" +app_update {appId}" + (validate ? " validate" : "");
+            _param += (string.IsNullOrWhiteSpace(modName) ? string.Empty : $" +app_set_config 90 mod {modName}") + $" +app_update {appId}" + (validate ? " validate" : "");
             
             if (appId == "90")
             {
@@ -119,20 +121,20 @@ namespace WindowsGSM.Installer
         {
             var sb = new StringBuilder();
 
+            // Set up force_install_dir parameter
+            sb.Append($"+force_install_dir \"{forceInstallDir}\"");
+
             // Set up login parameter
             if (loginAnonymous)
             {
-                sb.Append("+login anonymous");
+                sb.Append(" +login anonymous");
             }
             else
             {
                 var (username, password) = GetSteamUsernamePassword();
                 if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password)) { return null; }
-                sb.Append($"+login \"{username}\" \"{password}\"");
+                sb.Append($" +login \"{username}\" \"{password}\"");
             }
-
-            // Set up force_install_dir parameter
-            sb.Append($" +force_install_dir \"{forceInstallDir}\"");
 
             // Set up app_set_config parameter
             sb.Append(!string.IsNullOrWhiteSpace(modName) ? $" +app_set_config {appId} mod \"{modName}\"" : string.Empty);
