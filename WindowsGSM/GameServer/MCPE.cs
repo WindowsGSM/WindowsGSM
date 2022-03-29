@@ -136,8 +136,8 @@ namespace WindowsGSM.GameServer
             string serverFilesPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
 
             //Download PHP-7.4-Windows-x64.zip
-            string fileName = "PHP-7.4-Windows-x64.zip";
-            string installUrl = "https://jenkins.pmmp.io/job/PHP-7.4-Aggregate/lastStableBuild/artifact/PHP-7.4-Windows-x64.zip";
+            string fileName = "PHP-8.0-Windows-x64.zip";
+            string installUrl = "https://jenkins.pmmp.io/job/PHP-8.0-Aggregate/lastStableBuild/artifact/PHP-8.0-Windows-x64.zip";
             string PHPzipPath = Path.Combine(serverFilesPath, fileName);
             try
             {
