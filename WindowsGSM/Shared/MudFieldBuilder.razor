@@ -158,18 +158,15 @@
             {
                 <MudText Typo="Typo.body2" Color="@Color.Error">@checkBox.RequiredError</MudText>
             }
-        }  
+        }
     }
-    else if (field.TryGetCustomAttribute<RadioGroupAttribute>(out RadioGroupAttribute? radioGroup))
+    else if (field.TryGetCustomAttribute<RadioGroupAttribute>(out RadioGroupAttribute? radioGroup) && field.TryGetCustomAttributes<RadioAttribute>(out List<RadioAttribute> radios))
     {
         <MudField Label="@radioGroup.Text" Variant="Variant.Text" InnerPadding="false" HelperText="@radioGroup.HelperText">
-            <MudRadioGroup T="string" SelectedOption="@field.GetValue(_config)?.ToString()" SelectedOptionChanged="@((e) => field.SetValue(_config, e))">
-                @if (field.TryGetCustomAttributes<RadioAttribute>(out List<RadioAttribute> radios))
+            <MudRadioGroup T="string" SelectedOptionChanged="@((e) => field.SetValue(_config, e))" SelectedOption="@field.GetValue(_config)?.ToString()"> @* TODO: Radio button issue *@
+                @foreach (RadioAttribute radio in radios)
                 {
-                    @foreach (RadioAttribute radio in radios)
-                    {
-                        <MudRadio Option="@radio.Option" Color="Color.Primary" Class="mr-2">@radio.Option</MudRadio>
-                    }
+                    <MudRadio T="string" Option="@radio.Option" Color="Color.Primary" Class="mr-2">@radio.Option</MudRadio>
                 }
             </MudRadioGroup>
         </MudField>
