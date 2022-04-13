@@ -8,9 +8,20 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="BatchScripts\FileBrowser.bat" />
+    <None Remove="FolderBrowser.bat" />
+  </ItemGroup>
 	
   <ItemGroup>
-    <Content Include="ProcessEx.Windowed.bat">
+    <Content Include="BatchScripts\FileBrowser.bat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="BatchScripts\FolderBrowser.bat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="BatchScripts\ProcessEx.Windowed.bat">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -24,10 +35,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.0" />
-    <PackageReference Include="MudBlazor" Version="6.0.7" />
+    <PackageReference Include="MudBlazor" Version="6.0.9" />
     <PackageReference Include="OpenGSQ" Version="1.3.0" />
     <PackageReference Include="System.Management" Version="6.0.0" />
-    <PackageReference Include="XtermBlazor" Version="1.4.0" />
+    <PackageReference Include="XtermBlazor" Version="1.5.0" />
   </ItemGroup>
 
   <ItemGroup>

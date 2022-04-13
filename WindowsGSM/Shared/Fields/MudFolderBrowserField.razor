@@ -1,4 +1,5 @@
 ﻿@inherits MudTextField<string>
+@using WindowsGSM.BatchScripts
 @inject IDialogService DialogService
 
 @{
@@ -6,9 +7,6 @@
 }
 
 @code {
-    [Parameter]
-    public IConfig Config { get; set; } = null!;
-
     private DialogOptions _options = new DialogOptions
     {
         MaxWidth = MaxWidth.Large,
@@ -19,17 +17,19 @@
 
     protected override void OnInitialized()
     {
-        //base.AdornmentIcon = Icons.Filled.FolderOpen;
-        //base.Adornment = Adornment.End;
+        // base.AdornmentIcon = Icons.Filled.FolderOpen;
+        base.Adornment = Adornment.End;
         base.OnAdornmentClick = EventCallback.Factory.Create<MouseEventArgs>(this, OnFolderClick);
     }
 
-    private void OnFolderClick(MouseEventArgs args)
+    private async Task OnFolderClick(MouseEventArgs args)
     {
-        DialogParameters parameters = new();
-        parameters.Add("Config", Config);
-        parameters.Add("DefaultDirectory", Value);
+        string output = await BatchScript.RunAsync("FolderBrowser.bat", $"\"{Value}\"");
+        string path = output.TrimEnd().Split(new[] { '\n' }).Last();
 
-        IDialogReference dialogReference = DialogService.Show<MudFolderBrowserDialog>("Browser For Folder", parameters, _options);
+        if (path != "-1")
+        {
+            await base.SetValueAsync(path, true);
+        }
     }
 }

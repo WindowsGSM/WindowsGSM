@@ -134,7 +134,7 @@ namespace WindowsGSM.GameServers
 
         public async Task Stop()
         {
-            Process.WriteLine("stop");
+            await Process.WriteLine("stop");
 
             bool exited = await Process.WaitForExit((int)TimeSpan.FromSeconds(10).TotalMilliseconds);
 

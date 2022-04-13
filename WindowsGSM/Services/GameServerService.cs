@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using Microsoft.Extensions.Hosting.WindowsServices;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.Json;
@@ -13,6 +14,8 @@ namespace WindowsGSM.Services
 {
     public class GameServerService : IHostedService, IDisposable
     {
+        public static readonly bool IsWindowsService = WindowsServiceHelpers.IsWindowsService();
+
         public static readonly string BasePath = Path.GetDirectoryName(Environment.ProcessPath)!;
         public static readonly string BackupsPath = Path.Combine(BasePath, "backups");
         public static readonly string ConfigsPath = Path.Combine(BasePath, "configs");

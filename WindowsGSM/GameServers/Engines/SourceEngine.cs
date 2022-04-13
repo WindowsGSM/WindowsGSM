@@ -118,7 +118,7 @@ namespace WindowsGSM.GameServers.Engines
 
         public virtual async Task Stop()
         {
-            Process.WriteLine("quit");
+            await Process.WriteLine("quit");
 
             bool exited = await Process.WaitForExit((int)TimeSpan.FromSeconds(10).TotalMilliseconds);
 

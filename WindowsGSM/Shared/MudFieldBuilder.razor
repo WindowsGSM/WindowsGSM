@@ -24,8 +24,7 @@
                 ReadOnly="@textField.ReadOnly"
                 Placeholder="@textField.Placeholder"
                 Value="@(field.GetValue(_config)?.ToString() ?? string.Empty)"
-                ValueChanged="@((e) => field.SetValue(_config, e))"
-                Config="@Config" />
+                ValueChanged="@((e) => field.SetValue(_config, e))" />
         }
         else if (textField.ProcessorAffinity)
         {

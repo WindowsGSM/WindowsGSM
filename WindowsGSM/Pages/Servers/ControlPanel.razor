@@ -204,6 +204,9 @@
                     }
                 </div>
             </MudTabPanel>
+            <MudTabPanel Text="Events" Icon="@Icons.Filled.Event">
+
+            </MudTabPanel>
         </MudTabs>
     }
 </MudContainer>
@@ -276,7 +279,7 @@
 
     private async Task OnXtermRender()
     {
-        if (_terminal != null)
+        if (_terminal != null && !_terminal.ElementReference.Equals(default(ElementReference)))
         {
             await _terminal.InvokeAddonFunctionVoidAsync("xterm-addon-fit", "fit");
             await _terminal.Reset();
@@ -314,13 +317,13 @@
         _terminal?.Clear();
     }
 
-    private void OnKey(KeyboardEventArgs args)
+    private async Task OnKey(KeyboardEventArgs args)
     {
         if (_gameServer != null && _gameServer.Process.Mode == ProcessEx.ConsoleType.PseudoConsole)
         {
             try
             {
-                _gameServer.Process.Write(args.Key);
+                await _gameServer.Process.Write(args.Key);
             }
             catch (Exception e)
             {
@@ -346,7 +349,7 @@
         {
             try
             {
-                _gameServer.Process.WriteLine(_commandTextField.Value ?? string.Empty);
+                await _gameServer.Process.WriteLine(_commandTextField.Value ?? string.Empty);
             }
             catch
             {

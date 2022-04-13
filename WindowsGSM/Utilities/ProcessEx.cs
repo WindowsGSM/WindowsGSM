@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting.WindowsServices;
 using System.Diagnostics;
 using System.Text;
+using WindowsGSM.BatchScripts;
 using WindowsGSM.Services;
 using WindowsPseudoConsole;
 using WindowsPseudoConsole.Interop.Definitions;
@@ -160,20 +161,8 @@ namespace WindowsGSM.Utilities
                 }
                 else
                 {
-                    Process batchProcess = new()
-                    {
-                        StartInfo =
-                        {
-                            FileName = Path.Combine(GameServerService.BasePath, "ProcessEx.Windowed.bat"),
-                            Arguments = $"\"{_process.StartInfo.FileName} {_process.StartInfo.Arguments}\" \"{_process.StartInfo.WorkingDirectory}\"",
-                            UseShellExecute = false,
-                            RedirectStandardOutput = true,
-                        }
-                    };
-
-                    await TaskEx.Run(() => batchProcess.Start());
-
-                    string output = await batchProcess.StandardOutput.ReadToEndAsync();
+                    string arguments = $"\"{_process.StartInfo.FileName} {_process.StartInfo.Arguments}\" \"{_process.StartInfo.WorkingDirectory}\"";
+                    string output = await BatchScript.RunAsync("ProcessEx.Windowed.bat", arguments);
                     string pidString = output.TrimEnd().Split(new[] { '\n' }).Last();
 
                     if (int.TryParse(pidString, out int pid))
@@ -241,32 +230,37 @@ namespace WindowsGSM.Utilities
             return Task.Run(() => _process.WaitForExit(milliseconds));
         }
 
-        public void WriteLine(string data)
+        public async Task WriteLine(string data)
         {
             if (Mode == ConsoleType.PseudoConsole)
             {
-                _pseudoConsole?.WriteLine(data);
+                if (_pseudoConsole != null)
+                {
+                    await _pseudoConsole.WriteLineAsync(data);
+                }
             }
             else if (_process != null)
             {
                 if (Mode == ConsoleType.Redirect && _process.StartInfo.RedirectStandardInput)
                 {
-                    _process.StandardInput.WriteLine(data);
+                    await _process.StandardInput.WriteLineAsync(data);
                     AddOutput(data + "\r\n");
                 }
                 else// if (Mode == ConsoleType.Windowed)
                 {
-                    SendMessage(_process.MainWindowHandle, data);
-                    DllImport.PostMessage(_process.MainWindowHandle, 0x0100, (IntPtr)13, (IntPtr)(0 << 29 | 0));
+                    await Task.Run(() => SendMessage(_process.MainWindowHandle, data, true));
                 }
             }
         }
 
-        public void Write(string data)
+        public async Task Write(string data)
         {
             if (Mode == ConsoleType.PseudoConsole)
             {
-                _pseudoConsole?.Write(data);
+                if (_pseudoConsole != null)
+                {
+                    await _pseudoConsole.WriteAsync(data);
+                }
             }
             else if (_process != null)
             {
@@ -274,18 +268,18 @@ namespace WindowsGSM.Utilities
                 {
                     if (data[0] == 13)
                     {
-                        _process.StandardInput.WriteLine();
+                        await _process.StandardInput.WriteLineAsync();
                         AddOutput("\r\n");
                     }
                     else
                     {
-                        _process.StandardInput.Write(data);
+                        await _process.StandardInput.WriteLineAsync(data);
                         AddOutput(data);
                     }
                 }
                 else// if (Mode == ConsoleType.Windowed)
                 {
-                    SendMessage(_process.MainWindowHandle, data);
+                    await Task.Run(() => SendMessage(_process.MainWindowHandle, data));
                 }
             }
         }
@@ -302,7 +296,7 @@ namespace WindowsGSM.Utilities
             DllImport.SetForegroundWindow(_process.MainWindowHandle);
         }
 
-        private static void SendMessage(IntPtr windowHandle, string message)
+        private static void SendMessage(IntPtr windowHandle, string message, bool sendEnter = false)
         {
             // Here is a minor error on PostMessage, when it sends repeated char, some char may disappear. Example: send 1111111, windows may receive 1111 or 11111
             for (int i = 0; i < message.Length; i++)
@@ -315,6 +309,11 @@ namespace WindowsGSM.Utilities
                 }
 
                 DllImport.PostMessage(windowHandle, 0x0102, (IntPtr)message[i], (IntPtr)0);
+            }
+
+            if (sendEnter)
+            {
+                DllImport.PostMessage(windowHandle, 0x0100, (IntPtr)13, (IntPtr)(0 << 29 | 0));
             }
         }
 
