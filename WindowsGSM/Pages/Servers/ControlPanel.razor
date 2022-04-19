@@ -204,7 +204,7 @@
                     }
                 </div>
             </MudTabPanel>
-            <MudTabPanel Text="Events" Icon="@Icons.Filled.Event">
+            <MudTabPanel Text="Logs" Icon="@Icons.Filled.Event">
 
             </MudTabPanel>
         </MudTabs>
@@ -439,7 +439,7 @@
 
         try
         {
-            await GameServerService.Install(gameServer, version);
+            await gameServer.InstallAsync(version);
             Snackbar.Add($"{gameServer.Config.Basic.Name}: Installed", Severity.Success);
         }
         catch (Exception e)
@@ -472,7 +472,7 @@
         try
         {
             string version = dialogResult.Data.ToString()!;
-            await GameServerService.Update(gameServer, version);
+            await gameServer.UpdateAsync(version);
             Snackbar.Add($"{gameServer.Config.Basic.Name}: Updated", Severity.Success);
         }
 
@@ -508,7 +508,7 @@
 
         try
         {
-            await GameServerService.Delete(gameServer);
+            await gameServer.DeleteAsync();
             Snackbar.Add($"{name}: Deleted", Severity.Success);
 
             if (NavigationManager.ToBaseRelativePath(NavigationManager.Uri).StartsWith($"servers/{guid}"))
@@ -611,7 +611,7 @@
         try
         {
             string version = dialogResult.Data.ToString()!;
-            await GameServerService.InstallMod(gameServer, mod, version);
+            await gameServer.InstallModAsync(mod, version);
             Snackbar.Add($"{gameServer.Config.Basic.Name}: {mod.Name} Installed", Severity.Success);
         }
         catch (Exception e)
@@ -644,7 +644,7 @@
         try
         {
             string version = dialogResult.Data.ToString()!;
-            await GameServerService.UpdateMod(gameServer, mod, version);
+            await gameServer.UpdateModAsync(mod, version);
             Snackbar.Add($"{gameServer.Config.Basic.Name}: {mod.Name} Updated", Severity.Success);
         }
         catch (Exception e)
@@ -677,7 +677,7 @@
         try
         {
             string version = dialogResult.Data.ToString()!;
-            await GameServerService.DeleteMod(gameServer, mod);
+            await gameServer.DeleteModAsync(mod);
             Snackbar.Add($"{gameServer.Config.Basic.Name}: {mod.Name} Deleted", Severity.Success);
         }
         catch (Exception e)

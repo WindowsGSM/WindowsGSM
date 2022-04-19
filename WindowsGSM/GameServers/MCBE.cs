@@ -5,6 +5,7 @@ using WindowsGSM.GameServers.Components;
 using WindowsGSM.GameServers.Configs;
 using WindowsGSM.GameServers.Protocols;
 using WindowsGSM.Utilities;
+using ILogger = Serilog.ILogger;
 
 namespace WindowsGSM.GameServers
 {
@@ -60,6 +61,8 @@ namespace WindowsGSM.GameServers
         public string ImageSource => $"/images/games/{nameof(MCBE)}.jpg";
 
         public IProtocol? Protocol => null;
+
+        public ILogger Logger { get; set; } = default!;
 
         public IConfig Config { get; set; } = new Configuration();
 
@@ -172,7 +175,7 @@ namespace WindowsGSM.GameServers
             return new() { version };
         }
 
-        private async Task Download(string version, string directory)
+        private static async Task Download(string version, string directory)
         {
             using HttpClient httpClient = new(new HttpClientHandler
             {
@@ -194,10 +197,6 @@ namespace WindowsGSM.GameServers
             // Extract then delete zip
             await FileEx.ExtractZip(zipPath, directory);
             await FileEx.DeleteAsync(zipPath);
-
-            // Update the local version and save
-            Config.LocalVersion = version;
-            await Config.Update();
         }
     }
 }

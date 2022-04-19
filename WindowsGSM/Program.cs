@@ -9,7 +9,9 @@ using System.Text.Json.Serialization;
 using WindowsGSM.Utilities;
 using System.Diagnostics;
 using MudBlazor;
+using Serilog;
 using Microsoft.Extensions.Hosting.WindowsServices;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions()
 {
@@ -37,6 +39,11 @@ builder.Services.AddMudServices(config =>
 });
 
 builder.Host.UseWindowsService();
+builder.Host.UseSerilog(new LoggerConfiguration()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+            .Enrich.FromLogContext()
+            .WriteTo.Console()
+            .CreateLogger());
 
 var app = builder.Build();
 

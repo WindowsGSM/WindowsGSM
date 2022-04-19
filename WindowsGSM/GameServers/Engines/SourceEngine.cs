@@ -4,6 +4,7 @@ using WindowsGSM.GameServers.Components;
 using WindowsGSM.GameServers.Configs;
 using WindowsGSM.GameServers.Protocols;
 using WindowsGSM.Utilities;
+using ILogger = Serilog.ILogger;
 
 namespace WindowsGSM.GameServers.Engines
 {
@@ -63,6 +64,8 @@ namespace WindowsGSM.GameServers.Engines
 
         public virtual IProtocol? Protocol => new SourceProtocol();
 
+        public virtual ILogger Logger { get; set; } = default!;
+
         public virtual IConfig Config { get; set; } = new Configuration();
 
         public Status Status { get; set; }
@@ -82,9 +85,9 @@ namespace WindowsGSM.GameServers.Engines
 
         public virtual Task<List<string>> GetVersions() => SteamCMD.GetVersions(this);
 
-        public virtual Task Install(string version) => SteamCMD.Start(this);
+        public virtual Task Install(string version) => SteamCMD.Start(this, version);
 
-        public virtual Task Update(string version) => SteamCMD.Start(this);
+        public virtual Task Update(string version) => SteamCMD.Start(this, version);
 
         public virtual Task Start()
         {

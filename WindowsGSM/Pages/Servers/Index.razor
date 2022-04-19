@@ -196,7 +196,7 @@
 
         try
         {
-            await GameServerService.Install(gameServer, version);
+            await gameServer.InstallAsync(version);
             Snackbar.Add($"{gameServer.Config.Basic.Name}: Installed", Severity.Success);
         }
         catch (Exception e)

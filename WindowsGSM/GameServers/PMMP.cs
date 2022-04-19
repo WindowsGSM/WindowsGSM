@@ -5,6 +5,7 @@ using WindowsGSM.GameServers.Components;
 using WindowsGSM.GameServers.Configs;
 using WindowsGSM.GameServers.Protocols;
 using WindowsGSM.Utilities;
+using ILogger = Serilog.ILogger;
 
 namespace WindowsGSM.GameServers
 {
@@ -72,6 +73,8 @@ namespace WindowsGSM.GameServers
         public string ImageSource => $"/images/games/{nameof(PMMP)}.jpg";
 
         public IProtocol? Protocol => new GameSpy4Protocol();
+
+        public ILogger Logger { get; set; } = default!;
 
         public IConfig Config { get; set; } = new Configuration();
 
@@ -141,10 +144,6 @@ namespace WindowsGSM.GameServers
             {
                 await response3.Content.CopyToAsync(fs);
             }
-
-            // Update the local version and save
-            Config.LocalVersion = version;
-            await Config.Update();
         }
 
         public Task Start()

@@ -1,9 +1,12 @@
 ﻿using System.Runtime.InteropServices;
 using WindowsGSM.Extensions;
 using WindowsGSM.GameServers.Configs;
+using WindowsGSM.GameServers.Mods;
 using WindowsGSM.GameServers.Protocols;
 using WindowsGSM.Services;
 using WindowsGSM.Utilities;
+using static WindowsGSM.GameServers.Components.SteamCMD;
+using ILogger = Serilog.ILogger;
 
 namespace WindowsGSM.GameServers.Components
 {
@@ -26,6 +29,11 @@ namespace WindowsGSM.GameServers.Components
         /// Game Server Query Protocol
         /// </summary>
         public IProtocol? Protocol { get; }
+
+        /// <summary>
+        /// Game Server Logger
+        /// </summary>
+        public ILogger Logger { get; set; }
 
         /// <summary>
         /// Game Server Configuration
@@ -58,9 +66,12 @@ namespace WindowsGSM.GameServers.Components
         /// <returns></returns>
         public async Task StartAsync()
         {
+            Logger.Information("Server starting...");
+            UpdateStatus(Status.Starting);
+
             try
             {
-                UpdateStatus(Status.Starting);
+                
 
                 await Start();
 
@@ -79,9 +90,11 @@ namespace WindowsGSM.GameServers.Components
                     throw new Exception("Server crashed while starting");
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.Error(ex, "Server failed to start");
                 UpdateStatus(Status.Stopped);
+
                 throw;
             }
 
@@ -92,6 +105,7 @@ namespace WindowsGSM.GameServers.Components
                 GameServerService.Responses[Config.Guid] = response;
             }
 
+            Logger.Information("Server started");
             UpdateStatus(Status.Started);
         }
 
@@ -101,6 +115,7 @@ namespace WindowsGSM.GameServers.Components
         /// <returns></returns>
         public async Task StopAsync()
         {
+            Logger.Information("Server stopping...");
             UpdateStatus(Status.Stopping);
 
             try
@@ -109,11 +124,15 @@ namespace WindowsGSM.GameServers.Components
 
                 GameServerService.Responses.Remove(Config.Guid, out _);
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.Error(ex, "Server failed to stop");
+
                 UpdateStatus(Status.Started);
                 throw;
             }
+
+            Logger.Information("Server stopped");
 
             UpdateStatus(Status.Stopped);
         }
@@ -124,15 +143,18 @@ namespace WindowsGSM.GameServers.Components
         /// <returns></returns>
         public async Task RestartAsync()
         {
+            Logger.Information("Server restarting...");
             UpdateStatus(Status.Restarting);
 
             try
             {
                 await Stop();
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.Error(ex, "Server failed to stop");
                 UpdateStatus(Status.Started);
+
                 throw;
             }
 
@@ -140,12 +162,15 @@ namespace WindowsGSM.GameServers.Components
             {
                 await Start();
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.Error(ex, "Server failed to start");
                 UpdateStatus(Status.Stopped);
+
                 throw;
             }
 
+            Logger.Information("Server restarted...");
             UpdateStatus(Status.Started);
         }
 
@@ -155,6 +180,7 @@ namespace WindowsGSM.GameServers.Components
         /// <returns></returns>
         public async Task KillAsync()
         {
+            Logger.Information("Server killing...");
             UpdateStatus(Status.Killing);
 
             try
@@ -168,12 +194,185 @@ namespace WindowsGSM.GameServers.Components
 
                 GameServerService.Responses.Remove(Config.Guid, out _);
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.Error(ex, "Server failed to kill");
                 UpdateStatus(Status.Stopped);
+
                 throw;
             }
 
+            Logger.Information("Server killed...");
+            UpdateStatus(Status.Stopped);
+        }
+
+        /// <summary>
+        /// Install game server with status update
+        /// </summary>
+        /// <param name="version"></param>
+        /// <returns></returns>
+        public async Task InstallAsync(string version)
+        {
+            if (!Config.Exists())
+            {
+                await Config.Update();
+
+                GameServerService.AddInstance(this);
+                GameServerService.UpdateServerGuids();
+            }
+
+            Directory.CreateDirectory(Config.Basic.Directory);
+
+            Logger.Information("Server installing...");
+            UpdateStatus(Status.Installing);
+
+            try
+            {
+                await Install(version);
+
+                Config.LocalVersion = version;
+                await Config.Update();
+            }
+            catch (BuildIdMismatchException ex)
+            {
+                Logger.Warning($"Server current version is {ex.Message} instead of {version}");
+
+                Config.LocalVersion = ex.Message;
+                await Config.Update();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Server failed to install");
+                UpdateStatus(Status.NotInstalled);
+
+                throw;
+            }
+
+            UpdateStatus(Status.Stopped);
+        }
+
+        /// <summary>
+        /// Update game server with status update
+        /// </summary>
+        /// <param name="version"></param>
+        /// <returns></returns>
+        public async Task UpdateAsync(string version)
+        {
+            Logger.Information("Server updating...");
+            UpdateStatus(Status.Updating);
+
+            try
+            {
+                await Update(version);
+
+                Config.LocalVersion = version;
+                await Config.Update();
+            }
+            catch (BuildIdMismatchException ex)
+            {
+                Logger.Warning($"Server current version is {ex.Message} instead of {version}");
+
+                Config.LocalVersion = ex.Message;
+                await Config.Update();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Server failed to update");
+                UpdateStatus(Status.Stopped);
+
+                throw;
+            }
+
+            Logger.Information("Server updated");
+            UpdateStatus(Status.Stopped);
+        }
+
+        /// <summary>
+        /// Delete game server with status update
+        /// </summary>
+        /// <returns></returns>
+        public async Task DeleteAsync()
+        {
+            Logger.Information("Server deleting...");
+            UpdateStatus(Status.Deleting);
+
+            try
+            {
+                await DirectoryEx.DeleteIfExistsAsync(Config.Basic.Directory, true);
+                await Config.Delete();
+
+                Logger.Information("Server deleted");
+                GameServerService.RemoveInstance(this);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Server failed to delete");
+                UpdateStatus(Status.Stopped);
+
+                throw;
+            }
+        }
+
+        public async Task InstallModAsync(IMod mod, string version)
+        {
+            Logger.Information($"{mod.Name} installing...");
+            UpdateStatus(Status.InstallingMod);
+
+            try
+            {
+                await mod.Install(this, version);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, $"{mod.Name} failed to install");
+                UpdateStatus(Status.Stopped);
+
+                throw;
+            }
+
+            Logger.Information($"{mod.Name} installed");
+            UpdateStatus(Status.Stopped);
+        }
+
+        public async Task UpdateModAsync(IMod mod, string version)
+        {
+            Logger.Information($"{mod.Name} updating...");
+            UpdateStatus(Status.UpdatingMod);
+
+            try
+            {
+                await mod.Update(this, version);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, $"{mod.Name} failed to update");
+                UpdateStatus(Status.Stopped);
+
+                throw;
+            }
+
+            Logger.Information($"{mod.Name} updated");
+            UpdateStatus(Status.Stopped);
+        }
+
+        public async Task DeleteModAsync(IMod mod)
+        {
+            Logger.Information($"{mod.Name} deleting...");
+            UpdateStatus(Status.DeletingMod);
+
+            try
+            {
+                await mod.Delete(this);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, $"{mod.Name} failed to delete");
+                UpdateStatus(Status.Stopped);
+
+                throw;
+            }
+
+            Logger.Information($"{mod.Name} deleted");
             UpdateStatus(Status.Stopped);
         }
 

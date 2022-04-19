@@ -9,6 +9,18 @@ namespace WindowsGSM.GameServers.Components
     public static class SteamCMD
     {
         /// <summary>
+        /// Represents errors that occur when build-id mismatch
+        /// </summary>
+        public class BuildIdMismatchException : Exception
+        {
+            /// <summary>
+            /// Initializes a new instance of the BuildIdMismatchException class.
+            /// </summary>
+            /// <param name="message">build id</param>
+            public BuildIdMismatchException(string message) : base(message) { }
+        }
+
+        /// <summary>
         /// SteamCMD start path
         /// </summary>
         public static readonly string FileName = Path.Combine(GameServerService.BasePath, "steamcmd", "steamcmd.exe");
@@ -67,10 +79,10 @@ namespace WindowsGSM.GameServers.Components
         /// Start steamcmd.exe
         /// </summary>
         /// <param name="gameServer"></param>
-        /// <param name="updateLocalVersion"></param>
+        /// <param name="version"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static async Task Start(IGameServer gameServer, bool updateLocalVersion = true)
+        public static async Task Start(IGameServer gameServer, string version)
         {
             SteamCMDConfig steamCMD = ((ISteamCMDConfig)gameServer.Config).SteamCMD;
 
@@ -139,10 +151,11 @@ namespace WindowsGSM.GameServers.Components
                 throw new Exception($"SteamCMD error: Exit Code {gameServer.Process.ExitCode}");
             }
 
-            if (updateLocalVersion)
+            string buildId = await GetLocalBuildId(gameServer);
+
+            if (buildId != version)
             {
-                gameServer.Config.LocalVersion = await GetLocalBuildId(gameServer);
-                await gameServer.Config.Update();
+                throw new BuildIdMismatchException(buildId);
             }
         }
 

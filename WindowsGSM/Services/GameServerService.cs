@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Hosting.WindowsServices;
+using Serilog;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.Json;
-using WindowsGSM.Extensions;
 using WindowsGSM.GameServers.Components;
 using WindowsGSM.GameServers.Configs;
 using WindowsGSM.GameServers.Mods;
@@ -19,6 +19,7 @@ namespace WindowsGSM.Services
         public static readonly string BasePath = Path.GetDirectoryName(Environment.ProcessPath)!;
         public static readonly string BackupsPath = Path.Combine(BasePath, "backups");
         public static readonly string ConfigsPath = Path.Combine(BasePath, "configs");
+        public static readonly string LogsPath = Path.Combine(BasePath, "logs");
         public static readonly string ServersPath = Path.Combine(BasePath, "servers");
 
         public static event Action? GameServersHasChanged;
@@ -60,6 +61,7 @@ namespace WindowsGSM.Services
 
             Directory.CreateDirectory(BackupsPath);
             Directory.CreateDirectory(ConfigsPath);
+            Directory.CreateDirectory(LogsPath);
             Directory.CreateDirectory(ServersPath);
 
             InitializeInstances();
@@ -107,18 +109,28 @@ namespace WindowsGSM.Services
             UpdateServerGuids();
         }
 
-        private static void UpdateServerGuids()
+        public static void UpdateServerGuids()
         {
             StorageService.SetItem("ServerGuids", Instances.Select(x => x.Config.Guid.ToString()));
         }
 
-        private static void AddInstance(IGameServer gameServer)
+        public static void AddInstance(IGameServer gameServer)
         {
             Instances.Add(gameServer);
 
-            gameServer.Status = string.IsNullOrEmpty(gameServer.Config.LocalVersion) ? Status.NotInstalled : Status.Stopped;
+            string logPath = Path.Combine(LogsPath, gameServer.Config.Guid.ToString());
+            Directory.CreateDirectory(logPath);
+
+            gameServer.Logger = new LoggerConfiguration().WriteTo.File(Path.Combine(logPath, "log.txt"), rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true).CreateLogger();
+            gameServer.Status = string.IsNullOrEmpty(gameServer.Config.LocalVersion) ? Status.NotInstalled : Status.Stopped; 
             gameServer.Process.Exited += async (exitCode) => await OnGameServerExited(gameServer);
 
+            GameServersHasChanged?.Invoke();
+        }
+
+        public static void RemoveInstance(IGameServer gameServer)
+        {
+            Instances.Remove(gameServer);
             GameServersHasChanged?.Invoke();
         }
 
@@ -158,78 +170,6 @@ namespace WindowsGSM.Services
             };
         }
 
-        public async Task Install(IGameServer gameServer, string version)
-        {
-            if (!gameServer.Config.Exists())
-            {
-                Directory.CreateDirectory(gameServer.Config.Basic.Directory);
-
-                await gameServer.Config.Update();
-
-                AddInstance(gameServer);
-                UpdateServerGuids();
-            }
-
-            gameServer.UpdateStatus(Status.Installing);
-
-            Exception? exception = null;
-
-            try
-            { 
-                await gameServer.Install(version);
-            }
-            catch (Exception e)
-            {
-                exception = e;
-            }
-
-            if (string.IsNullOrEmpty(gameServer.Config.LocalVersion))
-            {
-                gameServer.UpdateStatus(Status.NotInstalled);
-            }
-            else
-            {
-                gameServer.UpdateStatus(Status.Stopped);
-            }
-
-            exception.ThrowIfNotNull();
-        }
-
-        public async Task Update(IGameServer gameServer, string version)
-        {
-            gameServer.UpdateStatus(Status.Updating);
-
-            try
-            {
-                await gameServer.Update(version);
-            }
-            catch
-            {
-                gameServer.UpdateStatus(Status.Stopped);
-                throw;
-            }
-
-            gameServer.UpdateStatus(Status.Stopped);
-        }
-
-        public async Task Delete(IGameServer gameServer)
-        {
-            gameServer.UpdateStatus(Status.Deleting);
-
-            try
-            {
-                await DirectoryEx.DeleteIfExistsAsync(gameServer.Config.Basic.Directory, true);
-                await gameServer.Config.Delete();
-                Instances.Remove(gameServer);
-                GameServersHasChanged?.Invoke();
-            }
-            catch
-            {
-                gameServer.UpdateStatus(Status.Stopped);
-                throw;
-            }
-        }
-
         public async Task Backup(IGameServer gameServer)
         {
             gameServer.UpdateStatus(Status.Backuping);
@@ -262,57 +202,6 @@ namespace WindowsGSM.Services
             }
 
             gameServer.UpdateStatus(Status.Stopped);
-        }
-
-        public async Task InstallMod(IGameServer gameServer, IMod mod, string version)
-        {
-            try
-            {
-                gameServer.UpdateStatus(Status.InstallingMod);
-
-                await mod.Install(gameServer, version);
-
-                gameServer.UpdateStatus(Status.Stopped);
-            }
-            catch
-            {
-                gameServer.UpdateStatus(Status.Stopped);
-                throw;
-            }
-        }
-
-        public async Task UpdateMod(IGameServer gameServer, IMod mod, string version)
-        {
-            try
-            {
-                gameServer.UpdateStatus(Status.UpdatingMod);
-
-                await mod.Update(gameServer, version);
-
-                gameServer.UpdateStatus(Status.Stopped);
-            }
-            catch
-            {
-                gameServer.UpdateStatus(Status.Stopped);
-                throw;
-            }
-        }
-
-        public async Task DeleteMod(IGameServer gameServer, IMod mod)
-        {
-            try
-            {
-                gameServer.UpdateStatus(Status.DeletingMod);
-
-                await mod.Delete(gameServer);
-
-                gameServer.UpdateStatus(Status.Stopped);
-            }
-            catch
-            {
-                gameServer.UpdateStatus(Status.Stopped);
-                throw;
-            }
         }
 
         public IVersions? GetVersions(IVersionable versionable)

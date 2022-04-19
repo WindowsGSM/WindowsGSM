@@ -4,6 +4,7 @@ using WindowsGSM.GameServers.Components;
 using WindowsGSM.GameServers.Configs;
 using WindowsGSM.GameServers.Protocols;
 using WindowsGSM.Utilities;
+using ILogger = Serilog.ILogger;
 
 namespace WindowsGSM.GameServers
 {
@@ -91,6 +92,8 @@ namespace WindowsGSM.GameServers
 
         public IProtocol? Protocol => new MordhauProtocol();
 
+        public ILogger Logger { get; set; } = default!;
+
         public IConfig Config { get; set; } = new Configuration();
 
         public Status Status { get; set; }
@@ -101,7 +104,7 @@ namespace WindowsGSM.GameServers
 
         public async Task Install(string version)
         {
-            await SteamCMD.Start(this);
+            await SteamCMD.Start(this, version);
 
             // Once downloaded, the app needs to be run once to generate the config files
             await Start();
@@ -120,7 +123,7 @@ namespace WindowsGSM.GameServers
             }
         }
 
-        public Task Update(string version) => SteamCMD.Start(this);
+        public Task Update(string version) => SteamCMD.Start(this, version);
 
         public Task Start()
         {
