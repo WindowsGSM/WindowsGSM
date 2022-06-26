@@ -4,6 +4,7 @@
     {
         public const string FullName = "Team Fortress 2 Dedicated Server";
         public override string Defaultmap { get { return "cp_badlands"; } }
+        public override string Additional { get { return "-nocrashdialog"; } }
         public override string Game { get { return "tf"; } }
         public override string AppId { get { return "232250"; } }
 
