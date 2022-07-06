@@ -60,13 +60,16 @@ WindowsGSM is a powerful tool to manage game servers. Equipped with a GUI for se
 
 |               | 🎮 Game Server  | Plugin supported | Query |
 | ------------- | --------------- | --------- | ----- |
-| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/arma3.png?raw=true)   | Arma2 & Arma2: OA   |✅|      |
-| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/arma3.png?raw=true)   | Arma3   |✅|      |
+| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/arma2.png?raw=true)   | Arma2   |✅| A2S     |
+| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/arma2.png?raw=true)   | Arma2: OA   |✅| A2S     |
+| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/arma3.png?raw=true)   | Arma3   |✅| A2S     |
+| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/astroneer.png?raw=true)   | ASTRONEER   |✅|      |
+| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/deadmatter.png?raw=true)   | Dead Matter   |✅| UT3     |
+| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/hldm.png?raw=true)   | Half-Life: Deathmatch   |✅| A2S     |
+| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/l4d.png?raw=true)   | Left 4 Dead   |✅| A2S     |
 | ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/papermc.png?raw=true)   | PaperMC   |✅| A2S     |
 | ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/waterfall.png?raw=true)   | PaperMC: Waterfall   |✅| A2S     |
-| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/astroneer.png?raw=true)   | ASTRONEER   |✅|      |
 | ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/spigot.png?raw=true)   | Spigot   |✅| A2S     |
-| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/deadmatter.png?raw=true)   | Dead Matter   |✅| UT3     |
 
 ## Features
   * **Easy Install** - No installation knowledge is required, download any game server by one-click install.
@@ -95,10 +98,12 @@ Effortlessly remote control your game servers with Discord!
 
 ### Plugins
 Allow support more game servers by installing plugins!
-##### Some available plugins (Made by [BattlefieldDuck](https://github.com/BattlefieldDuck)):
+##### Some available plugins (Made by [BattlefieldDuck](https://github.com/BattlefieldDuck) and [GTVolk](https://github.com/GTVolk)):
 1. [WindowsGSM.ARMA2](https://github.com/DevVault/WindowsGSM.ARMA2)
-2. [WindowsGSM.ARMA3](https://github.com/BattlefieldDuck/WindowsGSM.ARMA3)
-3. [WindowsGSM.PaperMC](https://github.com/BattlefieldDuck/WindowsGSM.PaperMC)
+3. [WindowsGSM.ARMA3](https://github.com/BattlefieldDuck/WindowsGSM.ARMA3)
+4. [WindowsGSM.HLDM](https://github.com/DevVault/WindowsGSM.HLDM)
+5. [WindowsGSM.L4D](https://github.com/DevVault/WindowsGSM.L4D)
+6. [WindowsGSM.PaperMC](https://github.com/BattlefieldDuck/WindowsGSM.PaperMC)
 
 ![Screenshot Plugins](https://windowsgsm.com/assets/images/WindowsGSM-Plugins-v1.21.0.png)
 
