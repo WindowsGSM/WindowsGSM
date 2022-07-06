@@ -701,13 +701,17 @@ namespace WindowsGSM
                     {
                         PluginsList.ForEach(delegate (PluginMetadata plugin)
                         {
-                            if (plugin.IsLoaded)
+                            if (plugin.FullName == serverConfig.ServerGame && plugin.IsLoaded)
                             {
                                 icon = plugin.GameImage == PluginManagement.DefaultPluginImage
                                     ? plugin.GameImage.Replace("pack://application:,,,", "/WindowsGSM;component")
                                     : plugin.GameImage;
                             }
                         });
+                    }
+                    if (icon == null)
+                    {
+                        icon = PluginManagement.DefaultPluginImage.Replace("pack://application:,,,", "/WindowsGSM;component");
                     }
 
                     string serverId = i.ToString();
