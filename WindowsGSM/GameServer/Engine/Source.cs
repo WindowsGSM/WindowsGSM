@@ -26,7 +26,7 @@ namespace WindowsGSM.GameServer.Engine
         public string Error;
         public string Notice;
 
-        public string StartPath = "srcds.exe";
+        public virtual string StartPath = "srcds.exe";
         public bool AllowsEmbedConsole = true;
         public int PortIncrements = 1;
         public dynamic QueryMethod = new Query.A2S();
