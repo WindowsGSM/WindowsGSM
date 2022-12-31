@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Collections.Generic;
 using System;
 
 namespace WindowsGSM.GameServer
@@ -225,12 +226,18 @@ namespace WindowsGSM.GameServer
                     string serverFilesPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID);
 
                     //Delete old folder and files
+                    //List of sub folders that may or maynot exist in the various zip files
+                    List<string> serverSubFolder = new List<string>() { "behavior_packs", "definitions", "resource_packs", "structures" };
+
                     await Task.Run(() =>
                     {
-                        Directory.Delete(Path.Combine(serverFilesPath, "behavior_packs"), true);
-                        Directory.Delete(Path.Combine(serverFilesPath, "definitions"), true);
-                        Directory.Delete(Path.Combine(serverFilesPath, "resource_packs"), true);
-                        Directory.Delete(Path.Combine(serverFilesPath, "structures"), true);
+                        foreach (var folder in serverSubFolder)
+                        {
+                            if (Directory.Exists(Path.Combine(serverFilesPath, folder)))
+                            {
+                                Directory.Delete(Path.Combine(serverFilesPath, folder),true);
+                            }
+                        }
                         File.Delete(Path.Combine(serverFilesPath, "bedrock_server.exe"));
                         File.Delete(Path.Combine(serverFilesPath, "bedrock_server.pdb"));
                         File.Delete(Path.Combine(serverFilesPath, "release-notes.txt"));
@@ -239,10 +246,13 @@ namespace WindowsGSM.GameServer
                     //Move folder and files
                     await Task.Run(() =>
                     {
-                        Directory.Move(Path.Combine(serverFilesPath, "__temp", "behavior_packs"), Path.Combine(serverFilesPath, "behavior_packs"));
-                        Directory.Move(Path.Combine(serverFilesPath, "__temp", "definitions"), Path.Combine(serverFilesPath, "definitions"));
-                        Directory.Move(Path.Combine(serverFilesPath, "__temp", "resource_packs"), Path.Combine(serverFilesPath, "resource_packs"));
-                        Directory.Move(Path.Combine(serverFilesPath, "__temp", "structures"), Path.Combine(serverFilesPath, "structures"));
+                        foreach (var folder in serverSubFolder)
+                        {
+                            if (Directory.Exists(Path.Combine(serverFilesPath, "__temp", folder)))
+                            {
+                                Directory.Move(Path.Combine(serverFilesPath, "__temp", folder), Path.Combine(serverFilesPath, folder));
+                            }
+                        }
                         File.Move(Path.Combine(serverFilesPath, "__temp", "bedrock_server.exe"), Path.Combine(serverFilesPath, "bedrock_server.exe"));
                         File.Move(Path.Combine(serverFilesPath, "__temp", "bedrock_server.pdb"), Path.Combine(serverFilesPath, "bedrock_server.pdb"));
                         File.Move(Path.Combine(serverFilesPath, "__temp", "release-notes.txt"), Path.Combine(serverFilesPath, "release-notes.txt"));
