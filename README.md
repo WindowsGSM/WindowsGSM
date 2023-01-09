@@ -60,13 +60,16 @@ WindowsGSM is a powerful tool to manage game servers. Equipped with a GUI for se
 
 |               | 🎮 Game Server  | Plugin supported | Query |
 | ------------- | --------------- | --------- | ----- |
-| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/arma3.png?raw=true)   | Arma2 & Arma2: OA   |✅|      |
+| <img src="https://github.com/DevVault/WindowsGSM.ARMA2/blob/master/ARMA2.cs/ARMA2.png?raw=true" width="16" height="16"/>   | Arma2   |✅| A2S     |
+| <img src="https://github.com/DevVault/WindowsGSM.ARMA2/blob/master/ARMA2OA.cs/ARMA2OA.png?raw=true" width="16" height="16"/>   | Arma2: OA   |✅| A2S     |
 | ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/arma3.png?raw=true)   | Arma3   |✅|      |
-| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/papermc.png?raw=true)   | PaperMC   |✅| A2S     |
-| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/waterfall.png?raw=true)   | PaperMC: Waterfall   |✅| A2S     |
 | ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/astroneer.png?raw=true)   | ASTRONEER   |✅|      |
-| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/spigot.png?raw=true)   | Spigot   |✅| A2S     |
 | ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/deadmatter.png?raw=true)   | Dead Matter   |✅| UT3     |
+| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/papermc.png?raw=true)   | PaperMC   |✅| A2S     |
+| <img src="https://github.com/DevVault/WindowsGSM.HLDM/blob/master/HLDM.cs/HLDM.png?raw=true" width="16" height="16"/>   | Half-Life: Deathmatch   |✅| A2S     |
+| <img src="https://github.com/DevVault/WindowsGSM.L4D/blob/master/L4D.cs/L4D.png?raw=true" width="16" height="16"/>   | Left 4 Dead   |✅| A2S     |
+| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/waterfall.png?raw=true)   | PaperMC: Waterfall   |✅| A2S     |
+| ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/spigot.png?raw=true)   | Spigot   |✅| A2S     |
 
 ## Features
   * **Easy Install** - No installation knowledge is required, download any game server by one-click install.
@@ -95,10 +98,13 @@ Effortlessly remote control your game servers with Discord!
 
 ### Plugins
 Allow support more game servers by installing plugins!
-##### Some available plugins (Made by [BattlefieldDuck](https://github.com/BattlefieldDuck)):
+##### Some available plugins (Made by [BattlefieldDuck](https://github.com/BattlefieldDuck) and [GTVolk](https://github.com/GTVolk)):
 1. [WindowsGSM.ARMA2](https://github.com/DevVault/WindowsGSM.ARMA2)
-2. [WindowsGSM.ARMA3](https://github.com/BattlefieldDuck/WindowsGSM.ARMA3)
-3. [WindowsGSM.PaperMC](https://github.com/BattlefieldDuck/WindowsGSM.PaperMC)
+2. [WindowsGSM.ARMA2OA](https://github.com/DevVault/WindowsGSM.ARMA2)
+3. [WindowsGSM.ARMA3](https://github.com/BattlefieldDuck/WindowsGSM.ARMA3)
+3. [WindowsGSM.HLDM](https://github.com/DevVault/WindowsGSM.HLDM)
+3. [WindowsGSM.L4D](https://github.com/DevVault/WindowsGSM.L4D)
+4. [WindowsGSM.PaperMC](https://github.com/BattlefieldDuck/WindowsGSM.PaperMC)
 
 ![Screenshot Plugins](https://windowsgsm.com/assets/images/WindowsGSM-Plugins-v1.21.0.png)
 
