@@ -122,8 +122,11 @@ namespace WindowsGSM.DiscordBot
 				// Delete the message after the bot stop
 				try
 				{
-					await _dashboardTextChannel.DeleteMessageAsync(_dashboardMessage);
-					_dashboardMessage = null;
+					if (_dashboardTextChannel != null)
+					{
+                        await _dashboardTextChannel.DeleteMessageAsync(_dashboardMessage);
+                        _dashboardMessage = null;
+                    }
 				}
 				catch
 				{
