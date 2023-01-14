@@ -97,7 +97,7 @@ namespace WindowsGSM.GameServer
 
         public async Task Stop(Process p)
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
                 if (p.StartInfo.RedirectStandardInput)
                 {
@@ -106,6 +106,9 @@ namespace WindowsGSM.GameServer
                 else
                 {
                     Functions.ServerConsole.SendMessageToMainWindow(p.MainWindowHandle, "/save");
+                    
+                    await Task.Delay(5000);
+
                     Functions.ServerConsole.SendMessageToMainWindow(p.MainWindowHandle, "/stop");
                 }
             });
