@@ -3147,7 +3147,7 @@ namespace WindowsGSM
                     //Kill all the server
                     for (int i = 0; i <= MAX_SERVER; i++)
                     {
-                        if (GetServerMetadata(i).Process == null)
+                        if (GetServerMetadata(i) == null || GetServerMetadata(i).Process == null)
                         {
                             continue;
                         }
