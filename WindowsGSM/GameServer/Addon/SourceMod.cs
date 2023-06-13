@@ -9,7 +9,7 @@ namespace WindowsGSM.GameServer.Addon
     {
         public static async Task<bool> Install(string serverId, string modFolder)
         {
-            string version = "1.10";
+            string version = "1.11";
             string path = Functions.ServerPath.GetServersServerFiles(serverId, modFolder);
 
             try
@@ -32,7 +32,7 @@ namespace WindowsGSM.GameServer.Addon
 
         private static async Task<bool> Install_MetaMod_Source(string serverId, string modFolder)
         {
-            string version = "1.10";
+            string version = "1.11";
             string path = Functions.ServerPath.GetServersServerFiles(serverId, modFolder);
 
             try
