@@ -14,6 +14,7 @@ namespace WindowsGSM.Functions
             public const string ServerIP = "serverip";
             public const string ServerPort = "serverport";
             public const string ServerQueryPort = "serverqueryport";
+            public const string ServerGOTVPort = "servergotvport";
             public const string ServerMap = "servermap";
             public const string ServerMaxPlayer = "servermaxplayer";
             public const string ServerGSLT = "servergslt";
@@ -45,6 +46,7 @@ namespace WindowsGSM.Functions
         public string ServerIP;
         public string ServerPort;
         public string ServerQueryPort;
+        public string ServerGOTVPort;
         public string ServerMap;
         public string ServerMaxPlayer;
         public string ServerGSLT;
@@ -116,6 +118,7 @@ namespace WindowsGSM.Functions
                             case SettingName.ServerIP: ServerIP = keyvalue[1]; break;
                             case SettingName.ServerPort: ServerPort = keyvalue[1]; break;
                             case SettingName.ServerQueryPort: ServerQueryPort = keyvalue[1]; break;
+                            case SettingName.ServerGOTVPort: ServerGOTVPort = keyvalue[1]; break;
                             case SettingName.ServerMap: ServerMap = keyvalue[1]; break;
                             case SettingName.ServerMaxPlayer: ServerMaxPlayer = keyvalue[1]; break;
                             case SettingName.ServerGSLT: ServerGSLT = keyvalue[1]; break;
@@ -152,6 +155,7 @@ namespace WindowsGSM.Functions
             ServerIP = GetIPAddress();
             ServerPort = GetAvailablePort(gameServer.Port, gameServer.PortIncrements);
             ServerQueryPort = (int.Parse(ServerPort) - int.Parse(gameServer.Port) + int.Parse(gameServer.QueryPort)).ToString(); // Magic
+            ServerGOTVPort = GetAvailablePort(gameServer.GOTVPort, gameServer.PortIncrements);
             ServerMap = gameServer.Defaultmap;
             ServerMaxPlayer = gameServer.Maxplayers;
             ServerGSLT = string.Empty;
@@ -194,6 +198,7 @@ namespace WindowsGSM.Functions
                     textwriter.WriteLine($"{SettingName.ServerIP}=\"{ServerIP}\"");
                     textwriter.WriteLine($"{SettingName.ServerPort}=\"{ServerPort}\"");
                     textwriter.WriteLine($"{SettingName.ServerQueryPort}=\"{ServerQueryPort}\"");
+                    textwriter.WriteLine($"{SettingName.ServerGOTVPort}=\"{ServerGOTVPort}\"");
                     textwriter.WriteLine($"{SettingName.ServerMap}=\"{ServerMap}\"");
                     textwriter.WriteLine($"{SettingName.ServerMaxPlayer}=\"{ServerMaxPlayer}\"");
                     textwriter.WriteLine($"{SettingName.ServerGSLT}=\"{ServerGSLT}\"");

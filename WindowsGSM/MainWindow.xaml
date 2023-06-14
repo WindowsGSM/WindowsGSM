@@ -163,6 +163,10 @@
                                     <mah:NumericUpDown x:Name="numericUpDown_EC_ServerQueryPort" Minimum="1" Maximum="65535" FontFamily="Consolas" Interval="1" Height="5" Width="120"/>
                                 </StackPanel>
                                 <StackPanel Margin="5,0,0,0">
+                                    <Label Content="Server GOTV Port"></Label>
+                                    <mah:NumericUpDown x:Name="numericUpDown_EC_ServerGOTVPort" Minimum="1" Maximum="65535" FontFamily="Consolas" Interval="1" Height="5" Width="120"/>
+                                </StackPanel>
+                                <StackPanel Margin="5,0,0,0">
                                     <Label Content="Server Maxplayer"></Label>
                                     <mah:NumericUpDown x:Name="numericUpDown_EC_ServerMaxplayer" Minimum="1" Maximum="100000" FontFamily="Consolas" Interval="1" Height="5" Width="120"/>
                                 </StackPanel>
@@ -709,6 +713,7 @@
                         <DataGridTextColumn Header="IP Address" IsReadOnly="True" Binding="{Binding Path=IP}" Width="4*" MinWidth="88"/>
                         <DataGridTextColumn Header="Port" IsReadOnly="True" Binding="{Binding Path=Port}" Width="4*" MinWidth="52"/>
                         <DataGridTextColumn Header="Query Port" IsReadOnly="True" Binding="{Binding Path=QueryPort}" Width="4*" MinWidth="93"/>
+                        <DataGridTextColumn Header="GOTV Port" IsReadOnly="True" Binding="{Binding Path=GOTVPort}" Width="4*" MinWidth="93"/>
                         <DataGridTextColumn Header="Map" IsReadOnly="True" Binding="{Binding Path=Defaultmap}" Width="7*" MinWidth="50"/>
                         <DataGridTextColumn Header="Players" IsReadOnly="True" Binding="{Binding Path=Maxplayers}" Width="3*" MinWidth="70"/>
                         <DataGridTextColumn Header="Uptime" IsReadOnly="True" Binding="{Binding Path=Uptime}" Width="4*" MinWidth="80"/>

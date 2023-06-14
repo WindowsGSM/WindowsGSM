@@ -33,9 +33,10 @@ namespace WindowsGSM.GameServer.Engine
 
         public virtual string Port { get { return "27015"; } }
         public virtual string QueryPort { get { return "27015"; } }
+        public virtual string GOTVPort { get { return "27020"; } }
         public virtual string Defaultmap { get { return string.Empty; } }
-        public virtual string Maxplayers { get { return "24"; } }
-        public virtual string Additional { get { return "-nocrashdialog +clientport {{clientport}}"; } }
+        public virtual string Maxplayers { get { return "10"; } }
+        public virtual string Additional { get { return "-nocrashdialog +tv_port {{tv_port}} +clientport {{clientport}}"; } }
 
         public virtual string Game { get { return string.Empty; } }
         public virtual string AppId { get { return string.Empty; } }
@@ -62,6 +63,7 @@ namespace WindowsGSM.GameServer.Engine
             sb.Append(string.IsNullOrWhiteSpace(Game) ? string.Empty : $" -game {Game}");
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerIP) ? string.Empty : $" -ip {serverData.ServerIP}");
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerPort) ? string.Empty : $" -port {serverData.ServerPort}");
+            sb.Append(string.IsNullOrWhiteSpace(serverData.ServerGOTVPort) ? string.Empty : $" +tv_port {serverData.ServerGOTVPort}");
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerMaxPlayer) ? string.Empty : $" -maxplayers{(AppId == "740" ? "_override" : "")} {serverData.ServerMaxPlayer}");
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerGSLT) ? string.Empty : $" +sv_setsteamaccount {serverData.ServerGSLT}");
             sb.Append(string.IsNullOrWhiteSpace(serverData.ServerParam) ? string.Empty : $" {serverData.ServerParam}");
@@ -140,6 +142,13 @@ namespace WindowsGSM.GameServer.Engine
                 configText = configText.Replace("{{clientport}}", (int.Parse(serverData.ServerPort) - 10).ToString());
                 File.WriteAllText(configFile, configText);
             }
+
+            {
+                string configText = File.ReadAllText(configFile);
+                configText = configText.Replace("{{tv_port}}", (int.Parse(serverData.ServerGOTVPort) - 10).ToString());
+                File.WriteAllText(configFile, configText);
+            }
+            
         }
 
         public async Task<Process> Install()

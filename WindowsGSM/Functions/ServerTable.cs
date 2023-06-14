@@ -5,6 +5,7 @@ namespace WindowsGSM.Functions
 {
     class ServerTable
     {
+        
         public string ID { get; set; }
         public string PID { get; set; }
         public string Game { get; set; }
@@ -14,9 +15,11 @@ namespace WindowsGSM.Functions
         public string IP { get; set; }
         public string Port { get; set; }
         public string QueryPort { get; set; }
+        public string GOTVPort { get; set; }
         public string Defaultmap { get; set; }
         public string Maxplayers { get; set; }
         public string Uptime 
+        
         { 
             get
             {

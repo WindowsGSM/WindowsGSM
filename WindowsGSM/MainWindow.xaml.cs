@@ -734,6 +734,7 @@ namespace WindowsGSM
                         IP = serverConfig.ServerIP,
                         Port = serverConfig.ServerPort,
                         QueryPort = serverConfig.ServerQueryPort,
+                        GOTVPort = serverConfig.ServerGOTVPort,
                         Defaultmap = serverConfig.ServerMap,
                         Maxplayers = (GetServerMetadata(i).ServerStatus != ServerStatus.Started) ? serverConfig.ServerMaxPlayer : livePlayerData[i]
                     };
@@ -3476,6 +3477,7 @@ namespace WindowsGSM
             numericUpDown_EC_ServerMaxplayer.Value = int.TryParse(serverConfig.ServerMaxPlayer, out var maxplayer) ? maxplayer : int.Parse(gameServer.Maxplayers);
             numericUpDown_EC_ServerPort.Value = int.TryParse(serverConfig.ServerPort, out var port) ? port : int.Parse(gameServer.Port);
             numericUpDown_EC_ServerQueryPort.Value = int.TryParse(serverConfig.ServerQueryPort, out var queryPort) ? queryPort : int.Parse(gameServer.QueryPort);
+            numericUpDown_EC_ServerGOTVPort.Value = int.TryParse(serverConfig.ServerGOTVPort, out var gotvPort) ? gotvPort : int.Parse(gameServer.GOTVPort);
             textbox_EC_ServerMap.Text = serverConfig.ServerMap;
             textbox_EC_ServerGSLT.Text = serverConfig.ServerGSLT;
             textbox_EC_ServerParam.Text = serverConfig.ServerParam;
@@ -3493,6 +3495,7 @@ namespace WindowsGSM
             ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.ServerMaxPlayer, numericUpDown_EC_ServerMaxplayer.Value.ToString());
             ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.ServerPort, numericUpDown_EC_ServerPort.Value.ToString());
             ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.ServerQueryPort, numericUpDown_EC_ServerQueryPort.Value.ToString());
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.ServerGOTVPort, numericUpDown_EC_ServerGOTVPort.Value.ToString());
             ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.ServerMap, textbox_EC_ServerMap.Text.Trim());
             ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.ServerGSLT, textbox_EC_ServerGSLT.Text.Trim());
             ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.ServerParam, textbox_EC_ServerParam.Text.Trim());
