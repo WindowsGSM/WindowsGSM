@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -106,30 +106,30 @@ namespace WindowsGSM.GameServer
         {
             string version = await GetRemoteBuild();
             if (version == null) { return null; }
-            string tarName = $"vs_server_{version}.tar.gz";
-            string address = $"https://cdn.vintagestory.at/gamefiles/stable/{tarName}";
-            string tarPath = ServerPath.GetServersServerFiles(_serverData.ServerID, tarName);
+            string zipName = $"vs_server_win-x64_{version}.zip";
+            string address = $"https://cdn.vintagestory.at/gamefiles/stable/{zipName}";
+            string zipPath = ServerPath.GetServersServerFiles(_serverData.ServerID, zipName);
 
-            // Download vs_server_{version}.tar.gz from https://cdn.vintagestory.at/gamefiles/stable/
+            // Download vs_server_win-x64_{version}.zip from https://cdn.vintagestory.at/gamefiles/stable/
             using (WebClient webClient = new WebClient())
             {
-                try { await webClient.DownloadFileTaskAsync(address, tarPath); } 
+                try { await webClient.DownloadFileTaskAsync(address, zipPath); } 
                 catch
                 {
-                    Error = $"Fail to download {tarName}";
+                    Error = $"Fail to download {zipName}";
                     return null;
                 }
             }
 
-            // Extract vs_server_{version}.tar.gz
-            if (!await FileManagement.ExtractTarGZ(tarPath, Directory.GetParent(tarPath).FullName))
+            // Extract vs_server_win-x64_{version}.zip
+            if (!await FileManagement.ExtractZip(zipPath, Directory.GetParent(zipPath).FullName))
             {
-                Error = $"Fail to extract {tarName}";
+                Error = $"Fail to extract {zipName}";
                 return null;
             }
 
-            // Delete vs_server_{version}.tar.gz, leave it if fail to delete
-            await FileManagement.DeleteAsync(tarPath);
+            // Delete vs_server_win-x64_{version}.zip, leave it if fail to delete
+            await FileManagement.DeleteAsync(zipPath);
 
             return null;
         }
