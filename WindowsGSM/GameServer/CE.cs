@@ -12,7 +12,7 @@ namespace WindowsGSM.GameServer
         public string Notice;
 
         public const string FullName = "Conan Exiles Dedicated Server";
-        public string StartPath = @"ConanSandbox\Binaries\Win64\ConanSandboxServer-Win64-Test.exe";
+        public string StartPath = @"ConanSandbox\Binaries\Win64\ConanSandboxServer-Win64-Shipping.exe";
         public bool AllowsEmbedConsole = true;
         public int PortIncrements = 2;
         public dynamic QueryMethod = new Query.A2S();
