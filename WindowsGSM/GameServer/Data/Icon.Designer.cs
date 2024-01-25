@@ -19,7 +19,7 @@ namespace WindowsGSM.GameServer.Data {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Icon {
@@ -336,6 +336,15 @@ namespace WindowsGSM.GameServer.Data {
         public static string Outlaws_of_the_Old_West_Dedicated_Server {
             get {
                 return ResourceManager.GetString("Outlaws of the Old West Dedicated Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Images/Games/pal.png.
+        /// </summary>
+        public static string Palworld {
+            get {
+                return ResourceManager.GetString("Palworld", resourceCulture);
             }
         }
         

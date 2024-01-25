@@ -55,6 +55,7 @@ namespace WindowsGSM.GameServer.Data
                 case ECO.FullName: return new ECO(serverData);
                 case VTS.FullName: return new VTS(serverData);
                 case SDK2013.FullName: return new SDK2013(serverData);
+                case PAL.FullName: return new PAL(serverData);
                 default: // Load Plugin
                 {
                     if (pluginList == null) { return null; }

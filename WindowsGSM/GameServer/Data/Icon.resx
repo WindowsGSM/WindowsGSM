@@ -210,6 +210,9 @@
   <data name="Outlaws of the Old West Dedicated Server" xml:space="preserve">
     <value>Images/Games/olow.png</value>
   </data>
+  <data name="Palworld" xml:space="preserve">
+    <value>Images/Games/pal.png</value>
+  </data>
   <data name="Post Scriptum Dedicated Server" xml:space="preserve">
     <value>Images/Games/ps.png</value>
   </data>
