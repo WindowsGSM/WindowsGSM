@@ -429,7 +429,7 @@ namespace WindowsGSM.Installer
                 {
                     FileName = exePath,
                     //Sometimes it fails to get if appID < 90
-                    Arguments = $"+login anonymous +app_info_update 1 +app_info_print {appId} +app_info_print {appId} +app_info_print {appId} +app_info_print {appId} +quit",
+                    Arguments = $"+login anonymous +app_info_update 1 +app_info_print {appId} +app_info_print {appId} +app_info_print {appId} +app_info_print {appId} +logoff +quit",
                     WindowStyle = ProcessWindowStyle.Minimized,
                     CreateNoWindow = true,
                     UseShellExecute = false,
