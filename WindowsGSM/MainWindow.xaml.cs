@@ -81,6 +81,7 @@ namespace WindowsGSM
             public bool AutoUpdateAlert;
             public bool RestartCrontabAlert;
             public bool CrashAlert;
+            public bool ShowPublicIP;
 
             // Restart Crontab Settings
             public bool RestartCrontab;
@@ -779,6 +780,7 @@ namespace WindowsGSM
             _serverMetadata[i].AutoUpdateAlert = serverConfig.AutoUpdateAlert;
             _serverMetadata[i].RestartCrontabAlert = serverConfig.RestartCrontabAlert;
             _serverMetadata[i].CrashAlert = serverConfig.CrashAlert;
+            _serverMetadata[i].ShowPublicIP = serverConfig.ShowPublicIP;
 
             // Restart Crontab Settings
             _serverMetadata[i].RestartCrontab = serverConfig.RestartCrontab;
@@ -1088,6 +1090,7 @@ namespace WindowsGSM
                 MahAppSwitch_AutoUpdateAlert.IsOn = GetServerMetadata(row.ID).AutoUpdateAlert;
                 MahAppSwitch_RestartCrontabAlert.IsOn = GetServerMetadata(row.ID).RestartCrontabAlert;
                 MahAppSwitch_CrashAlert.IsOn = GetServerMetadata(row.ID).CrashAlert;
+                MahAppSwitch_ShowPublicIP.IsOn = GetServerMetadata(row.ID).ShowPublicIP;
             }
         }
 
@@ -3637,6 +3640,14 @@ namespace WindowsGSM
             _serverMetadata[int.Parse(server.ID)].CrashAlert = MahAppSwitch_CrashAlert.IsOn;
             ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.CrashAlert, GetServerMetadata(server.ID).CrashAlert ? "1" : "0");
         }
+        private void Switch_ShowPublicIP_Click(object sender, RoutedEventArgs e)
+        {
+            var server = (ServerTable)ServerGrid.SelectedItem;
+            if (server == null) { return; }
+            _serverMetadata[int.Parse(server.ID)].ShowPublicIP = MahAppSwitch_ShowPublicIP.IsOn;
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.ShowPublicIP, GetServerMetadata(server.ID).ShowPublicIP ? "1" : "0");
+
+        }
         #endregion
 
         private async void Window_Activated(object sender, EventArgs e)
@@ -4035,5 +4046,7 @@ namespace WindowsGSM
             _serverMetadata[int.Parse(server.ID)].AutoScroll = Button_AutoScroll.Content.ToString().Contains("✔️");
             ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.AutoScroll, GetServerMetadata(server.ID).AutoScroll ? "1" : "0");
         }
+
+        
     }
 }
