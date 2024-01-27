@@ -28,6 +28,9 @@ using Label = System.Windows.Controls.Label;
 using Orientation = System.Windows.Controls.Orientation;
 using System.Windows.Documents;
 using MessageBox = System.Windows.MessageBox;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
 
 namespace WindowsGSM
 {
@@ -364,6 +367,8 @@ namespace WindowsGSM
             StartServerTableRefresh();
 
             StartDashBoardRefresh();
+
+            DiscordBot.Configs.FixOldDiscordAdminList();
         }
 
         private Process GetConsoleProcess(int processId)
@@ -3677,6 +3682,8 @@ namespace WindowsGSM
                 button_DiscordBotInvite.IsEnabled = switch_DiscordBot.IsOn = await g_DiscordBot.Start();
                 DiscordBotLog("Discord Bot " + (switch_DiscordBot.IsOn ? "started." : "fail to start. Reason: Bot Token is invalid."));
                 switch_DiscordBot.IsEnabled = true;
+                DiscordBot.Configs.FixOldDiscordAdminList();
+                Refresh_DiscordBotAdminList();
             }
             else
             {
@@ -3705,7 +3712,7 @@ namespace WindowsGSM
             }
         }
 
-        private void Button_DiscordBotTokenEdit_Click(object sender, RoutedEventArgs e)
+        private async void Button_DiscordBotTokenEdit_Click(object sender, RoutedEventArgs e)
         {
             if (button_DiscordBotTokenEdit.Content.ToString() == "Edit")
             {
@@ -3721,6 +3728,8 @@ namespace WindowsGSM
                 button_DiscordBotTokenEdit.Content = "Edit";
                 textBox_DiscordBotToken.IsEnabled = false;
                 DiscordBot.Configs.SetBotToken(textBox_DiscordBotToken.Text);
+                DiscordBot.Configs.FixOldDiscordAdminList();
+                Refresh_DiscordBotAdminList();
             }
         }
 
@@ -3760,8 +3769,9 @@ namespace WindowsGSM
             string newAdminID = await this.ShowInputAsync("Add Admin ID", "Please enter the discord user ID.", settings);
             if (newAdminID == null) { return; } //If pressed cancel
 
-            var adminList = DiscordBot.Configs.GetBotAdminList();
-            adminList.Add((newAdminID, "0"));
+            string discordName = await DiscordBot.Configs.GetDiscordUserName(newAdminID);
+            var adminList = await DiscordBot.Configs.GetBotAdminList();
+            adminList.Add((newAdminID, discordName, "0"));
             DiscordBot.Configs.SetBotAdminList(adminList);
             Refresh_DiscordBotAdminList(listBox_DiscordBotAdminList.SelectedIndex);
         }
@@ -3781,13 +3791,13 @@ namespace WindowsGSM
             string newServerIds = await this.ShowInputAsync($"Edit Server IDs ({adminListItem.AdminId})", $"Please enter the server Ids where admin has access to the server.\n{example}", settings);
             if (newServerIds == null) { return; } //If pressed cancel
 
-            var adminList = DiscordBot.Configs.GetBotAdminList();
+            var adminList = await DiscordBot.Configs.GetBotAdminList();
             for (int i = 0; i < adminList.Count; i++)
             {
                 if (adminList[i].Item1 == adminListItem.AdminId)
                 {
                     adminList.RemoveAt(i);
-                    adminList.Insert(i, (adminListItem.AdminId, newServerIds.Trim()));
+                    adminList.Insert(i, (adminListItem.AdminId, adminListItem.AdminName, newServerIds.Trim()));
                     break;
                 }
             }
@@ -3795,11 +3805,11 @@ namespace WindowsGSM
             Refresh_DiscordBotAdminList(listBox_DiscordBotAdminList.SelectedIndex);
         }
 
-        private void Button_DiscordBotRemoveID_Click(object sender, RoutedEventArgs e)
+        private async void Button_DiscordBotRemoveID_Click(object sender, RoutedEventArgs e)
         {
             if (listBox_DiscordBotAdminList.SelectedIndex >= 0)
             {
-                var adminList = DiscordBot.Configs.GetBotAdminList();
+                var adminList = await DiscordBot.Configs.GetBotAdminList();
                 try
                 {
                     adminList.RemoveAt(listBox_DiscordBotAdminList.SelectedIndex);
@@ -3814,12 +3824,13 @@ namespace WindowsGSM
             }
         }
 
-        public void Refresh_DiscordBotAdminList(int selectIndex = 0)
+        public async void Refresh_DiscordBotAdminList(int selectIndex = 0)
         {
             listBox_DiscordBotAdminList.Items.Clear();
-            foreach (var (adminID, serverIDs) in DiscordBot.Configs.GetBotAdminList())
+            var adminList = await DiscordBot.Configs.GetBotAdminList();
+            foreach (var (adminID, adminName, serverIDs) in adminList)
             {
-                listBox_DiscordBotAdminList.Items.Add(new DiscordBot.AdminListItem { AdminId = adminID, ServerIds = serverIDs });
+                listBox_DiscordBotAdminList.Items.Add(new DiscordBot.AdminListItem { AdminId = adminID, AdminName = adminName, ServerIds = serverIDs });
             }
             listBox_DiscordBotAdminList.SelectedIndex = listBox_DiscordBotAdminList.Items.Count >= 0 ? selectIndex : -1;
         }

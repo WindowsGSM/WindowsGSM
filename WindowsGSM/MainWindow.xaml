@@ -168,6 +168,9 @@
                                     <mah:NumericUpDown x:Name="numericUpDown_EC_ServerMaxplayer" Minimum="1" Maximum="100000" FontFamily="Consolas" Interval="1" Height="5" Width="120"/>
                                 </StackPanel>
                             </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                
+                            </StackPanel>
                             <StackPanel Margin="0,0,0,10">
                                 <Label Content="Server Start Map"></Label>
                                 <TextBox x:Name="textbox_EC_ServerMap" Height="23" Width="500" FontFamily="Consolas" TextWrapping="Wrap" Text="" VerticalAlignment="Top"/>
@@ -382,6 +385,7 @@
                             <DataGrid x:Name="listBox_DiscordBotAdminList" SelectionMode="Single" BorderThickness="1" DockPanel.Dock="Top">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Admin ID" IsReadOnly="True" Binding="{Binding Path=AdminId}" Width="150" MinWidth="150" MaxWidth="150" FontFamily="Consolas"/>
+                                    <DataGridTextColumn Header="Admin Name" IsReadOnly="True" Binding="{Binding Path=AdminName}" Width="150" MinWidth="150" MaxWidth="150" FontFamily="Consolas"/>
                                     <DataGridTextColumn Header="Server IDs" IsReadOnly="True" Binding="{Binding Path=ServerIds}" Width="1*" FontFamily="Consolas"/>
                                 </DataGrid.Columns>
                             </DataGrid>
