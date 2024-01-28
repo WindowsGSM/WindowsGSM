@@ -3770,7 +3770,7 @@ namespace WindowsGSM
             if (newAdminID == null) { return; } //If pressed cancel
 
             string discordName = await DiscordBot.Configs.GetDiscordUserName(newAdminID);
-            var adminList = await DiscordBot.Configs.GetBotAdminList();
+            var adminList = DiscordBot.Configs.GetBotAdminList();
             adminList.Add((newAdminID, discordName, "0"));
             DiscordBot.Configs.SetBotAdminList(adminList);
             Refresh_DiscordBotAdminList(listBox_DiscordBotAdminList.SelectedIndex);
@@ -3791,7 +3791,7 @@ namespace WindowsGSM
             string newServerIds = await this.ShowInputAsync($"Edit Server IDs ({adminListItem.AdminId})", $"Please enter the server Ids where admin has access to the server.\n{example}", settings);
             if (newServerIds == null) { return; } //If pressed cancel
 
-            var adminList = await DiscordBot.Configs.GetBotAdminList();
+            var adminList = DiscordBot.Configs.GetBotAdminList();
             for (int i = 0; i < adminList.Count; i++)
             {
                 if (adminList[i].Item1 == adminListItem.AdminId)
@@ -3809,7 +3809,7 @@ namespace WindowsGSM
         {
             if (listBox_DiscordBotAdminList.SelectedIndex >= 0)
             {
-                var adminList = await DiscordBot.Configs.GetBotAdminList();
+                var adminList = DiscordBot.Configs.GetBotAdminList();
                 try
                 {
                     adminList.RemoveAt(listBox_DiscordBotAdminList.SelectedIndex);
@@ -3827,7 +3827,7 @@ namespace WindowsGSM
         public async void Refresh_DiscordBotAdminList(int selectIndex = 0)
         {
             listBox_DiscordBotAdminList.Items.Clear();
-            var adminList = await DiscordBot.Configs.GetBotAdminList();
+            var adminList = DiscordBot.Configs.GetBotAdminList();
             foreach (var (adminID, adminName, serverIDs) in adminList)
             {
                 listBox_DiscordBotAdminList.Items.Add(new DiscordBot.AdminListItem { AdminId = adminID, AdminName = adminName, ServerIds = serverIDs });
