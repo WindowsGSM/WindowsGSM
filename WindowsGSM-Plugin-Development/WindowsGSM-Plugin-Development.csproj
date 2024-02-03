@@ -52,26 +52,18 @@
     <Compile Include="Examples\Skeleton-SteamCMDAgent.cs" />
     <Compile Include="Examples\Skeleton.cs" />
     <Compile Include="Plugins\NewPlugin.cs" />
-    <Compile Include="Plugins\WindowsGSM.Sunkenland\Sunkenland.cs\Sunkenland.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <None Include="Plugins\WindowsGSM.Sunkenland\LICENSE" />
-    <None Include="Plugins\WindowsGSM.Sunkenland\README.md" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WindowsGSM\WindowsGSM.csproj">
       <Project>{265cf81d-8287-45cb-958f-5987dde68661}</Project>
       <Name>WindowsGSM</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Plugins\WindowsGSM.Sunkenland\.gitignore" />
-    <Content Include="Plugins\WindowsGSM.Sunkenland\Sunkenland.cs\author.png" />
-    <Content Include="Plugins\WindowsGSM.Sunkenland\Sunkenland.cs\Sunkenland.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
