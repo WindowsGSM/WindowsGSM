@@ -60,14 +60,14 @@ WindowsGSM is a powerful tool to manage game servers. Equipped with a GUI for se
 
 |               | 🎮 Game Server  | Plugin supported | Query |
 | ------------- | --------------- | --------- | ----- |
-| ![logo](https://github.com/GTVolk/WindowsGSM.ARMA2/blob/master/ARMA2.cs/ARMA2.png?raw=true)   | Arma2   |✅| A2S     |
-| ![logo](https://github.com/GTVolk/WindowsGSM.ARMA2/blob/master/ARMA2OA.cs/ARMA2OA.png?raw=true)   | Arma2: OA   |✅| A2S     |
+| ![logo](https://github.com/GTVolk/WindowsGSM.ARMA2/blob/master/arma2_icon.png?raw=true)   | Arma2   |✅| A2S     |
+| ![logo](https://github.com/GTVolk/WindowsGSM.ARMA2/blob/master/arma2oa_icon.png?raw=true)   | Arma2: OA   |✅| A2S     |
 | ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/arma3.png?raw=true)   | Arma3   |✅|      |
 | ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/astroneer.png?raw=true)   | ASTRONEER   |✅|      |
 | ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/deadmatter.png?raw=true)   | Dead Matter   |✅| UT3     |
 | ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/papermc.png?raw=true)   | PaperMC   |✅| A2S     |
-| ![logo](https://github.com/GTVolk/WindowsGSM.HLDM/blob/master/HLDM.cs/HLDM.png?raw=true)   | Half-Life: Deathmatch   |✅| A2S     |
-| ![logo](https://github.com/GTVolk/WindowsGSM.L4D/blob/master/L4D.cs/L4D.png?raw=true)   | Left 4 Dead   |✅| A2S     |
+| ![logo](https://github.com/GTVolk/WindowsGSM.HLDM/blob/master/hldm_icon.png?raw=true)   | Half-Life: Deathmatch   |✅| A2S     |
+| ![logo](https://github.com/GTVolk/WindowsGSM.L4D/blob/master/l4d_icon.png?raw=true)   | Left 4 Dead   |✅| A2S     |
 | ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/waterfall.png?raw=true)   | PaperMC: Waterfall   |✅| A2S     |
 | ![logo](https://github.com/1stian/imgrepo/blob/master/WindowsGSMrepo/spigot.png?raw=true)   | Spigot   |✅| A2S     |
 
