@@ -10,134 +10,139 @@ using Discord.WebSocket;
 
 namespace WindowsGSM.DiscordBot
 {
-	class Bot
-	{
-		private DiscordSocketClient _client;
-		private string _donorType;
-		private SocketTextChannel _dashboardTextChannel;
-		private RestUserMessage _dashboardMessage;
-		private CancellationTokenSource _cancellationTokenSource;
+    class Bot : IDisposable
+    {
+        private DiscordSocketClient _client;
+        private string _donorType;
+        private SocketTextChannel _dashboardTextChannel;
+        private RestUserMessage _dashboardMessage;
+        private CancellationTokenSource _cancellationTokenSource;
 
-		public Bot()
-		{
-			Configs.CreateConfigs();
-		}
+        public Bot()
+        {
+            Configs.CreateConfigs();
+        }
 
-		public async Task<bool> Start()
-		{
-			_client = new DiscordSocketClient();
-			_client.Ready += On_Bot_Ready;
+        public async Task<bool> Start()
+        {
+            _client = new DiscordSocketClient();
+            _client.Ready += OnBotReady;
 
-			try
-			{
-				await _client.LoginAsync(TokenType.Bot, Configs.GetBotToken());
-				await _client.StartAsync();
-			}
-			catch
-			{
-				return false;
-			}
+            try
+            {
+                await _client.LoginAsync(TokenType.Bot, Configs.GetBotToken());
+                await _client.StartAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Bot login error: {ex.Message}");
+                return false;
+            }
 
-			// Listen Commands
-			new Commands(_client);
+            // Listen Commands
+            new Commands(_client);
 
-			return true;
-		}
+            return true;
+        }
 
-		private async Task On_Bot_Ready()
-		{
-			try
-			{
-				Stream stream = Application.GetResourceStream(new Uri($"pack://application:,,,/Images/WindowsGSM{(string.IsNullOrWhiteSpace(_donorType) ? string.Empty : $"-{_donorType}")}.png")).Stream;
-				await _client.CurrentUser.ModifyAsync(x =>
-				{
-					x.Username = "WindowsGSM";
-					x.Avatar = new Image(stream);
-				});
-			}
-			catch
-			{
-				// ignore
-			}
-
-			List<Task> tasks = new List<Task>
-			{
-				StartDiscordPresenceUpdate(),
-			};
-
-			_cancellationTokenSource = new CancellationTokenSource();
-
-			await Task.Run(() =>
-			{
-				try
-				{
-					Task.WaitAny(tasks.ToArray(), _cancellationTokenSource.Token);
-				}
-				catch (AggregateException e)
-				{
-					System.Diagnostics.Debug.WriteLine($"{e.Message}");
-				}
-			});
-		}
-
-		private async Task StartDiscordPresenceUpdate()
-		{
-			while (_client != null && _client.CurrentUser != null)
-			{
-				if (Application.Current != null)
-				{
-					await Application.Current.Dispatcher.Invoke(async () =>
-					{
-						MainWindow WindowsGSM = (MainWindow)Application.Current.MainWindow;
-						int serverCount = WindowsGSM.ServerGrid.Items.Count;
-						await _client.SetGameAsync($"{serverCount} game server{(serverCount > 1 ? "s" : string.Empty)}");
-					});
-				}
-
-				await Task.Delay(900000);
-			}
-		}
-
-
-		public void SetDonorType(string donorType)
-		{
-			_donorType = donorType;
-		}
-
-		public async Task Stop()
-		{
-			if (_client != null)
-			{
-				try
-				{
-					_cancellationTokenSource?.Cancel();
-				}
-				catch (Exception e)
+        private async Task OnBotReady()
+        {
+            try
+            {
+                string resourceUri = $"pack://application:,,,/Images/WindowsGSM{(string.IsNullOrWhiteSpace(_donorType) ? string.Empty : $"-{_donorType}")}.png";
+                Stream stream = Application.GetResourceStream(new Uri(resourceUri)).Stream;
+                await _client.CurrentUser.ModifyAsync(x =>
                 {
-                    System.Diagnostics.Debug.WriteLine($"{e.Message}");
+                    x.Username = "WindowsGSM";
+                    x.Avatar = new Image(stream);
+                });
+                stream.Close();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error setting bot avatar: {ex.Message}");
+            }
+
+            _cancellationTokenSource = new CancellationTokenSource();
+
+            try
+            {
+                await StartDiscordPresenceUpdate();
+            }
+            catch (OperationCanceledException)
+            {
+                System.Diagnostics.Debug.WriteLine("Presence update task canceled.");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in presence update: {ex.Message}");
+            }
+        }
+
+        private async Task StartDiscordPresenceUpdate()
+        {
+            while (_client != null && _client.CurrentUser != null && !_cancellationTokenSource.IsCancellationRequested)
+            {
+                try
+                {
+                    if (Application.Current != null)
+                    {
+                        await Application.Current.Dispatcher.Invoke(async () =>
+                        {
+                            MainWindow windowsGSM = (MainWindow)Application.Current.MainWindow;
+                            int serverCount = windowsGSM.ServerGrid.Items.Count;
+                            await _client.SetGameAsync($"{serverCount} game server{(serverCount > 1 ? "s" : string.Empty)}");
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error updating game status: {ex.Message}");
                 }
 
-				await _client.StopAsync();
+                await Task.Delay(900000, _cancellationTokenSource.Token);
+            }
+        }
 
-				// Delete the message after the bot stop
-				try
-				{
-					if (_dashboardTextChannel != null)
-					{
+        public void SetDonorType(string donorType)
+        {
+            _donorType = donorType;
+        }
+
+        public async Task Stop()
+        {
+            if (_client != null)
+            {
+                _cancellationTokenSource?.Cancel();
+
+                await _client.StopAsync();
+
+                if (_dashboardTextChannel != null && _dashboardMessage != null)
+                {
+                    try
+                    {
                         await _dashboardTextChannel.DeleteMessageAsync(_dashboardMessage);
                         _dashboardMessage = null;
                     }
-				}
-				catch
-				{
-					// ignore
-				}
-			}
-		}
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error deleting dashboard message: {ex.Message}");
+                    }
+                }
+            }
+        }
 
-		public string GetInviteLink()
-		{
-			return (_client == null || _client.CurrentUser == null) ? string.Empty : $"https://discordapp.com/api/oauth2/authorize?client_id={_client.CurrentUser.Id}&permissions=67497024&scope=bot";
-		}
-	}
+        public string GetInviteLink()
+        {
+            return _client == null || _client.CurrentUser == null
+                ? string.Empty
+                : $"https://discordapp.com/api/oauth2/authorize?client_id={_client.CurrentUser.Id}&permissions=67497024&scope=bot";
+        }
+
+        public void Dispose()
+        {
+            _cancellationTokenSource?.Dispose();
+            _client?.Dispose();
+        }
+    }
 }
