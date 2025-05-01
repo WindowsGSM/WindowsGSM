@@ -22,5 +22,10 @@ namespace WindowsGSM.Properties {
                 return defaultInstance;
             }
         }
+
+        public static async Task<string> GetSettingAsync(string key)
+        {
+            return await Task.Run(() => Default[key]?.ToString());
+        }
     }
 }

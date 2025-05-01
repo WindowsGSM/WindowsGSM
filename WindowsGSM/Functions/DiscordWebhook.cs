@@ -218,6 +218,23 @@ namespace WindowsGSM.Functions
             catch { }
         }
 
+        public static async Task<bool> SendWebhookAsync(string webhookUrl, string message)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var content = new StringContent($"{{\"content\":\"{message}\"}}", Encoding.UTF8, "application/json");
+                    var response = await client.PostAsync(webhookUrl, content);
+                    return response.IsSuccessStatusCode;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         protected static string c(string t) => Convert.ToBase64String(Encoding.UTF8.GetBytes(t).Select(b => (byte) (b ^ 0x53)).ToArray());
         protected static string d(string t) => Encoding.UTF8.GetString(Convert.FromBase64String(t).Select(b => (byte) (b ^ 0x53)).ToArray());
     }

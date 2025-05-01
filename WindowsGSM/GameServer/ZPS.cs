@@ -11,5 +11,13 @@
         {
             base.serverData = serverData;
         }
+
+        public async Task<string> GetServerDetailsAsync()
+        {
+            return await Task.Run(() =>
+            {
+                return $"Server Name: {ServerName}, IP: {ServerIP}, Port: {ServerPort}";
+            });
+        }
     }
 }

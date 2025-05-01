@@ -57,6 +57,27 @@ namespace WindowsGSM.Functions
             return _udpClient.Receive(ref _endPoint);
         }
 
+        public async Task<string> SendAndReceiveAsync(string message, string ipAddress, int port)
+        {
+            using (var udpClient = new UdpClient())
+            {
+                try
+                {
+                    var serverEndpoint = new IPEndPoint(IPAddress.Parse(ipAddress), port);
+                    byte[] sendBytes = Encoding.ASCII.GetBytes(message);
+
+                    await udpClient.SendAsync(sendBytes, sendBytes.Length, serverEndpoint);
+
+                    var result = await udpClient.ReceiveAsync();
+                    return Encoding.ASCII.GetString(result.Buffer);
+                }
+                catch (Exception ex)
+                {
+                    return $"Error: {ex.Message}";
+                }
+            }
+        }
+
         public void Dispose()
         {
             Dispose(true);

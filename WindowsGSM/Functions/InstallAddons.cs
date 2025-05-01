@@ -160,5 +160,27 @@ namespace WindowsGSM.Functions
                 return null;
             }
         }
+
+        public static async Task<bool> InstallAddonAsync(string addonName, string downloadUrl, string serverPath)
+        {
+            try
+            {
+                string zipPath = Path.Combine(serverPath, $"{addonName}.zip");
+
+                using (WebClient webClient = new WebClient())
+                {
+                    await webClient.DownloadFileTaskAsync(downloadUrl, zipPath);
+                }
+
+                await Task.Run(() => ZipFile.ExtractToDirectory(zipPath, serverPath));
+                File.Delete(zipPath);
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

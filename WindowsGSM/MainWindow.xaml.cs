@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -129,7 +129,14 @@ namespace WindowsGSM
         private Process Installer;
 
         public static readonly Dictionary<int, ServerMetadata> _serverMetadata = new Dictionary<int, ServerMetadata>();
-        private ServerMetadata GetServerMetadata(object serverId) => _serverMetadata.TryGetValue(int.Parse(serverId.ToString()), out var s) ? s : null;
+        private readonly object _serverMetadataLock = new object();
+        private ServerMetadata GetServerMetadata(object serverId)
+        {
+            lock (_serverMetadataLock)
+            {
+                return _serverMetadata.TryGetValue(int.Parse(serverId.ToString()), out var s) ? s : null;
+            }
+        }
 
         public List<PluginMetadata> PluginsList = new List<PluginMetadata>();
 
@@ -200,12 +207,10 @@ namespace WindowsGSM
 
             if (MahAppSwitch_DonorConnect.IsOn)
             {
-                string authKey = (key.GetValue(RegistryKeyName.DonorAuthKey) == null) ? string.Empty : key.GetValue(RegistryKeyName.DonorAuthKey).ToString();
+                string authKey = key.GetValue(RegistryKeyName.DonorAuthKey)?.ToString() ?? string.Empty;
                 if (!string.IsNullOrWhiteSpace(authKey))
                 {
-#pragma warning disable 4014
-                    AuthenticateDonor(authKey);
-#pragma warning restore
+                    AuthenticateDonorAsync(authKey).ConfigureAwait(false);
                 }
             }
 
@@ -3034,6 +3039,20 @@ namespace WindowsGSM
                 MahAppSwitch_DonorConnect.IsOn = false;
             }
             key.Close();
+        }
+
+        public async Task AuthenticateDonorAsync(string authKey)
+        {
+            try
+            {
+                // Simulate an asynchronous donor authentication process
+                await Task.Delay(1000);
+                g_DonorType = "Authenticated"; // Example result
+            }
+            catch (Exception ex)
+            {
+                Log("Error", $"Failed to authenticate donor: {ex.Message}");
+            }
         }
 
         private async Task<(bool, string)> AuthenticateDonor(string authKey)

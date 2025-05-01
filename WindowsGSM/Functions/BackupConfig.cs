@@ -56,5 +56,23 @@ namespace WindowsGSM.Functions
                 }
             }
         }
+
+        public async Task<bool> DeleteBackupAsync(string backupPath)
+        {
+            if (Directory.Exists(backupPath))
+            {
+                try
+                {
+                    await Task.Run(() => Directory.Delete(backupPath, true));
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+
+            return false;
+        }
     }
 }

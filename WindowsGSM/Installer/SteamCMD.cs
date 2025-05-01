@@ -53,6 +53,37 @@ namespace WindowsGSM.Installer
             }
         }
 
+        public static async Task<bool> InstallSteamCMDAsync(string installPath)
+        {
+            try
+            {
+                await Task.Run(() =>
+                {
+                    if (!Directory.Exists(installPath))
+                    {
+                        Directory.CreateDirectory(installPath);
+                    }
+
+                    string steamCmdExe = Path.Combine(installPath, "steamcmd.exe");
+                    if (!File.Exists(steamCmdExe))
+                    {
+                        using (WebClient webClient = new WebClient())
+                        {
+                            webClient.DownloadFile("https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip", Path.Combine(installPath, "steamcmd.zip"));
+                        }
+
+                        ZipFile.ExtractToDirectory(Path.Combine(installPath, "steamcmd.zip"), installPath);
+                        File.Delete(Path.Combine(installPath, "steamcmd.zip"));
+                    }
+                });
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         // Old parameter script
         public void SetParameter(string installDir, string modName, string appId, bool validate, bool loginAnonymous = true)
         {

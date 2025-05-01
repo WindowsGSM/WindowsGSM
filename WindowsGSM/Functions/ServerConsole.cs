@@ -189,5 +189,24 @@ namespace WindowsGSM.Functions
                 */
             }
         }
+
+        public async Task SendCommandAsync(string serverId, string command)
+        {
+            try
+            {
+                await Task.Run(() =>
+                {
+                    IntPtr mainWindowHandle = ServerCache.GetWindowsIntPtr(serverId);
+                    if (mainWindowHandle != IntPtr.Zero)
+                    {
+                        SendMessageToMainWindow(mainWindowHandle, command);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending command: {ex.Message}");
+            }
+        }
     }
 }

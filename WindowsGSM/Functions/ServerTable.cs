@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace WindowsGSM.Functions
 {
@@ -32,6 +33,23 @@ namespace WindowsGSM.Functions
                 catch { }
 
                 return string.Empty;
+            }
+        }
+
+        public async Task<bool> UpdateServerStatusAsync(string serverId, string newStatus)
+        {
+            try
+            {
+                await Task.Run(() =>
+                {
+                    var server = MainWindow._serverMetadata[int.Parse(serverId)];
+                    server.Status = newStatus;
+                });
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
     }

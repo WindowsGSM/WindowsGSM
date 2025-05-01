@@ -36,19 +36,19 @@ namespace WindowsGSM
             if (!forceStart)
             {
                 //LINQ query for windowsgsm old processes
-                var wgsm = (from p in Process.GetProcesses()
-                            where ((Predicate<Process>)(p_ =>
-                            {
-                                try
-                                {
-                                    return p_.MainModule.FileName.Equals(Process.GetCurrentProcess().MainModule.FileName);
-                                }
-                                catch
-                                {
-                                    return false;
-                                }
-                            }))(p)
-                            select p).ToList();
+                var wgsm = Process.GetProcesses()
+                    .Where(p =>
+                    {
+                        try
+                        {
+                            return p.MainModule.FileName.Equals(Process.GetCurrentProcess().MainModule.FileName);
+                        }
+                        catch
+                        {
+                            return false;
+                        }
+                    })
+                    .ToList();
 
                 //Display the opened WindowsGSM
                 foreach (var process in wgsm)

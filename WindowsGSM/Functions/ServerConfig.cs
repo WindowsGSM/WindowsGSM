@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace WindowsGSM.Functions
 {
@@ -238,14 +239,14 @@ namespace WindowsGSM.Functions
             Directory.CreateDirectory(ServerPath.GetServersServerFiles(ServerID));
         }
 
-        public bool DeleteServerDirectory()
+        public async Task<bool> DeleteServerDirectoryAsync()
         {
             string serverid_dir = ServerPath.GetServers(ServerID);
-            if (Directory.Exists(serverid_dir) && ServerID != null && ServerID != string.Empty)
+            if (Directory.Exists(serverid_dir) && !string.IsNullOrEmpty(ServerID))
             {
                 try
                 {
-                    Directory.Delete(serverid_dir, true);
+                    await Task.Run(() => Directory.Delete(serverid_dir, true));
                     return true;
                 }
                 catch
@@ -370,6 +371,19 @@ namespace WindowsGSM.Functions
                         textwriter.WriteLine($"{settingName}=\"{data}\"");
                     }
                 }
+            }
+        }
+
+        public async Task<bool> SaveConfigAsync(string configPath, string content)
+        {
+            try
+            {
+                await File.WriteAllTextAsync(configPath, content);
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
     }

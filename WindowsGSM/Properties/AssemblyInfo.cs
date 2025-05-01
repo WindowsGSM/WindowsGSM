@@ -54,4 +54,5 @@ using System.Windows;
 [assembly: AssemblyVersion("1.23.1.0")]
 [assembly: AssemblyFileVersion("1.23.1.0")]
 [assembly: NeutralResourcesLanguage("en")]
+[assembly: AssemblyMetadata("IsAsync", "true")]
 

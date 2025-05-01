@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace WindowsGSM.Functions
 {
@@ -20,9 +21,29 @@ namespace WindowsGSM.Functions
             return -1;
         }
 
+        public static async Task<int> GetPIDAsync(string serverId)
+        {
+            string cacheFile = GetPIDPath(serverId);
+            if (File.Exists(cacheFile))
+            {
+                string text = await File.ReadAllTextAsync(cacheFile);
+                if (int.TryParse(text.Trim(), out int pid))
+                {
+                    return pid;
+                }
+            }
+
+            return -1;
+        }
+
         public static void SavePID(string serverId, int pid)
         {
             File.WriteAllText(GetPIDPath(serverId), pid.ToString());
+        }
+
+        public static async Task SavePIDAsync(string serverId, int pid)
+        {
+            await File.WriteAllTextAsync(GetPIDPath(serverId), pid.ToString());
         }
 
         private static string GetPIDPath(string serverId)

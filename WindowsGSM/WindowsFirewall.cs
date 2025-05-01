@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using NetFwTypeLib;
 
 namespace WindowsGSM
@@ -97,6 +98,30 @@ namespace WindowsGSM
                     // ignore
                 }
             });
+        }
+
+        public static async Task<bool> AddFirewallRuleAsync(string ruleName, string executablePath, string direction)
+        {
+            try
+            {
+                string arguments = $"advfirewall firewall add rule name=\"{ruleName}\" dir={direction} action=allow program=\"{executablePath}\" enable=yes";
+                var processStartInfo = new ProcessStartInfo("netsh", arguments)
+                {
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                using (var process = Process.Start(processStartInfo))
+                {
+                    await process.WaitForExitAsync();
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

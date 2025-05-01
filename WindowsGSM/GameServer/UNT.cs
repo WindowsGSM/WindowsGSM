@@ -150,5 +150,13 @@ namespace WindowsGSM.GameServer
             var steamCMD = new Installer.SteamCMD();
             return await steamCMD.GetRemoteBuild(AppId);
         }
+
+        public async Task<string> GetServerDetailsAsync()
+        {
+            return await Task.Run(() =>
+            {
+                return $"Server Name: {ServerName}, IP: {ServerIP}, Port: {ServerPort}";
+            });
+        }
     }
 }
