@@ -43,51 +43,95 @@ namespace WindowsGSM.DiscordBot
                 // Remote Actions
                 string[] args = message.Content.Split(new[] { ' ' }, 2);
                 string[] splits = args[1].Split(' ');
-
+                List<string> serverIds = Configs.GetServerIdsByAdminId(message.Author.Id.ToString());
                 switch (splits[0])
                 {
-                    case "start":
-                    case "stop":
-                    case "restart":
-                    case "send":
-                    case "list":
                     case "check":
-                    case "backup":
-                    case "update":
-                    case "stats":
-                        List<string> serverIds = Configs.GetServerIdsByAdminId(message.Author.Id.ToString());
-                        if (splits[0] == "check")
-                        {
-                            await message.Channel.SendMessageAsync(
-                                serverIds.Contains("0") ?
-                                "You have full permission.\nCommands: `check`, `list`, `start`, `stop`, `restart`, `send`, `backup`, `update`, `stats`" :
-                                $"You have permission on servers (`{string.Join(",", serverIds.ToArray())}`)\nCommands: `check`, `start`, `stop`, `restart`, `send`, `backup`, `update`, `stats`");
-                            break;
-                        }
-
-                        if (splits[0] == "list" && serverIds.Contains("0"))
+                        await message.Channel.SendMessageAsync(
+                            serverIds.Contains("0") ?
+                            "You have full permission.\nCommands: `check`, `list`, `start`, `stop`, `restart`, `send`, `backup`, `update`, `stats`, `getparam`, `setparam`" :
+                            $"You have permission on servers (`{string.Join(",", serverIds.ToArray())}`)\nCommands: `check`, `start`, `stop`, `restart`, `send`, `backup`, `update`, `stats`, `getparam`, `setparam`"
+                        );
+                        break;
+                    case "list":
+                        if (serverIds.Contains("0"))
                         {
                             await Action_List(message);
-                        }
-                        else if (splits[0] != "list" && (serverIds.Contains("0") || serverIds.Contains(splits[1])))
-                        {
-                            switch (splits[0])
-                            {
-                                case "start": await Action_Start(message, args[1]); break;
-                                case "stop": await Action_Stop(message, args[1]); break;
-                                case "restart": await Action_Restart(message, args[1]); break;
-                                case "send": await Action_SendCommand(message, args[1]); break;
-                                case "backup": await Action_Backup(message, args[1]); break;
-                                case "update": await Action_Update(message, args[1]); break;
-                                case "stats": await Action_Stats(message); break;
-                            }
                         }
                         else
                         {
                             await message.Channel.SendMessageAsync("You don't have permission to access.");
                         }
                         break;
-                    default: await SendHelpEmbed(message); break;
+                    case "start":
+                        if (splits.Length > 1 && (serverIds.Contains("0") || serverIds.Contains(splits[1])))
+                            await Action_Start(message, args[1]);
+                        else
+                            await message.Channel.SendMessageAsync("You don't have permission to access.");
+                        break;
+                    case "stop":
+                        if (splits.Length > 1 && (serverIds.Contains("0") || serverIds.Contains(splits[1])))
+                            await Action_Stop(message, args[1]);
+                        else
+                            await message.Channel.SendMessageAsync("You don't have permission to access.");
+                        break;
+                    case "restart":
+                        if (splits.Length > 1 && (serverIds.Contains("0") || serverIds.Contains(splits[1])))
+                            await Action_Restart(message, args[1]);
+                        else
+                            await message.Channel.SendMessageAsync("You don't have permission to access.");
+                        break;
+                    case "send":
+                        if (splits.Length > 1 && (serverIds.Contains("0") || serverIds.Contains(splits[1])))
+                            await Action_SendCommand(message, args[1]);
+                        else
+                            await message.Channel.SendMessageAsync("You don't have permission to access.");
+                        break;
+                    case "backup":
+                        if (splits.Length > 1 && (serverIds.Contains("0") || serverIds.Contains(splits[1])))
+                            await Action_Backup(message, args[1]);
+                        else
+                            await message.Channel.SendMessageAsync("You don't have permission to access.");
+                        break;
+                    case "update":
+                        if (splits.Length > 1 && (serverIds.Contains("0") || serverIds.Contains(splits[1])))
+                            await Action_Update(message, args[1]);
+                        else
+                            await message.Channel.SendMessageAsync("You don't have permission to access.");
+                        break;
+                    case "stats":
+                        if (serverIds.Contains("0"))
+                            await Action_Stats(message);
+                        else
+                            await message.Channel.SendMessageAsync("You don't have permission to access.");
+                        break;
+                    case "getparam":
+                        if (splits.Length >= 2 && (serverIds.Contains("0") || serverIds.Contains(splits[1])))
+                        {
+                            string param = ServerConfig.GetSetting(splits[1], ServerConfig.SettingName.ServerParam);
+                            await message.Channel.SendMessageAsync($"Server (ID: {splits[1]}) Startup Parameters: `{param}`");
+                        }
+                        else
+                        {
+                            await message.Channel.SendMessageAsync($"Usage: {Configs.GetBotPrefix()}wgsm getparam `<SERVERID>`");
+                        }
+                        break;
+                    case "setparam":
+                        if (splits.Length >= 3 && (serverIds.Contains("0") || serverIds.Contains(splits[1])))
+                        {
+                            string serverId = splits[1];
+                            string newParam = args[1].Substring(splits[0].Length + serverId.Length + 2); // get everything after setparam <SERVERID> 
+                            ServerConfig.SetSetting(serverId, ServerConfig.SettingName.ServerParam, newParam);
+                            await message.Channel.SendMessageAsync($"Server (ID: {serverId}) Startup Parameters updated to: `{newParam}`");
+                        }
+                        else
+                        {
+                            await message.Channel.SendMessageAsync($"Usage: {Configs.GetBotPrefix()}wgsm setparam `<SERVERID>` `<PARAMETERS>`");
+                        }
+                        break;
+                    default:
+                        await SendHelpEmbed(message);
+                        break;
                 }
             }
         }

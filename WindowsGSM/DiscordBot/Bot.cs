@@ -113,9 +113,9 @@ namespace WindowsGSM.DiscordBot
 					_cancellationTokenSource?.Cancel();
 				}
 				catch (Exception e)
-                {
-                    System.Diagnostics.Debug.WriteLine($"{e.Message}");
-                }
+				{
+					System.Diagnostics.Debug.WriteLine($"{e.Message}");
+				}
 
 				await _client.StopAsync();
 
@@ -124,9 +124,9 @@ namespace WindowsGSM.DiscordBot
 				{
 					if (_dashboardTextChannel != null)
 					{
-                        await _dashboardTextChannel.DeleteMessageAsync(_dashboardMessage);
-                        _dashboardMessage = null;
-                    }
+						await _dashboardTextChannel.DeleteMessageAsync(_dashboardMessage);
+						_dashboardMessage = null;
+					}
 				}
 				catch
 				{
@@ -138,6 +138,30 @@ namespace WindowsGSM.DiscordBot
 		public string GetInviteLink()
 		{
 			return (_client == null || _client.CurrentUser == null) ? string.Empty : $"https://discordapp.com/api/oauth2/authorize?client_id={_client.CurrentUser.Id}&permissions=67497024&scope=bot";
+		}
+
+		// Example method to get current server startup parameters
+		// You will need to connect this to your actual server management logic
+		public Dictionary<string, string> GetServerStartupParameters(string serverId)
+		{
+			// Get the server startup parameters using ServerConfig
+			string param = WindowsGSM.Functions.ServerConfig.GetSetting(serverId, WindowsGSM.Functions.ServerConfig.SettingName.ServerParam);
+			var result = new Dictionary<string, string>();
+			result["ServerParam"] = param;
+			return result;
+		}
+
+		// Example method to edit server startup parameters
+		// You will need to connect this to your actual server management logic
+		public bool EditServerStartupParameters(string serverId, Dictionary<string, string> newParameters)
+		{
+			// Edit the server startup parameters using ServerConfig
+			if (newParameters != null && newParameters.ContainsKey("ServerParam"))
+			{
+				WindowsGSM.Functions.ServerConfig.SetSetting(serverId, WindowsGSM.Functions.ServerConfig.SettingName.ServerParam, newParameters["ServerParam"]);
+				return true;
+			}
+			return false;
 		}
 	}
 }
