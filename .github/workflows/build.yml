@@ -6,11 +6,20 @@ jobs:
     runs-on: windows-2019
     steps:
     - uses: actions/checkout@v2
+
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1
       env:
         ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+
     - name: Restore packages
       run: msbuild WindowsGSM.sln /t:restore
+
     - name: Build with MSBuild
-      run: msbuild WindowsGSM.sln
+      run: msbuild WindowsGSM.sln /p:Configuration=Release
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: WindowsGSM-Binaries
+        path: '**/bin/Release/'
