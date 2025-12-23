@@ -55,9 +55,6 @@ namespace WindowsGSM.DiscordBot
                         await Action_List(message, serverIds);
                         break;
 
-                    case "stats":
-                        await Action_Stats(message);
-                        break;
                     case "start":
                     case "stop":
                     case "restart":
