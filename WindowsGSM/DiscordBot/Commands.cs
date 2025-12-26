@@ -43,33 +43,26 @@ namespace WindowsGSM.DiscordBot
                 // Remote Actions
                 string[] args = message.Content.Split(new[] { ' ' }, 2);
                 string[] splits = args[1].Split(' ');
+                List<string> serverIds = Configs.GetServerIdsByAdminId(message.Author.Id.ToString());
 
                 switch (splits[0])
                 {
+                    case "check":
+                        await Action_Check(message, serverIds);
+                        break;
+
+                    case "list":
+                        await Action_List(message, serverIds);
+                        break;
+
                     case "start":
                     case "stop":
                     case "restart":
                     case "send":
-                    case "list":
-                    case "check":
                     case "backup":
                     case "update":
                     case "stats":
-                        List<string> serverIds = Configs.GetServerIdsByAdminId(message.Author.Id.ToString());
-                        if (splits[0] == "check")
-                        {
-                            await message.Channel.SendMessageAsync(
-                                serverIds.Contains("0") ?
-                                "You have full permission.\nCommands: `check`, `list`, `start`, `stop`, `restart`, `send`, `backup`, `update`, `stats`" :
-                                $"You have permission on servers (`{string.Join(",", serverIds.ToArray())}`)\nCommands: `check`, `start`, `stop`, `restart`, `send`, `backup`, `update`, `stats`");
-                            break;
-                        }
-
-                        if (splits[0] == "list" && serverIds.Contains("0"))
-                        {
-                            await Action_List(message);
-                        }
-                        else if (splits[0] != "list" && (serverIds.Contains("0") || serverIds.Contains(splits[1])))
+                        if (Author_Server_Permission_Check(serverIds, splits[1]))
                         {
                             switch (splits[0])
                             {
@@ -84,7 +77,7 @@ namespace WindowsGSM.DiscordBot
                         }
                         else
                         {
-                            await message.Channel.SendMessageAsync("You don't have permission to access.");
+                            await Send_No_Permission(message);
                         }
                         break;
                     default: await SendHelpEmbed(message); break;
@@ -92,7 +85,26 @@ namespace WindowsGSM.DiscordBot
             }
         }
 
-        private async Task Action_List(SocketMessage message)
+        // Authorization check for server-level commands
+        private bool Author_Server_Permission_Check(List<string> serverIds, string targetId)
+        {
+            return serverIds.Contains("0") || serverIds.Contains(targetId);
+        }
+
+        private async Task Send_No_Permission(SocketMessage message)
+        {
+            await message.Channel.SendMessageAsync("You don't have permission to access.");
+        }
+
+        private async Task Action_Check(SocketMessage message, List<string> serverIds)
+        {
+            await message.Channel.SendMessageAsync(
+                serverIds.Contains("0") ?
+                "You have full permission.\nCommands: `check`, `list`, `start`, `stop`, `restart`, `send`, `backup`, `update`, `stats`" :
+                $"You have permission on servers (`{string.Join(",", serverIds.ToArray())}`)\nCommands: `check`, `start`, `stop`, `restart`, `send`, `backup`, `update`, `stats`");
+        }
+
+        private async Task Action_List(SocketMessage message, List<string> serverIds)
         {
             await Application.Current.Dispatcher.Invoke(async () =>
             {
@@ -106,9 +118,20 @@ namespace WindowsGSM.DiscordBot
 
                 foreach ((string id, string state, string server) in list)
                 {
+                    if (!Author_Server_Permission_Check(serverIds, id))
+                    {
+                        continue; // skip servers the user cannot access
+                    }
+
                     ids += $"`{id}`\n";
                     status += $"`{state}`\n";
                     servers += $"`{server}`\n";
+                }
+
+                if (string.IsNullOrEmpty(ids))
+                {
+                    await message.Channel.SendMessageAsync("You don't have permission to view any servers.");
+                    return;
                 }
 
                 var embed = new EmbedBuilder { Color = Color.Teal };
