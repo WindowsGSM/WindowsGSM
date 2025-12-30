@@ -27,6 +27,7 @@ namespace WindowsGSM.Functions
         private readonly List<string> _consoleList = new List<string>();
         private readonly string _serverId;
         private int _lineNumber = 0;
+        private readonly object _lock = new object();
 
         public ServerConsole(string serverId)
         {
@@ -38,12 +39,12 @@ namespace WindowsGSM.Functions
             _serverId = serverId.ToString();
         }
 
-        public async void AddOutput(object sender, DataReceivedEventArgs args)
+        public void AddOutput(object sender, DataReceivedEventArgs args)
         {
-            System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+            if (args.Data != null)
             {
                 ServerManager.ServerMetadata[int.Parse(_serverId)].ServerConsole.Add(args.Data);
-            });
+            }
         }
 
         public async void Input(Process process, string text, IntPtr mainWindow)
@@ -92,24 +93,36 @@ namespace WindowsGSM.Functions
 
         public void Clear()
         {
-            _consoleList.Clear();
+            lock (_lock)
+            {
+                _consoleList.Clear();
+            }
         }
 
         public string Get()
         {
-            return string.Join(Environment.NewLine, _consoleList.ToArray());
+            lock (_lock)
+            {
+                return string.Join(Environment.NewLine, _consoleList.ToArray());
+            }
         }
 
         public string GetPreviousCommand()
         {
-            --_lineNumber;
-            return (_consoleList.Count == 0) ? string.Empty : _consoleList[GetLineNumber()];
+            lock (_lock)
+            {
+                --_lineNumber;
+                return (_consoleList.Count == 0) ? string.Empty : _consoleList[GetLineNumber()];
+            }
         }
 
         public string GetNextCommand()
         {
-            ++_lineNumber;
-            return (_consoleList.Count == 0) ? string.Empty : _consoleList[GetLineNumber()];
+            lock (_lock)
+            {
+                ++_lineNumber;
+                return (_consoleList.Count == 0) ? string.Empty : _consoleList[GetLineNumber()];
+            }
         }
 
         private int GetLineNumber()
@@ -128,20 +141,23 @@ namespace WindowsGSM.Functions
 
         public void Add(string text)
         {
-            if (_serverId == "0")
+            lock (_lock)
             {
-                _lineNumber = _consoleList.Count + 1;
-
-                if (_consoleList.Count > 0 && text == _consoleList[_consoleList.Count - 1])
+                if (_serverId == "0")
                 {
-                    return;
-                }
-            }
+                    _lineNumber = _consoleList.Count + 1;
 
-            _consoleList.Add(text);
-            if (_consoleList.Count > MAX_LINE)
-            {
-                _consoleList.RemoveAt(0);
+                    if (_consoleList.Count > 0 && text == _consoleList[_consoleList.Count - 1])
+                    {
+                        return;
+                    }
+                }
+
+                _consoleList.Add(text);
+                if (_consoleList.Count > MAX_LINE)
+                {
+                    _consoleList.RemoveAt(0);
+                }
             }
         }
 

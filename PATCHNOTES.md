@@ -45,3 +45,9 @@ A major refactoring and stabilization effort was conducted to improve the archit
   - Changed `Main` from `async Task<int>` to `static void`.
   - Removed `Task.Run` wrapper around `App.Run()`.
   - **Result**: Fixed the issue where the application process would exit immediately upon launch because the main thread was not correctly blocking on the WPF message loop.
+
+## Code Audit & Optimization
+- **Thread Safety**: Implemented locking in `ServerConsole` to prevent race conditions and removed `Dispatcher.Invoke` from `AddOutput` to unblock the UI thread during high-volume logging.
+- **UI Performance**: Increased `StartConsoleRefresh` polling interval from 10ms to 250ms to significantly reduce CPU usage.
+- **Resource Management**: Added explicit `Process.Dispose()` in `ServerManager.OnGameServerExited` to prevent resource leaks.
+- **Project Cleanup**: Removed unused `WindowsGSM.csproj.user` file and resolved multiple assembly binding redirect warnings in `App.config`.

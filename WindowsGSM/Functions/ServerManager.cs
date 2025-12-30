@@ -486,6 +486,7 @@ namespace WindowsGSM.Functions
             {
                 p.Exited -= (sender, e) => OnGameServerExited(server);
                 ServerMetadata[int.Parse(server.ID)].Process = null;
+                p.Dispose();
             }
 
             if (GetServerMetadata(server.ID).ServerStatus == ServerStatus.Stopping)

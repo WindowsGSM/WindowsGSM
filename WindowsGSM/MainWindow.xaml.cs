@@ -774,7 +774,7 @@ namespace WindowsGSM
         {
             while (true)
             {
-                await Task.Delay(10);
+                await Task.Delay(250);
                 var row = (ServerTable)ServerGrid.SelectedItem;
                 if (row != null)
                 {
@@ -1109,13 +1109,11 @@ namespace WindowsGSM
 
             if (Installer != null)
             {
-                //Wait installer exit. Example: steamcmd.exe
-                await Task.Run(() =>
+                Installer.OutputDataReceived += (s, _e) =>
                 {
-                    var reader = Installer.StandardOutput;
-                    while (!reader.EndOfStream)
+                    if (_e.Data != null)
                     {
-                        var nextLine = reader.ReadLine();
+                        string nextLine = _e.Data;
                         if (nextLine.Contains("Logging in user "))
                         {
                             nextLine += Environment.NewLine + "Please send the Login Token:";
@@ -1127,9 +1125,24 @@ namespace WindowsGSM
                             textbox_InstallLog.ScrollToEnd();
                         });
                     }
+                };
 
-                    Installer?.WaitForExit();
-                });
+                Installer.ErrorDataReceived += (s, _e) =>
+                {
+                    if (_e.Data != null)
+                    {
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            textbox_InstallLog.AppendText(_e.Data + Environment.NewLine);
+                            textbox_InstallLog.ScrollToEnd();
+                        });
+                    }
+                };
+
+                Installer.BeginOutputReadLine();
+                Installer.BeginErrorReadLine();
+
+                await Task.Run(() => Installer.WaitForExit());
             }
 
             if (gameServer.IsInstallValid())
