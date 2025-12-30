@@ -49,9 +49,7 @@ namespace WindowsGSM
             public const string DarkTheme = "DarkTheme";
             public const string StartOnBoot = "StartOnBoot";
             public const string RestartOnCrash = "RestartOnCrash";
-            public const string DonorTheme = "DonorTheme";
-            public const string DonorColor = "DonorColor";
-            public const string DonorAuthKey = "DonorAuthKey";
+            public const string ThemeColor = "ThemeColor";
             public const string SendStatistics = "SendStatistics";
             public const string Height = "Height";
             public const string Width = "Width";
@@ -76,8 +74,6 @@ namespace WindowsGSM
         private Process Installer;
 
         private readonly List<System.Windows.Controls.CheckBox> _checkBoxes = new List<System.Windows.Controls.CheckBox>();
-
-        private string g_DonorType = string.Empty;
 
         private readonly DiscordBot.Bot g_DiscordBot;
 
@@ -141,9 +137,7 @@ namespace WindowsGSM
                 key.SetValue(RegistryKeyName.DarkTheme, "False");
                 key.SetValue(RegistryKeyName.StartOnBoot, "False");
                 key.SetValue(RegistryKeyName.RestartOnCrash, "False");
-                key.SetValue(RegistryKeyName.DonorTheme, "False");
-                key.SetValue(RegistryKeyName.DonorColor, DEFAULT_THEME);
-                key.SetValue(RegistryKeyName.DonorAuthKey, "");
+                key.SetValue(RegistryKeyName.ThemeColor, DEFAULT_THEME);
                 key.SetValue(RegistryKeyName.SendStatistics, "True");
                 key.SetValue(RegistryKeyName.Height, Height);
                 key.SetValue(RegistryKeyName.Width, Width);
@@ -155,24 +149,12 @@ namespace WindowsGSM
             MahAppSwitch_DarkTheme.IsOn = (key.GetValue(RegistryKeyName.DarkTheme) ?? false).ToString() == "True";
             MahAppSwitch_StartOnBoot.IsOn = (key.GetValue(RegistryKeyName.StartOnBoot) ?? false).ToString() == "True";
             MahAppSwitch_RestartOnCrash.IsOn = (key.GetValue(RegistryKeyName.RestartOnCrash) ?? false).ToString() == "True";
-            MahAppSwitch_DonorConnect.Toggled -= DonorConnect_IsCheckedChanged;
-            MahAppSwitch_DonorConnect.IsOn = (key.GetValue(RegistryKeyName.DonorTheme) ?? false).ToString() == "True";
-            MahAppSwitch_DonorConnect.Toggled += DonorConnect_IsCheckedChanged;
             MahAppSwitch_SendStatistics.IsOn = (key.GetValue(RegistryKeyName.SendStatistics) ?? true).ToString() == "True";
             MahAppSwitch_DiscordBotAutoStart.IsOn = (key.GetValue(RegistryKeyName.DiscordBotAutoStart) ?? false).ToString() == "True";
-            string color = (key.GetValue(RegistryKeyName.DonorColor) ?? string.Empty).ToString();
+            string color = (key.GetValue(RegistryKeyName.ThemeColor) ?? string.Empty).ToString();
             comboBox_Themes.SelectionChanged -= ComboBox_Themes_SelectionChanged;
             comboBox_Themes.SelectedItem = comboBox_Themes.Items.Contains(color) ? color : DEFAULT_THEME;
             comboBox_Themes.SelectionChanged += ComboBox_Themes_SelectionChanged;
-
-            if (MahAppSwitch_DonorConnect.IsOn)
-            {
-                string authKey = key.GetValue(RegistryKeyName.DonorAuthKey)?.ToString() ?? string.Empty;
-                if (!string.IsNullOrWhiteSpace(authKey))
-                {
-                    AuthenticateDonorAsync(authKey).ConfigureAwait(false);
-                }
-            }
 
             Height = (key.GetValue(RegistryKeyName.Height) == null) ? Height : double.Parse(key.GetValue(RegistryKeyName.Height).ToString());
             Width = (key.GetValue(RegistryKeyName.Width) == null) ? Width : double.Parse(key.GetValue(RegistryKeyName.Width).ToString());
@@ -771,7 +753,7 @@ namespace WindowsGSM
                     {
                         if (ServerManager.GetServerMetadata(serverId).DiscordAlert && ServerManager.GetServerMetadata(serverId).AutoStartAlert)
                         {
-                            var webhook = new DiscordWebhook(ServerManager.GetServerMetadata(serverId).DiscordWebhook, ServerManager.GetServerMetadata(serverId).DiscordMessage, g_DonorType);
+                            var webhook = new DiscordWebhook(ServerManager.GetServerMetadata(serverId).DiscordWebhook, ServerManager.GetServerMetadata(serverId).DiscordMessage);
                             await webhook.Send(server.ID, server.Game, "Started | Auto Start", server.Name, server.IP, server.Port);
                         }
                     }
@@ -1434,7 +1416,7 @@ namespace WindowsGSM
             int serverId = int.Parse(server.ID);
             if (!ServerManager.GetServerMetadata(serverId).DiscordAlert) { return; }
 
-            var webhook = new DiscordWebhook(ServerManager.GetServerMetadata(serverId).DiscordWebhook, ServerManager.GetServerMetadata(serverId).DiscordMessage, g_DonorType);
+            var webhook = new DiscordWebhook(ServerManager.GetServerMetadata(serverId).DiscordWebhook, ServerManager.GetServerMetadata(serverId).DiscordMessage);
             await webhook.Send(server.ID, server.Game, "Webhook Test Alert", server.Name, server.IP, server.Port);
         }
 
@@ -2006,7 +1988,7 @@ namespace WindowsGSM
 
                     if (ServerManager.GetServerMetadata(serverId).DiscordAlert && ServerManager.GetServerMetadata(serverId).CrashAlert)
                     {
-                        var webhook = new DiscordWebhook(ServerManager.GetServerMetadata(serverId).DiscordWebhook, ServerManager.GetServerMetadata(serverId).DiscordMessage, g_DonorType);
+                        var webhook = new DiscordWebhook(ServerManager.GetServerMetadata(serverId).DiscordWebhook, ServerManager.GetServerMetadata(serverId).DiscordMessage);
                         await webhook.Send(server.ID, server.Game, "Crashed", server.Name, server.IP, server.Port);
                     }
 
@@ -2043,7 +2025,7 @@ namespace WindowsGSM
 
                         if (ServerManager.GetServerMetadata(serverId).DiscordAlert && ServerManager.GetServerMetadata(serverId).AutoRestartAlert)
                         {
-                            var webhook = new DiscordWebhook(ServerManager.GetServerMetadata(serverId).DiscordWebhook, ServerManager.GetServerMetadata(serverId).DiscordMessage, g_DonorType);
+                            var webhook = new DiscordWebhook(ServerManager.GetServerMetadata(serverId).DiscordWebhook, ServerManager.GetServerMetadata(serverId).DiscordMessage);
                             await webhook.Send(server.ID, server.Game, "Restarted | Auto Restart", server.Name, server.IP, server.Port);
                         }
                     }
@@ -2101,7 +2083,7 @@ namespace WindowsGSM
 
                         if (ServerManager.GetServerMetadata(serverId).DiscordAlert && ServerManager.GetServerMetadata(serverId).AutoUpdateAlert)
                         {
-                            var webhook = new DiscordWebhook(ServerManager.GetServerMetadata(serverId).DiscordWebhook, ServerManager.GetServerMetadata(serverId).DiscordMessage, g_DonorType);
+                            var webhook = new DiscordWebhook(ServerManager.GetServerMetadata(serverId).DiscordWebhook, ServerManager.GetServerMetadata(serverId).DiscordMessage);
                             await webhook.Send(server.ID, server.Game, "Updated | Auto Update", server.Name, server.IP, server.Port);
                         }
 
@@ -2167,7 +2149,7 @@ namespace WindowsGSM
 
                         if (ServerManager.GetServerMetadata(serverId).DiscordAlert && ServerManager.GetServerMetadata(serverId).RestartCrontabAlert)
                         {
-                            var webhook = new DiscordWebhook(ServerManager.GetServerMetadata(serverId).DiscordWebhook, ServerManager.GetServerMetadata(serverId).DiscordMessage, g_DonorType);
+                            var webhook = new DiscordWebhook(ServerManager.GetServerMetadata(serverId).DiscordWebhook, ServerManager.GetServerMetadata(serverId).DiscordMessage);
                             await webhook.Send(server.ID, server.Game, "Restarted | Restart Crontab", server.Name, server.IP, server.Port);
                         }
 
@@ -2451,10 +2433,7 @@ namespace WindowsGSM
             Process.Start("https://discord.gg/bGc7t2R");
         }
 
-        private void Button_Patreon_Click(object sender, RoutedEventArgs e)
-        {
-            Process.Start("https://www.patreon.com/WindowsGSM/");
-        }
+
 
         private void Button_Settings_Click(object sender, RoutedEventArgs e)
         {
@@ -2547,128 +2526,12 @@ namespace WindowsGSM
         }
         #endregion
 
-        #region Donor Connect
-        private async void DonorConnect_IsCheckedChanged(object sender, EventArgs e)
-        {
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
-
-            //If switch is checked
-            if (!MahAppSwitch_DonorConnect.IsOn)
-            {
-                g_DonorType = string.Empty;
-                comboBox_Themes.SelectedItem = DEFAULT_THEME;
-                comboBox_Themes.IsEnabled = false;
-
-                //Set theme
-                ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem}");
-
-                key.SetValue(RegistryKeyName.DonorTheme, MahAppSwitch_DonorConnect.IsOn.ToString());
-                key.SetValue(RegistryKeyName.DonorColor, DEFAULT_THEME);
-                key.Close();
-                return;
-            }
-
-            //If switch is not checked
-            key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true);
-            string authKey = (key.GetValue(RegistryKeyName.DonorAuthKey) == null) ? string.Empty : key.GetValue(RegistryKeyName.DonorAuthKey).ToString();
-
-            var settings = new MetroDialogSettings
-            {
-                AffirmativeButtonText = "Activate",
-                DefaultText = authKey
-            };
-
-            authKey = await this.ShowInputAsync("Donor Connect (Patreon)", "Please enter the activation key.", settings);
-
-            //If pressed cancel or key is null or whitespace
-            if (string.IsNullOrWhiteSpace(authKey))
-            {
-                MahAppSwitch_DonorConnect.IsOn = false;
-                key.Close();
-                return;
-            }
-
-            ProgressDialogController controller = await this.ShowProgressAsync("Authenticating...", "Please wait...");
-            controller.SetIndeterminate();
-            (bool success, string name) = await AuthenticateDonor(authKey);
-            await controller.CloseAsync();
-
-            if (success)
-            {
-                key.SetValue(RegistryKeyName.DonorTheme, "True");
-                key.SetValue(RegistryKeyName.DonorAuthKey, authKey);
-                await this.ShowMessageAsync("Success!", $"Thanks for your donation {name}, your support help us a lot!\nYou can choose any theme you like on the Settings!");
-            }
-            else
-            {
-                key.SetValue(RegistryKeyName.DonorTheme, "False");
-                key.SetValue(RegistryKeyName.DonorAuthKey, "");
-                await this.ShowMessageAsync("Fail to activate.", "Please visit https://windowsgsm.com/patreon/ to get the key.");
-
-                MahAppSwitch_DonorConnect.IsOn = false;
-            }
-            key.Close();
-        }
-
-        public async Task AuthenticateDonorAsync(string authKey)
-        {
-            try
-            {
-                // Simulate an asynchronous donor authentication process
-                await Task.Delay(1000);
-                g_DonorType = "Authenticated"; // Example result
-            }
-            catch (Exception ex)
-            {
-                Log("Error", $"Failed to authenticate donor: {ex.Message}");
-            }
-        }
-
-        private async Task<(bool, string)> AuthenticateDonor(string authKey)
-        {
-            try
-            {
-                using (WebClient webClient = new WebClient())
-                {
-                    string json = await webClient.DownloadStringTaskAsync($"https://windowsgsm.com/patreon/patreonAuth.php?auth={authKey}");
-                    bool success = JObject.Parse(json)["success"].ToString() == "True";
-
-                    if (success)
-                    {
-                        string name = JObject.Parse(json)["name"].ToString();
-                        string type = JObject.Parse(json)["type"].ToString();
-
-                        g_DonorType = type;
-                        g_DiscordBot.SetDonorType(g_DonorType);
-                        comboBox_Themes.IsEnabled = true;
-
-                        ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem}");
-
-                        return (true, name);
-                    }
-
-                    MahAppSwitch_DonorConnect.IsOn = false;
-
-                    //Set theme
-                    ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem}");
-                }
-            }
-            catch
-            {
-                // ignore
-            }
-
-            //Set theme
-            ThemeManager.Current.ChangeTheme(this, $"{(MahAppSwitch_DarkTheme.IsOn ? "Dark" : "Light")}.{comboBox_Themes.SelectedItem}");
-
-            return (false, string.Empty);
-        }
-
+        #region Theme Settings
         private void ComboBox_Themes_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             using (var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM", true))
             {
-                key?.SetValue(RegistryKeyName.DonorColor, comboBox_Themes.SelectedItem.ToString());
+                key?.SetValue(RegistryKeyName.ThemeColor, comboBox_Themes.SelectedItem.ToString());
             }
 
             //Set theme
@@ -2808,17 +2671,11 @@ namespace WindowsGSM
         {
             var settings = new MetroDialogSettings
             {
-                AffirmativeButtonText = "Patreon",
-                NegativeButtonText = "Ok",
-                DefaultButtonFocus = MessageDialogResult.Negative
+                AffirmativeButtonText = "Ok",
+                DefaultButtonFocus = MessageDialogResult.Affirmative
             };
 
-            var result = await this.ShowMessageAsync("About WindowsGSM", $"Product:\t\tWindowsGSM\nVersion:\t\t{WGSM_VERSION.Substring(1)}\nCreator:\t\tTatLead\n\nIf you like WindowsGSM, consider becoming a Patron!", MessageDialogStyle.AffirmativeAndNegative, settings);
-
-            if (result == MessageDialogResult.Affirmative)
-            {
-                Process.Start("https://www.patreon.com/WindowsGSM/");
-            }
+            await this.ShowMessageAsync("About WindowsGSM", $"Product:\t\tWindowsGSM\nVersion:\t\t{WGSM_VERSION.Substring(1)}\nCreator:\t\tTatLead", MessageDialogStyle.Affirmative, settings);
         }
         #endregion
 

@@ -501,7 +501,7 @@ namespace WindowsGSM.Functions
             var metadata = GetServerMetadata(server.ID);
             if (metadata.DiscordAlert && metadata.CrashAlert)
             {
-                var webhook = new DiscordWebhook(metadata.DiscordWebhook, metadata.DiscordMessage, ""); 
+                var webhook = new DiscordWebhook(metadata.DiscordWebhook, metadata.DiscordMessage); 
                 await webhook.Send(server.ID, server.Game, "Crashed", server.Name, server.IP, server.Port);
             }
 

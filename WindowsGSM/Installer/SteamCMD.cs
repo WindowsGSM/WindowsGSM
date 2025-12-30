@@ -45,6 +45,22 @@ namespace WindowsGSM.Installer
                 await Task.Run(() => ZipFile.ExtractToDirectory(zipPath, _installPath));
                 await Task.Run(() => File.Delete(zipPath));
 
+                // Bootstrap SteamCMD to update itself
+                var p = new Process
+                {
+                    StartInfo =
+                    {
+                        FileName = exePath,
+                        Arguments = "+login anonymous +quit",
+                        WorkingDirectory = _installPath,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Minimized
+                    }
+                };
+                p.Start();
+                await Task.Run(() => p.WaitForExit());
+
                 return true;
             }
             catch
