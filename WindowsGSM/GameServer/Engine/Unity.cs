@@ -8,5 +8,11 @@ namespace WindowsGSM.GameServer.Engine
 {
     public class Unity
     {
+        public Functions.ServerConfig serverData;
+
+        public Unity(Functions.ServerConfig serverData)
+        {
+            this.serverData = serverData;
+        }
     }
 }

@@ -7,19 +7,21 @@ using System.Windows;
 using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
+using WindowsGSM.Functions;
 
 namespace WindowsGSM.DiscordBot
 {
 	class Bot
 	{
 		private DiscordSocketClient _client;
-		private string _donorType;
 		private SocketTextChannel _dashboardTextChannel;
 		private RestUserMessage _dashboardMessage;
 		private CancellationTokenSource _cancellationTokenSource;
+        private readonly IServerManager _serverManager;
 
-		public Bot()
+		public Bot(IServerManager serverManager)
 		{
+            _serverManager = serverManager;
 			Configs.CreateConfigs();
 		}
 
@@ -39,7 +41,7 @@ namespace WindowsGSM.DiscordBot
 			}
 
 			// Listen Commands
-			new Commands(_client);
+			new Commands(_client, _serverManager);
 
 			return true;
 		}
@@ -48,7 +50,7 @@ namespace WindowsGSM.DiscordBot
 		{
 			try
 			{
-				Stream stream = Application.GetResourceStream(new Uri($"pack://application:,,,/Images/WindowsGSM{(string.IsNullOrWhiteSpace(_donorType) ? string.Empty : $"-{_donorType}")}.png")).Stream;
+				Stream stream = Application.GetResourceStream(new Uri($"pack://application:,,,/Images/WindowsGSM.png")).Stream;
 				await _client.CurrentUser.ModifyAsync(x =>
 				{
 					x.Username = "WindowsGSM";
@@ -88,8 +90,7 @@ namespace WindowsGSM.DiscordBot
 				{
 					await Application.Current.Dispatcher.Invoke(async () =>
 					{
-						MainWindow WindowsGSM = (MainWindow)Application.Current.MainWindow;
-						int serverCount = WindowsGSM.ServerGrid.Items.Count;
+						int serverCount = _serverManager.GetServerCount();
 						await _client.SetGameAsync($"{serverCount} game server{(serverCount > 1 ? "s" : string.Empty)}");
 					});
 				}
@@ -99,10 +100,7 @@ namespace WindowsGSM.DiscordBot
 		}
 
 
-		public void SetDonorType(string donorType)
-		{
-			_donorType = donorType;
-		}
+
 
 		public async Task Stop()
 		{

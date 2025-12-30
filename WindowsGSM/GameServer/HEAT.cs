@@ -25,7 +25,7 @@ namespace WindowsGSM.GameServer
 
         public string AppId = "996600";
 
-        public HEAT(Functions.ServerConfig serverData)
+        public HEAT(Functions.ServerConfig serverData) : base(serverData)
         {
             _serverData = serverData;
         }

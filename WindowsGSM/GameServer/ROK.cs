@@ -29,7 +29,7 @@ namespace WindowsGSM.GameServer
 
         public string AppId = "381690";
 
-        public ROK(Functions.ServerConfig serverData)
+        public ROK(Functions.ServerConfig serverData) : base(serverData)
         {
             _serverData = serverData;
         }

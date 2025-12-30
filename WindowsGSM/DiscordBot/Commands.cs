@@ -12,10 +12,12 @@ namespace WindowsGSM.DiscordBot
     class Commands
     {
         private readonly DiscordSocketClient _client;
+        private readonly IServerManager _serverManager;
 
-        public Commands(DiscordSocketClient client)
+        public Commands(DiscordSocketClient client, IServerManager serverManager)
         {
             _client = client;
+            _serverManager = serverManager;
             _client.MessageReceived += CommandReceivedAsync;
         }
 
@@ -96,9 +98,7 @@ namespace WindowsGSM.DiscordBot
         {
             await Application.Current.Dispatcher.Invoke(async () =>
             {
-                MainWindow WindowsGSM = (MainWindow)Application.Current.MainWindow;
-
-                var list = WindowsGSM.GetServerList();
+                var list = _serverManager.GetServerList();
 
                 string ids = string.Empty;
                 string status = string.Empty;
@@ -127,16 +127,15 @@ namespace WindowsGSM.DiscordBot
             {
                 await Application.Current.Dispatcher.Invoke(async () =>
                 {
-                    MainWindow WindowsGSM = (MainWindow)Application.Current.MainWindow;
-                    if (WindowsGSM.IsServerExist(args[1]))
+                    if (_serverManager.IsServerExist(args[1]))
                     {
-                        MainWindow.ServerStatus serverStatus = WindowsGSM.GetServerStatus(args[1]);
-                        if (serverStatus == MainWindow.ServerStatus.Stopped)
+                        ServerStatus serverStatus = _serverManager.GetServerStatus(args[1]);
+                        if (serverStatus == ServerStatus.Stopped)
                         {
-                            bool started = await WindowsGSM.StartServerById(args[1], message.Author.Id.ToString(), message.Author.Username);
+                            bool started = await _serverManager.StartServerById(args[1], message.Author.Id.ToString(), message.Author.Username);
                             await message.Channel.SendMessageAsync($"Server (ID: {args[1]}) {(started ? "Started" : "Fail to Start")}.");
                         }
-                        else if (serverStatus == MainWindow.ServerStatus.Started)
+                        else if (serverStatus == ServerStatus.Started)
                         {
                             await message.Channel.SendMessageAsync($"Server (ID: {args[1]}) already Started.");
                         }
@@ -145,7 +144,7 @@ namespace WindowsGSM.DiscordBot
                             await message.Channel.SendMessageAsync($"Server (ID: {args[1]}) currently in {serverStatus.ToString()} state, not able to start.");
                         }
 
-                        await SendServerEmbed(message, Color.Green, args[1], WindowsGSM.GetServerStatus(args[1]).ToString(), WindowsGSM.GetServerName(args[1]));
+                        await SendServerEmbed(message, Color.Green, args[1], _serverManager.GetServerStatus(args[1]).ToString(), _serverManager.GetServerName(args[1]));
                     }
                     else
                     {
@@ -166,16 +165,15 @@ namespace WindowsGSM.DiscordBot
             {
                 await Application.Current.Dispatcher.Invoke(async () =>
                 {
-                    MainWindow WindowsGSM = (MainWindow)Application.Current.MainWindow;
-                    if (WindowsGSM.IsServerExist(args[1]))
+                    if (_serverManager.IsServerExist(args[1]))
                     {
-                        MainWindow.ServerStatus serverStatus = WindowsGSM.GetServerStatus(args[1]);
-                        if (serverStatus == MainWindow.ServerStatus.Started)
+                        ServerStatus serverStatus = _serverManager.GetServerStatus(args[1]);
+                        if (serverStatus == ServerStatus.Started)
                         {
-                            bool started = await WindowsGSM.StopServerById(args[1], message.Author.Id.ToString(), message.Author.Username);
+                            bool started = await _serverManager.StopServerById(args[1], message.Author.Id.ToString(), message.Author.Username);
                             await message.Channel.SendMessageAsync($"Server (ID: {args[1]}) {(started ? "Stopped" : "Fail to Stop")}.");
                         }
-                        else if (serverStatus == MainWindow.ServerStatus.Stopped)
+                        else if (serverStatus == ServerStatus.Stopped)
                         {
                             await message.Channel.SendMessageAsync($"Server (ID: {args[1]}) already Stopped.");
                         }
@@ -184,7 +182,7 @@ namespace WindowsGSM.DiscordBot
                             await message.Channel.SendMessageAsync($"Server (ID: {args[1]}) currently in {serverStatus.ToString()} state, not able to stop.");
                         }
 
-                        await SendServerEmbed(message, Color.Orange, args[1], WindowsGSM.GetServerStatus(args[1]).ToString(), WindowsGSM.GetServerName(args[1]));
+                        await SendServerEmbed(message, Color.Orange, args[1], _serverManager.GetServerStatus(args[1]).ToString(), _serverManager.GetServerName(args[1]));
                     }
                     else
                     {
@@ -205,13 +203,12 @@ namespace WindowsGSM.DiscordBot
             {
                 await Application.Current.Dispatcher.Invoke(async () =>
                 {
-                    MainWindow WindowsGSM = (MainWindow)Application.Current.MainWindow;
-                    if (WindowsGSM.IsServerExist(args[1]))
+                    if (_serverManager.IsServerExist(args[1]))
                     {
-                        MainWindow.ServerStatus serverStatus = WindowsGSM.GetServerStatus(args[1]);
-                        if (serverStatus == MainWindow.ServerStatus.Started)
+                        ServerStatus serverStatus = _serverManager.GetServerStatus(args[1]);
+                        if (serverStatus == ServerStatus.Started)
                         {
-                            bool started = await WindowsGSM.RestartServerById(args[1], message.Author.Id.ToString(), message.Author.Username);
+                            bool started = await _serverManager.RestartServerById(args[1], message.Author.Id.ToString(), message.Author.Username);
                             await message.Channel.SendMessageAsync($"Server (ID: {args[1]}) {(started ? "Restarted" : "Fail to Restart")}.");
                         }
                         else
@@ -219,7 +216,7 @@ namespace WindowsGSM.DiscordBot
                             await message.Channel.SendMessageAsync($"Server (ID: {args[1]}) currently in {serverStatus.ToString()} state, not able to restart.");
                         }
 
-                        await SendServerEmbed(message, Color.Blue, args[1], WindowsGSM.GetServerStatus(args[1]).ToString(), WindowsGSM.GetServerName(args[1]));
+                        await SendServerEmbed(message, Color.Blue, args[1], _serverManager.GetServerStatus(args[1]).ToString(), _serverManager.GetServerName(args[1]));
                     }
                     else
                     {
@@ -240,14 +237,13 @@ namespace WindowsGSM.DiscordBot
             {
                 await Application.Current.Dispatcher.Invoke(async () =>
                 {
-                    MainWindow WindowsGSM = (MainWindow)Application.Current.MainWindow;
-                    if (WindowsGSM.IsServerExist(args[1]))
+                    if (_serverManager.IsServerExist(args[1]))
                     {
-                        MainWindow.ServerStatus serverStatus = WindowsGSM.GetServerStatus(args[1]);
-                        if (serverStatus == MainWindow.ServerStatus.Started)
+                        ServerStatus serverStatus = _serverManager.GetServerStatus(args[1]);
+                        if (serverStatus == ServerStatus.Started)
                         {
                             string sendCommand = command.Substring(args[1].Length + 6);
-                            bool sent = await WindowsGSM.SendCommandById(args[1], sendCommand, message.Author.Id.ToString(), message.Author.Username);
+                            bool sent = await _serverManager.SendCommandById(args[1], sendCommand, message.Author.Id.ToString(), message.Author.Username);
                             await message.Channel.SendMessageAsync($"Server (ID: {args[1]}) {(sent ? "Command sent" : "Fail to send command")}. | `{sendCommand}`");
                         }
                         else
@@ -274,17 +270,16 @@ namespace WindowsGSM.DiscordBot
             {
                 await Application.Current.Dispatcher.Invoke(async () =>
                 {
-                    MainWindow WindowsGSM = (MainWindow)Application.Current.MainWindow;
-                    if (WindowsGSM.IsServerExist(args[1]))
+                    if (_serverManager.IsServerExist(args[1]))
                     {
-                        MainWindow.ServerStatus serverStatus = WindowsGSM.GetServerStatus(args[1]);
-                        if (serverStatus == MainWindow.ServerStatus.Stopped)
+                        ServerStatus serverStatus = _serverManager.GetServerStatus(args[1]);
+                        if (serverStatus == ServerStatus.Stopped)
                         {
                             await message.Channel.SendMessageAsync($"Server (ID: {args[1]}) Backup started - this may take some time.");
-                            bool backuped = await WindowsGSM.BackupServerById(args[1], message.Author.Id.ToString(), message.Author.Username);
+                            bool backuped = await _serverManager.BackupServerById(args[1], message.Author.Id.ToString(), message.Author.Username);
                             await message.Channel.SendMessageAsync($"Server (ID: {args[1]}) {(backuped ? "Backup Complete" : "Fail to Backup")}.");
                         }
-                        else if (serverStatus == MainWindow.ServerStatus.Backuping)
+                        else if (serverStatus == ServerStatus.Backuping)
                         {
                             await message.Channel.SendMessageAsync($"Server (ID: {args[1]}) already Backuping.");
                         }
@@ -312,17 +307,16 @@ namespace WindowsGSM.DiscordBot
             {
                 await Application.Current.Dispatcher.Invoke(async () =>
                 {
-                    MainWindow WindowsGSM = (MainWindow)Application.Current.MainWindow;
-                    if (WindowsGSM.IsServerExist(args[1]))
+                    if (_serverManager.IsServerExist(args[1]))
                     {
-                        MainWindow.ServerStatus serverStatus = WindowsGSM.GetServerStatus(args[1]);
-                        if (serverStatus == MainWindow.ServerStatus.Stopped)
+                        ServerStatus serverStatus = _serverManager.GetServerStatus(args[1]);
+                        if (serverStatus == ServerStatus.Stopped)
                         {
                             await message.Channel.SendMessageAsync($"Server (ID: {args[1]}) Update started - this may take some time.");
-                            bool updated = await WindowsGSM.UpdateServerById(args[1], message.Author.Id.ToString(), message.Author.Username);
+                            bool updated = await _serverManager.UpdateServerById(args[1], message.Author.Id.ToString(), message.Author.Username);
                             await message.Channel.SendMessageAsync($"Server (ID: {args[1]}) {(updated ? "Updated" : "Fail to Update")}.");
                         }
-                        else if (serverStatus == MainWindow.ServerStatus.Updating)
+                        else if (serverStatus == ServerStatus.Updating)
                         {
                             await message.Channel.SendMessageAsync($"Server (ID: {args[1]}) already Updating.");
                         }
@@ -407,8 +401,7 @@ namespace WindowsGSM.DiscordBot
             {
                 return await Application.Current.Dispatcher.Invoke(async () =>
                 {
-                    MainWindow WindowsGSM = (MainWindow)Application.Current.MainWindow;
-                    return (WindowsGSM.GetServerCount(), WindowsGSM.GetStartedServerCount(), WindowsGSM.GetActivePlayers());
+                    return (_serverManager.GetServerCount(), _serverManager.GetStartedServerCount(), _serverManager.GetActivePlayers());
                 });
             }
 

@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 
 namespace WindowsGSM.Functions
 {
@@ -73,6 +74,31 @@ namespace WindowsGSM.Functions
             }
 
             return File.Exists(configPath);
+        }
+
+        public static async Task<bool> DownloadGameServerConfigAsync(string configPath, string gameName)
+        {
+            try
+            {
+                string downloadUrl = $"https://raw.githubusercontent.com/WindowsGSM/GameServerConfigs/master/{gameName}/{Path.GetFileName(configPath)}";
+
+                using (HttpClient client = new HttpClient())
+                {
+                    var response = await client.GetAsync(downloadUrl);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string content = await response.Content.ReadAsStringAsync();
+                        File.WriteAllText(configPath, content);
+                        return true;
+                    }
+                }
+            }
+            catch
+            {
+                return false;
+            }
+
+            return false;
         }
     }
 }

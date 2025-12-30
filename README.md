@@ -98,6 +98,12 @@ Allow support more game servers by installing plugins!
 
 ![Screenshot Plugins](https://windowsgsm.com/assets/images/WindowsGSM-Plugins-v1.21.0.png)
 
+## Build Instructions
+To build the project, use the following command in PowerShell:
+```powershell
+& "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe" WindowsGSM.sln /p:Configuration=Release /p:Platform="Any CPU"
+```
+
 ## Documentation
   * Website: <https://docs.windowsgsm.com/>
   * Github: <https://github.com/WindowsGSM/Documentation>

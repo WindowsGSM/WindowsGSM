@@ -259,5 +259,13 @@ namespace WindowsGSM.GameServer
                 return string.Empty;
             }
         }
+
+        public async Task<string> GetServerDetailsAsync()
+        {
+            return await Task.Run(() =>
+            {
+                return $"Server Name: {_serverData.ServerName}, IP: {_serverData.ServerIP}, Port: {_serverData.ServerPort}";
+            });
+        }
     }
 }

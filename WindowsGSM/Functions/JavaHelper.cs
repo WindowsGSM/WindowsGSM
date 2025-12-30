@@ -75,6 +75,38 @@ namespace WindowsGSM.Functions
             return result;
         }
 
+        public static async Task<bool> InstallJREAsync(string serverID)
+        {
+            string serverFilesPath = ServerPath.GetServersServerFiles(serverID);
+            string jrePath = Path.Combine(serverFilesPath, JreInstallFileName);
+
+            try
+            {
+                using (WebClient webClient = new WebClient())
+                {
+                    await webClient.DownloadFileTaskAsync(JreDownloadLink, jrePath);
+
+                    var processStartInfo = new ProcessStartInfo(jrePath)
+                    {
+                        Arguments = $"INSTALL_SILENT=Enable INSTALLDIR=\"{JreAbsoluteInstallPath}\"",
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+
+                    using (var process = Process.Start(processStartInfo))
+                    {
+                        process.WaitForExit();
+                    }
+
+                    return File.Exists(Path.Combine(JreAbsoluteInstallPath, "bin", "java.exe"));
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public static bool IsJREInstalled()
         {
             return FindJavaExecutableAbsolutePath().Length > 0;

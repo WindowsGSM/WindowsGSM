@@ -25,7 +25,7 @@ namespace WindowsGSM.GameServer
 
         public string AppId = "1204170";
 
-        public ONSET(Functions.ServerConfig serverData)
+        public ONSET(Functions.ServerConfig serverData) : base(serverData)
         {
             _serverData = serverData;
         }

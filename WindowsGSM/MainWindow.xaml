@@ -19,9 +19,6 @@
         WindowStartupLocation="CenterScreen" Activated="Window_Activated">
     <mah:MetroWindow.RightWindowCommands>
         <mah:WindowCommands>
-            <Button x:Name="button_Website" Content="Website" Click="Button_Website_Click"/>
-            <Button x:Name="button_Discord" Content="Discord" Click="Button_Discord_Click"/>
-            <Button x:Name="button_Patreon" Content="Patreon" Click="Button_Patreon_Click"/>
             <!--<Button x:Name="button_Settings" Content="Settings" Click="Button_Settings_Click"/>-->
             <Button x:Name="button_Hide" Content="Hide" Click="Button_Hide_Click"/>
         </mah:WindowCommands>
@@ -94,10 +91,9 @@
                         <mah:ToggleSwitch x:Name="MahAppSwitch_StartOnBoot" Header="Start WindowsGSM on Login" Margin="20,0,0,15" Toggled="StartOnLogin_IsCheckedChanged"/>
                         <mah:ToggleSwitch x:Name="MahAppSwitch_RestartOnCrash" Header="Auto Restart WindowsGSM on Crash" Margin="20,0,0,15" Toggled="RestartOnCrash_IsCheckedChanged"/>
                         <mah:ToggleSwitch x:Name="MahAppSwitch_SendStatistics" Header="Send Statistics" Margin="20,0,0,15" Toggled="SendStatistics_IsCheckedChanged"/>
-                        <mah:ToggleSwitch x:Name="MahAppSwitch_DonorConnect" Header="Donor Connect (Patreon)" Margin="20,0,0,15" Toggled="DonorConnect_IsCheckedChanged"/>
                         <DockPanel Margin="20,0,20,20">
-                            <Label Content="WindowsGSM Theme (Donor Only)" FontSize="13.5" Padding="0" DockPanel.Dock="Top"></Label>
-                            <ComboBox x:Name="comboBox_Themes" Margin="0,5,0,0" Height="25" DockPanel.Dock="Top" SelectionChanged="ComboBox_Themes_SelectionChanged" IsEnabled="False"></ComboBox>
+                            <Label Content="WindowsGSM Theme" FontSize="13.5" Padding="0" DockPanel.Dock="Top"></Label>
+                            <ComboBox x:Name="comboBox_Themes" Margin="0,5,0,0" Height="25" DockPanel.Dock="Top" SelectionChanged="ComboBox_Themes_SelectionChanged" IsEnabled="True"></ComboBox>
                         </DockPanel>
                     </StackPanel>
                 </ScrollViewer>

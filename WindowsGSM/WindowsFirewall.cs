@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using NetFwTypeLib;
+using System.Diagnostics;
 
 namespace WindowsGSM
 {
@@ -21,9 +21,9 @@ namespace WindowsGSM
             {
                 try
                 {
-                    INetFwMgr netFwMgr = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
+                    dynamic netFwMgr = Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
 
-                    foreach (INetFwAuthorizedApplication app in netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications)
+                    foreach (dynamic app in netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications)
                     {
                         if (app.ProcessImageFileName.ToLower() == Path.ToLower())
                         {
@@ -46,8 +46,8 @@ namespace WindowsGSM
             {
                 try
                 {
-                    var netFwMgr = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
-                    var app = (INetFwAuthorizedApplication)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwAuthorizedApplication"));
+                    dynamic netFwMgr = Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
+                    dynamic app = Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwAuthorizedApplication"));
                     app.Name = Name;
                     app.ProcessImageFileName = Path;
                     app.Enabled = true;
@@ -65,7 +65,7 @@ namespace WindowsGSM
         {
             try
             {
-                INetFwMgr netFwMgr = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
+                dynamic netFwMgr = Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
                 netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications.Remove(Path);
             }
             catch
@@ -81,9 +81,9 @@ namespace WindowsGSM
             {
                 try
                 {
-                    INetFwMgr netFwMgr = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
+                    dynamic netFwMgr = Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
 
-                    foreach (INetFwAuthorizedApplication app in netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications)
+                    foreach (dynamic app in netFwMgr.LocalPolicy.CurrentProfile.AuthorizedApplications)
                     {
                         string filename = app.ProcessImageFileName.ToLower();
                         if (filename.Contains(Path.ToLower()))
@@ -97,6 +97,30 @@ namespace WindowsGSM
                     // ignore
                 }
             });
+        }
+
+        public static async Task<bool> AddFirewallRuleAsync(string ruleName, string executablePath, string direction)
+        {
+            try
+            {
+                string arguments = $"advfirewall firewall add rule name=\"{ruleName}\" dir={direction} action=allow program=\"{executablePath}\" enable=yes";
+                var processStartInfo = new ProcessStartInfo("netsh", arguments)
+                {
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                using (var process = Process.Start(processStartInfo))
+                {
+                    process.WaitForExit();
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

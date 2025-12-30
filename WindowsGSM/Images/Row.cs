@@ -1,4 +1,6 @@
-﻿namespace WindowsGSM.Images
+﻿using System.Threading.Tasks;
+
+namespace WindowsGSM.Images
 {
     class Row
     {

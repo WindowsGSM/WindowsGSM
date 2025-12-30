@@ -1,9 +1,13 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace WindowsGSM.Functions
 {
     public static class ServerPath
     {
+        public static readonly string WGSM_PATH = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+
         public static class FolderName
         {
             public static string Bin = "bin";
@@ -145,6 +149,24 @@ namespace WindowsGSM.Functions
         public static string GetServersServerFiles(string serverId, string path1 = "", string path2 = "", string path3 = "")
         {
             return Path.Combine(GetServers(serverId), FolderName.Serverfiles, path1, path2, path3);
+        }
+
+        public static async Task<bool> DeleteDirectoryAsync(string path)
+        {
+            if (Directory.Exists(path))
+            {
+                try
+                {
+                    await Task.Run(() => Directory.Delete(path, true));
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+
+            return false;
         }
     }
 }

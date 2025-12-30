@@ -1,4 +1,6 @@
-﻿namespace WindowsGSM.GameServer
+﻿using System.Threading.Tasks;
+
+namespace WindowsGSM.GameServer
 {
     class TFC : Engine.GoldSource
     {
@@ -10,6 +12,14 @@
         public TFC(Functions.ServerConfig serverData) : base(serverData)
         {
             base.serverData = serverData;
+        }
+
+        public async Task<string> GetServerDetailsAsync()
+        {
+            return await Task.Run(() =>
+            {
+                return $"Server Name: {serverData.ServerName}, IP: {serverData.ServerIP}, Port: {serverData.ServerPort}";
+            });
         }
     }
 }

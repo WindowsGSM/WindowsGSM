@@ -45,6 +45,53 @@ namespace WindowsGSM.Installer
                 await Task.Run(() => ZipFile.ExtractToDirectory(zipPath, _installPath));
                 await Task.Run(() => File.Delete(zipPath));
 
+                // Bootstrap SteamCMD to update itself
+                var p = new Process
+                {
+                    StartInfo =
+                    {
+                        FileName = exePath,
+                        Arguments = "+login anonymous +quit",
+                        WorkingDirectory = _installPath,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Minimized
+                    }
+                };
+                p.Start();
+                await Task.Run(() => p.WaitForExit());
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public static async Task<bool> InstallSteamCMDAsync(string installPath)
+        {
+            try
+            {
+                await Task.Run(() =>
+                {
+                    if (!Directory.Exists(installPath))
+                    {
+                        Directory.CreateDirectory(installPath);
+                    }
+
+                    string steamCmdExe = Path.Combine(installPath, "steamcmd.exe");
+                    if (!File.Exists(steamCmdExe))
+                    {
+                        using (WebClient webClient = new WebClient())
+                        {
+                            webClient.DownloadFile("https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip", Path.Combine(installPath, "steamcmd.zip"));
+                        }
+
+                        ZipFile.ExtractToDirectory(Path.Combine(installPath, "steamcmd.zip"), installPath);
+                        File.Delete(Path.Combine(installPath, "steamcmd.zip"));
+                    }
+                });
                 return true;
             }
             catch

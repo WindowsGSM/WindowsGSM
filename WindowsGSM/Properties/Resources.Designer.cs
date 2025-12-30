@@ -89,5 +89,10 @@ namespace WindowsGSM.Properties {
                 return ((byte[])(obj));
             }
         }
+
+        internal static string GetResourceString(string resourceName)
+        {
+            return ResourceManager.GetString(resourceName, resourceCulture);
+        }
     }
 }

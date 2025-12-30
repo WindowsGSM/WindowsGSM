@@ -8,5 +8,11 @@ namespace WindowsGSM.GameServer.Engine
 {
     public class UnrealEngine
     {
+        public Functions.ServerConfig serverData;
+
+        public UnrealEngine(Functions.ServerConfig serverData)
+        {
+            this.serverData = serverData;
+        }
     }
 }

@@ -14,13 +14,11 @@ namespace WindowsGSM.Functions
         private static readonly HttpClient _httpClient = new HttpClient();
         private readonly string _webhookUrl;
         private readonly string _customMessage;
-        private readonly string _donorType;
 
-        public DiscordWebhook(string webhookurl, string customMessage, string donorType = "")
+        public DiscordWebhook(string webhookurl, string customMessage)
         {
             _webhookUrl = webhookurl ?? string.Empty;
             _customMessage = customMessage ?? string.Empty;
-            _donorType = donorType ?? string.Empty;
         }
 
         public async Task<bool> Send(string serverid, string servergame, string serverstatus, string servername, string serverip, string serverport)
@@ -170,7 +168,7 @@ namespace WindowsGSM.Functions
 
         private string GetAvatarUrl()
         {
-            return "https://github.com/WindowsGSM/WindowsGSM/raw/master/WindowsGSM/Images/WindowsGSM" + (string.IsNullOrWhiteSpace(_donorType) ? string.Empty : $"-{_donorType}") + ".png";
+            return "https://github.com/WindowsGSM/WindowsGSM/raw/master/WindowsGSM/Images/WindowsGSM.png";
         }
 
         public static async void SendErrorLog()
@@ -216,6 +214,23 @@ namespace WindowsGSM.Functions
                 }
             }
             catch { }
+        }
+
+        public static async Task<bool> SendWebhookAsync(string webhookUrl, string message)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    var content = new StringContent($"{{\"content\":\"{message}\"}}", Encoding.UTF8, "application/json");
+                    var response = await client.PostAsync(webhookUrl, content);
+                    return response.IsSuccessStatusCode;
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         protected static string c(string t) => Convert.ToBase64String(Encoding.UTF8.GetBytes(t).Select(b => (byte) (b ^ 0x53)).ToArray());

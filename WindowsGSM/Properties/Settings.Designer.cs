@@ -8,6 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System.Threading.Tasks;
+
 namespace WindowsGSM.Properties {
     
     
@@ -21,6 +23,11 @@ namespace WindowsGSM.Properties {
             get {
                 return defaultInstance;
             }
+        }
+
+        public static async Task<string> GetSettingAsync(string key)
+        {
+            return await Task.Run(() => Default[key]?.ToString());
         }
     }
 }
