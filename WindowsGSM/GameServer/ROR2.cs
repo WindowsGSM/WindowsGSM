@@ -26,7 +26,7 @@ namespace WindowsGSM.GameServer
 
         public string AppId = "1180760";
 
-        public ROR2(Functions.ServerConfig serverData)
+        public ROR2(Functions.ServerConfig serverData) : base(serverData)
         {
             _serverData = serverData;
         }

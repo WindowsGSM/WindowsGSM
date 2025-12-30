@@ -88,7 +88,7 @@ namespace WindowsGSM.Functions
                     if (response.IsSuccessStatusCode)
                     {
                         string content = await response.Content.ReadAsStringAsync();
-                        await File.WriteAllTextAsync(configPath, content);
+                        File.WriteAllText(configPath, content);
                         return true;
                     }
                 }

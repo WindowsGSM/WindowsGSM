@@ -26,7 +26,7 @@ namespace WindowsGSM.GameServer
 
         public string AppId = "376030";
 
-        public ARKSE(Functions.ServerConfig serverData)
+        public ARKSE(Functions.ServerConfig serverData) : base(serverData)
         {
             _serverData = serverData;
         }

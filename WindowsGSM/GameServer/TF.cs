@@ -154,7 +154,7 @@ namespace WindowsGSM.GameServer
         {
             return await Task.Run(() =>
             {
-                return $"Server Name: {ServerName}, IP: {ServerIP}, Port: {ServerPort}";
+                return $"Server Name: {_serverData.ServerName}, IP: {_serverData.ServerIP}, Port: {_serverData.ServerPort}";
             });
         }
     }

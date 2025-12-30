@@ -40,7 +40,7 @@ namespace WindowsGSM.GameServer
 
         public string AppId = "629800";
 
-        public MORDHAU(Functions.ServerConfig serverData)
+        public MORDHAU(Functions.ServerConfig serverData) : base(serverData)
         {
             _serverData = serverData;
         }

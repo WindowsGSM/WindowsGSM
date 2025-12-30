@@ -1,10 +1,13 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace WindowsGSM.Functions
 {
     public static class ServerPath
     {
+        public static readonly string WGSM_PATH = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+
         public static class FolderName
         {
             public static string Bin = "bin";

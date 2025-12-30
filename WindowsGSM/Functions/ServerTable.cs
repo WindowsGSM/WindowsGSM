@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace WindowsGSM.Functions
 {
-    class ServerTable
+    public class ServerTable
     {
         public string ID { get; set; }
         public string PID { get; set; }
@@ -42,8 +42,8 @@ namespace WindowsGSM.Functions
             {
                 await Task.Run(() =>
                 {
-                    var server = MainWindow._serverMetadata[int.Parse(serverId)];
-                    server.Status = newStatus;
+                    var server = ServerManager.ServerMetadata[int.Parse(serverId)];
+                    server.ServerStatus = (ServerStatus)Enum.Parse(typeof(ServerStatus), newStatus);
                 });
                 return true;
             }

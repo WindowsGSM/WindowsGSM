@@ -378,7 +378,7 @@ namespace WindowsGSM.Functions
         {
             try
             {
-                await File.WriteAllTextAsync(configPath, content);
+                File.WriteAllText(configPath, content);
                 return true;
             }
             catch

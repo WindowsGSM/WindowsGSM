@@ -34,7 +34,7 @@ namespace WindowsGSM
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : MetroWindow
+    public partial class MainWindow : MetroWindow, IServerManager
     {
         [DllImport("user32.dll")]
         private static extern bool ShowWindow(IntPtr hWnd, WindowShowStyle nCmdShow);
@@ -58,42 +58,6 @@ namespace WindowsGSM
             public const string DiscordBotAutoStart = "DiscordBotAutoStart";
         }
 
-        public class ServerMetadata
-        {
-            public ServerStatus ServerStatus = ServerStatus.Stopped;
-            public Process Process;
-            public IntPtr MainWindow;
-            public ServerConsole ServerConsole;
-
-            // Basic Game Server Settings
-            public bool AutoRestart;
-            public bool AutoStart;
-            public bool AutoUpdate;
-            public bool UpdateOnStart;
-            public bool BackupOnStart;
-
-            // Discord Alert Settings
-            public bool DiscordAlert;
-            public string DiscordMessage;
-            public string DiscordWebhook;
-            public bool AutoRestartAlert;
-            public bool AutoStartAlert;
-            public bool AutoUpdateAlert;
-            public bool RestartCrontabAlert;
-            public bool CrashAlert;
-
-            // Restart Crontab Settings
-            public bool RestartCrontab;
-            public string CrontabFormat;
-
-            // Game Server Start Priority and Affinity
-            public string CPUPriority;
-            public string CPUAffinity;
-
-            public bool EmbedConsole;
-            public bool AutoScroll;
-        }
-
         private enum WindowShowStyle : uint
         {
             Hide = 0,
@@ -101,23 +65,6 @@ namespace WindowsGSM
             Show = 5,
             Minimize = 6,
             ShowMinNoActivate = 7
-        }
-
-        public enum ServerStatus
-        {
-            Started = 0,
-            Starting = 1,
-            Stopped = 2,
-            Stopping = 3,
-            Restarted = 4,
-            Restarting = 5,
-            Updated = 6,
-            Updating = 7,
-            Backuped = 8,
-            Backuping = 9,
-            Restored = 10,
-            Restoring = 11,
-            Deleting = 12
         }
 
         public static readonly string WGSM_VERSION = "v" + string.Concat(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString().Reverse().Skip(2).Reverse());
@@ -128,26 +75,16 @@ namespace WindowsGSM
         private readonly NotifyIcon notifyIcon;
         private Process Installer;
 
-        public static readonly Dictionary<int, ServerMetadata> _serverMetadata = new Dictionary<int, ServerMetadata>();
-        private readonly object _serverMetadataLock = new object();
-        private ServerMetadata GetServerMetadata(object serverId)
-        {
-            lock (_serverMetadataLock)
-            {
-                return _serverMetadata.TryGetValue(int.Parse(serverId.ToString()), out var s) ? s : null;
-            }
-        }
-
-        public List<PluginMetadata> PluginsList = new List<PluginMetadata>();
-
         private readonly List<System.Windows.Controls.CheckBox> _checkBoxes = new List<System.Windows.Controls.CheckBox>();
 
         private string g_DonorType = string.Empty;
 
-        private readonly DiscordBot.Bot g_DiscordBot = new DiscordBot.Bot();
+        private readonly DiscordBot.Bot g_DiscordBot;
 
         public MainWindow(bool showCrashHint)
         {
+            g_DiscordBot = new DiscordBot.Bot(this);
+
             //Add SplashScreen
             var splashScreen = new SplashScreen("Images/SplashScreen.png");
             splashScreen.Show(false, true);
@@ -156,21 +93,44 @@ namespace WindowsGSM
             InitializeComponent();
             Title = $"WindowsGSM {WGSM_VERSION}";
 
+            // Subscribe to ServerManager events
+            ServerManager.OnServerStatusChanged += (serverId, status, pid) =>
+            {
+                Dispatcher.Invoke(() => 
+                {
+                    foreach (ServerTable server in ServerGrid.Items)
+                    {
+                        if (server.ID == serverId)
+                        {
+                            SetServerStatus(server, status, pid);
+                            
+                            if (status == "Started")
+                            {
+                                StartAutoUpdateCheck(server);
+                                StartRestartCrontabCheck(server);
+                                StartSendHeartBeat(server);
+                                StartQuery(server);
+                            }
+
+                            break;
+                        }
+                    }
+                });
+            };
+
+            ServerManager.OnLog += (serverId, message) =>
+            {
+                Dispatcher.Invoke(() => Log(serverId, message));
+            };
+
             //Close SplashScreen
             splashScreen.Close(new TimeSpan(0, 0, 1));
 
             // Add all themes to comboBox_Themes
             ThemeManager.Current.Themes.Select(t => Path.GetExtension(t.Name).Trim('.')).Distinct().OrderBy(x => x).ToList().ForEach(delegate (string name) { comboBox_Themes.Items.Add(name); });
 
-            // Set up _serverMetadata
-            for (int i = 0; i < MAX_SERVER; i++)
-            {
-                _serverMetadata[i] = new ServerMetadata
-                {
-                    ServerStatus = ServerStatus.Stopped,
-                    ServerConsole = new ServerConsole(i)
-                };
-            }
+            // Set up ServerManager
+            ServerManager.Initialize(MAX_SERVER);
 
             var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\WindowsGSM");
             if (key == null)
@@ -274,12 +234,12 @@ namespace WindowsGSM
 
                     textBox_SetAffinity.Text = Functions.CPU.Affinity.GetAffinityValidatedString(priority);
 
-                    _serverMetadata[int.Parse(server.ID)].CPUAffinity = priority;
+                    ServerManager.ServerMetadata[int.Parse(server.ID)].CPUAffinity = priority;
                     ServerConfig.SetSetting(server.ID, "cpuaffinity", priority);
 
-                    if (GetServerMetadata(server.ID).Process != null && !GetServerMetadata(server.ID).Process.HasExited)
+                    if (ServerManager.GetServerMetadata(server.ID).Process != null && !ServerManager.GetServerMetadata(server.ID).Process.HasExited)
                     {
-                        _serverMetadata[int.Parse(server.ID)].Process.ProcessorAffinity = Functions.CPU.Affinity.GetAffinityIntPtr(priority);
+                        ServerManager.ServerMetadata[int.Parse(server.ID)].Process.ProcessorAffinity = Functions.CPU.Affinity.GetAffinityIntPtr(priority);
                     }
                 };
             }
@@ -327,8 +287,8 @@ namespace WindowsGSM
                     string pName = ServerCache.GetProcessName(server.ID);
                     if (!string.IsNullOrWhiteSpace(pName) && p.ProcessName == pName)
                     {
-                        _serverMetadata[int.Parse(server.ID)].Process = p;
-                        _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Started;
+                        ServerManager.ServerMetadata[int.Parse(server.ID)].Process = p;
+                        ServerManager.ServerMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Started;
                         SetServerStatus(server, "Started");
 
                         /*// Get Console process - untested
@@ -339,7 +299,7 @@ namespace WindowsGSM
                         }
                         */
 
-                        _serverMetadata[int.Parse(server.ID)].MainWindow = ServerCache.GetWindowsIntPtr(server.ID);
+                        ServerManager.ServerMetadata[int.Parse(server.ID)].MainWindow = ServerCache.GetWindowsIntPtr(server.ID);
                         p.Exited += (sender, e) => OnGameServerExited(server);
 
                         StartAutoUpdateCheck(server);
@@ -403,7 +363,7 @@ namespace WindowsGSM
                     string line = reader.ReadLine();
                     System.Windows.Application.Current?.Dispatcher.Invoke(() =>
                     {
-                        GetServerMetadata(serverId).ServerConsole.Add(line);
+                        ServerManager.GetServerMetadata(serverId).ServerConsole.Add(line);
                     });
                 }
             });
@@ -419,7 +379,7 @@ namespace WindowsGSM
             List<DictionaryEntry> gameName = GameServer.Data.Icon.ResourceManager.GetResourceSet(System.Globalization.CultureInfo.CurrentUICulture, true, true).Cast<DictionaryEntry>().ToList();
             gameName.ForEach(delegate (DictionaryEntry entry) { sortedList.Add(entry.Key, $"/WindowsGSM;component/{entry.Value}"); });
             int pluginLoaded = 0;
-            PluginsList.ForEach(delegate (PluginMetadata plugin)
+            ServerManager.PluginsList.ForEach(delegate (PluginMetadata plugin)
             {
                 if (plugin.IsLoaded)
                 {
@@ -446,10 +406,10 @@ namespace WindowsGSM
         public async void LoadPlugins(bool shouldAwait = true)
         {
             var pm = new PluginManagement();
-            PluginsList = await pm.LoadPlugins(shouldAwait);
+            ServerManager.PluginsList = await pm.LoadPlugins(shouldAwait);
 
             int loadedCount = 0;
-            PluginsList.ForEach(delegate (PluginMetadata plugin)
+            ServerManager.PluginsList.ForEach(delegate (PluginMetadata plugin)
             {
                 if (!plugin.IsLoaded)
                 {
@@ -560,11 +520,11 @@ namespace WindowsGSM
 
             AddGamesToComboBox();
 
-            Label_PluginInstalled.Content = PluginsList.Count.ToString();
+            Label_PluginInstalled.Content = ServerManager.PluginsList.Count.ToString();
             Label_PluginLoaded.Content = loadedCount.ToString();
-            Label_PluginFailed.Content = (PluginsList.Count - loadedCount).ToString();
+            Label_PluginFailed.Content = (ServerManager.PluginsList.Count - loadedCount).ToString();
 
-            Log("Plugins", $"Installed: {PluginsList.Count}, Loaded: {loadedCount}, Failed: {PluginsList.Count - loadedCount}");
+            Log("Plugins", $"Installed: {ServerManager.PluginsList.Count}, Loaded: {loadedCount}, Failed: {ServerManager.PluginsList.Count - loadedCount}");
         }
 
         private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
@@ -673,10 +633,10 @@ namespace WindowsGSM
                 var serverConfig = new ServerConfig(i.ToString());
 
                 //If Game server not exist return
-                if (GameServer.Data.Class.Get(serverConfig.ServerGame, pluginList: PluginsList) == null) { continue; }
+                if (GameServer.Data.Class.Get(serverConfig.ServerGame, pluginList: ServerManager.PluginsList) == null) { continue; }
 
                 string status;
-                switch (GetServerMetadata(i).ServerStatus)
+                switch (ServerManager.GetServerMetadata(i).ServerStatus)
                 {
                     case ServerStatus.Started: status = "Started"; break;
                     case ServerStatus.Starting: status = "Starting"; break;
@@ -693,7 +653,7 @@ namespace WindowsGSM
                     case ServerStatus.Deleting: status = "Deleting"; break;
                     default:
                         {
-                            _serverMetadata[i].ServerStatus = ServerStatus.Stopped;
+                            ServerManager.ServerMetadata[i].ServerStatus = ServerStatus.Stopped;
                             status = "Stopped";
                             break;
                         }
@@ -704,7 +664,7 @@ namespace WindowsGSM
                     string icon = GameServer.Data.Icon.ResourceManager.GetString(serverConfig.ServerGame);
                     if (icon == null)
                     {
-                        PluginsList.ForEach(delegate (PluginMetadata plugin)
+                        ServerManager.PluginsList.ForEach(delegate (PluginMetadata plugin)
                         {
                             if (plugin.FullName == serverConfig.ServerGame && plugin.IsLoaded)
                             {
@@ -740,7 +700,7 @@ namespace WindowsGSM
                         Port = serverConfig.ServerPort,
                         QueryPort = serverConfig.ServerQueryPort,
                         Defaultmap = serverConfig.ServerMap,
-                        Maxplayers = (GetServerMetadata(i).ServerStatus != ServerStatus.Started) ? serverConfig.ServerMaxPlayer : livePlayerData[i]
+                        Maxplayers = (ServerManager.GetServerMetadata(i).ServerStatus != ServerStatus.Started) ? serverConfig.ServerMaxPlayer : livePlayerData[i]
                     };
 
                     SaveServerConfigToServerMetadata(i, serverConfig);
@@ -769,32 +729,32 @@ namespace WindowsGSM
             int i = int.Parse(serverId.ToString());
 
             // Basic Game Server Settings
-            _serverMetadata[i].AutoRestart = serverConfig.AutoRestart;
-            _serverMetadata[i].AutoStart = serverConfig.AutoStart;
-            _serverMetadata[i].AutoUpdate = serverConfig.AutoUpdate;
-            _serverMetadata[i].UpdateOnStart = serverConfig.UpdateOnStart;
-            _serverMetadata[i].BackupOnStart = serverConfig.BackupOnStart;
+            ServerManager.ServerMetadata[i].AutoRestart = serverConfig.AutoRestart;
+            ServerManager.ServerMetadata[i].AutoStart = serverConfig.AutoStart;
+            ServerManager.ServerMetadata[i].AutoUpdate = serverConfig.AutoUpdate;
+            ServerManager.ServerMetadata[i].UpdateOnStart = serverConfig.UpdateOnStart;
+            ServerManager.ServerMetadata[i].BackupOnStart = serverConfig.BackupOnStart;
 
             // Discord Alert Settings
-            _serverMetadata[i].DiscordAlert = serverConfig.DiscordAlert;
-            _serverMetadata[i].DiscordMessage = serverConfig.DiscordMessage;
-            _serverMetadata[i].DiscordWebhook = serverConfig.DiscordWebhook;
-            _serverMetadata[i].AutoRestartAlert = serverConfig.AutoRestartAlert;
-            _serverMetadata[i].AutoStartAlert = serverConfig.AutoStartAlert;
-            _serverMetadata[i].AutoUpdateAlert = serverConfig.AutoUpdateAlert;
-            _serverMetadata[i].RestartCrontabAlert = serverConfig.RestartCrontabAlert;
-            _serverMetadata[i].CrashAlert = serverConfig.CrashAlert;
+            ServerManager.ServerMetadata[i].DiscordAlert = serverConfig.DiscordAlert;
+            ServerManager.ServerMetadata[i].DiscordMessage = serverConfig.DiscordMessage;
+            ServerManager.ServerMetadata[i].DiscordWebhook = serverConfig.DiscordWebhook;
+            ServerManager.ServerMetadata[i].AutoRestartAlert = serverConfig.AutoRestartAlert;
+            ServerManager.ServerMetadata[i].AutoStartAlert = serverConfig.AutoStartAlert;
+            ServerManager.ServerMetadata[i].AutoUpdateAlert = serverConfig.AutoUpdateAlert;
+            ServerManager.ServerMetadata[i].RestartCrontabAlert = serverConfig.RestartCrontabAlert;
+            ServerManager.ServerMetadata[i].CrashAlert = serverConfig.CrashAlert;
 
             // Restart Crontab Settings
-            _serverMetadata[i].RestartCrontab = serverConfig.RestartCrontab;
-            _serverMetadata[i].CrontabFormat = serverConfig.CrontabFormat;
+            ServerManager.ServerMetadata[i].RestartCrontab = serverConfig.RestartCrontab;
+            ServerManager.ServerMetadata[i].CrontabFormat = serverConfig.CrontabFormat;
 
             // Game Server Start Priority and Affinity
-            _serverMetadata[i].CPUPriority = serverConfig.CPUPriority;
-            _serverMetadata[i].CPUAffinity = serverConfig.CPUAffinity;
+            ServerManager.ServerMetadata[i].CPUPriority = serverConfig.CPUPriority;
+            ServerManager.ServerMetadata[i].CPUAffinity = serverConfig.CPUAffinity;
 
-            _serverMetadata[i].EmbedConsole = serverConfig.EmbedConsole;
-            _serverMetadata[i].AutoScroll = serverConfig.AutoScroll;
+            ServerManager.ServerMetadata[i].EmbedConsole = serverConfig.EmbedConsole;
+            ServerManager.ServerMetadata[i].AutoScroll = serverConfig.AutoScroll;
         }
 
         private async void AutoStartServer()
@@ -803,15 +763,15 @@ namespace WindowsGSM
             {
                 int serverId = int.Parse(server.ID);
 
-                if (GetServerMetadata(serverId).AutoStart && GetServerMetadata(server.ID).ServerStatus == ServerStatus.Stopped)
+                if (ServerManager.GetServerMetadata(serverId).AutoStart && ServerManager.GetServerMetadata(server.ID).ServerStatus == ServerStatus.Stopped)
                 {
                     await GameServer_Start(server, " | Auto Start");
 
-                    if (GetServerMetadata(server.ID).ServerStatus == ServerStatus.Started)
+                    if (ServerManager.GetServerMetadata(server.ID).ServerStatus == ServerStatus.Started)
                     {
-                        if (GetServerMetadata(serverId).DiscordAlert && GetServerMetadata(serverId).AutoStartAlert)
+                        if (ServerManager.GetServerMetadata(serverId).DiscordAlert && ServerManager.GetServerMetadata(serverId).AutoStartAlert)
                         {
-                            var webhook = new DiscordWebhook(GetServerMetadata(serverId).DiscordWebhook, GetServerMetadata(serverId).DiscordMessage, g_DonorType);
+                            var webhook = new DiscordWebhook(ServerManager.GetServerMetadata(serverId).DiscordWebhook, ServerManager.GetServerMetadata(serverId).DiscordMessage, g_DonorType);
                             await webhook.Send(server.ID, server.Game, "Started | Auto Start", server.Name, server.IP, server.Port);
                         }
                     }
@@ -836,12 +796,12 @@ namespace WindowsGSM
                 var row = (ServerTable)ServerGrid.SelectedItem;
                 if (row != null)
                 {
-                    string text = GetServerMetadata(int.Parse(row.ID)).ServerConsole.Get();
+                    string text = ServerManager.GetServerMetadata(int.Parse(row.ID)).ServerConsole.Get();
                     if (text.Length != console.Text.Length && text != console.Text)
                     {
                         console.Text = text;
 
-                        if (GetServerMetadata(row.ID).AutoScroll)
+                        if (ServerManager.GetServerMetadata(row.ID).AutoScroll)
                         {
                             console.ScrollToEnd();
                         }
@@ -1002,7 +962,7 @@ namespace WindowsGSM
             {
                 Console.WriteLine("Datagrid Changed");
 
-                if (GetServerMetadata(row.ID).ServerStatus == ServerStatus.Stopped)
+                if (ServerManager.GetServerMetadata(row.ID).ServerStatus == ServerStatus.Stopped)
                 {
                     button_Start.IsEnabled = true;
                     button_Stop.IsEnabled = false;
@@ -1014,12 +974,12 @@ namespace WindowsGSM
                     textbox_servercommand.IsEnabled = false;
                     button_servercommand.IsEnabled = false;
                 }
-                else if (GetServerMetadata(row.ID).ServerStatus == ServerStatus.Started)
+                else if (ServerManager.GetServerMetadata(row.ID).ServerStatus == ServerStatus.Started)
                 {
                     button_Start.IsEnabled = false;
                     button_Stop.IsEnabled = true;
                     button_Restart.IsEnabled = true;
-                    Process p = GetServerMetadata(row.ID).Process;
+                    Process p = ServerManager.GetServerMetadata(row.ID).Process;
                     button_Console.IsEnabled = (p == null || p.HasExited) ? false : !(p.StartInfo.CreateNoWindow || p.StartInfo.RedirectStandardOutput);
                     button_Update.IsEnabled = false;
                     button_Backup.IsEnabled = false;
@@ -1040,7 +1000,7 @@ namespace WindowsGSM
                     button_servercommand.IsEnabled = false;
                 }
 
-                switch (GetServerMetadata(row.ID).ServerStatus)
+                switch (ServerManager.GetServerMetadata(row.ID).ServerStatus)
                 {
                     case ServerStatus.Restarting:
                     case ServerStatus.Restarted:
@@ -1053,15 +1013,15 @@ namespace WindowsGSM
                 }
 
                 button_ManageAddons.IsEnabled = ServerAddon.IsGameSupportManageAddons(row.Game);
-                if (GetServerMetadata(row.ID).ServerStatus == ServerStatus.Deleting || GetServerMetadata(row.ID).ServerStatus == ServerStatus.Restoring)
+                if (ServerManager.GetServerMetadata(row.ID).ServerStatus == ServerStatus.Deleting || ServerManager.GetServerMetadata(row.ID).ServerStatus == ServerStatus.Restoring)
                 {
                     button_ManageAddons.IsEnabled = false;
                 }
 
-                slider_ProcessPriority.Value = Functions.CPU.Priority.GetPriorityInteger(GetServerMetadata(row.ID).CPUPriority);
+                slider_ProcessPriority.Value = Functions.CPU.Priority.GetPriorityInteger(ServerManager.GetServerMetadata(row.ID).CPUPriority);
                 textBox_ProcessPriority.Text = Functions.CPU.Priority.GetPriorityByInteger((int)slider_ProcessPriority.Value);
 
-                textBox_SetAffinity.Text = Functions.CPU.Affinity.GetAffinityValidatedString(GetServerMetadata(row.ID).CPUAffinity);
+                textBox_SetAffinity.Text = Functions.CPU.Affinity.GetAffinityValidatedString(ServerManager.GetServerMetadata(row.ID).CPUAffinity);
                 string affinity = new string(textBox_SetAffinity.Text.Reverse().ToArray());
                 for (int i = 0; i < _checkBoxes.Count; i++)
                 {
@@ -1069,30 +1029,30 @@ namespace WindowsGSM
                 }
 
                 button_Status.Content = row.Status.ToUpper();
-                button_Status.Background = (GetServerMetadata(row.ID).ServerStatus == ServerStatus.Started) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Orange;
+                button_Status.Background = (ServerManager.GetServerMetadata(row.ID).ServerStatus == ServerStatus.Started) ? System.Windows.Media.Brushes.LimeGreen : System.Windows.Media.Brushes.Orange;
 
-                var gameServer = GameServer.Data.Class.Get(row.Game, pluginList: PluginsList);
+                var gameServer = GameServer.Data.Class.Get(row.Game, pluginList: ServerManager.PluginsList);
                 switch_embedconsole.IsEnabled = gameServer.AllowsEmbedConsole;
-                switch_embedconsole.IsOn = gameServer.AllowsEmbedConsole ? GetServerMetadata(row.ID).EmbedConsole : false;
-                Button_AutoScroll.Content = GetServerMetadata(row.ID).AutoScroll ? "✔️ AUTO SCROLL" : "❌ AUTO SCROLL";
+                switch_embedconsole.IsOn = gameServer.AllowsEmbedConsole ? ServerManager.GetServerMetadata(row.ID).EmbedConsole : false;
+                Button_AutoScroll.Content = ServerManager.GetServerMetadata(row.ID).AutoScroll ? "✔️ AUTO SCROLL" : "❌ AUTO SCROLL";
 
-                switch_autorestart.IsOn = GetServerMetadata(row.ID).AutoRestart;
-                switch_restartcrontab.IsOn = GetServerMetadata(row.ID).RestartCrontab;
-                switch_autostart.IsOn = GetServerMetadata(row.ID).AutoStart;
-                switch_autoupdate.IsOn = GetServerMetadata(row.ID).AutoUpdate;
-                switch_updateonstart.IsOn = GetServerMetadata(row.ID).UpdateOnStart;
-                switch_backuponstart.IsOn = GetServerMetadata(row.ID).BackupOnStart;
-                switch_discordalert.IsOn = GetServerMetadata(row.ID).DiscordAlert;
+                switch_autorestart.IsOn = ServerManager.GetServerMetadata(row.ID).AutoRestart;
+                switch_restartcrontab.IsOn = ServerManager.GetServerMetadata(row.ID).RestartCrontab;
+                switch_autostart.IsOn = ServerManager.GetServerMetadata(row.ID).AutoStart;
+                switch_autoupdate.IsOn = ServerManager.GetServerMetadata(row.ID).AutoUpdate;
+                switch_updateonstart.IsOn = ServerManager.GetServerMetadata(row.ID).UpdateOnStart;
+                switch_backuponstart.IsOn = ServerManager.GetServerMetadata(row.ID).BackupOnStart;
+                switch_discordalert.IsOn = ServerManager.GetServerMetadata(row.ID).DiscordAlert;
                 button_discordtest.IsEnabled = switch_discordalert.IsOn;
 
-                textBox_restartcrontab.Text = GetServerMetadata(row.ID).CrontabFormat;
+                textBox_restartcrontab.Text = ServerManager.GetServerMetadata(row.ID).CrontabFormat;
                 textBox_nextcrontab.Text = CrontabSchedule.TryParse(textBox_restartcrontab.Text)?.GetNextOccurrence(DateTime.Now).ToString("ddd, MM/dd/yyyy HH:mm:ss");
 
-                MahAppSwitch_AutoStartAlert.IsOn = GetServerMetadata(row.ID).AutoStartAlert;
-                MahAppSwitch_AutoRestartAlert.IsOn = GetServerMetadata(row.ID).AutoRestartAlert;
-                MahAppSwitch_AutoUpdateAlert.IsOn = GetServerMetadata(row.ID).AutoUpdateAlert;
-                MahAppSwitch_RestartCrontabAlert.IsOn = GetServerMetadata(row.ID).RestartCrontabAlert;
-                MahAppSwitch_CrashAlert.IsOn = GetServerMetadata(row.ID).CrashAlert;
+                MahAppSwitch_AutoStartAlert.IsOn = ServerManager.GetServerMetadata(row.ID).AutoStartAlert;
+                MahAppSwitch_AutoRestartAlert.IsOn = ServerManager.GetServerMetadata(row.ID).AutoRestartAlert;
+                MahAppSwitch_AutoUpdateAlert.IsOn = ServerManager.GetServerMetadata(row.ID).AutoUpdateAlert;
+                MahAppSwitch_RestartCrontabAlert.IsOn = ServerManager.GetServerMetadata(row.ID).RestartCrontabAlert;
+                MahAppSwitch_CrashAlert.IsOn = ServerManager.GetServerMetadata(row.ID).CrashAlert;
             }
         }
 
@@ -1162,7 +1122,7 @@ namespace WindowsGSM
 
             newServerConfig.CreateServerDirectory();
 
-            dynamic gameServer = GameServer.Data.Class.Get(servergame, newServerConfig, PluginsList);
+            dynamic gameServer = GameServer.Data.Class.Get(servergame, newServerConfig, ServerManager.PluginsList);
             Installer = await gameServer.Install();
 
             if (Installer != null)
@@ -1202,7 +1162,7 @@ namespace WindowsGSM
                 // Create WindowsGSM.cfg and game server config
                 try
                 {
-                    gameServer = GameServer.Data.Class.Get(servergame, newServerConfig, PluginsList);
+                    gameServer = GameServer.Data.Class.Get(servergame, newServerConfig, ServerManager.PluginsList);
                     gameServer.CreateServerCFG();
                 }
                 catch
@@ -1254,7 +1214,7 @@ namespace WindowsGSM
 
             try
             {
-                dynamic gameServer = GameServer.Data.Class.Get(selectedgame.Name, pluginList: PluginsList);
+                dynamic gameServer = GameServer.Data.Class.Get(selectedgame.Name, pluginList: ServerManager.PluginsList);
                 if (!gameServer.loginAnonymous)
                 {
                     button_InstallSetAccount.IsEnabled = true;
@@ -1323,7 +1283,7 @@ namespace WindowsGSM
             string servergame = selectedgame.Name;
 
             var newServerConfig = new ServerConfig(null);
-            dynamic gameServer = GameServer.Data.Class.Get(servergame, newServerConfig, PluginsList);
+            dynamic gameServer = GameServer.Data.Class.Get(servergame, newServerConfig, ServerManager.PluginsList);
 
             if (!gameServer.IsImportValid(textbox_ServerDir.Text))
             {
@@ -1418,7 +1378,7 @@ namespace WindowsGSM
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            if (GetServerMetadata(server.ID).ServerStatus != ServerStatus.Stopped) { return; }
+            if (ServerManager.GetServerMetadata(server.ID).ServerStatus != ServerStatus.Stopped) { return; }
 
             MessageBoxResult result = MessageBox.Show("Do you want to delete this server?\n(There is no comeback)", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result != MessageBoxResult.Yes) { return; }
@@ -1442,7 +1402,7 @@ namespace WindowsGSM
             webhookUrl = await this.ShowInputAsync("Discord Webhook URL", "Please enter the discord webhook url.", settings);
             if (webhookUrl == null) { return; } //If pressed cancel
 
-            _serverMetadata[int.Parse(server.ID)].DiscordWebhook = webhookUrl;
+            ServerManager.ServerMetadata[int.Parse(server.ID)].DiscordWebhook = webhookUrl;
             ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.DiscordWebhook, webhookUrl);
         }
 
@@ -1462,7 +1422,7 @@ namespace WindowsGSM
             message = await this.ShowInputAsync("Discord Custom Message", "Please enter the custom message.\n\nExample ping message <@discorduserid>:\n<@348921660361146380>", settings);
             if (message == null) { return; } //If pressed cancel
 
-            _serverMetadata[int.Parse(server.ID)].DiscordMessage = message;
+            ServerManager.ServerMetadata[int.Parse(server.ID)].DiscordMessage = message;
             ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.DiscordMessage, message);
         }
 
@@ -1472,9 +1432,9 @@ namespace WindowsGSM
             if (server == null) { return; }
 
             int serverId = int.Parse(server.ID);
-            if (!GetServerMetadata(serverId).DiscordAlert) { return; }
+            if (!ServerManager.GetServerMetadata(serverId).DiscordAlert) { return; }
 
-            var webhook = new DiscordWebhook(GetServerMetadata(serverId).DiscordWebhook, GetServerMetadata(serverId).DiscordMessage, g_DonorType);
+            var webhook = new DiscordWebhook(ServerManager.GetServerMetadata(serverId).DiscordWebhook, ServerManager.GetServerMetadata(serverId).DiscordMessage, g_DonorType);
             await webhook.Send(server.ID, server.Game, "Webhook Test Alert", server.Name, server.IP, server.Port);
         }
 
@@ -1497,7 +1457,7 @@ namespace WindowsGSM
             {
                 if (textbox_servercommand.Text.Length != 0)
                 {
-                    GetServerMetadata(0).ServerConsole.Add(textbox_servercommand.Text);
+                    ServerManager.GetServerMetadata(0).ServerConsole.Add(textbox_servercommand.Text);
                 }
 
                 Button_ServerCommand_Click(this, new RoutedEventArgs());
@@ -1509,12 +1469,12 @@ namespace WindowsGSM
             if (e.IsDown && e.Key == Key.Up)
             {
                 e.Handled = true;
-                textbox_servercommand.Text = GetServerMetadata(0).ServerConsole.GetPreviousCommand();
+                textbox_servercommand.Text = ServerManager.GetServerMetadata(0).ServerConsole.GetPreviousCommand();
             }
             else if (e.IsDown && e.Key == Key.Down)
             {
                 e.Handled = true;
-                textbox_servercommand.Text = GetServerMetadata(0).ServerConsole.GetNextCommand();
+                textbox_servercommand.Text = ServerManager.GetServerMetadata(0).ServerConsole.GetNextCommand();
             }
         }
 
@@ -1557,24 +1517,24 @@ namespace WindowsGSM
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            switch (GetServerMetadata(server.ID).ServerStatus)
+            switch (ServerManager.GetServerMetadata(server.ID).ServerStatus)
             {
                 case ServerStatus.Restarting:
                 case ServerStatus.Restarted:
                 case ServerStatus.Started:
                 case ServerStatus.Starting:
                 case ServerStatus.Stopping:
-                    Process p = GetServerMetadata(server.ID).Process;
+                    Process p = ServerManager.GetServerMetadata(server.ID).Process;
                     if (p != null && !p.HasExited)
                     {
                         Log(server.ID, "Actions: Kill");
                         p.Kill();
 
-                        _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
+                        ServerManager.ServerMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
                         Log(server.ID, "Server: Killed");
                         SetServerStatus(server, "Stopped");
-                        _serverMetadata[int.Parse(server.ID)].ServerConsole.Clear();
-                        _serverMetadata[int.Parse(server.ID)].Process = null;
+                        ServerManager.ServerMetadata[int.Parse(server.ID)].ServerConsole.Clear();
+                        ServerManager.ServerMetadata[int.Parse(server.ID)].Process = null;
                     }
 
                     break;
@@ -1586,13 +1546,13 @@ namespace WindowsGSM
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            Process p = GetServerMetadata(server.ID).Process;
+            Process p = ServerManager.GetServerMetadata(server.ID).Process;
             if (p == null) { return; }
 
             //If console is useless, return
             if (p.StartInfo.RedirectStandardOutput) { return; }
 
-            IntPtr hWnd = GetServerMetadata(server.ID).MainWindow;
+            IntPtr hWnd = ServerManager.GetServerMetadata(server.ID).MainWindow;
             ShowWindow(hWnd, ShowWindow(hWnd, WindowShowStyle.Hide) ? WindowShowStyle.Hide : WindowShowStyle.ShowNormal);
         }
 
@@ -1600,7 +1560,7 @@ namespace WindowsGSM
         {
             foreach (var server in ServerGrid.Items.Cast<ServerTable>().ToList())
             {
-                if (GetServerMetadata(server.ID).ServerStatus == ServerStatus.Stopped)
+                if (ServerManager.GetServerMetadata(server.ID).ServerStatus == ServerStatus.Stopped)
                 {
                     await GameServer_Start(server);
                 }
@@ -1611,7 +1571,7 @@ namespace WindowsGSM
         {
             foreach (var server in ServerGrid.Items.Cast<ServerTable>().ToList())
             {
-                if (GetServerMetadata(server.ID).ServerStatus == ServerStatus.Stopped && GetServerMetadata(server.ID).AutoStart)
+                if (ServerManager.GetServerMetadata(server.ID).ServerStatus == ServerStatus.Stopped && ServerManager.GetServerMetadata(server.ID).AutoStart)
                 {
                     await GameServer_Start(server);
                 }
@@ -1622,7 +1582,7 @@ namespace WindowsGSM
         {
             foreach (var server in ServerGrid.Items.Cast<ServerTable>().ToList())
             {
-                if (GetServerMetadata(server.ID).ServerStatus == ServerStatus.Started)
+                if (ServerManager.GetServerMetadata(server.ID).ServerStatus == ServerStatus.Started)
                 {
                     await GameServer_Stop(server);
                 }
@@ -1633,7 +1593,7 @@ namespace WindowsGSM
         {
             foreach (var server in ServerGrid.Items.Cast<ServerTable>().ToList())
             {
-                if (GetServerMetadata(server.ID).ServerStatus == ServerStatus.Started)
+                if (ServerManager.GetServerMetadata(server.ID).ServerStatus == ServerStatus.Started)
                 {
                     await GameServer_Restart(server);
                 }
@@ -1645,7 +1605,7 @@ namespace WindowsGSM
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            if (GetServerMetadata(server.ID).ServerStatus != ServerStatus.Stopped) { return; }
+            if (ServerManager.GetServerMetadata(server.ID).ServerStatus != ServerStatus.Stopped) { return; }
 
             MessageBoxResult result = System.Windows.MessageBox.Show("Do you want to update this server?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result != MessageBoxResult.Yes) { return; }
@@ -1658,7 +1618,7 @@ namespace WindowsGSM
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            if (GetServerMetadata(server.ID).ServerStatus != ServerStatus.Stopped) { return; }
+            if (ServerManager.GetServerMetadata(server.ID).ServerStatus != ServerStatus.Stopped) { return; }
 
             MessageBoxResult result = System.Windows.MessageBox.Show("Do you want to validate this server?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result != MessageBoxResult.Yes) { return; }
@@ -1671,7 +1631,7 @@ namespace WindowsGSM
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            if (GetServerMetadata(server.ID).ServerStatus != ServerStatus.Stopped) { return; }
+            if (ServerManager.GetServerMetadata(server.ID).ServerStatus != ServerStatus.Stopped) { return; }
 
             MessageBoxResult result = System.Windows.MessageBox.Show("Do you want to backup on this server?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result != MessageBoxResult.Yes) { return; }
@@ -1684,7 +1644,7 @@ namespace WindowsGSM
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            if (GetServerMetadata(server.ID).ServerStatus != ServerStatus.Stopped) { return; }
+            if (ServerManager.GetServerMetadata(server.ID).ServerStatus != ServerStatus.Stopped) { return; }
 
             listbox_RestoreBackup.Items.Clear();
             var backupConfig = new BackupConfig(server.ID);
@@ -1711,7 +1671,7 @@ namespace WindowsGSM
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            if (GetServerMetadata(server.ID).ServerStatus != ServerStatus.Stopped) { return; }
+            if (ServerManager.GetServerMetadata(server.ID).ServerStatus != ServerStatus.Stopped) { return; }
 
             if (listbox_RestoreBackup.SelectedIndex >= 0)
             {
@@ -1805,7 +1765,7 @@ namespace WindowsGSM
 
         private async Task<dynamic> Server_BeginStart(ServerTable server)
         {
-            dynamic gameServer = GameServer.Data.Class.Get(server.Game, new ServerConfig(server.ID), PluginsList);
+            dynamic gameServer = GameServer.Data.Class.Get(server.Game, new ServerConfig(server.ID), ServerManager.PluginsList);
             if (gameServer == null) { return null; }
 
             //End All Running Process
@@ -1823,13 +1783,13 @@ namespace WindowsGSM
                 }
             }
 
-            gameServer.AllowsEmbedConsole = GetServerMetadata(server.ID).EmbedConsole;
+            gameServer.AllowsEmbedConsole = ServerManager.GetServerMetadata(server.ID).EmbedConsole;
             Process p = await gameServer.Start();
 
             //Fail to start
             if (p == null)
             {
-                _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
+                ServerManager.ServerMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
                 Log(server.ID, "Server: Fail to start");
                 Log(server.ID, "[ERROR] " + gameServer.Error);
                 SetServerStatus(server, "Stopped");
@@ -1837,7 +1797,7 @@ namespace WindowsGSM
                 return null;
             }
 
-            _serverMetadata[int.Parse(server.ID)].Process = p;
+            ServerManager.ServerMetadata[int.Parse(server.ID)].Process = p;
             p.Exited += (sender, e) => OnGameServerExited(server);
 
             await Task.Run(() =>
@@ -1854,7 +1814,7 @@ namespace WindowsGSM
                         Debug.WriteLine("Set ShowMinNoActivate Console Window");
 
                         //Save MainWindow
-                        _serverMetadata[int.Parse(server.ID)].MainWindow = p.MainWindowHandle;
+                        ServerManager.ServerMetadata[int.Parse(server.ID)].MainWindow = p.MainWindowHandle;
                     }
 
                     p.WaitForInputIdle();
@@ -1873,9 +1833,9 @@ namespace WindowsGSM
             //An error may occur on ShowWindow if not adding this 
             if (p == null || p.HasExited)
             {
-                _serverMetadata[int.Parse(server.ID)].Process = null;
+                ServerManager.ServerMetadata[int.Parse(server.ID)].Process = null;
 
-                _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
+                ServerManager.ServerMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
                 Log(server.ID, "Server: Fail to start");
                 Log(server.ID, "[ERROR] Exit Code: " + p.ExitCode.ToString());
                 SetServerStatus(server, "Stopped");
@@ -1884,12 +1844,12 @@ namespace WindowsGSM
             }
 
             // Set Priority
-            p = Functions.CPU.Priority.SetProcessWithPriority(p, Functions.CPU.Priority.GetPriorityInteger(GetServerMetadata(server.ID).CPUPriority));
+            p = Functions.CPU.Priority.SetProcessWithPriority(p, Functions.CPU.Priority.GetPriorityInteger(ServerManager.GetServerMetadata(server.ID).CPUPriority));
 
             // Set Affinity
             try
             {
-                p.ProcessorAffinity = Functions.CPU.Affinity.GetAffinityIntPtr(GetServerMetadata(server.ID).CPUAffinity);
+                p.ProcessorAffinity = Functions.CPU.Affinity.GetAffinityIntPtr(ServerManager.GetServerMetadata(server.ID).CPUAffinity);
             }
             catch (Exception e)
             {
@@ -1899,7 +1859,7 @@ namespace WindowsGSM
             // Save Cache
             ServerCache.SavePID(server.ID, p.Id);
             ServerCache.SaveProcessName(server.ID, p.ProcessName);
-            ServerCache.SaveWindowsIntPtr(server.ID, GetServerMetadata(server.ID).MainWindow);
+            ServerCache.SaveWindowsIntPtr(server.ID, ServerManager.GetServerMetadata(server.ID).MainWindow);
 
             SetWindowText(p.MainWindowHandle, server.Name);
 
@@ -1924,9 +1884,9 @@ namespace WindowsGSM
 
         private async Task<bool> Server_BeginStop(ServerTable server, Process p)
         {
-            _serverMetadata[int.Parse(server.ID)].Process = null;
+            ServerManager.ServerMetadata[int.Parse(server.ID)].Process = null;
 
-            dynamic gameServer = GameServer.Data.Class.Get(server.Game, pluginList: PluginsList);
+            dynamic gameServer = GameServer.Data.Class.Get(server.Game, pluginList: ServerManager.PluginsList);
             await gameServer.Stop(p);
 
             for (int i = 0; i < 10; i++)
@@ -1935,7 +1895,7 @@ namespace WindowsGSM
                 await Task.Delay(1000);
             }
 
-            _serverMetadata[int.Parse(server.ID)].ServerConsole.Clear();
+            ServerManager.ServerMetadata[int.Parse(server.ID)].ServerConsole.Clear();
 
             // Save Cache
             ServerCache.SavePID(server.ID, -1);
@@ -1953,7 +1913,7 @@ namespace WindowsGSM
 
         private async Task<(Process, string, dynamic)> Server_BeginUpdate(ServerTable server, bool silenceCheck, bool forceUpdate, bool validate = false, string custum = null)
         {
-            dynamic gameServer = GameServer.Data.Class.Get(server.Game, new ServerConfig(server.ID), PluginsList);
+            dynamic gameServer = GameServer.Data.Class.Get(server.Game, new ServerConfig(server.ID), ServerManager.PluginsList);
 
             string localVersion = gameServer.GetLocalBuild();
             if (string.IsNullOrWhiteSpace(localVersion) && !silenceCheck)
@@ -1990,380 +1950,42 @@ namespace WindowsGSM
         #region Actions - Game Server
         private async Task GameServer_Start(ServerTable server, string notes = "")
         {
-            if (GetServerMetadata(server.ID).ServerStatus != ServerStatus.Stopped) { return; }
-
-            string error = string.Empty;
-            if (!string.IsNullOrWhiteSpace(server.IP) && !IsValidIPAddress(server.IP))
-            {
-                error += " IP address is not valid.";
-            }
-
-            if (!string.IsNullOrWhiteSpace(server.Port) && !IsValidPort(server.Port))
-            {
-                error += " Port number is not valid.";
-            }
-
-            if (error != string.Empty)
-            {
-                Log(server.ID, "Server: Fail to start");
-                Log(server.ID, "[ERROR]" + error);
-
-                return;
-            }
-
-            Process p = GetServerMetadata(server.ID).Process;
-            if (p != null) { return; }
-
-            if (GetServerMetadata(server.ID).BackupOnStart)
-            {
-                await GameServer_Backup(server, " | Backup on Start");
-            }
-
-            if (GetServerMetadata(server.ID).UpdateOnStart)
-            {
-                await GameServer_Update(server, " | Update on Start");
-            }
-
-            _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Starting;
-            Log(server.ID, "Action: Start" + notes);
-            SetServerStatus(server, "Starting");
-
-            var gameServer = await Server_BeginStart(server);
-            if (gameServer == null)
-            {
-                _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
-                Log(server.ID, "Server: Fail to start");
-                SetServerStatus(server, "Stopped");
-                return;
-            }
-
-            _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Started;
-            Log(server.ID, "Server: Started");
-            if (!string.IsNullOrWhiteSpace(gameServer.Notice))
-            {
-                Log(server.ID, "[Notice] " + gameServer.Notice);
-            }
-            SetServerStatus(server, "Started", ServerCache.GetPID(server.ID).ToString());
+            await ServerManager.StartServer(server, notes);
         }
 
         private async Task GameServer_Stop(ServerTable server)
         {
-            if (GetServerMetadata(server.ID).ServerStatus != ServerStatus.Started) { return; }
-
-            Process p = GetServerMetadata(server.ID).Process;
-            if (p == null) { return; }
-
-            //Begin stop
-            _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopping;
-            Log(server.ID, "Action: Stop");
-            SetServerStatus(server, "Stopping");
-
-            bool stopGracefully = await Server_BeginStop(server, p);
-
-            Log(server.ID, "Server: Stopped");
-            if (!stopGracefully)
-            {
-                Log(server.ID, "[NOTICE] Server fail to stop gracefully");
-            }
-            _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
-            SetServerStatus(server, "Stopped");
+            await ServerManager.StopServer(server);
         }
 
         private async Task GameServer_Restart(ServerTable server)
         {
-            if (GetServerMetadata(server.ID).ServerStatus != ServerStatus.Started) { return; }
-
-            Process p = GetServerMetadata(server.ID).Process;
-            if (p == null) { return; }
-
-            _serverMetadata[int.Parse(server.ID)].Process = null;
-
-            //Begin Restart
-            _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Restarting;
-            Log(server.ID, "Action: Restart");
-            SetServerStatus(server, "Restarting");
-
-            await Server_BeginStop(server, p);
-
-            await Task.Delay(1000);
-
-            var gameServer = await Server_BeginStart(server);
-            if (gameServer == null)
-            {
-                _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
-                SetServerStatus(server, "Stopped");
-                return;
-            }
-
-            _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Started;
-            Log(server.ID, "Server: Restarted");
-            if (!string.IsNullOrWhiteSpace(gameServer.Notice))
-            {
-                Log(server.ID, "[Notice] " + gameServer.Notice);
-            }
-            SetServerStatus(server, "Started", ServerCache.GetPID(server.ID).ToString());
+            await ServerManager.RestartServer(server);
         }
 
         private async Task<bool> GameServer_Update(ServerTable server, string notes = "", bool validate = false)
         {
-            if (GetServerMetadata(server.ID).ServerStatus != ServerStatus.Stopped)
-            {
-                return false;
-            }
-
-            //Begin Update
-            _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Updating;
-            Log(server.ID, "Action: Update" + notes);
-            SetServerStatus(server, "Updating");
-
-            var (p, remoteVersion, gameServer) = await Server_BeginUpdate(server, silenceCheck: validate, forceUpdate: true, validate: validate);
-
-            if (p == null && string.IsNullOrEmpty(gameServer.Error)) // Update success (non-steamcmd server)
-            {
-                Log(server.ID, $"Server: Updated {(validate ? "Validate " : string.Empty)}({remoteVersion})");
-            }
-            else if (p != null) // p stores process of steamcmd
-            {
-                await Task.Run(() => { p.WaitForExit(); });
-                Log(server.ID, $"Server: Updated {(validate ? "Validate " : string.Empty)}({remoteVersion})");
-            }
-            else
-            {
-                Log(server.ID, "Server: Fail to update");
-                Log(server.ID, "[ERROR] " + gameServer.Error);
-            }
-
-            _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
-            SetServerStatus(server, "Stopped");
-
-            return true;
+            return await ServerManager.UpdateServer(server, notes, validate);
         }
 
         private async Task<bool> GameServer_Backup(ServerTable server, string notes = "")
         {
-            if (GetServerMetadata(server.ID).ServerStatus != ServerStatus.Stopped)
-            {
-                return false;
-            }
-
-            //Begin backup
-            _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Backuping;
-            Log(server.ID, "Action: Backup" + notes);
-            SetServerStatus(server, "Backuping");
-
-            //End All Running Process
-            await EndAllRunningProcess(server.ID);
-            await Task.Delay(1000);
-
-            string backupLocation = ServerPath.GetBackups(server.ID);
-            if (!Directory.Exists(backupLocation))
-            {
-                _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
-                Log(server.ID, "Server: Fail to backup");
-                Log(server.ID, "[ERROR] Backup location not found");
-                SetServerStatus(server, "Stopped");
-                return false;
-            }
-
-            string zipFileName = $"WGSM-Backup-Server-{server.ID}-";
-
-            // Remove the oldest Backup file
-            var backupConfig = new BackupConfig(server.ID);
-            foreach (var fi in new DirectoryInfo(backupLocation).GetFiles("*.zip").Where(x => x.Name.Contains(zipFileName)).OrderByDescending(x => x.LastWriteTime).Skip(backupConfig.MaximumBackups - 1))
-            {
-                string ex = string.Empty;
-                await Task.Run(() =>
-                {
-                    try
-                    {
-                        fi.Delete();
-                    }
-                    catch (Exception e)
-                    {
-                        ex = e.Message;
-                    }
-                });
-
-                if (ex != string.Empty)
-                {
-                    _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
-                    Log(server.ID, "Server: Fail to backup");
-                    Log(server.ID, $"[ERROR] {ex}");
-                    SetServerStatus(server, "Stopped");
-                    return false;
-                }
-            }
-
-            string startPath = ServerPath.GetServers(server.ID);
-            string zipFile = Path.Combine(ServerPath.GetBackups(server.ID), $"{zipFileName}{DateTime.Now.ToString("yyyyMMddHHmmss")}.zip");
-
-            string error = string.Empty;
-            await Task.Run(() =>
-            {
-                try
-                {
-                    ZipFile.CreateFromDirectory(startPath, zipFile);
-                }
-                catch (Exception e)
-                {
-                    error = e.Message;
-                }
-            });
-
-            if (error != string.Empty)
-            {
-                _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
-                Log(server.ID, "Server: Fail to backup");
-                Log(server.ID, $"[ERROR] {error}");
-                SetServerStatus(server, "Stopped");
-
-                return false;
-            }
-
-            _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
-            Log(server.ID, "Server: Backuped");
-            SetServerStatus(server, "Stopped");
-
-            return true;
+            return await ServerManager.BackupServer(server, notes);
         }
 
         private async Task<bool> GameServer_RestoreBackup(ServerTable server, string backupFile)
         {
-            if (GetServerMetadata(server.ID).ServerStatus != ServerStatus.Stopped)
-            {
-                return false;
-            }
-
-            string backupLocation = ServerPath.GetBackups(server.ID);
-            string backupPath = Path.Combine(backupLocation, backupFile);
-            if (!File.Exists(backupPath))
-            {
-                Log(server.ID, "Server: Fail to restore backup");
-                Log(server.ID, "[ERROR] Backup not found");
-                return false;
-            }
-
-            _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Restoring;
-            Log(server.ID, "Action: Restore Backup");
-            SetServerStatus(server, "Restoring");
-
-            string extractPath = ServerPath.GetServers(server.ID);
-            if (Directory.Exists(extractPath))
-            {
-                string ex = string.Empty;
-                await Task.Run(() =>
-                {
-                    try
-                    {
-                        Directory.Delete(extractPath, true);
-                    }
-                    catch (Exception e)
-                    {
-                        ex = e.Message;
-                    }
-                });
-
-                if (ex != string.Empty)
-                {
-                    _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
-                    Log(server.ID, "Server: Fail to restore backup");
-                    Log(server.ID, $"[ERROR] {ex}");
-                    SetServerStatus(server, "Stopped");
-                    return false;
-                }
-            }
-
-            string error = string.Empty;
-            await Task.Run(() =>
-            {
-                try
-                {
-                    ZipFile.ExtractToDirectory(backupPath, extractPath);
-                }
-                catch (Exception e)
-                {
-                    error = e.Message;
-                }
-            });
-
-            if (error != string.Empty)
-            {
-                _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
-                Log(server.ID, "Server: Fail to restore backup");
-                Log(server.ID, $"[ERROR] {error}");
-                SetServerStatus(server, "Stopped");
-                return false;
-            }
-
-            _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
-            Log(server.ID, "Server: Restored");
-            SetServerStatus(server, "Stopped");
-
-            return true;
+            return await ServerManager.RestoreBackup(server, backupFile);
         }
 
         private async Task<bool> GameServer_Delete(ServerTable server)
         {
-            if (GetServerMetadata(server.ID).ServerStatus != ServerStatus.Stopped)
+            bool result = await ServerManager.DeleteServer(server);
+            if (result)
             {
-                return false;
+                LoadServerTable();
             }
-
-            //Begin delete
-            _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Deleting;
-            Log(server.ID, "Action: Delete");
-            SetServerStatus(server, "Deleting");
-
-            //Remove firewall rule
-            var firewall = new WindowsFirewall(null, ServerPath.GetServers(server.ID));
-            firewall.RemoveRuleEx();
-
-            //End All Running Process
-            await EndAllRunningProcess(server.ID);
-            await Task.Delay(1000);
-
-            string serverPath = ServerPath.GetServers(server.ID);
-
-            await Task.Run(() =>
-            {
-                try
-                {
-                    if (Directory.Exists(serverPath))
-                    {
-                        Directory.Delete(serverPath, true);
-                    }
-                }
-                catch
-                {
-
-                }
-            });
-
-            await Task.Delay(1000);
-
-            if (Directory.Exists(serverPath))
-            {
-                string wgsmCfgPath = ServerPath.GetServersConfigs(server.ID, "WindowsGSM.cfg");
-                if (File.Exists(wgsmCfgPath))
-                {
-                    Log(server.ID, "Server: Fail to delete server");
-                    Log(server.ID, "[ERROR] Directory is not accessible");
-
-                    _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
-                    SetServerStatus(server, "Stopped");
-
-                    return false;
-                }
-            }
-
-            Log(server.ID, "Server: Deleted server");
-
-            _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
-            SetServerStatus(server, "Stopped");
-
-            LoadServerTable();
-
-            return true;
+            return result;
         }
         #endregion
 
@@ -2375,43 +1997,43 @@ namespace WindowsGSM
             {
                 int serverId = int.Parse(server.ID);
 
-                if (GetServerMetadata(server.ID).ServerStatus == ServerStatus.Started)
+                if (ServerManager.GetServerMetadata(server.ID).ServerStatus == ServerStatus.Started)
                 {
-                    bool autoRestart = GetServerMetadata(serverId).AutoRestart;
-                    _serverMetadata[int.Parse(server.ID)].ServerStatus = autoRestart ? ServerStatus.Restarting : ServerStatus.Stopped;
+                    bool autoRestart = ServerManager.GetServerMetadata(serverId).AutoRestart;
+                    ServerManager.ServerMetadata[int.Parse(server.ID)].ServerStatus = autoRestart ? ServerStatus.Restarting : ServerStatus.Stopped;
                     Log(server.ID, "Server: Crashed");
                     SetServerStatus(server, autoRestart ? "Restarting" : "Stopped");
 
-                    if (GetServerMetadata(serverId).DiscordAlert && GetServerMetadata(serverId).CrashAlert)
+                    if (ServerManager.GetServerMetadata(serverId).DiscordAlert && ServerManager.GetServerMetadata(serverId).CrashAlert)
                     {
-                        var webhook = new DiscordWebhook(GetServerMetadata(serverId).DiscordWebhook, GetServerMetadata(serverId).DiscordMessage, g_DonorType);
+                        var webhook = new DiscordWebhook(ServerManager.GetServerMetadata(serverId).DiscordWebhook, ServerManager.GetServerMetadata(serverId).DiscordMessage, g_DonorType);
                         await webhook.Send(server.ID, server.Game, "Crashed", server.Name, server.IP, server.Port);
                     }
 
-                    _serverMetadata[int.Parse(server.ID)].Process = null;
+                    ServerManager.ServerMetadata[int.Parse(server.ID)].Process = null;
 
                     if (autoRestart)
                     {
-                        if (GetServerMetadata(server.ID).BackupOnStart)
+                        if (ServerManager.GetServerMetadata(server.ID).BackupOnStart)
                         {
-                            _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
+                            ServerManager.ServerMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
                             await GameServer_Backup(server, " | Backup on Start");
                         }
 
-                        if (GetServerMetadata(server.ID).UpdateOnStart)
+                        if (ServerManager.GetServerMetadata(server.ID).UpdateOnStart)
                         {
-                            _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
+                            ServerManager.ServerMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
                             await GameServer_Update(server, " | Update on Start");
                         }
 
                         var gameServer = await Server_BeginStart(server);
                         if (gameServer == null)
                         {
-                            _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
+                            ServerManager.ServerMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopped;
                             return;
                         }
 
-                        _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Started;
+                        ServerManager.ServerMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Started;
                         Log(server.ID, "Server: Started | Auto Restart");
                         if (!string.IsNullOrWhiteSpace(gameServer.Notice))
                         {
@@ -2419,9 +2041,9 @@ namespace WindowsGSM
                         }
                         SetServerStatus(server, "Started", ServerCache.GetPID(server.ID).ToString());
 
-                        if (GetServerMetadata(serverId).DiscordAlert && GetServerMetadata(serverId).AutoRestartAlert)
+                        if (ServerManager.GetServerMetadata(serverId).DiscordAlert && ServerManager.GetServerMetadata(serverId).AutoRestartAlert)
                         {
-                            var webhook = new DiscordWebhook(GetServerMetadata(serverId).DiscordWebhook, GetServerMetadata(serverId).DiscordMessage, g_DonorType);
+                            var webhook = new DiscordWebhook(ServerManager.GetServerMetadata(serverId).DiscordWebhook, ServerManager.GetServerMetadata(serverId).DiscordMessage, g_DonorType);
                             await webhook.Send(server.ID, server.Game, "Restarted | Auto Restart", server.Name, server.IP, server.Port);
                         }
                     }
@@ -2435,9 +2057,9 @@ namespace WindowsGSM
             int serverId = int.Parse(server.ID);
 
             //Save the process of game server
-            Process p = GetServerMetadata(server.ID).Process;
+            Process p = ServerManager.GetServerMetadata(server.ID).Process;
 
-            dynamic gameServer = GameServer.Data.Class.Get(server.Game, new ServerConfig(server.ID), PluginsList);
+            dynamic gameServer = GameServer.Data.Class.Get(server.Game, new ServerConfig(server.ID), ServerManager.PluginsList);
 
             string localVersion = gameServer.GetLocalBuild();
 
@@ -2445,7 +2067,7 @@ namespace WindowsGSM
             {
                 await Task.Delay(60000 * UPDATE_INTERVAL_MINUTE);
 
-                if (!GetServerMetadata(server.ID).AutoUpdate || GetServerMetadata(server.ID).ServerStatus == ServerStatus.Updating)
+                if (!ServerManager.GetServerMetadata(server.ID).AutoUpdate || ServerManager.GetServerMetadata(server.ID).ServerStatus == ServerStatus.Updating)
                 {
                     continue;
                 }
@@ -2464,7 +2086,7 @@ namespace WindowsGSM
                 //Continue if success to get localVersion and remoteVersion
                 if (!string.IsNullOrWhiteSpace(localVersion) && !string.IsNullOrWhiteSpace(remoteVersion))
                 {
-                    if (GetServerMetadata(server.ID).ServerStatus != ServerStatus.Started)
+                    if (ServerManager.GetServerMetadata(server.ID).ServerStatus != ServerStatus.Started)
                     {
                         break;
                     }
@@ -2473,51 +2095,15 @@ namespace WindowsGSM
 
                     if (localVersion != remoteVersion)
                     {
-                        _serverMetadata[int.Parse(server.ID)].Process = null;
+                        await ServerManager.StopServer(server);
+                        await ServerManager.UpdateServer(server);
+                        await ServerManager.StartServer(server);
 
-                        //Begin stop
-                        _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Stopping;
-                        SetServerStatus(server, "Stopping");
-
-                        //Stop the server
-                        await Server_BeginStop(server, p);
-
-                        if (p != null && !p.HasExited)
+                        if (ServerManager.GetServerMetadata(serverId).DiscordAlert && ServerManager.GetServerMetadata(serverId).AutoUpdateAlert)
                         {
-                            p.Kill();
+                            var webhook = new DiscordWebhook(ServerManager.GetServerMetadata(serverId).DiscordWebhook, ServerManager.GetServerMetadata(serverId).DiscordMessage, g_DonorType);
+                            await webhook.Send(server.ID, server.Game, "Updated | Auto Update", server.Name, server.IP, server.Port);
                         }
-
-                        _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Updating;
-                        SetServerStatus(server, "Updating");
-
-                        //Update the server
-                        await gameServer.Update();
-
-                        if (string.IsNullOrWhiteSpace(gameServer.Error))
-                        {
-                            Log(server.ID, $"Server: Updated ({remoteVersion})");
-
-                            if (GetServerMetadata(serverId).DiscordAlert && GetServerMetadata(serverId).AutoUpdateAlert)
-                            {
-                                var webhook = new DiscordWebhook(GetServerMetadata(serverId).DiscordWebhook, GetServerMetadata(serverId).DiscordMessage, g_DonorType);
-                                await webhook.Send(server.ID, server.Game, "Updated | Auto Update", server.Name, server.IP, server.Port);
-                            }
-                        }
-                        else
-                        {
-                            Log(server.ID, "Server: Fail to update");
-                            Log(server.ID, "[ERROR] " + gameServer.Error);
-                        }
-
-                        //Start the server
-                        _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Starting;
-                        SetServerStatus(server, "Starting");
-
-                        var gameServerStart = await Server_BeginStart(server);
-                        if (gameServerStart == null) { return; }
-
-                        _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Started;
-                        SetServerStatus(server, "Started", ServerCache.GetPID(server.ID).ToString());
 
                         break;
                     }
@@ -2538,12 +2124,12 @@ namespace WindowsGSM
             int serverId = int.Parse(server.ID);
 
             //Save the process of game server
-            Process p = GetServerMetadata(server.ID).Process;
+            Process p = ServerManager.GetServerMetadata(server.ID).Process;
 
             while (p != null && !p.HasExited)
             {
                 //If not enable return
-                if (!GetServerMetadata(serverId).RestartCrontab)
+                if (!ServerManager.GetServerMetadata(serverId).RestartCrontab)
                 {
                     await Task.Delay(1000);
 
@@ -2551,7 +2137,7 @@ namespace WindowsGSM
                 }
 
                 //Try get next DataTime restart
-                DateTime? crontabTime = CrontabSchedule.TryParse(GetServerMetadata(serverId).CrontabFormat)?.GetNextOccurrence(DateTime.Now);
+                DateTime? crontabTime = CrontabSchedule.TryParse(ServerManager.GetServerMetadata(serverId).CrontabFormat)?.GetNextOccurrence(DateTime.Now);
 
                 //Delay 1 second for later compare
                 await Task.Delay(1000);
@@ -2566,7 +2152,7 @@ namespace WindowsGSM
                     var currentRow = (ServerTable)ServerGrid.SelectedItem;
                     if (currentRow.ID == server.ID)
                     {
-                        textBox_nextcrontab.Text = CrontabSchedule.TryParse(GetServerMetadata(serverId).CrontabFormat)?.GetNextOccurrence(DateTime.Now).ToString("ddd, MM/dd/yyyy HH:mm:ss");
+                        textBox_nextcrontab.Text = CrontabSchedule.TryParse(ServerManager.GetServerMetadata(serverId).CrontabFormat)?.GetNextOccurrence(DateTime.Now).ToString("ddd, MM/dd/yyyy HH:mm:ss");
                     }
 
                     if (p == null || p.HasExited)
@@ -2575,30 +2161,13 @@ namespace WindowsGSM
                     }
 
                     //Restart the server
-                    if (GetServerMetadata(server.ID).ServerStatus == ServerStatus.Started)
+                    if (ServerManager.GetServerMetadata(server.ID).ServerStatus == ServerStatus.Started)
                     {
-                        _serverMetadata[int.Parse(server.ID)].Process = null;
+                        await ServerManager.RestartServer(server);
 
-                        //Begin Restart
-                        _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Restarting;
-                        Log(server.ID, "Action: Restart");
-                        SetServerStatus(server, "Restarting");
-
-                        await Server_BeginStop(server, p);
-                        var gameServer = await Server_BeginStart(server);
-                        if (gameServer == null) { return; }
-
-                        _serverMetadata[int.Parse(server.ID)].ServerStatus = ServerStatus.Started;
-                        Log(server.ID, "Server: Restarted | Restart Crontab");
-                        if (!string.IsNullOrWhiteSpace(gameServer.Notice))
+                        if (ServerManager.GetServerMetadata(serverId).DiscordAlert && ServerManager.GetServerMetadata(serverId).RestartCrontabAlert)
                         {
-                            Log(server.ID, "[Notice] " + gameServer.Notice);
-                        }
-                        SetServerStatus(server, "Started", ServerCache.GetPID(server.ID).ToString());
-
-                        if (GetServerMetadata(serverId).DiscordAlert && GetServerMetadata(serverId).RestartCrontabAlert)
-                        {
-                            var webhook = new DiscordWebhook(GetServerMetadata(serverId).DiscordWebhook, GetServerMetadata(serverId).DiscordMessage, g_DonorType);
+                            var webhook = new DiscordWebhook(ServerManager.GetServerMetadata(serverId).DiscordWebhook, ServerManager.GetServerMetadata(serverId).DiscordMessage, g_DonorType);
                             await webhook.Send(server.ID, server.Game, "Restarted | Restart Crontab", server.Name, server.IP, server.Port);
                         }
 
@@ -2611,7 +2180,7 @@ namespace WindowsGSM
         private async void StartSendHeartBeat(ServerTable server)
         {
             //Save the process of game server
-            Process p = GetServerMetadata(server.ID).Process;
+            Process p = ServerManager.GetServerMetadata(server.ID).Process;
 
             while (p != null && !p.HasExited)
             {
@@ -2630,17 +2199,17 @@ namespace WindowsGSM
             if (string.IsNullOrWhiteSpace(server.IP) || string.IsNullOrWhiteSpace(server.QueryPort)) { return; }
 
             // Check the server support Query Method
-            dynamic gameServer = GameServer.Data.Class.Get(server.Game, pluginList: PluginsList);
+            dynamic gameServer = GameServer.Data.Class.Get(server.Game, pluginList: ServerManager.PluginsList);
             if (gameServer == null) { return; }
             if (gameServer.QueryMethod == null) { return; }
 
             // Save the process of game server
-            Process p = GetServerMetadata(server.ID).Process;
+            Process p = ServerManager.GetServerMetadata(server.ID).Process;
 
             // Query server every 5 seconds
             while (p != null && !p.HasExited)
             {
-                if (GetServerMetadata(server.ID).ServerStatus == ServerStatus.Stopped)
+                if (ServerManager.GetServerMetadata(server.ID).ServerStatus == ServerStatus.Stopped)
                 {
                     break;
                 }
@@ -2783,7 +2352,7 @@ namespace WindowsGSM
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            _serverMetadata[int.Parse(server.ID)].ServerConsole.Clear();
+            ServerManager.ServerMetadata[int.Parse(server.ID)].ServerConsole.Clear();
             console.Clear();
         }
 
@@ -2794,11 +2363,11 @@ namespace WindowsGSM
 
         private void SendCommand(ServerTable server, string command)
         {
-            Process p = GetServerMetadata(server.ID).Process;
+            Process p = ServerManager.GetServerMetadata(server.ID).Process;
             if (p == null) { return; }
 
             textbox_servercommand.Focusable = false;
-            _serverMetadata[int.Parse(server.ID)].ServerConsole.Input(p, command, GetServerMetadata(server.ID).MainWindow);
+            ServerManager.ServerMetadata[int.Parse(server.ID)].ServerConsole.Input(p, command, ServerManager.GetServerMetadata(server.ID).MainWindow);
             textbox_servercommand.Focusable = true;
         }
 
@@ -3166,14 +2735,14 @@ namespace WindowsGSM
                     //Kill all the server
                     for (int i = 0; i <= MAX_SERVER; i++)
                     {
-                        if (GetServerMetadata(i) == null || GetServerMetadata(i).Process == null)
+                        if (ServerManager.GetServerMetadata(i) == null || ServerManager.GetServerMetadata(i).Process == null)
                         {
                             continue;
                         }
 
-                        if (!GetServerMetadata(i).Process.HasExited)
+                        if (!ServerManager.GetServerMetadata(i).Process.HasExited)
                         {
-                            _serverMetadata[i].Process.Kill();
+                            ServerManager.ServerMetadata[i].Process.Kill();
                         }
                     }
 
@@ -3448,13 +3017,13 @@ namespace WindowsGSM
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
 
-            _serverMetadata[int.Parse(server.ID)].CPUPriority = ((int)slider_ProcessPriority.Value).ToString();
-            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.CPUPriority, GetServerMetadata(server.ID).CPUPriority);
+            ServerManager.ServerMetadata[int.Parse(server.ID)].CPUPriority = ((int)slider_ProcessPriority.Value).ToString();
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.CPUPriority, ServerManager.GetServerMetadata(server.ID).CPUPriority);
             textBox_ProcessPriority.Text = Functions.CPU.Priority.GetPriorityByInteger((int)slider_ProcessPriority.Value);
 
-            if (GetServerMetadata(server.ID).Process != null && !GetServerMetadata(server.ID).Process.HasExited)
+            if (ServerManager.GetServerMetadata(server.ID).Process != null && !ServerManager.GetServerMetadata(server.ID).Process.HasExited)
             {
-                _serverMetadata[int.Parse(server.ID)].Process = Functions.CPU.Priority.SetProcessWithPriority(GetServerMetadata(server.ID).Process, (int)slider_ProcessPriority.Value);
+                ServerManager.ServerMetadata[int.Parse(server.ID)].Process = Functions.CPU.Priority.SetProcessWithPriority(ServerManager.GetServerMetadata(server.ID).Process, (int)slider_ProcessPriority.Value);
             }
         }
 
@@ -3485,7 +3054,7 @@ namespace WindowsGSM
         {
             var serverConfig = new ServerConfig(serverId);
             if (string.IsNullOrWhiteSpace(serverConfig.ServerGame)) { return false; }
-            var gameServer = GameServer.Data.Class.Get(serverConfig.ServerGame, pluginList: PluginsList);
+            var gameServer = GameServer.Data.Class.Get(serverConfig.ServerGame, pluginList: ServerManager.PluginsList);
             if (gameServer == null) { return false; }
 
             textbox_EC_ServerID.Text = serverConfig.ServerID;
@@ -3524,40 +3093,40 @@ namespace WindowsGSM
         {
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-            _serverMetadata[int.Parse(server.ID)].RestartCrontab = switch_restartcrontab.IsOn;
-            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.RestartCrontab, GetServerMetadata(server.ID).RestartCrontab ? "1" : "0");
+            ServerManager.ServerMetadata[int.Parse(server.ID)].RestartCrontab = switch_restartcrontab.IsOn;
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.RestartCrontab, ServerManager.GetServerMetadata(server.ID).RestartCrontab ? "1" : "0");
         }
 
         private void Button_EmbedConsole_Click(object sender, RoutedEventArgs e)
         {
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-            _serverMetadata[int.Parse(server.ID)].EmbedConsole = switch_embedconsole.IsOn;
-            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.EmbedConsole, GetServerMetadata(server.ID).EmbedConsole ? "1" : "0");
+            ServerManager.ServerMetadata[int.Parse(server.ID)].EmbedConsole = switch_embedconsole.IsOn;
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.EmbedConsole, ServerManager.GetServerMetadata(server.ID).EmbedConsole ? "1" : "0");
         }
 
         private void Button_AutoRestart_Click(object sender, RoutedEventArgs e)
         {
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-            _serverMetadata[int.Parse(server.ID)].AutoRestart = switch_autorestart.IsOn;
-            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.AutoRestart, GetServerMetadata(server.ID).AutoRestart ? "1" : "0");
+            ServerManager.ServerMetadata[int.Parse(server.ID)].AutoRestart = switch_autorestart.IsOn;
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.AutoRestart, ServerManager.GetServerMetadata(server.ID).AutoRestart ? "1" : "0");
         }
 
         private void Button_AutoStart_Click(object sender, RoutedEventArgs e)
         {
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-            _serverMetadata[int.Parse(server.ID)].AutoStart = switch_autostart.IsOn;
-            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.AutoStart, GetServerMetadata(server.ID).AutoStart ? "1" : "0");
+            ServerManager.ServerMetadata[int.Parse(server.ID)].AutoStart = switch_autostart.IsOn;
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.AutoStart, ServerManager.GetServerMetadata(server.ID).AutoStart ? "1" : "0");
         }
 
         private void Button_AutoUpdate_Click(object sender, RoutedEventArgs e)
         {
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-            _serverMetadata[int.Parse(server.ID)].AutoUpdate = switch_autoupdate.IsOn;
-            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.AutoUpdate, GetServerMetadata(server.ID).AutoUpdate ? "1" : "0");
+            ServerManager.ServerMetadata[int.Parse(server.ID)].AutoUpdate = switch_autoupdate.IsOn;
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.AutoUpdate, ServerManager.GetServerMetadata(server.ID).AutoUpdate ? "1" : "0");
         }
 
         private async void Button_DiscordAlertSettings_Click(object sender, RoutedEventArgs e)
@@ -3571,25 +3140,25 @@ namespace WindowsGSM
         {
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-            _serverMetadata[int.Parse(server.ID)].UpdateOnStart = switch_updateonstart.IsOn;
-            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.UpdateOnStart, GetServerMetadata(server.ID).UpdateOnStart ? "1" : "0");
+            ServerManager.ServerMetadata[int.Parse(server.ID)].UpdateOnStart = switch_updateonstart.IsOn;
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.UpdateOnStart, ServerManager.GetServerMetadata(server.ID).UpdateOnStart ? "1" : "0");
         }
 
         private void Button_BackupOnStart_Click(object sender, RoutedEventArgs e)
         {
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-            _serverMetadata[int.Parse(server.ID)].BackupOnStart = switch_backuponstart.IsOn;
-            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.BackupOnStart, GetServerMetadata(server.ID).BackupOnStart ? "1" : "0");
+            ServerManager.ServerMetadata[int.Parse(server.ID)].BackupOnStart = switch_backuponstart.IsOn;
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.BackupOnStart, ServerManager.GetServerMetadata(server.ID).BackupOnStart ? "1" : "0");
         }
 
         private void Button_DiscordAlert_Click(object sender, RoutedEventArgs e)
         {
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-            _serverMetadata[int.Parse(server.ID)].DiscordAlert = switch_discordalert.IsOn;
-            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.DiscordAlert, GetServerMetadata(server.ID).DiscordAlert ? "1" : "0");
-            button_discordtest.IsEnabled = GetServerMetadata(server.ID).DiscordAlert;
+            ServerManager.ServerMetadata[int.Parse(server.ID)].DiscordAlert = switch_discordalert.IsOn;
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.DiscordAlert, ServerManager.GetServerMetadata(server.ID).DiscordAlert ? "1" : "0");
+            button_discordtest.IsEnabled = ServerManager.GetServerMetadata(server.ID).DiscordAlert;
         }
 
         private async void Button_CrontabEdit_Click(object sender, RoutedEventArgs e)
@@ -3608,7 +3177,7 @@ namespace WindowsGSM
             crontabFormat = await this.ShowInputAsync("Crontab Format", "Please enter the crontab expressions", settings);
             if (crontabFormat == null) { return; } //If pressed cancel
 
-            _serverMetadata[int.Parse(server.ID)].CrontabFormat = crontabFormat;
+            ServerManager.ServerMetadata[int.Parse(server.ID)].CrontabFormat = crontabFormat;
             ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.CrontabFormat, crontabFormat);
 
             textBox_restartcrontab.Text = crontabFormat;
@@ -3621,40 +3190,40 @@ namespace WindowsGSM
         {
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-            _serverMetadata[int.Parse(server.ID)].AutoStartAlert = MahAppSwitch_AutoStartAlert.IsOn;
-            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.AutoStartAlert, GetServerMetadata(server.ID).AutoStartAlert ? "1" : "0");
+            ServerManager.ServerMetadata[int.Parse(server.ID)].AutoStartAlert = MahAppSwitch_AutoStartAlert.IsOn;
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.AutoStartAlert, ServerManager.GetServerMetadata(server.ID).AutoStartAlert ? "1" : "0");
         }
 
         private void Switch_AutoRestartAlert_Click(object sender, RoutedEventArgs e)
         {
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-            _serverMetadata[int.Parse(server.ID)].AutoRestartAlert = MahAppSwitch_AutoRestartAlert.IsOn;
-            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.AutoRestartAlert, GetServerMetadata(server.ID).AutoRestartAlert ? "1" : "0");
+            ServerManager.ServerMetadata[int.Parse(server.ID)].AutoRestartAlert = MahAppSwitch_AutoRestartAlert.IsOn;
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.AutoRestartAlert, ServerManager.GetServerMetadata(server.ID).AutoRestartAlert ? "1" : "0");
         }
 
         private void Switch_AutoUpdateAlert_Click(object sender, RoutedEventArgs e)
         {
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-            _serverMetadata[int.Parse(server.ID)].AutoUpdateAlert = MahAppSwitch_AutoUpdateAlert.IsOn;
-            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.AutoUpdateAlert, GetServerMetadata(server.ID).AutoUpdateAlert ? "1" : "0");
+            ServerManager.ServerMetadata[int.Parse(server.ID)].AutoUpdateAlert = MahAppSwitch_AutoUpdateAlert.IsOn;
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.AutoUpdateAlert, ServerManager.GetServerMetadata(server.ID).AutoUpdateAlert ? "1" : "0");
         }
 
         private void Switch_RestartCrontabAlert_Click(object sender, RoutedEventArgs e)
         {
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-            _serverMetadata[int.Parse(server.ID)].RestartCrontabAlert = MahAppSwitch_RestartCrontabAlert.IsOn;
-            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.RestartCrontabAlert, GetServerMetadata(server.ID).RestartCrontabAlert ? "1" : "0");
+            ServerManager.ServerMetadata[int.Parse(server.ID)].RestartCrontabAlert = MahAppSwitch_RestartCrontabAlert.IsOn;
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.RestartCrontabAlert, ServerManager.GetServerMetadata(server.ID).RestartCrontabAlert ? "1" : "0");
         }
 
         private void Switch_CrashAlert_Click(object sender, RoutedEventArgs e)
         {
             var server = (ServerTable)ServerGrid.SelectedItem;
             if (server == null) { return; }
-            _serverMetadata[int.Parse(server.ID)].CrashAlert = MahAppSwitch_CrashAlert.IsOn;
-            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.CrashAlert, GetServerMetadata(server.ID).CrashAlert ? "1" : "0");
+            ServerManager.ServerMetadata[int.Parse(server.ID)].CrashAlert = MahAppSwitch_CrashAlert.IsOn;
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.CrashAlert, ServerManager.GetServerMetadata(server.ID).CrashAlert ? "1" : "0");
         }
         #endregion
 
@@ -3863,7 +3432,7 @@ namespace WindowsGSM
 
         public ServerStatus GetServerStatus(string serverId)
         {
-            return GetServerMetadata(serverId).ServerStatus;
+            return ServerManager.GetServerMetadata(serverId).ServerStatus;
         }
 
         public string GetServerName(string serverId)
@@ -3890,7 +3459,7 @@ namespace WindowsGSM
 
             DiscordBotLog($"Discord: Receive START action | {adminName} ({adminID})");
             await GameServer_Start(server);
-            return GetServerMetadata(server.ID).ServerStatus == ServerStatus.Started;
+            return ServerManager.GetServerMetadata(server.ID).ServerStatus == ServerStatus.Started;
         }
 
         public async Task<bool> StopServerById(string serverId, string adminID, string adminName)
@@ -3900,7 +3469,7 @@ namespace WindowsGSM
 
             DiscordBotLog($"Discord: Receive STOP action | {adminName} ({adminID})");
             await GameServer_Stop(server);
-            return GetServerMetadata(server.ID).ServerStatus == ServerStatus.Stopped;
+            return ServerManager.GetServerMetadata(server.ID).ServerStatus == ServerStatus.Stopped;
         }
 
         public async Task<bool> RestartServerById(string serverId, string adminID, string adminName)
@@ -3910,7 +3479,7 @@ namespace WindowsGSM
 
             DiscordBotLog($"Discord: Receive RESTART action | {adminName} ({adminID})");
             await GameServer_Restart(server);
-            return GetServerMetadata(server.ID).ServerStatus == ServerStatus.Started;
+            return ServerManager.GetServerMetadata(server.ID).ServerStatus == ServerStatus.Started;
         }
 
         public async Task<bool> SendCommandById(string serverId, string command, string adminID, string adminName)
@@ -3930,7 +3499,7 @@ namespace WindowsGSM
 
             DiscordBotLog($"Discord: Receive BACKUP action | {adminName} ({adminID})");
             await GameServer_Backup(server);
-            return GetServerMetadata(server.ID).ServerStatus == ServerStatus.Stopped;
+            return ServerManager.GetServerMetadata(server.ID).ServerStatus == ServerStatus.Stopped;
         }
 
         public async Task<bool> UpdateServerById(string serverId, string adminID, string adminName)
@@ -3940,7 +3509,7 @@ namespace WindowsGSM
 
             DiscordBotLog($"Discord: Receive UPDATE action | {adminName} ({adminID})");
             await GameServer_Update(server);
-            return GetServerMetadata(server.ID).ServerStatus == ServerStatus.Stopped;
+            return ServerManager.GetServerMetadata(server.ID).ServerStatus == ServerStatus.Stopped;
         }
 
         private void Switch_DiscordBotAutoStart_Click(object sender, RoutedEventArgs e)
@@ -4051,8 +3620,11 @@ namespace WindowsGSM
             if (server == null) { return; }
 
             Button_AutoScroll.Content = Button_AutoScroll.Content.ToString() == "✔️ AUTO SCROLL" ? "❌ AUTO SCROLL" : "✔️ AUTO SCROLL";
-            _serverMetadata[int.Parse(server.ID)].AutoScroll = Button_AutoScroll.Content.ToString().Contains("✔️");
-            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.AutoScroll, GetServerMetadata(server.ID).AutoScroll ? "1" : "0");
+            ServerManager.ServerMetadata[int.Parse(server.ID)].AutoScroll = Button_AutoScroll.Content.ToString().Contains("✔️");
+            ServerConfig.SetSetting(server.ID, ServerConfig.SettingName.AutoScroll, ServerManager.GetServerMetadata(server.ID).AutoScroll ? "1" : "0");
         }
     }
 }
+
+
+

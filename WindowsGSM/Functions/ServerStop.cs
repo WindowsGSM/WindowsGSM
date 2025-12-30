@@ -1,3 +1,9 @@
+using System.Threading.Tasks;
+
+namespace WindowsGSM.Functions
+{
+    public static class ServerStop
+    {
         public static async Task<bool> StopServerAsync(string serverId)
         {
             try
@@ -18,3 +24,5 @@
                 return false;
             }
         }
+    }
+}

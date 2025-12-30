@@ -35,7 +35,7 @@ namespace WindowsGSM.GameServer
 
         public string AppId = "739590";
 
-        public ECO(Functions.ServerConfig serverData)
+        public ECO(Functions.ServerConfig serverData) : base(serverData)
         {
             _serverData = serverData;
         }

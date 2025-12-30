@@ -95,10 +95,10 @@ namespace WindowsGSM.Functions
 
                     using (var process = Process.Start(processStartInfo))
                     {
-                        await process.WaitForExitAsync();
+                        process.WaitForExit();
                     }
 
-                    return File.exists(Path.Combine(JreAbsoluteInstallPath, "bin", "java.exe"));
+                    return File.Exists(Path.Combine(JreAbsoluteInstallPath, "bin", "java.exe"));
                 }
             }
             catch

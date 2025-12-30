@@ -26,7 +26,7 @@ namespace WindowsGSM.Functions
             string cacheFile = GetPIDPath(serverId);
             if (File.Exists(cacheFile))
             {
-                string text = await File.ReadAllTextAsync(cacheFile);
+                string text = await Task.Run(() => File.ReadAllText(cacheFile));
                 if (int.TryParse(text.Trim(), out int pid))
                 {
                     return pid;
@@ -43,7 +43,7 @@ namespace WindowsGSM.Functions
 
         public static async Task SavePIDAsync(string serverId, int pid)
         {
-            await File.WriteAllTextAsync(GetPIDPath(serverId), pid.ToString());
+            File.WriteAllText(GetPIDPath(serverId), pid.ToString());
         }
 
         private static string GetPIDPath(string serverId)

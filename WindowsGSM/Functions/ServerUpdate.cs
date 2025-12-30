@@ -1,3 +1,9 @@
+using System.Threading.Tasks;
+
+namespace WindowsGSM.Functions
+{
+    public static class ServerUpdate
+    {
         public static async Task<bool> UpdateServerFilesAsync(string serverId, string appId)
         {
             try
@@ -14,3 +20,5 @@
                 return false;
             }
         }
+    }
+}

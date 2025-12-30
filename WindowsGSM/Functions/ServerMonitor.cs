@@ -1,3 +1,11 @@
+using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
+
+namespace WindowsGSM.Functions
+{
+    public static class ServerMonitor
+    {
         public static async Task MonitorServerAsync(string serverId)
         {
             try
@@ -7,7 +15,26 @@
                     while (true)
                     {
                         int pid = await ServerCache.GetPIDAsync(serverId);
-                        if (pid <= 0 || !Process.GetProcesses().Any(p => p.Id == pid))
+                        if (pid > 0)
+                        {
+                            try
+                            {
+                                var process = Process.GetProcessById(pid);
+                                if (process.HasExited)
+                                {
+                                    await ServerRestart.RestartServerAsync(serverId);
+                                }
+                            }
+                            catch (ArgumentException)
+                            {
+                                await ServerRestart.RestartServerAsync(serverId);
+                            }
+                            catch
+                            {
+                                // Ignore other errors
+                            }
+                        }
+                        else
                         {
                             await ServerRestart.RestartServerAsync(serverId);
                         }
@@ -18,6 +45,8 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error monitoring server: {ex.Message}");
+                Logger.Error("Error monitoring server", ex);
             }
         }
+    }
+}

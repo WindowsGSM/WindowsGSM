@@ -11,7 +11,7 @@ namespace WindowsGSM
     public class Program
     {
         [STAThread]
-        public static async Task<int> Main(string[] args)
+        public static void Main(string[] args)
         {
             try
             {
@@ -42,9 +42,9 @@ namespace WindowsGSM
                     File.WriteAllBytes(ntsJsonPath, Properties.Resources.Newtonsoft_Json);
                 }
 
-                AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
+                AppDomain.CurrentDomain.AssemblyResolve += (sender, resolveArgs) =>
                 {
-                    var resourceName = Assembly.GetExecutingAssembly().GetName().Name + ".ReferencesEx." + new AssemblyName(args.Name).Name + ".dll";
+                    var resourceName = Assembly.GetExecutingAssembly().GetName().Name + ".ReferencesEx." + new AssemblyName(resolveArgs.Name).Name + ".dll";
                     using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
                     {
                         if (stream != null)
@@ -58,18 +58,13 @@ namespace WindowsGSM
                     return null;
                 };
 
-                await Task.Run(() =>
-                {
-                    App app = new App();
-                    app.InitializeComponent();
-                    app.Run();
-                });
-                return 0;
+                App app = new App();
+                app.InitializeComponent();
+                app.Run();
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Unhandled exception: {ex.Message}");
-                return 1;
             }
         }
     }

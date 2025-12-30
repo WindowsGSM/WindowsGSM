@@ -1,3 +1,10 @@
+using System.Threading.Tasks;
+using WindowsGSM.GameServer;
+
+namespace WindowsGSM.Functions
+{
+    public static class ServerStart
+    {
         public static async Task<bool> StartServerAsync(string serverId)
         {
             try
@@ -15,3 +22,5 @@
                 return false;
             }
         }
+    }
+}

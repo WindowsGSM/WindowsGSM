@@ -35,7 +35,7 @@ namespace WindowsGSM.GameServer
 
         public string AppId = "915070";
 
-        public OLOW(Functions.ServerConfig serverData)
+        public OLOW(Functions.ServerConfig serverData) : base(serverData)
         {
             _serverData = serverData;
         }

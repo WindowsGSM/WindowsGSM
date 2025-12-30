@@ -42,7 +42,7 @@ namespace WindowsGSM.Functions
         {
             System.Windows.Application.Current?.Dispatcher.Invoke(() =>
             {
-                MainWindow._serverMetadata[int.Parse(_serverId)].ServerConsole.Add(args.Data);
+                ServerManager.ServerMetadata[int.Parse(_serverId)].ServerConsole.Add(args.Data);
             });
         }
 

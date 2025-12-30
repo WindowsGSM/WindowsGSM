@@ -37,18 +37,6 @@ namespace WindowsGSM.Functions
             return false;
         }
 
-        public async Task<List<ServerTable>> GetServerListAsync()
-        {
-            return await Task.Run(() =>
-            {
-                var serverList = new List<ServerTable>();
-                foreach (var server in MainWindow.WGSM_PATH)
-                {
-                    // Simulate fetching server details
-                    serverList.Add(new ServerTable { ID = server.Key, Name = server.Value });
-                }
-                return serverList;
-            });
-        }
+
     }
 }

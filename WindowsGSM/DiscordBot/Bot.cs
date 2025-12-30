@@ -7,6 +7,7 @@ using System.Windows;
 using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
+using WindowsGSM.Functions;
 
 namespace WindowsGSM.DiscordBot
 {
@@ -17,9 +18,11 @@ namespace WindowsGSM.DiscordBot
 		private SocketTextChannel _dashboardTextChannel;
 		private RestUserMessage _dashboardMessage;
 		private CancellationTokenSource _cancellationTokenSource;
+        private readonly IServerManager _serverManager;
 
-		public Bot()
+		public Bot(IServerManager serverManager)
 		{
+            _serverManager = serverManager;
 			Configs.CreateConfigs();
 		}
 
@@ -39,7 +42,7 @@ namespace WindowsGSM.DiscordBot
 			}
 
 			// Listen Commands
-			new Commands(_client);
+			new Commands(_client, _serverManager);
 
 			return true;
 		}
@@ -88,8 +91,7 @@ namespace WindowsGSM.DiscordBot
 				{
 					await Application.Current.Dispatcher.Invoke(async () =>
 					{
-						MainWindow WindowsGSM = (MainWindow)Application.Current.MainWindow;
-						int serverCount = WindowsGSM.ServerGrid.Items.Count;
+						int serverCount = _serverManager.GetServerCount();
 						await _client.SetGameAsync($"{serverCount} game server{(serverCount > 1 ? "s" : string.Empty)}");
 					});
 				}

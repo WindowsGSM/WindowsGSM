@@ -8,6 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System.Threading.Tasks;
+
 namespace WindowsGSM.Properties {
     
     

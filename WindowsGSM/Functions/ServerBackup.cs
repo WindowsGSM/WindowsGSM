@@ -1,3 +1,10 @@
+using System.IO;
+using System.Threading.Tasks;
+
+namespace WindowsGSM.Functions
+{
+    public static class ServerBackup
+    {
         public static async Task<bool> CreateBackupAsync(string sourcePath, string backupPath)
         {
             try
@@ -29,3 +36,5 @@
                 return false;
             }
         }
+    }
+}
