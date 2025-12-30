@@ -15,13 +15,14 @@ Before considering a task complete, ensure the solution builds cleanly.
 2.  **Verification:** Run the build command and verify the output shows "0 Warning(s)" and "0 Error(s)".
 
 ## Versioning Instructions
-When preparing a new release or update, always increment the version number.
+**CRITICAL:** You MUST increment the version number for EVERY successful build or code change. This is mandatory to ensure the update logic detects the new version.
 
 1.  **File to Edit:** `WindowsGSM/Properties/AssemblyInfo.cs`
 2.  **Attributes to Update:**
     *   `[assembly: AssemblyVersion("X.XX.X.X")]`
     *   `[assembly: AssemblyFileVersion("X.XX.X.X")]`
 3.  **Rule:** Increment the build number (3rd digit) or revision (4th digit) as appropriate (e.g., `1.23.1.0` -> `1.23.2.0`).
+4.  **Timing:** Perform this update *before* running the final verification build.
 
 ## Documentation Instructions
 Upon completing a significant task or feature implementation, update the patch notes.

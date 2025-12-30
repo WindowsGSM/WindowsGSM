@@ -51,3 +51,11 @@ A major refactoring and stabilization effort was conducted to improve the archit
 - **UI Performance**: Increased `StartConsoleRefresh` polling interval from 10ms to 250ms to significantly reduce CPU usage.
 - **Resource Management**: Added explicit `Process.Dispose()` in `ServerManager.OnGameServerExited` to prevent resource leaks.
 - **Project Cleanup**: Removed unused `WindowsGSM.csproj.user` file and resolved multiple assembly binding redirect warnings in `App.config`.
+
+## Customization & Rebranding
+- **UI Cleanup**: Removed "Website" and "Discord" buttons from the main window title bar to eliminate external links.
+- **Update Logic Redirection**:
+  - Modified `GetLatestVersion` to fetch version information from `Dreadarm/WindowsGSM` repository instead of the original source.
+  - Replaced the update execution logic to download the latest `WindowsGSM.exe` directly from `Dreadarm/WindowsGSM` releases using a PowerShell-based batch script.
+- **Attribution**: Added "Remastered by: Dreadarm" to the About dialog.
+

@@ -2592,54 +2592,38 @@ namespace WindowsGSM
 
             if (result.ToString().Equals("Affirmative"))
             {
-                string installPath = ServerPath.GetBin();
-                Directory.CreateDirectory(installPath);
-
-                string filePath = Path.Combine(installPath, "WindowsGSM-Updater.exe");
-
-                if (!File.Exists(filePath))
+                //Kill all the server
+                for (int i = 0; i <= MAX_SERVER; i++)
                 {
-                    //Download WindowsGSM-Updater.exe
-                    controller = await this.ShowProgressAsync("Downloading WindowsGSM-Updater...", "Please wait...");
-                    controller.SetIndeterminate();
-                    bool success = await DownloadWindowsGSMUpdater();
-                    await controller.CloseAsync();
-                }
-
-                if (File.Exists(filePath))
-                {
-                    //Kill all the server
-                    for (int i = 0; i <= MAX_SERVER; i++)
+                    if (ServerManager.GetServerMetadata(i) == null || ServerManager.GetServerMetadata(i).Process == null)
                     {
-                        if (ServerManager.GetServerMetadata(i) == null || ServerManager.GetServerMetadata(i).Process == null)
-                        {
-                            continue;
-                        }
-
-                        if (!ServerManager.GetServerMetadata(i).Process.HasExited)
-                        {
-                            ServerManager.ServerMetadata[i].Process.Kill();
-                        }
+                        continue;
                     }
 
-                    //Run WindowsGSM-Updater.exe
-                    Process updater = new Process
+                    if (!ServerManager.GetServerMetadata(i).Process.HasExited)
                     {
-                        StartInfo =
-                        {
-                            WorkingDirectory = installPath,
-                            FileName = filePath,
-                            Arguments = "-autostart -forceupdate"
-                        }
-                    };
-                    updater.Start();
+                        ServerManager.ServerMetadata[i].Process.Kill();
+                    }
+                }
 
-                    Close();
-                }
-                else
+                string batchScript = @"
+@echo off
+timeout /t 5 /nobreak
+del WindowsGSM.exe
+powershell -Command ""Invoke-WebRequest -Uri 'https://github.com/Dreadarm/WindowsGSM/releases/latest/download/WindowsGSM.exe' -OutFile 'WindowsGSM.exe'""
+start WindowsGSM.exe
+del update.bat
+";
+                File.WriteAllText("update.bat", batchScript);
+
+                Process.Start(new ProcessStartInfo
                 {
-                    await this.ShowMessageAsync("Software Updates", $"Fail to download WindowsGSM-Updater.exe");
-                }
+                    FileName = "update.bat",
+                    UseShellExecute = true,
+                    CreateNoWindow = false
+                });
+
+                Close();
             }
         }
 
@@ -2647,13 +2631,23 @@ namespace WindowsGSM
         {
             try
             {
-                var webRequest = WebRequest.Create("https://api.github.com/repos/WindowsGSM/WindowsGSM/releases/latest") as HttpWebRequest;
-                webRequest.Method = "GET";
-                webRequest.UserAgent = "Anything";
-                webRequest.ServicePoint.Expect100Continue = false;
-                var response = await webRequest.GetResponseAsync();
-                using (var responseReader = new StreamReader(response.GetResponseStream()))
-                    return JObject.Parse(responseReader.ReadToEnd())["tag_name"].ToString();
+                using (WebClient webClient = new WebClient())
+                {
+                    string content = await webClient.DownloadStringTaskAsync("https://raw.githubusercontent.com/Dreadarm/WindowsGSM/master/WindowsGSM/Properties/AssemblyInfo.cs");
+                    foreach (string line in content.Split('\n'))
+                    {
+                        if (line.Contains("AssemblyVersion"))
+                        {
+                            int start = line.IndexOf("\"") + 1;
+                            int end = line.LastIndexOf("\"");
+                            string version = line.Substring(start, end - start);
+                            string[] parts = version.Split('.');
+                            return $"v{parts[0]}.{parts[1]}.{parts[2]}";
+                        }
+                    }
+                }
+
+                return null;
             }
             catch
             {
@@ -2688,7 +2682,7 @@ namespace WindowsGSM
                 DefaultButtonFocus = MessageDialogResult.Affirmative
             };
 
-            await this.ShowMessageAsync("About WindowsGSM", $"Product:\t\tWindowsGSM\nVersion:\t\t{WGSM_VERSION.Substring(1)}\nCreator:\t\tTatLead", MessageDialogStyle.Affirmative, settings);
+            await this.ShowMessageAsync("About WindowsGSM", $"Product:\t\tWindowsGSM\nVersion:\t\t{WGSM_VERSION.Substring(1)}\nCreator:\t\tTatLead\nRemastered by:\tDreadarm", MessageDialogStyle.Affirmative, settings);
         }
         #endregion
 
